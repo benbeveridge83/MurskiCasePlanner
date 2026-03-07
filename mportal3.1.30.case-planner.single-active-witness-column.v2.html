@@ -1,0 +1,2018 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Murski – Case Planner</title>
+  <style>
+    :root{
+      --bg:#ffffff;
+      --surface:#ffffff;
+      --surface2:#f7f8fb;
+      --text:#0f172a;
+      --muted:#64748b;
+      --border:#e2e8f0;
+      --shadow: 0 10px 30px rgba(2,6,23,.08);
+      --shadow2: 0 6px 18px rgba(2,6,23,.08);
+      --brand:#2563eb;
+      --brand2:#1d4ed8;
+      --danger:#ef4444;
+      --ok:#16a34a;
+      --ring: rgba(37,99,235,.25);
+      --radius:16px;
+      --radius2:12px;
+      --font: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+    }
+
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family:var(--font);
+      color:var(--text);
+      background: linear-gradient(180deg, #ffffff 0%, #fbfcff 65%, #ffffff 100%);
+    }
+
+    .topbar{
+      position:sticky; top:0; z-index:20;
+      background: rgba(255,255,255,.85);
+      backdrop-filter: blur(10px);
+      border-bottom:1px solid var(--border);
+    }
+    .topbar-inner{
+      max-width: 1280px;
+      margin:0 auto;
+      padding:14px 16px;
+      display:flex;
+      gap:12px;
+      align-items:center;
+      flex-wrap:wrap;
+    }
+
+    .brand{display:flex; gap:10px; align-items:center; min-width: 260px}
+    .dot{width:14px; height:14px; border-radius:50%; background:var(--brand); box-shadow: 0 0 0 4px rgba(37,99,235,.12)}
+    .pill{
+      display:inline-flex;
+      align-items:center;
+      padding:6px 10px;
+      border-radius:999px;
+      border:1px solid rgba(37,99,235,.18);
+      background: rgba(37,99,235,.07);
+      color: rgba(29,78,216,.95);
+      font-size:12px;
+      font-weight:700;
+      gap:6px;
+      line-height:1;
+    }
+
+    .grow{flex:1}
+
+    input[type="text"], input[type="date"], textarea, select{
+      width:100%;
+      border:1px solid var(--border);
+      border-radius: 14px;
+      padding:10px 12px;
+      font-size:14px;
+      outline:none;
+      background: #fff;
+      box-shadow: 0 1px 0 rgba(15,23,42,.02);
+    }
+    textarea{min-height: 86px; resize: vertical}
+    select[multiple]{min-height: 92px}
+    input:focus, textarea:focus, select:focus{border-color: rgba(37,99,235,.45); box-shadow: 0 0 0 4px var(--ring)}
+
+    .caseName{width: min(520px, 60vw)}
+
+    button{
+      border:1px solid var(--border);
+      background:#fff;
+      border-radius: 999px;
+      padding:10px 14px;
+      font-weight:800;
+      font-size:14px;
+      cursor:pointer;
+      box-shadow: 0 2px 0 rgba(15,23,42,.03);
+    }
+    button:hover{border-color: rgba(15,23,42,.20)}
+    .btnPrimary{background: var(--brand); border-color: rgba(29,78,216,.35); color:#fff}
+    .btnPrimary:hover{background: var(--brand2)}
+    .btnDanger{background: rgba(239,68,68,.09); border-color: rgba(239,68,68,.25); color:#991b1b}
+    .btnGhost{background: var(--surface2)}
+
+    .row{display:flex; gap:10px; align-items:center; flex-wrap:wrap}
+
+    .tabs{
+      max-width: 1280px;
+      margin: 10px auto 0;
+      padding: 0 16px;
+      display:flex;
+      gap:10px;
+      align-items:center;
+    }
+    .tab{
+      padding:10px 14px;
+      border-radius: 999px;
+      border:1px solid var(--border);
+      background:#fff;
+      font-weight:900;
+      color: rgba(15,23,42,.75);
+      cursor:pointer;
+      user-select:none;
+    }
+    .tab.active{
+      background: rgba(37,99,235,.08);
+      border-color: rgba(37,99,235,.30);
+      color: rgba(29,78,216,.98);
+      box-shadow: 0 0 0 4px rgba(37,99,235,.08);
+    }
+
+    .container{max-width: 1280px; margin: 14px auto 40px; padding: 0 16px}
+
+    .card{
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 16px;
+    }
+
+    .card h2{margin:0 0 10px; font-size:18px; letter-spacing:-.02em}
+    .hint{color:var(--muted); font-size:13px; line-height:1.35}
+
+    .toolbar{
+      display:flex; gap:10px; align-items:center; flex-wrap:wrap;
+      padding:10px;
+      background:var(--surface2);
+      border:1px solid var(--border);
+      border-radius:var(--radius);
+      margin-top:12px;
+    }
+
+    /* ===== Outline matrix (compact rows) ===== */
+    .matrixWrap{margin-top:12px; overflow:auto; border:1px solid var(--border); border-radius: var(--radius); background:#fff}
+    .matrix{
+      min-width: 920px;
+      display:grid;
+      grid-auto-rows: auto;
+    }
+    .mRow{
+      display:grid;
+      grid-template-columns: 520px 1fr;
+      align-items:stretch;
+      border-top:1px solid var(--border);
+    }
+    .mRow:first-child{border-top:none}
+
+    .mHead{position:sticky; top:0; z-index:5; background: #fff; box-shadow: 0 6px 12px rgba(2,6,23,.05)}
+    .mHead .leftHead{padding:10px 10px; font-weight:900; border-right:1px solid var(--border)}
+    .mHead .wHead{display:flex}
+    .wColHead{min-width: 420px; max-width: 560px; border-left:1px solid var(--border); padding:10px; font-weight:900}
+    .wColHead small{display:block; color:var(--muted); font-weight:700; margin-top:4px}
+
+    .mLeft{
+      border-right:1px solid var(--border);
+      padding:6px 8px;
+      display:flex;
+      gap:8px;
+      align-items:flex-start;
+    }
+    .mIndent{width:0; height:1px}
+
+    .caret{
+      width:24px; height:24px;
+      border-radius:999px;
+      background: var(--surface2);
+      border:1px solid var(--border);
+      display:flex; align-items:center; justify-content:center;
+      font-weight:900;
+      cursor:pointer;
+      flex: 0 0 auto;
+      margin-top:1px;
+      font-size:12px;
+      line-height:1;
+    }
+
+    .titleBox{flex:1; min-width: 260px}
+    .titleRow{
+      min-height:24px;
+      display:flex;
+      align-items:center;
+      gap:8px;
+      padding:1px 0;
+    }
+    .titleInput{
+      border:none !important;
+      background:transparent !important;
+      box-shadow:none !important;
+      padding:0 !important;
+      border-radius:0 !important;
+      font-size:14px;
+      font-weight:800;
+      line-height:1.25;
+      cursor:pointer;
+    }
+    .titleInput:focus{
+      border:none !important;
+      box-shadow:none !important;
+      outline:none;
+      cursor:text;
+    }
+    .detailHint{
+      font-size:11px;
+      color:var(--muted);
+      white-space:nowrap;
+    }
+    .leftSub{
+      margin-top:6px;
+      display:none;
+      grid-template-columns: 1fr 240px;
+      gap:10px;
+      width:100%;
+      padding-top:6px;
+      border-top:1px dashed var(--border);
+    }
+    .leftSub.open{display:grid}
+
+    .leftBtns{display:none}
+    .mini{padding:6px 10px; font-size:13px; background: var(--surface2); box-shadow:none}
+
+    .mLeft.selected{outline:2px solid rgba(37,99,235,.35); border-radius:12px}
+    .cell.selected{outline:2px solid rgba(16,185,129,.35); border-radius:14px}
+
+    .wColHeadTop{display:flex; align-items:flex-start; justify-content:space-between; gap:10px}
+    .wToggle{padding:4px 8px; font-size:12px; border-radius:999px; background:var(--surface2); border:1px solid var(--border); cursor:pointer; font-weight:800}
+
+    .chips{display:flex; flex-wrap:wrap; gap:6px}
+    .chip{display:inline-flex; gap:6px; align-items:center; padding:4px 8px; border-radius:999px; border:1px solid var(--border); background:var(--surface2); font-size:12px; font-weight:800}
+    .exPick{ width:100%; margin-top:4px; padding:8px 10px; border-radius:10px; border:1px solid var(--border); background:#fff; font-size:13px; }
+    .chip button{padding:0 6px; border-radius:999px; border:1px solid var(--border); background:#fff; cursor:pointer; font-weight:900}
+
+    .richToolbar{display:flex; gap:6px; flex-wrap:wrap; margin:6px 0 6px}
+    .richBtn{padding:5px 8px; font-size:12px; border-radius:10px; border:1px solid var(--border); background:var(--surface2); cursor:pointer; font-weight:900}
+    .richBox{min-height:120px; padding:8px 10px; border-radius:12px; border:1px solid var(--border); outline:none; font-size:13px; background:#fff; overflow:auto}
+
+    .leftSub textarea{min-height: 32px; padding:6px 10px; border-radius:12px; font-size:13px}
+    .leftSub select[multiple]{min-height: 72px; padding:8px 10px; border-radius:12px; font-size:13px}
+
+    .mCells{display:flex; flex-wrap:nowrap}
+    .cell{
+      min-width: 420px; max-width: 560px;
+      border-left:1px solid var(--border);
+      padding:4px 8px; /* more compact */
+      background: #fff;
+    }
+    .cell .label{font-size:11px; color:var(--muted); font-weight:900; margin:0 0 4px}
+    .cell select[multiple]{min-height: 70px; padding:6px 8px; border-radius:12px; font-size:13px}
+    .cell textarea{min-height: 44px; padding:6px 8px; border-radius:12px; font-size:13px}
+
+    .cell.compact{padding:6px 8px; display:flex; align-items:center; min-height:36px}
+    .cellSummary{font-size:12px; color:var(--muted); font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+
+    .empty{
+      padding:14px;
+      border:1px dashed var(--border);
+      border-radius:var(--radius);
+      color:var(--muted);
+      background: var(--surface2);
+    }
+
+    /* ===== Settings / People / Documents ===== */
+    .grid2{display:grid; grid-template-columns: 1fr 1fr; gap:14px; margin-top:12px}
+    @media (max-width: 980px){
+      .grid2{grid-template-columns:1fr}
+      .caseName{width:100%}
+      .mRow{grid-template-columns: 1fr}
+      .mHead .leftHead{border-right:none; border-bottom:1px solid var(--border)}
+      .mLeft{border-right:none; border-bottom:1px solid var(--border)}
+      .mCells{overflow:auto}
+      .leftSub{grid-template-columns:1fr}
+    }
+
+    .itemRow{
+      display:flex; gap:10px; align-items:flex-start; justify-content:space-between;
+      padding:6px;
+      border:1px solid var(--border);
+      border-radius:var(--radius);
+      background:var(--surface);
+    }
+
+    .itemRow.selectable{cursor:pointer}
+    .itemRow.selectedDoc{outline:2px solid var(--ring); background: rgba(37,99,235,.05)}
+    .cell.selected{outline:2px solid var(--ring)}
+    /* make outline rows more compact */
+    .cell{padding:10px}
+    .leftSub textarea{min-height:64px}
+    .rtbar{display:flex; gap:6px; flex-wrap:wrap; align-items:center; margin-top:6px}
+    .rtbtn{border:1px solid var(--border); background:#fff; border-radius:10px; padding:6px 8px; font-weight:800; font-size:12px; cursor:pointer}
+    .rtbtn:hover{background:rgba(37,99,235,.06); border-color: rgba(37,99,235,.25)}
+    .rte{
+      border:1px solid var(--border);
+      border-radius:14px;
+      padding:10px 12px;
+      min-height:140px;
+      background:#fff;
+      outline:none;
+      overflow:auto;
+    }
+    .chiprow{display:flex; gap:6px; flex-wrap:wrap; margin-top:6px}
+    .chip{display:inline-flex; gap:6px; align-items:center; border:1px solid var(--border); background: var(--surface2); border-radius:999px; padding:6px 10px; font-size:12px; font-weight:800}
+    .chip button{border:none; background:transparent; cursor:pointer; font-weight:900; color:#991b1b}
+
+    .witnessList{display:flex; gap:6px; flex-wrap:wrap; margin-top:6px}
+    .witnessBtn{border:1px solid var(--border); background:var(--surface2); border-radius:999px; padding:6px 10px; font-size:12px; font-weight:800; cursor:pointer}
+    .witnessBtn.active{background:rgba(37,99,235,.1); border-color:rgba(37,99,235,.35); color:rgba(29,78,216,.98)}
+    .witnessEmpty{font-size:12px; color:var(--muted); margin-top:6px}
+
+    .itemRow small{display:block; color:var(--muted); margin-top:4px}
+    .titleRow{display:flex; align-items:center; gap:8px}
+    .detailToggle{width:22px; height:22px; border:1px solid var(--border); border-radius:6px; background:#fff; font-weight:900; line-height:1; cursor:pointer; flex:0 0 auto}
+    .detailToggle:hover{background:rgba(37,99,235,.06); border-color: rgba(37,99,235,.25)}
+    .titleInput{border:none; background:transparent; padding:0; font-size:14px; font-weight:700; width:100%; min-width:0}
+    .titleInput:focus{background:#fff; border:1px solid var(--border); border-radius:8px; padding:4px 6px}
+
+    .toast{
+      position:fixed;
+      bottom:18px;
+      left:18px;
+      background:#111827;
+      color:#fff;
+      padding:10px 12px;
+      border-radius:12px;
+      box-shadow: 0 12px 28px rgba(0,0,0,.25);
+      font-weight:800;
+      opacity:0;
+      transform: translateY(8px);
+      transition: opacity .18s ease, transform .18s ease;
+      pointer-events:none;
+      max-width:min(520px, calc(100vw - 32px));
+      white-space:pre-wrap;
+    }
+    .toast.show{opacity:1; transform:translateY(0)}
+  </style>
+</head>
+<body>
+
+  <div class="topbar">
+    <div class="topbar-inner">
+      <div class="brand">
+        <div class="dot"></div>
+        <div>
+          <div style="font-size:18px; font-weight:900">Murski – Case Planner</div>
+          <div class="pill">Single-file • local save</div>
+        </div>
+      </div>
+
+      <div class="grow"></div>
+
+      <input id="caseName" class="caseName" type="text" placeholder="Case name (optional)" />
+
+      <div class="row">
+        <button id="exportBtn" class="btnPrimary">Export JSON</button>
+        <button id="importBtn">Import JSON</button>
+        <button id="resetBtn" class="btnDanger">Reset (local)</button>
+      </div>
+
+      <input id="importFile" type="file" accept="application/json" style="display:none" />
+    </div>
+  </div>
+
+  <div class="tabs">
+    <div id="tabOutline" class="tab active">Case Outline</div>
+    <div id="tabDocuments" class="tab">Documents</div>
+    <div id="tabExhibits" class="tab">Exhibits</div>
+    <div id="tabPeople" class="tab">People</div>
+    <div id="tabSettings" class="tab">Settings</div>
+  </div>
+
+  <div class="container">
+
+    <!-- ===== Outline ===== -->
+    <div id="viewOutline" class="card">
+      <h2>Case Outline</h2>
+      <div class="hint">
+        Build a structured outline and then tie it to witnesses, exhibits, and testimony.
+        Add witnesses to a row to create witness columns. In each witness column cell, select exhibits (from Documents) and add testimony.
+      </div>
+
+            <div class="toolbar" style="align-items:flex-start">
+        <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center">
+          <button id="addTop" class="btnPrimary">+ Add top-level heading</button>
+          <button id="collapseAll" class="btnGhost">Collapse all</button>
+          <button id="expandAll" class="btnGhost">Expand all</button>
+        </div>
+
+        <div style="height:1px; flex-basis:100%"></div>
+
+        <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center">
+          <span class="pill" id="selHint">Select a row, then use these controls</span>
+          <button id="actSibling" class="btnGhost">+ Sibling</button>
+          <button id="actChild" class="btnGhost">+ Child</button>
+          <button id="actIndent" class="btnGhost">↳ Indent</button>
+          <button id="actOutdent" class="btnGhost">↰ Outdent</button>
+          <button id="actUp" class="btnGhost">↑</button>
+          <button id="actDown" class="btnGhost">↓</button>
+          <button id="actDelete" class="btnDanger">Delete</button>
+
+          <span style="width:12px"></span>
+
+          <button id="actAddExhibit" class="btnPrimary">+ Add exhibit</button>
+          <span class="pill" id="exHint">Click a witness cell, select a document, then Add exhibit</span>
+        </div>
+      </div>
+
+      <div id="outlineEmpty" class="empty" style="display:none; margin-top:12px">No outline items yet. Click “Add top-level heading”.</div>
+
+      <div id="matrixWrap" class="matrixWrap" style="display:none">
+        <div id="matrix" class="matrix"></div>
+      </div>
+    </div>
+
+    <!-- ===== Documents ===== -->
+    <div id="viewDocuments" class="card" style="display:none">
+      <h2>Documents</h2>
+      <div class="hint">Upload documents for this case. These can be selected as exhibits in the Case Outline witness columns.</div>
+
+      <div class="grid2">
+        <div class="card" style="box-shadow:none">
+          <h2 style="margin-bottom:8px">Add document</h2>
+          <div class="hint" style="margin-bottom:10px">Only <b>Name</b> is required. Date/tags/description are optional.</div>
+
+          <div class="label">Document name <span style="color:var(--danger)">*</span></div>
+          <input id="docName" type="text" placeholder="e.g., Leah Bankruptcy" />
+
+          <div class="label" style="margin-top:10px">Document date (optional)</div>
+          <input id="docDate" type="date" />
+
+          <div class="label" style="margin-top:10px">Description (optional)</div>
+          <textarea id="docDesc" placeholder="What is this document? What does it prove?"></textarea>
+
+          <div class="label" style="margin-top:10px">Tags (optional)</div>
+          <select id="docTags" multiple></select>
+
+          <div class="label" style="margin-top:10px">File (optional)</div>
+          <input id="docFile" type="file" />
+          <div class="hint" style="margin-top:6px">If you attach a file, it is stored in this browser (base64). Keep files reasonable size.</div>
+
+          <div style="margin-top:10px; display:flex; gap:10px; flex-wrap:wrap; align-items:center">
+            <button id="addDoc" class="btnPrimary">Save document</button>
+          </div>
+        </div>
+
+        <div class="card" style="box-shadow:none">
+          <h2 style="margin-bottom:8px">Document repository</h2>
+          <div id="docList" style="display:flex; flex-direction:column; gap:10px"></div>
+          <div id="docEmpty" class="empty" style="display:none">No documents yet.</div>
+        </div>
+      </div>
+    </div>
+
+    
+    <!-- ===== Exhibits ===== -->
+    <div id="viewExhibits" class="card" style="display:none">
+      <h2>Exhibits</h2>
+      <div class="hint">Documents you have used as exhibits appear here.</div>
+
+      <div class="card" style="box-shadow:none">
+        <h2 style="margin-bottom:8px">Exhibit table</h2>
+        <div id="exhibitEmpty" class="empty" style="display:none">No exhibits yet. Add an exhibit from a row/witness intersection.</div>
+        <div style="overflow:auto">
+          <table id="exhibitTable" style="width:100%; border-collapse:collapse; display:none">
+            <thead>
+              <tr>
+                <th style="text-align:left; padding:10px; border-bottom:1px solid var(--line); width:140px">Exhibit</th>
+                <th style="text-align:left; padding:10px; border-bottom:1px solid var(--line)">Document name</th>
+              </tr>
+            </thead>
+            <tbody id="exhibitTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+<!-- ===== People ===== -->
+    <div id="viewPeople" class="card" style="display:none">
+      <h2>People</h2>
+      <div class="hint">Add people (including witnesses). Witnesses can then be attached to outline rows.</div>
+
+      <div class="grid2">
+        <div class="card" style="box-shadow:none">
+          <h2 style="margin-bottom:8px">Add person</h2>
+
+          <div class="label">Name <span style="color:var(--danger)">*</span></div>
+          <input id="personName" type="text" placeholder="e.g., Leah Murski" />
+
+          <div class="label" style="margin-top:10px">Notes / Role (optional)</div>
+          <textarea id="personDesc" placeholder="e.g., Mother, Father, Therapist, Teacher, etc."></textarea>
+
+          <div class="label" style="margin-top:10px">Tags (optional)</div>
+          <select id="personTags" multiple></select>
+
+          <div style="margin-top:10px; display:flex; gap:10px; flex-wrap:wrap; align-items:center">
+            <button id="addPerson" class="btnPrimary">Save person</button>
+          </div>
+        </div>
+
+        <div class="card" style="box-shadow:none">
+          <h2 style="margin-bottom:8px">People list</h2>
+          <div id="peopleList" style="display:flex; flex-direction:column; gap:10px"></div>
+          <div id="peopleEmpty" class="empty" style="display:none">No people yet.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== Settings ===== -->
+    <div id="viewSettings" class="card" style="display:none">
+      <h2>Settings</h2>
+      <div class="hint">Create tags here. Tags can then be assigned to outline rows, documents, and people.</div>
+
+      <div class="grid2">
+        <div class="card" style="box-shadow:none">
+          <h2 style="margin-bottom:8px">Create tag</h2>
+          <div class="label">Tag name</div>
+          <input id="tagName" type="text" placeholder="e.g., Financial, Parenting time, Credibility" />
+          <div class="label" style="margin-top:10px">Description</div>
+          <textarea id="tagDesc" placeholder="Optional description"></textarea>
+          <div style="margin-top:10px; display:flex; gap:10px; align-items:center; flex-wrap:wrap">
+            <button id="addTag" class="btnPrimary">Add tag</button>
+            <span class="pill">Names must be unique</span>
+          </div>
+        </div>
+
+        <div class="card" style="box-shadow:none">
+          <h2 style="margin-bottom:8px">Tag library</h2>
+          <div id="tagList" style="display:flex; flex-direction:column; gap:10px"></div>
+          <div id="tagEmpty" class="empty" style="display:none">No tags yet.</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div id="toast" class="toast"></div>
+
+  <script>
+    // ====== Storage ======
+    const STORAGE_KEY = 'murski_case_planner_v1';
+
+    /**
+     * state schema:
+     * {
+     *  caseName: string,
+     *  tags: [{id,name,description}],
+     *  people: [{id,name,description,tags:tagId[]}],
+     *  documents: [{id,name,date,description,tags:tagId[], filename, dataUrl}],
+     *  outline: [{id,parentId,order,title,description,tags:tagId[],collapsed:boolean, witnessIds:personId[], witnessData: { [personId]: { exhibits:docId[], testimony:string } } }]
+     * }
+     */
+    let state = {
+      caseName: '',
+      tags: [],
+      people: [],
+      documents: [],
+      outline: []
+    };
+
+    const ui = { selectedNodeId: null, selectedWitnessId: null, selectedDocId: null, selectedPersonId: null, activeWitnessColumnId: null };
+
+    const $ = (id) => document.getElementById(id);
+
+    function uid(){
+      return Math.random().toString(16).slice(2) + Date.now().toString(16);
+    }
+
+    function toast(msg){
+      const el = $('toast');
+      el.textContent = msg;
+      el.classList.add('show');
+      clearTimeout(toast._t);
+      toast._t = setTimeout(()=> el.classList.remove('show'), 2200);
+    }
+
+    function safeSave(){
+      try{
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+        return true;
+      } catch (e){
+        console.error(e);
+        alert('Save failed (browser storage full).\n\nTip: Export JSON as a backup, then Reset (local) to clear space.\n\nDetails: ' + (e && e.name ? e.name : e));
+        return false;
+      }
+    }
+
+
+    // ===== IndexedDB for document files (avoids localStorage quota issues) =====
+    const DB_NAME = 'murski_case_planner_db';
+    const DB_VER = 1;
+    const STORE_FILES = 'docFiles';
+
+    function openDb(){
+      return new Promise((resolve,reject)=>{
+        if(!('indexedDB' in window)) return reject(new Error('IndexedDB not supported in this browser'));
+        const req = indexedDB.open(DB_NAME, DB_VER);
+        req.onupgradeneeded = () => {
+          const db = req.result;
+          if(!db.objectStoreNames.contains(STORE_FILES)) db.createObjectStore(STORE_FILES);
+        };
+        req.onsuccess = () => resolve(req.result);
+        req.onerror = () => reject(req.error || new Error('Failed to open IndexedDB'));
+      });
+    }
+
+    async function idbPutFile(key, blob){
+      const db = await openDb();
+      return new Promise((resolve,reject)=>{
+        const tx = db.transaction(STORE_FILES, 'readwrite');
+        tx.objectStore(STORE_FILES).put(blob, key);
+        tx.oncomplete = ()=>{ db.close(); resolve(true); };
+        tx.onerror = ()=>{ db.close(); reject(tx.error || new Error('IndexedDB write failed')); };
+      });
+    }
+
+    async function idbGetFile(key){
+      const db = await openDb();
+      return new Promise((resolve,reject)=>{
+        const tx = db.transaction(STORE_FILES, 'readonly');
+        const req = tx.objectStore(STORE_FILES).get(key);
+        req.onsuccess = ()=>{ const v=req.result||null; db.close(); resolve(v); };
+        req.onerror = ()=>{ db.close(); reject(req.error || new Error('IndexedDB read failed')); };
+      });
+    }
+
+    async function idbDelFile(key){
+      const db = await openDb();
+      return new Promise((resolve,reject)=>{
+        const tx = db.transaction(STORE_FILES, 'readwrite');
+        tx.objectStore(STORE_FILES).delete(key);
+        tx.oncomplete = ()=>{ db.close(); resolve(true); };
+        tx.onerror = ()=>{ db.close(); reject(tx.error || new Error('IndexedDB delete failed')); };
+      });
+    }
+
+    function normalizeState(){
+      state.tags = Array.isArray(state.tags) ? state.tags.filter(t => t && (t.name||'').trim()).map(t => ({ id: t.id || uid(), name: String(t.name||'').trim(), description: String(t.description||'').trim() })) : [];
+      state.people = Array.isArray(state.people) ? state.people.filter(p => p && (p.name||'').trim()).map(p => ({ id: p.id || uid(), name: String(p.name||'').trim(), description: String(p.description||'').trim(), tags: Array.isArray(p.tags) ? p.tags.filter(Boolean) : [] })) : [];
+      state.documents = Array.isArray(state.documents) ? state.documents.filter(d => d && (d.name||'').trim()).map(d => ({ id: d.id || uid(), name: String(d.name||'').trim(), date: d.date || '', description: String(d.description||'').trim(), tags: Array.isArray(d.tags) ? d.tags.filter(Boolean) : [], filename: d.filename || '', hasFile: !!d.hasFile, dataUrl: d.dataUrl || '', exhibitLabel: d.exhibitLabel || '' })) : [];
+      state.outline = Array.isArray(state.outline) ? state.outline.filter(n => n && n.id).map(n => ({ ...n, title: typeof n.title === 'string' ? n.title : '', description: typeof n.description === 'string' ? n.description : '', tags: Array.isArray(n.tags) ? n.tags.filter(Boolean) : [], witnessIds: Array.isArray(n.witnessIds) ? n.witnessIds.filter(Boolean) : [], witnessData: n.witnessData && typeof n.witnessData === 'object' ? n.witnessData : {}, collapsed: !!n.collapsed, detailsOpen: !!n.detailsOpen })) : [];
+    }
+
+    function load(){
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if(raw){
+        try{
+          const parsed = JSON.parse(raw);
+          if(parsed && typeof parsed === 'object') state = Object.assign(state, parsed);
+        } catch(e){
+          console.warn('Failed to parse saved data', e);
+        }
+      }
+      normalizeState();
+      $('caseName').value = state.caseName || '';
+    }
+
+    // ====== Tabs ======
+    const views = {
+      outline: { tab: 'tabOutline', view:'viewOutline' },
+      documents: { tab: 'tabDocuments', view:'viewDocuments' },
+      exhibits: { tab: 'tabExhibits', view:'viewExhibits' },
+      people: { tab: 'tabPeople', view:'viewPeople' },
+      settings: { tab: 'tabSettings', view:'viewSettings' }
+    };
+
+    function setTab(which){
+      for(const k of Object.keys(views)){
+        const on = k === which;
+        $(views[k].tab).classList.toggle('active', on);
+        $(views[k].view).style.display = on ? '' : 'none';
+      }
+      if(which==='exhibits') renderExhibits();
+    }
+
+    $('tabOutline').addEventListener('click', ()=> setTab('outline'));
+    $('tabDocuments').addEventListener('click', ()=> setTab('documents'));
+    $('tabExhibits').addEventListener('click', ()=> setTab('exhibits'));
+    $('tabPeople').addEventListener('click', ()=> setTab('people'));
+    $('tabSettings').addEventListener('click', ()=> setTab('settings'));
+
+    // ====== Utilities ======
+    function escapeHtml(str){
+      return (str||'').replace(/[&<>\"']/g, (c)=>({
+        '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+      }[c]));
+    }
+
+    function sortByName(a,b){
+      return (a.name||'').localeCompare(b.name||'');
+    }
+
+    function allWitnessIds(){
+      const set = new Set();
+      for(const n of state.outline){
+        (n.witnessIds||[]).forEach(id=> set.add(id));
+      }
+      return Array.from(set);
+    }
+
+    // ====== Tags ======
+    function renderTags(){
+      const list = $('tagList');
+      list.innerHTML = '';
+      $('tagEmpty').style.display = state.tags.length ? 'none' : '';
+
+      for(const t of state.tags){
+        const row = document.createElement('div');
+        row.className = 'itemRow';
+        row.innerHTML = `
+          <div>
+            <b>${escapeHtml(t.name)}</b>
+            <small>${t.description ? escapeHtml(t.description) : ''}</small>
+          </div>
+          <div style="display:flex; gap:8px; align-items:center">
+            <button class="mini" data-act="edit" data-id="${t.id}">Edit</button>
+            <button class="mini" data-act="del" data-id="${t.id}" style="border-color: rgba(239,68,68,.35); color:#991b1b">Delete</button>
+          </div>
+        `;
+        row.addEventListener('click', (e)=>{
+          if(e.target && e.target.tagName==='BUTTON') return;
+          // tags are not selectable
+        });
+        list.appendChild(row);
+      }
+
+      list.querySelectorAll('button').forEach(btn=>{
+        btn.addEventListener('click', ()=>{
+          const id = btn.getAttribute('data-id');
+          const act = btn.getAttribute('data-act');
+          if(act === 'del') deleteTag(id);
+          if(act === 'edit') editTag(id);
+        });
+      });
+
+      populateTagSelectors();
+      renderDocuments();
+      renderPeople();
+      renderOutline();
+    }
+
+    function addTag(){
+      const name = ($('tagName').value || '').trim();
+      const description = ($('tagDesc').value || '').trim();
+      if(!name){ toast('Tag name required'); return; }
+      const exists = state.tags.some(t => t.name.toLowerCase() === name.toLowerCase());
+      if(exists){ alert('That tag name already exists.'); return; }
+      state.tags.push({ id: uid(), name, description });
+      $('tagName').value = '';
+      $('tagDesc').value = '';
+      safeSave();
+      renderTags();
+      toast('Tag added');
+    }
+
+    function deleteTag(id){
+      const tag = state.tags.find(t=>t.id===id);
+      if(!tag) return;
+      if(!confirm(`Delete tag “${tag.name}”? This will remove it everywhere.`)) return;
+
+      state.tags = state.tags.filter(t=>t.id!==id);
+      for(const n of state.outline){ n.tags = (n.tags||[]).filter(tid=>tid!==id); }
+      for(const p of state.people){ p.tags = (p.tags||[]).filter(tid=>tid!==id); }
+      for(const d of state.documents){ d.tags = (d.tags||[]).filter(tid=>tid!==id); }
+      safeSave();
+      renderTags();
+      toast('Tag deleted');
+    }
+
+    function editTag(id){
+      const tag = state.tags.find(t=>t.id===id);
+      if(!tag) return;
+      const newName = prompt('Tag name:', tag.name);
+      if(newName === null) return;
+      const name = newName.trim();
+      if(!name){ alert('Name cannot be blank.'); return; }
+      const conflict = state.tags.some(t => t.id !== id && t.name.toLowerCase() === name.toLowerCase());
+      if(conflict){ alert('Another tag already has that name.'); return; }
+      const newDesc = prompt('Tag description (optional):', tag.description || '');
+      if(newDesc === null) return;
+      tag.name = name;
+      tag.description = (newDesc || '').trim();
+      safeSave();
+      renderTags();
+      toast('Tag updated');
+    }
+
+    $('addTag').addEventListener('click', addTag);
+
+    function populateTagSelectors(){
+      const selects = ['docTags','personTags'];
+      for(const id of selects){
+        const el = $(id);
+        if(!el) continue;
+        el.innerHTML = '';
+        for(const t of state.tags.slice().sort(sortByName)){
+          const opt = document.createElement('option');
+          opt.value = t.id;
+          opt.textContent = t.name;
+          el.appendChild(opt);
+        }
+      }
+    }
+
+    // ====== Documents ======
+    function renderDocuments(){
+      const list = $('docList');
+      list.innerHTML = '';
+      $('docEmpty').style.display = state.documents.length ? 'none' : '';
+
+      for(const d of state.documents.slice().sort((a,b)=> (b.date||'').localeCompare(a.date||'') || (a.name||'').localeCompare(b.name||'')) ){
+        const row = document.createElement('div');
+        row.className = 'itemRow selectable' + (ui.selectedDocId===d.id ? ' selectedDoc' : '');
+        const tagNames = (d.tags||[]).map(tid => state.tags.find(t=>t.id===tid)?.name).filter(Boolean);
+        row.innerHTML = `
+          <div>
+            <b>${escapeHtml(d.name)}</b>
+            <small>${d.date ? escapeHtml(d.date) : ''}${d.filename ? (d.date ? ' • ' : '') + escapeHtml(d.filename) : ''}</small>
+            <small>${d.description ? escapeHtml(d.description) : ''}</small>
+            ${tagNames.length ? `<div style="margin-top:6px; display:flex; gap:6px; flex-wrap:wrap">${tagNames.map(n=>`<span class="pill">${escapeHtml(n)}</span>`).join('')}</div>` : ''}
+          </div>
+          <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap">
+            ${d.dataUrl ? `<button class="mini" data-act="dl" data-id="${d.id}">Download</button>` : ''}
+            <button class="mini" data-act="del" data-id="${d.id}" style="border-color: rgba(239,68,68,.35); color:#991b1b">Delete</button>
+          </div>
+        `;
+        row.addEventListener('click', (e)=>{
+          if(e.target && e.target.tagName==='BUTTON') return;
+          // tags are not selectable
+        });
+        list.appendChild(row);
+      }
+
+      list.querySelectorAll('button').forEach(btn=>{
+        btn.addEventListener('click', ()=>{
+          const id = btn.getAttribute('data-id');
+          const act = btn.getAttribute('data-act');
+          if(act==='del') deleteDocument(id);
+          if(act==='dl') downloadDocument(id);
+        });
+      });
+
+      renderOutline();
+    }
+
+    function addDocument(){
+      const name = ($('docName').value||'').trim();
+      if(!name){ alert('Document name is required.'); return; }
+      const date = $('docDate').value || '';
+      const description = ($('docDesc').value||'').trim();
+      const tags = Array.from($('docTags').selectedOptions).map(o=>o.value);
+      const file = $('docFile').files && $('docFile').files[0] ? $('docFile').files[0] : null;
+
+      const doc = { id: uid(), name, date, description, tags, filename:'', hasFile:false, dataUrl:'' };
+
+      const clearForm = ()=>{
+        $('docName').value=''; $('docDate').value=''; $('docDesc').value=''; $('docTags').selectedIndex=-1; $('docFile').value='';
+      };
+
+      if(!file){
+        state.documents.push(doc);
+        safeSave();
+        clearForm();
+        renderDocuments();
+        toast('Document saved');
+        return;
+      }
+
+      doc.filename = file.name;
+      doc.hasFile = true;
+
+      // Store binary in IndexedDB and keep only metadata in localStorage
+      (async ()=>{
+        try{
+          await idbPutFile(doc.id, file);
+          state.documents.push(doc);
+          safeSave();
+          clearForm();
+          renderDocuments();
+          toast('Document saved');
+        }catch(err){
+          console.error(err);
+          alert('Save failed (could not store file in this browser).\n\nDetails: ' + (err && err.message ? err.message : String(err)) );
+        }
+      })();
+    }
+
+    function deleteDocument(id){
+      const doc = state.documents.find(d=>d.id===id);
+      if(!doc) return;
+      if(!confirm(`Delete document “${doc.name}”?`)) return;
+      state.documents = state.documents.filter(d=>d.id!==id);
+      // remove from outline witness exhibit selections
+      for(const n of state.outline){
+        if(!n.witnessData) continue;
+        for(const wid of Object.keys(n.witnessData)){
+          n.witnessData[wid].exhibits = (n.witnessData[wid].exhibits||[]).filter(eid=>eid!==id);
+        }
+      }
+      (async ()=>{
+        try{ await idbDelFile(id); }catch(e){}
+      })();
+      safeSave();
+      renderDocuments();
+      toast('Document deleted');
+    }
+
+    async function downloadDocument(id){
+      const d = state.documents.find(x=>x.id===id);
+      if(!d) return;
+      try{
+        if(d.hasFile){
+          const blob = await idbGetFile(d.id);
+          if(blob){
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = d.filename || (d.name + '.bin');
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            setTimeout(()=>URL.revokeObjectURL(url), 500);
+            return;
+          }
+        }
+      }catch(err){
+        console.warn('IndexedDB download failed, falling back if possible', err);
+      }
+      if(d.dataUrl){
+        const a = document.createElement('a');
+        a.href = d.dataUrl;
+        a.download = d.filename || (d.name + '.bin');
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+      }else{
+        alert('No file was stored for this document (metadata only).');
+      }
+    }
+
+    $('addDoc').addEventListener('click', addDocument);
+
+    // ====== People ======
+    function renderPeople(){
+      const list = $('peopleList');
+      list.innerHTML = '';
+
+      // Clean out ghost/blank rows from older saves
+      const before = state.people.length;
+      state.people = (state.people || []).filter(p => p && (p.name||'').trim()).map(p => ({
+        id: p.id || uid(),
+        name: String(p.name||'').trim(),
+        description: String(p.description||'').trim(),
+        tags: Array.isArray(p.tags) ? p.tags.filter(Boolean) : []
+      }));
+      $('peopleEmpty').style.display = state.people.length ? 'none' : '';
+      if(state.people.length !== before) safeSave();
+
+      for(const p of state.people.slice().sort((a,b)=> (a.name||'').localeCompare(b.name||'')) ){
+        const row = document.createElement('div');
+        row.className = 'itemRow selectable' + (ui.selectedPersonId===p.id ? ' selectedDoc' : '');
+        const tagNames = (p.tags||[]).map(tid => state.tags.find(t=>t.id===tid)?.name).filter(Boolean);
+        row.innerHTML = `
+          <div>
+            <b>${escapeHtml(p.name)}</b>
+            <small>${p.description ? escapeHtml(p.description) : ''}</small>
+            ${tagNames.length ? `<div style="margin-top:6px; display:flex; gap:6px; flex-wrap:wrap">${tagNames.map(n=>`<span class="pill">${escapeHtml(n)}</span>`).join('')}</div>` : ''}
+          </div>
+          <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap">
+            <button class="mini" data-act="edit" data-id="${p.id}">Edit</button>
+            <button class="mini" data-act="del" data-id="${p.id}" style="border-color: rgba(239,68,68,.35); color:#991b1b">Delete</button>
+          </div>
+        `;
+        row.addEventListener('click', (e)=>{
+          if(e.target && e.target.tagName==='BUTTON') return;
+          ui.selectedPersonId = p.id;
+          toast('Selected person: ' + p.name);
+          renderPeople();
+        });
+        list.appendChild(row);
+      }
+
+      list.querySelectorAll('button').forEach(btn=>{
+        btn.addEventListener('click', (ev)=>{
+          ev.preventDefault();
+          ev.stopPropagation();
+          const id = btn.getAttribute('data-id');
+          const act = btn.getAttribute('data-act');
+          if(act==='del') deletePerson(id);
+          if(act==='edit') editPerson(id);
+        });
+      });
+
+      renderOutline();
+    }
+
+    function addPerson(){
+      const name = ($('personName').value||'').trim();
+      if(!name){ alert('Person name is required.'); return; }
+      const description = ($('personDesc').value||'').trim();
+      const tags = Array.from($('personTags').selectedOptions).map(o=>o.value);
+      state.people.push({ id: uid(), name, description, tags });
+      safeSave();
+      $('personName').value=''; $('personDesc').value=''; $('personTags').selectedIndex=-1;
+      renderPeople();
+      toast('Person saved');
+    }
+
+    function deletePerson(id){
+      if(!id) return;
+      const p = state.people.find(x=>x.id===id);
+      if(!p) return;
+      if(!confirm(`Delete person “${p.name}”? This will remove them from all outline witness columns.`)) return;
+      state.people = state.people.filter(x=>x.id!==id);
+      for(const n of state.outline){
+        n.witnessIds = (n.witnessIds||[]).filter(wid=>wid!==id);
+        if(n.witnessData && n.witnessData[id]) delete n.witnessData[id];
+      }
+      if(ui.selectedPersonId===id) ui.selectedPersonId = null;
+      if(ui.selectedWitnessId===id) ui.selectedWitnessId = null;
+      if(ui.activeWitnessColumnId===id) ui.activeWitnessColumnId = null;
+      safeSave();
+      renderPeople();
+      toast('Person deleted');
+    }
+
+    function editPerson(id){
+      const p = state.people.find(x=>x.id===id);
+      if(!p) return;
+      const newName = prompt('Name:', p.name);
+      if(newName===null) return;
+      const name = newName.trim();
+      if(!name){ alert('Name cannot be blank.'); return; }
+      const newDesc = prompt('Notes / Role (optional):', p.description||'');
+      if(newDesc===null) return;
+      p.name = name;
+      p.description = (newDesc||'').trim();
+      safeSave();
+      renderPeople();
+      toast('Person updated');
+    }
+
+    $('addPerson').addEventListener('click', addPerson);
+
+    // ====== Outline helpers ======
+    function childrenOf(parentId){
+      return state.outline.filter(n=>n.parentId===parentId).sort((a,b)=>a.order-b.order);
+    }
+
+    function depthOf(nodeId){
+      let d=0;
+      let cur = state.outline.find(n=>n.id===nodeId);
+      while(cur && cur.parentId){
+        d++;
+        cur = state.outline.find(n=>n.id===cur.parentId);
+      }
+      return d;
+    }
+
+    function normalizeOrders(parentId){
+      const kids = childrenOf(parentId);
+      kids.forEach((k,i)=>k.order=i);
+    }
+
+    function addNode({parentId=null, afterId=null}={}){
+      const id = uid();
+      let order = childrenOf(parentId).length;
+
+      if(afterId){
+        const sibs = childrenOf(parentId);
+        const idx = sibs.findIndex(x=>x.id===afterId);
+        if(idx>=0){
+          order = sibs[idx].order + 1;
+          for(const s of sibs){ if(s.order >= order) s.order++; }
+        }
+      }
+
+      state.outline.push({
+        id,
+        parentId,
+        order,
+        title:'',
+        description:'',
+        tags:[],
+        collapsed:false,
+        detailsOpen:false,
+        witnessIds:[],
+        witnessData:{}
+      });
+      normalizeOrders(parentId);
+      safeSave();
+      renderOutline();
+      focusTitle(id);
+      return id;
+    }
+
+    function deleteNode(id){
+      const node = state.outline.find(n=>n.id===id);
+      if(!node) return;
+      const descendants = getDescendants(id);
+      if(!confirm(`Delete this item${descendants.length?` and its ${descendants.length} child(ren)` : ''}?`)) return;
+
+      const toDelete = new Set([id, ...descendants.map(d=>d.id)]);
+      const parentId = node.parentId;
+      state.outline = state.outline.filter(n=>!toDelete.has(n.id));
+      normalizeOrders(parentId);
+      safeSave();
+      renderOutline();
+    }
+
+    function getDescendants(id){
+      const out=[];
+      const stack=[id];
+      while(stack.length){
+        const cur = stack.pop();
+        const kids = state.outline.filter(n=>n.parentId===cur);
+        for(const k of kids){ out.push(k); stack.push(k.id); }
+      }
+      return out;
+    }
+
+    function moveNode(id, dir){
+      const node = state.outline.find(n=>n.id===id);
+      if(!node) return;
+      const sibs = childrenOf(node.parentId);
+      const idx = sibs.findIndex(x=>x.id===id);
+      const swapWith = idx + dir;
+      if(swapWith < 0 || swapWith >= sibs.length) return;
+      const other = sibs[swapWith];
+      const tmp = node.order;
+      node.order = other.order;
+      other.order = tmp;
+      normalizeOrders(node.parentId);
+      safeSave();
+      renderOutline();
+      focusTitle(id);
+    }
+
+    function setCollapsed(id, val){
+      const node = state.outline.find(n=>n.id===id);
+      if(!node) return;
+      node.collapsed = !!val;
+      safeSave();
+      renderOutline();
+    }
+
+
+    function setDetailsOpen(id, val){
+      const node = state.outline.find(n=>n.id===id);
+      if(!node) return;
+      node.detailsOpen = !!val;
+      safeSave();
+      renderOutline();
+    }
+
+    function indentNode(id){
+      const node = state.outline.find(n=>n.id===id);
+      if(!node) return;
+      const sibs = childrenOf(node.parentId);
+      const idx = sibs.findIndex(x=>x.id===id);
+      if(idx<=0) return;
+      const newParent = sibs[idx-1];
+      node.parentId = newParent.id;
+      node.order = childrenOf(newParent.id).length;
+      normalizeOrders(newParent.id);
+      normalizeOrders(null);
+      safeSave();
+      renderOutline();
+      focusTitle(id);
+    }
+
+    function outdentNode(id){
+      const node = state.outline.find(n=>n.id===id);
+      if(!node || !node.parentId) return;
+      const parent = state.outline.find(n=>n.id===node.parentId);
+      if(!parent) return;
+      const grand = parent.parentId;
+      node.parentId = grand;
+      // place after parent
+      const sibs = childrenOf(grand);
+      const parentIdx = sibs.findIndex(x=>x.id===parent.id);
+      for(const s of sibs){ if(s.order > parent.order) s.order++; }
+      node.order = parent.order + 1;
+      normalizeOrders(grand);
+      normalizeOrders(parent.id);
+      safeSave();
+      renderOutline();
+      focusTitle(id);
+    }
+
+    function focusTitle(id){
+      setTimeout(()=>{
+        const el = document.querySelector(`.mLeft[data-id="${id}"] input[data-act="title"]`);
+        if(el){ el.focus(); el.select?.(); }
+      }, 30);
+    }
+
+    function visibleRows(){
+      return flattenVisible();
+    }
+
+    function focusRelativeRow(id, delta){
+      const rows = visibleRows();
+      const idx = rows.findIndex(r=>r.id===id);
+      if(idx < 0) return;
+      const target = rows[idx + delta];
+      if(!target) return;
+      ui.selectedNodeId = target.id;
+      ui.selectedWitnessId = null;
+      syncSelectionHints();
+      renderOutline();
+      focusTitle(target.id);
+    }
+
+    function toggleDetails(id){
+      const node = state.outline.find(n=>n.id===id);
+      if(!node) return;
+      node.detailsOpen = !node.detailsOpen;
+      safeSave();
+      renderOutline();
+      focusTitle(id);
+    }
+
+    // ===== Witness attach / cell editing =====
+    function addWitnessToNode(nodeId, personId){
+      const node = state.outline.find(n=>n.id===nodeId);
+      if(!node) return;
+      if(!personId) return;
+      if(!node.witnessIds) node.witnessIds = [];
+      if(node.witnessIds.includes(personId)) return;
+      node.witnessIds.push(personId);
+      if(!node.witnessData) node.witnessData = {};
+      if(!node.witnessData[personId]) node.witnessData[personId] = { exhibits: [], testimonyHtml: '' };
+      ui.activeWitnessColumnId = personId;
+      ui.selectedWitnessId = personId;
+      safeSave();
+      renderOutline();
+      toast('Witness added to row');
+    }
+
+    function setCellExhibits(nodeId, personId, exhibitIds){
+      const node = state.outline.find(n=>n.id===nodeId);
+      if(!node) return;
+      if(!node.witnessData) node.witnessData = {};
+      if(!node.witnessData[personId]) node.witnessData[personId] = { exhibits: [], testimonyHtml: '' };
+      node.witnessData[personId].exhibits = exhibitIds;
+      safeSave();
+    }
+
+    function setCellTestimony(nodeId, personId, txt){
+      const node = state.outline.find(n=>n.id===nodeId);
+      if(!node) return;
+      if(!node.witnessData) node.witnessData = {};
+      if(!node.witnessData[personId]) node.witnessData[personId] = { exhibits: [], testimonyHtml: '' };
+      node.witnessData[personId].testimony = txt;
+      safeSave();
+    }
+
+    function setCellTestimonyHtml(nodeId, personId, html){
+      const node = state.outline.find(n=>n.id===nodeId);
+      if(!node) return;
+      if(!node.witnessData) node.witnessData = {};
+      if(!node.witnessData[personId]) node.witnessData[personId] = { exhibits: [], testimonyHtml: '' };
+      node.witnessData[personId].testimonyHtml = html || '';
+      // keep legacy plain text in sync (optional)
+      node.witnessData[personId].testimony = (html || '').replace(/<[^>]*>/g,' ').replace(/\s+/g,' ').trim();
+      safeSave();
+    }
+
+    function nextExhibitLabel(){
+      const n = (state.exhibits||[]).length + 1;
+      return 'CP-' + n;
+    }
+
+    function getOrCreateExhibitForDoc(docId, create=true){
+      if(!state.exhibits) state.exhibits = [];
+      let ex = state.exhibits.find(e=>e.docId===docId);
+      if(!ex && create){
+        ex = { id: uid(), docId, label: nextExhibitLabel(), createdAt: Date.now() };
+        state.exhibits.push(ex);
+        safeSave();
+      }
+      return ex || null;
+    }
+
+    function rebuildExhibitsFromOutline(){
+      // ensure exhibits exist for any doc referenced in witness cells
+      if(!state.exhibits) state.exhibits = [];
+      const used = new Set();
+      for(const n of state.outline){
+        if(!n.witnessData) continue;
+        for(const wid of Object.keys(n.witnessData)){
+          for(const did of (n.witnessData[wid].exhibits||[])){
+            used.add(did);
+            getOrCreateExhibitForDoc(did, true);
+          }
+        }
+      }
+      // (optional) keep exhibits that are no longer used? we'll keep them.
+    }
+
+    function removeExhibitFromCell(nodeId, witnessId, docId){
+      const node = state.outline.find(n=>n.id===nodeId);
+      if(!node || !node.witnessData || !node.witnessData[witnessId]) return;
+      node.witnessData[witnessId].exhibits = (node.witnessData[witnessId].exhibits||[]).filter(x=>x!==docId);
+      safeSave();
+      renderOutline();
+      renderExhibits();
+      toast('Exhibit removed');
+    }
+
+    function addExhibitToCell(nodeId, witnessId, docId){
+      if(!nodeId || !witnessId || !docId) return;
+      const node = state.outline.find(n=>n.id===nodeId);
+      if(!node) return;
+      if(!node.witnessData) node.witnessData = {};
+      if(!node.witnessData[witnessId]) node.witnessData[witnessId] = { exhibits: [], testimonyHtml: '' };
+      const exArr = node.witnessData[witnessId].exhibits || [];
+      if(!exArr.includes(docId)) exArr.push(docId);
+      node.witnessData[witnessId].exhibits = exArr;
+      const ex = getOrCreateExhibitForDoc(docId, true);
+      safeSave();
+      renderOutline();
+      renderExhibits();
+      toast('Exhibit added');
+    }
+
+
+
+    function addExhibitToSelected(){
+      const nid = ui.selectedNodeId;
+      const wid = ui.selectedWitnessId;
+      const did = ui.selectedDocId;
+      if(!nid){ alert('Select an outline row first.'); return; }
+      if(!wid){ alert('Click a witness cell first (row × witness).'); return; }
+      if(!did){ alert('Select a document in the Documents tab first.'); return; }
+
+      const node = state.outline.find(n=>n.id===nid);
+      if(!node) return;
+      if(!node.witnessData) node.witnessData = {};
+      if(!node.witnessData[wid]) node.witnessData[wid] = { exhibits: [], testimonyHtml: '' };
+
+      const exArr = node.witnessData[wid].exhibits || [];
+      if(!exArr.includes(did)) exArr.push(did);
+      node.witnessData[wid].exhibits = exArr;
+
+      // ensure exhibit numbering exists
+      const ex = getOrCreateExhibitForDoc(did, true);
+
+      safeSave();
+      renderOutline();
+      renderExhibits();
+      toast('Exhibit added');
+    }
+
+    function collectUsedExhibitDocIds(){
+      const usedDocIds = [];
+      const seen = new Set();
+      for(const n of state.outline){
+        if(!n || !n.witnessData) continue;
+        for(const wid of Object.keys(n.witnessData)){
+          const wd = n.witnessData[wid] || {};
+          for(const did of (wd.exhibits || [])){
+            if(did && !seen.has(did)){
+              seen.add(did);
+              usedDocIds.push(did);
+            }
+          }
+        }
+      }
+      return usedDocIds;
+    }
+
+    function syncExhibitOrderWithUsage(){
+      if(!state.exhibitOrder) state.exhibitOrder = [];
+      const usedDocIds = collectUsedExhibitDocIds();
+      const usedSet = new Set(usedDocIds);
+      state.exhibitOrder = state.exhibitOrder.filter(docId => usedSet.has(docId));
+      for(const docId of usedDocIds){
+        if(!state.exhibitOrder.includes(docId)) state.exhibitOrder.push(docId);
+      }
+      if(!state.exhibits) state.exhibits = [];
+      const orderIndex = new Map(state.exhibitOrder.map((docId, idx) => [docId, idx]));
+      state.exhibits = state.exhibits.filter(ex => ex && usedSet.has(ex.docId));
+      state.exhibits.sort((a,b)=> (orderIndex.get(a.docId) ?? 9999) - (orderIndex.get(b.docId) ?? 9999));
+      state.exhibits.forEach((ex, idx) => {
+        ex.label = 'CP-' + (idx + 1);
+      });
+    }
+
+    function moveExhibit(docId, direction){
+      syncExhibitOrderWithUsage();
+      const arr = state.exhibitOrder || [];
+      const idx = arr.indexOf(docId);
+      if(idx < 0) return;
+      const next = idx + direction;
+      if(next < 0 || next >= arr.length) return;
+      const tmp = arr[idx];
+      arr[idx] = arr[next];
+      arr[next] = tmp;
+      syncExhibitOrderWithUsage();
+      safeSave();
+      renderExhibits();
+      renderOutline();
+    }
+
+    function renderExhibits(){
+      const body = $('exhibitTableBody');
+      const table = $('exhibitTable');
+      const empty = $('exhibitEmpty');
+      if(!body || !table || !empty) return;
+
+      rebuildExhibitsFromOutline();
+      syncExhibitOrderWithUsage();
+      body.innerHTML = '';
+
+      const rows = [];
+      for(const ex of (state.exhibits || [])){
+        if(!ex) continue;
+        const doc = state.documents.find(d => d.id === ex.docId);
+        rows.push({ docId: ex.docId, label: ex.label || '', docName: doc && doc.name ? doc.name : '(missing document)' });
+      }
+
+      if(!rows.length){
+        empty.style.display = '';
+        table.style.display = 'none';
+        return;
+      }
+
+      empty.style.display = 'none';
+      table.style.display = 'table';
+
+      rows.forEach((rowData, idx) => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td style="padding:10px; border-bottom:1px solid var(--line); font-weight:700; white-space:nowrap">${escapeHtml(rowData.label)}</td>
+          <td style="padding:10px; border-bottom:1px solid var(--line)">${escapeHtml(rowData.docName)}</td>
+          <td style="padding:10px; border-bottom:1px solid var(--line); white-space:nowrap; text-align:right">
+            <button class="btnSmall" ${idx===0 ? 'disabled' : ''} data-move="up">Up</button>
+            <button class="btnSmall" ${idx===rows.length-1 ? 'disabled' : ''} data-move="down">Down</button>
+          </td>
+        `;
+        tr.querySelector('[data-move="up"]').addEventListener('click', ()=> moveExhibit(rowData.docId, -1));
+        tr.querySelector('[data-move="down"]').addEventListener('click', ()=> moveExhibit(rowData.docId, 1));
+        body.appendChild(tr);
+      });
+    }
+
+    // ====== Outline render (matrix) ======
+    function flattenVisible(){
+      const out=[];
+      function walk(parentId){
+        const kids = childrenOf(parentId);
+        for(const k of kids){
+          out.push(k);
+          if(!k.collapsed) walk(k.id);
+        }
+      }
+      walk(null);
+      return out;
+    }
+
+    function renderOutline(){
+      syncSelectionHints();
+      const empty = $('outlineEmpty');
+      const wrap = $('matrixWrap');
+      const matrix = $('matrix');
+
+      empty.style.display = state.outline.length ? 'none' : '';
+      wrap.style.display = state.outline.length ? '' : 'none';
+
+      if(!state.outline.length){
+        matrix.innerHTML = '';
+        return;
+      }
+
+      const witnessIds = allWitnessIds();
+      const witnesses = witnessIds.map(id => state.people.find(p=>p.id===id)).filter(Boolean);
+      const activeWitness = witnesses.find(w => w.id === ui.activeWitnessColumnId) || witnesses[0] || null;
+      if(activeWitness && ui.activeWitnessColumnId !== activeWitness.id) ui.activeWitnessColumnId = activeWitness.id;
+
+      matrix.innerHTML = '';
+      const head = document.createElement('div');
+      head.className = 'mRow mHead';
+      const leftHead = document.createElement('div');
+      leftHead.className = 'leftHead';
+      leftHead.textContent = 'Heading / Notes';
+      const rightHead = document.createElement('div');
+      rightHead.className = 'wHead';
+
+      const wh = document.createElement('div');
+      wh.className = 'wColHead';
+      if(!activeWitness){
+        wh.innerHTML = 'Witness column<small>Add a witness to any row</small>';
+      } else {
+        wh.innerHTML = `<div>${escapeHtml(activeWitness.name)}<small>Active witness • Exhibits + testimony</small></div>`;
+      }
+      rightHead.appendChild(wh);
+
+      head.appendChild(leftHead);
+      head.appendChild(rightHead);
+      matrix.appendChild(head);
+
+      const rows = flattenVisible();
+      for(const n of rows){
+        const row = document.createElement('div');
+        row.className = 'mRow';
+
+        const left = document.createElement('div');
+        left.className = 'mLeft' + (ui.selectedNodeId===n.id ? ' selected' : '');
+        left.setAttribute('data-id', n.id);
+        left.addEventListener('click', (e)=>{
+          const t = e.target;
+          if(t && t.closest && t.closest('input, textarea, select, button, .rte, .rtbar, .chip, .exPick')) return;
+          if(t && t.classList && t.classList.contains('caret')) return;
+          ui.selectedNodeId = n.id;
+          syncSelectionHints();
+          renderOutline();
+        });
+
+        const indent = document.createElement('div');
+        indent.className = 'mIndent';
+        indent.style.width = (depthOf(n.id) * 18) + 'px';
+
+        const caret = document.createElement('div');
+        caret.className = 'caret';
+        const hasKids = state.outline.some(x=>x.parentId===n.id);
+        caret.textContent = hasKids ? (n.collapsed ? '▶' : '▼') : '•';
+        caret.title = hasKids ? (n.collapsed ? 'Expand' : 'Collapse') : '';
+        caret.addEventListener('click', ()=>{ if(hasKids) setCollapsed(n.id, !n.collapsed); });
+
+        const attachedWitnesses = (n.witnessIds || []).map(id => state.people.find(p=>p.id===id)).filter(Boolean);
+        const titleBox = document.createElement('div');
+        titleBox.className = 'titleBox';
+        titleBox.innerHTML = `
+          <div class="titleRow">
+            <button type="button" class="detailToggle" data-act="toggleDetails" title="${n.detailsOpen ? 'Collapse details' : 'Expand details'}">${n.detailsOpen ? '−' : '+'}</button>
+            <input class="titleInput" data-act="title" type="text" placeholder="Heading" value="${escapeHtml(n.title||'')}" />
+          </div>
+          <div class="leftSub ${n.detailsOpen ? 'open' : ''}">
+            <div>
+              <div class="label">Description</div>
+              <textarea data-act="desc" placeholder="Details / notes">${escapeHtml(n.description||'')}</textarea>
+            </div>
+            <div>
+              <div class="label">Tags</div>
+              <select data-act="tags" multiple></select>
+              <div class="label" style="margin-top:8px">Add witness</div>
+              <select data-act="addWitness"></select>
+              <div class="label" style="margin-top:8px">Witnesses on this row</div>
+              <div class="witnessList" data-act="witnessList"></div>
+              <div class="witnessEmpty" data-act="witnessEmpty" style="display:none">No witnesses attached yet.</div>
+              <div class="label" style="margin-top:8px">Exhibits on this row</div>
+              <div class="witnessList" data-act="exhibitList"></div>
+              <div class="witnessEmpty" data-act="exhibitEmpty" style="display:none">No exhibits attached yet.</div>
+            </div>
+          </div>
+        `;
+
+        left.appendChild(indent);
+        left.appendChild(caret);
+        left.appendChild(titleBox);
+
+        const cells = document.createElement('div');
+        cells.className = 'mCells';
+
+        const c = document.createElement('div');
+        c.className = 'cell' + (n.detailsOpen ? '' : ' compact');
+
+        if(!activeWitness){
+          c.innerHTML = n.detailsOpen
+            ? `<div class="hint">No witness column yet. Use “Add witness” on a row, then click that witness name in the row details.</div>`
+            : `<div class="cellSummary">No active witness column</div>`;
+          c.addEventListener('click', (e)=>{
+            e.stopPropagation();
+            ui.selectedNodeId = n.id;
+            ui.selectedWitnessId = null;
+            syncSelectionHints();
+            if(!n.detailsOpen) toggleDetails(n.id);
+            else renderOutline();
+          });
+          cells.appendChild(c);
+        } else {
+          const witnessAttached = (n.witnessIds || []).includes(activeWitness.id);
+          const wd = (n.witnessData && n.witnessData[activeWitness.id]) ? n.witnessData[activeWitness.id] : { exhibits: [], testimonyHtml: '' };
+          const exCount = (wd.exhibits || []).length;
+          const testimonyText = String((wd.testimonyHtml || wd.testimony || '')).replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+          const testimonySummary = testimonyText ? 'Testimony added' : 'No testimony';
+
+          if(!n.detailsOpen){
+            c.innerHTML = witnessAttached
+              ? `<div class="cellSummary">${exCount ? exCount + ' exhibit' + (exCount===1 ? '' : 's') : 'No exhibits'} • ${testimonySummary}</div>`
+              : `<div class="cellSummary">${escapeHtml(activeWitness.name)} not attached to this row</div>`;
+            c.addEventListener('click', (e)=>{
+              e.stopPropagation();
+              ui.selectedNodeId = n.id;
+              ui.selectedWitnessId = activeWitness.id;
+              syncSelectionHints();
+              toggleDetails(n.id);
+            });
+            cells.appendChild(c);
+          } else if(!witnessAttached){
+            c.innerHTML = `<div class="hint">${escapeHtml(activeWitness.name)} is not attached to this row yet. Use the witness list in row details to switch columns, or add this witness to the row.</div>`;
+            c.addEventListener('click', (e)=>{
+              e.stopPropagation();
+              ui.selectedNodeId = n.id;
+              ui.selectedWitnessId = activeWitness.id;
+              syncSelectionHints();
+              renderOutline();
+            });
+            cells.appendChild(c);
+          } else {
+            c.innerHTML = `
+              <div class="label">Exhibits</div>
+              <select class="exPick" data-act="exPick" data-wid="${activeWitness.id}">
+                <option value="">+ Add exhibit…</option>
+              </select>
+              <div class="chiprow" data-act="exList" data-wid="${activeWitness.id}"></div>
+
+              <div class="label" style="margin-top:10px">Testimony</div>
+              <div class="rtbar" data-act="rtbar" data-wid="${activeWitness.id}">
+                <button type="button" class="rtbtn" data-cmd="bold"><b>B</b></button>
+                <button type="button" class="rtbtn" data-cmd="italic"><i>I</i></button>
+                <button type="button" class="rtbtn" data-cmd="underline"><u>U</u></button>
+                <button type="button" class="rtbtn" data-cmd="insertUnorderedList">• List</button>
+                <button type="button" class="rtbtn" data-cmd="insertOrderedList">1. List</button>
+              </div>
+              <div class="rte" contenteditable="true" data-act="testimony" data-wid="${activeWitness.id}" placeholder="Key testimony to elicit through this witness"></div>
+            `;
+
+            c.addEventListener('click', (e)=>{
+              ui.selectedNodeId = n.id;
+              ui.selectedWitnessId = activeWitness.id;
+              syncSelectionHints();
+              renderOutline();
+            });
+
+            const chipRow = c.querySelector('[data-act="exList"]');
+            chipRow.innerHTML = '';
+            const exIds = (wd.exhibits||[]);
+            for(const did of exIds){
+              const doc = state.documents.find(x=>x.id===did);
+              getOrCreateExhibitForDoc(did, false);
+              const chip = document.createElement('span');
+              chip.className = 'chip';
+              chip.innerHTML = `${escapeHtml(doc ? doc.name : 'Document')} <button title="Remove">×</button>`;
+              chip.querySelector('button').addEventListener('click', (ev)=>{
+                ev.stopPropagation();
+                removeExhibitFromCell(n.id, activeWitness.id, did);
+              });
+              chipRow.appendChild(chip);
+            }
+
+            const pick = c.querySelector('[data-act="exPick"]');
+            if(pick){
+              pick.innerHTML = '<option value="">+ Add exhibit…</option>';
+              const docsSorted = state.documents.slice().sort((a,b)=> (a.name||'').localeCompare(b.name||''));
+              for(const doc of docsSorted){
+                const opt = document.createElement('option');
+                opt.value = doc.id;
+                opt.textContent = doc.name;
+                pick.appendChild(opt);
+              }
+              pick.addEventListener('click', (ev)=>{ ev.stopPropagation(); });
+              pick.addEventListener('change', (ev)=>{
+                ev.stopPropagation();
+                const docId = pick.value;
+                if(!docId) return;
+                addExhibitToCell(n.id, activeWitness.id, docId);
+                pick.value = '';
+              });
+            }
+
+            const rte = c.querySelector('[data-act="testimony"][contenteditable="true"]');
+            rte.innerHTML = wd.testimonyHtml || wd.testimony || '';
+            rte.addEventListener('input', ()=>{
+              setCellTestimonyHtml(n.id, activeWitness.id, rte.innerHTML);
+            });
+
+            const bar = c.querySelector('[data-act="rtbar"]');
+            bar.querySelectorAll('[data-cmd]').forEach(btn=>{
+              btn.addEventListener('click', (ev)=>{
+                ev.preventDefault();
+                ev.stopPropagation();
+                rte.focus();
+                const cmd = btn.getAttribute('data-cmd');
+                document.execCommand(cmd, false, null);
+                setCellTestimonyHtml(n.id, activeWitness.id, rte.innerHTML);
+              });
+            });
+
+            cells.appendChild(c);
+          }
+        }
+        row.appendChild(left);
+        row.appendChild(cells);
+        matrix.appendChild(row);
+
+        const titleInput = titleBox.querySelector('input[data-act="title"]');
+        const detailToggle = titleBox.querySelector('[data-act="toggleDetails"]');
+        const leftSub = titleBox.querySelector('.leftSub');
+        const descArea = titleBox.querySelector('textarea[data-act="desc"]');
+        const tagsSel = titleBox.querySelector('select[data-act="tags"]');
+        const addWitSel = titleBox.querySelector('select[data-act="addWitness"]');
+        const witnessList = titleBox.querySelector('[data-act="witnessList"]');
+        const witnessEmpty = titleBox.querySelector('[data-act="witnessEmpty"]');
+        const exhibitList = titleBox.querySelector('[data-act="exhibitList"]');
+        const exhibitEmpty = titleBox.querySelector('[data-act="exhibitEmpty"]');
+
+        tagsSel.innerHTML = '';
+        for(const t of state.tags.slice().sort(sortByName)){
+          const opt = document.createElement('option');
+          opt.value = t.id;
+          opt.textContent = t.name;
+          if((n.tags||[]).includes(t.id)) opt.selected = true;
+          tagsSel.appendChild(opt);
+        }
+
+        addWitSel.innerHTML = '';
+        const opt0 = document.createElement('option');
+        opt0.value = '';
+        opt0.textContent = state.people.length ? 'Select person…' : 'Add people first';
+        addWitSel.appendChild(opt0);
+        for(const p of state.people.slice().sort((a,b)=> (a.name||'').localeCompare(b.name||'')) ){
+          const opt = document.createElement('option');
+          opt.value = p.id;
+          opt.textContent = p.name;
+          addWitSel.appendChild(opt);
+        }
+
+        witnessList.innerHTML = '';
+        if(attachedWitnesses.length){
+          for(const p of attachedWitnesses){
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'witnessBtn' + (activeWitness && activeWitness.id === p.id ? ' active' : '');
+            btn.textContent = p.name;
+            btn.title = 'Show this witness column';
+            btn.addEventListener('click', (e)=>{
+              e.stopPropagation();
+              ui.selectedNodeId = n.id;
+              ui.selectedWitnessId = p.id;
+              ui.activeWitnessColumnId = p.id;
+              if(!n.detailsOpen) n.detailsOpen = true;
+              safeSave();
+              renderOutline();
+            });
+            witnessList.appendChild(btn);
+          }
+          witnessEmpty.style.display = 'none';
+        } else {
+          witnessEmpty.style.display = '';
+        }
+
+        exhibitList.innerHTML = '';
+        const exhibitDocIds = [];
+        const exhibitSeen = new Set();
+        const witnessDataMap = n.witnessData || {};
+        for(const wid of Object.keys(witnessDataMap)){
+          for(const did of (witnessDataMap[wid].exhibits || [])){
+            if(exhibitSeen.has(did)) continue;
+            exhibitSeen.add(did);
+            exhibitDocIds.push(did);
+          }
+        }
+        if(exhibitDocIds.length){
+          for(const did of exhibitDocIds){
+            const doc = state.documents.find(x=>x.id===did);
+            const exBtn = document.createElement('button');
+            exBtn.type = 'button';
+            exBtn.className = 'witnessBtn';
+            exBtn.textContent = doc ? doc.name : 'Document';
+            exBtn.title = 'This exhibit is attached on this row';
+            exBtn.addEventListener('click', (e)=>{
+              e.stopPropagation();
+              ui.selectedNodeId = n.id;
+              syncSelectionHints();
+              if(!n.detailsOpen) n.detailsOpen = true;
+              renderOutline();
+            });
+            exhibitList.appendChild(exBtn);
+          }
+          exhibitEmpty.style.display = 'none';
+        } else {
+          exhibitEmpty.style.display = '';
+        }
+
+        detailToggle.addEventListener('click', (e)=>{
+          e.stopPropagation();
+          ui.selectedNodeId = n.id;
+          ui.selectedWitnessId = null;
+          syncSelectionHints();
+          toggleDetails(n.id);
+        });
+
+        titleInput.addEventListener('click', (e)=>{
+          e.stopPropagation();
+          ui.selectedNodeId = n.id;
+          ui.selectedWitnessId = null;
+          syncSelectionHints();
+          if(!n.detailsOpen){
+            n.detailsOpen = true;
+            leftSub.classList.add('open');
+            safeSave();
+            renderOutline();
+            focusTitle(n.id);
+          }
+        });
+
+        titleInput.addEventListener('focus', ()=>{
+          ui.selectedNodeId = n.id;
+          ui.selectedWitnessId = null;
+          syncSelectionHints();
+        });
+
+        titleInput.addEventListener('input', ()=>{
+          n.title = titleInput.value;
+          safeSave();
+        });
+
+        descArea.addEventListener('input', ()=>{
+          n.description = descArea.value;
+          safeSave();
+        });
+
+        tagsSel.addEventListener('change', ()=>{
+          n.tags = Array.from(tagsSel.selectedOptions).map(o=>o.value);
+          safeSave();
+        });
+
+        addWitSel.addEventListener('change', ()=>{
+          const pid = addWitSel.value;
+          addWitSel.value = '';
+          addWitnessToNode(n.id, pid);
+        });
+
+        titleInput.addEventListener('keydown', (e)=>{
+          if(e.key === 'Tab'){
+            e.preventDefault();
+            if(e.shiftKey) outdentNode(n.id);
+            else indentNode(n.id);
+            return;
+          }
+          if(e.key === 'Enter'){
+            e.preventDefault();
+            const newId = addNode({ parentId: n.parentId, afterId: n.id });
+            ui.selectedNodeId = newId;
+            ui.selectedWitnessId = null;
+            syncSelectionHints();
+            focusTitle(newId);
+            return;
+          }
+          if(e.key === 'ArrowUp'){
+            e.preventDefault();
+            focusRelativeRow(n.id, -1);
+            return;
+          }
+          if(e.key === 'ArrowDown'){
+            e.preventDefault();
+            focusRelativeRow(n.id, 1);
+            return;
+          }
+          if(e.key === 'ArrowRight'){
+            e.preventDefault();
+            const hasKids = state.outline.some(x=>x.parentId===n.id);
+            if(hasKids && n.collapsed) setCollapsed(n.id, false);
+            else if(!n.detailsOpen) setDetailsOpen(n.id, true);
+            else focusRelativeRow(n.id, 1);
+            return;
+          }
+          if(e.key === 'ArrowLeft'){
+            e.preventDefault();
+            const hasKids = state.outline.some(x=>x.parentId===n.id);
+            if(n.detailsOpen) setDetailsOpen(n.id, false);
+            else if(hasKids && !n.collapsed) setCollapsed(n.id, true);
+            else if(n.parentId){ ui.selectedNodeId = n.parentId; ui.selectedWitnessId = null; syncSelectionHints(); renderOutline(); focusTitle(n.parentId); }
+            return;
+          }
+          if(e.key === 'Escape' && n.detailsOpen){
+            e.preventDefault();
+            setDetailsOpen(n.id, false);
+          }
+        });
+      }
+    }
+
+    // ====== Outline bulk controls =====
+    function collapseAll(){
+      for(const n of state.outline){
+        if(state.outline.some(x=>x.parentId===n.id)) n.collapsed = true;
+      }
+      safeSave();
+      renderOutline();
+    }
+
+    function expandAll(){
+      for(const n of state.outline){ n.collapsed = false; }
+      safeSave();
+      renderOutline();
+    }
+
+    // ===== Outline action toolbar (selected row) =====
+    function getSelectedNode(){ return state.outline.find(n=>n.id===ui.selectedNodeId); }
+
+    function runOnSelected(fn){
+      const nid = ui.selectedNodeId;
+      if(!nid){ alert('Select an outline row first.'); return; }
+      fn(nid);
+    }
+
+    function syncSelectionHints(){
+      const sel = $('selHint');
+      const ex = $('exHint');
+      const n = getSelectedNode();
+      if(sel) sel.textContent = ui.selectedNodeId ? ('Selected row: ' + ((n && n.title) ? n.title : '(untitled)')) : 'Select a row, then use these controls';
+      const active = state.people.find(p=>p.id===ui.activeWitnessColumnId);
+      if(ex) ex.textContent = active ? ('Active witness column: ' + active.name) : 'Open a row, click a witness name, then add exhibits/testimony';
+    }
+
+    function bindOutlineActionButtons(){
+      const map = [
+        ['actSibling', (nid)=>{ const n=state.outline.find(x=>x.id===nid); addNode({ parentId: n? n.parentId : null, afterId: nid }); }],
+        ['actChild', (nid)=>{ addNode({ parentId: nid, afterId: null }); }],
+        ['actIndent', (nid)=> indentNode(nid)],
+        ['actOutdent', (nid)=> outdentNode(nid)],
+        ['actUp', (nid)=> moveNode(nid, -1)],
+        ['actDown', (nid)=> moveNode(nid, 1)],
+        ['actDelete', (nid)=> deleteNode(nid)],
+      ];
+      for(const [id, fn] of map){
+        const b = $(id);
+        if(!b) continue;
+        b.addEventListener('click', ()=> runOnSelected(fn));
+      }
+      const addEx = $('actAddExhibit');
+      if(addEx) addEx.addEventListener('click', addExhibitToSelected);
+    }
+
+    bindOutlineActionButtons();
+
+$('addTop').addEventListener('click', ()=> addNode({parentId:null}));
+    $('collapseAll').addEventListener('click', collapseAll);
+    $('expandAll').addEventListener('click', expandAll);
+
+    // ====== Export / Import / Reset =====
+    $('caseName').addEventListener('input', ()=>{
+      state.caseName = $('caseName').value;
+      safeSave();
+    });
+
+    $('exportBtn').addEventListener('click', ()=>{
+      const blob = new Blob([JSON.stringify(state, null, 2)], {type:'application/json'});
+      const a = document.createElement('a');
+      const name = (state.caseName || 'murski_case').replace(/[^a-z0-9\-_ ]/gi,'').trim().replace(/\s+/g,'_');
+      a.href = URL.createObjectURL(blob);
+      a.download = name + '.json';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(a.href);
+      toast('Exported JSON');
+    });
+
+    $('importBtn').addEventListener('click', ()=> $('importFile').click());
+
+    $('importFile').addEventListener('change', async ()=>{
+      const file = $('importFile').files && $('importFile').files[0];
+      $('importFile').value = '';
+      if(!file) return;
+      try{
+        const text = await file.text();
+        const parsed = JSON.parse(text);
+        if(!parsed || typeof parsed !== 'object') throw new Error('Invalid JSON');
+        // Basic shape merge
+        state = Object.assign({caseName:'',tags:[],people:[],documents:[],exhibits:[],outline:[]}, parsed);
+        safeSave();
+        $('caseName').value = state.caseName || '';
+        renderTags();
+        toast('Imported JSON');
+      } catch(e){
+        console.error(e);
+        alert('Import failed: ' + (e && e.message ? e.message : e));
+      }
+    });
+
+    $('resetBtn').addEventListener('click', ()=>{
+      if(!confirm('Reset local data for this case planner? This cannot be undone (unless you exported JSON).')) return;
+      localStorage.removeItem(STORAGE_KEY);
+      state = { caseName:'', tags:[], people:[], documents:[], exhibits:[], outline:[] };
+      $('caseName').value='';
+      renderTags();
+      toast('Reset complete');
+      setTab('outline');
+    renderExhibits();
+    });
+
+    // ===== Init =====
+    load();
+    renderTags();
+    setTab('outline');
+    renderExhibits();
+  </script>
+</body>
+</html>
