@@ -10,8 +10,9 @@ const SUPABASE_URL = "https://ewemahyfoegkpzgpqnsr.supabase.co"
     
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV3ZW1haHlmb2Vna3B6Z3BxbnNyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM2OTg3OTIsImV4cCI6MjA4OTI3NDc5Mn0.1kGzNV3wKydciv6AMG9e8JneRla9oiD-BK2X-abEnsU"
 
-const CASE_ID = "5c13ba35-1854-4b47-82dd-5bc39be3929c"
-
+const urlParams = new URLSearchParams(window.location.search)
+const CASE_ID = urlParams.get("case") || "5c13ba35-1854-4b47-82dd-5bc39be3929c"
+    
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY)
 
 window.supabase = supabase
