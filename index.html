@@ -22,8 +22,8 @@ async function loadOutlineRows() {
     .from("outline_rows")
     .select("*")
     .eq("case_id", CASE_ID)
-    .order("order_index", { ascending: true })
-
+.order("sort_order", { ascending: true })
+  
   if (error) {
     console.error(error)
     return
