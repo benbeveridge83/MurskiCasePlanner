@@ -1,6 +1,22 @@
 <!doctype html>
+
 <html lang="en">
 <head>
+  <script type="module">
+
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2"
+
+const SUPABASE_URL = "https://ewemahyfoegkpzpgqnsr.supabase.co"
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV3ZW1haHlmb2Vna3B6Z3BxbnNyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM2OTg3OTIsImV4cCI6MjA4OTI3NDc5Mn0.1kGzNV3wKydciv6AMG9e8JneRla9oiD-BK2X-abEnsU"
+
+const CASE_ID = "5c13ba35-1854-4b47-82dd-5bc39be3929c"
+
+const supabase = createClient(SUPABASE_URL, SUPABASE_KEY)
+
+window.supabase = supabase
+window.CASE_ID = CASE_ID
+
+</script>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Murski – Case Planner</title>
