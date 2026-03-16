@@ -4,6 +4,47 @@
 <head>
   <script type="module">
 
+    function subscribeToOutlineRows() {
+  supabase
+    .channel("outline_rows_live_" + CASE_ID)
+    .on(
+      "postgres_changes",
+      {
+        event: "*",
+        schema: "public",
+        table: "outline_rows",
+        filter: `case_id=eq.${CASE_ID}`
+      },
+      async () => {
+        await loadOutlineRows()
+      }
+    )
+    .subscribe()
+}
+
+subscribeToOutlineRows()
+
+async function addTestRow() {
+  const { data, error } = await supabase
+    .from("outline_rows")
+    .insert({
+      case_id: CASE_ID,
+      heading: "New shared row",
+      description: "Created from website",
+      sort_order: Date.now()
+    })
+    .select()
+
+  if (error) {
+    console.error("Insert error:", error)
+    return
+  }
+
+  console.log("Inserted row:", data)
+}
+
+window.addTestRow = addTestRow
+
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2"
 console.log("SUPABASE_URL =", SUPABASE_URL)
 const SUPABASE_URL = "https://ewemahyfoegkpzgpqnsr.supabase.co"
@@ -36,8 +77,28 @@ async function loadOutlineRows() {
 }
 
 loadOutlineRows()
+function subscribeToOutlineRows() {
+  supabase
+    .channel("outline_rows_live_" + CASE_ID)
+    .on(
+      "postgres_changes",
+      {
+        event: "*",
+        schema: "public",
+        table: "outline_rows",
+        filter: `case_id=eq.${CASE_ID}`
+      },
+      async () => {
+        await loadOutlineRows()
+      }
+    )
+    .subscribe()
+}
 
+subscribeToOutlineRows()
 </script>
+
+  
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Murski – Case Planner</title>
