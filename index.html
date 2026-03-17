@@ -73,6 +73,40 @@
 
     await loadOutlineRows()
     subscribeToOutlineRows()
+    async function createOutlineRow({ parentRowId = null, heading = "", description = "", sortOrder = 1 }) {
+  const { data, error } = await supabase
+    .from("outline_rows")
+    .insert({
+      case_id: CASE_ID,
+      parent_row_id: parentRowId,
+      heading,
+      description,
+      sort_order: sortOrder
+    })
+    .select()
+    .single()
+
+  if (error) {
+    console.error("Create row error:", error)
+    return null
+  }
+
+  return data
+}
+
+async function updateOutlineRow(rowId, patch) {
+  const { error } = await supabase
+    .from("outline_rows")
+    .update(patch)
+    .eq("id", rowId)
+
+  if (error) {
+    console.error("Update row error:", error)
+  }
+}
+
+window.createOutlineRow = createOutlineRow
+window.updateOutlineRow = updateOutlineRow
   </script>
 
   <meta charset="utf-8" />
