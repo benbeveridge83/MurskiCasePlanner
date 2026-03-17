@@ -2058,21 +2058,23 @@ window.updateOutlineRow = updateOutlineRow
       if(addEx) addEx.addEventListener('click', addExhibitToSelected);
     }
 
-    bindOutlineActionButtons();
+  bindOutlineActionButtons();
 
 $('addTop').addEventListener('click', async () => {
   const nextSortOrder = (window.loadedRows && window.loadedRows.length)
     ? Math.max(...window.loadedRows.map(r => Number(r.sort_order) || 0)) + 1
-    : 1
+    : 1;
 
   await window.createOutlineRow({
     parentRowId: null,
     heading: "New heading",
     description: "",
     sortOrder: nextSortOrder
-  })
-})    $('collapseAll').addEventListener('click', collapseAll);
-    $('expandAll').addEventListener('click', expandAll);
+  });
+});
+
+$('collapseAll').addEventListener('click', collapseAll);
+$('expandAll').addEventListener('click', expandAll);
 
     // ====== Export / Import / Reset =====
     $('caseName').addEventListener('input', ()=>{
