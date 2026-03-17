@@ -3,102 +3,78 @@
 <html lang="en">
 <head>
   <script type="module">
+    import { createClient } from "https://esm.sh/@supabase/supabase-js@2"
+
+    const SUPABASE_URL = "https://ewemahyfoegkpzgpqnsr.supabase.co"
+    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV3ZW1haHlmb2Vna3B6Z3BxbnNyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM2OTg3OTIsImV4cCI6MjA4OTI3NDc5Mn0.1kGzNV3wKydciv6AMG9e8JneRla9oiD-BK2X-abEnsU"
+
+    const urlParams = new URLSearchParams(window.location.search)
+    const CASE_ID = urlParams.get("case") || "5c13ba35-1854-4b47-82dd-5bc39be3929c"
+
+    const supabase = createClient(SUPABASE_URL, SUPABASE_KEY)
+
+    window.supabase = supabase
+    window.CASE_ID = CASE_ID
+
+    async function loadOutlineRows() {
+      const { data, error } = await supabase
+        .from("outline_rows")
+        .select("*")
+        .eq("case_id", CASE_ID)
+        .order("sort_order", { ascending: true })
+
+      if (error) {
+        console.error("Load error:", error)
+        return
+      }
+
+      window.loadedRows = data
+      console.log("Loaded rows:", data)
+    }
 
     function subscribeToOutlineRows() {
-  supabase
-    .channel("outline_rows_live_" + CASE_ID)
-    .on(
-      "postgres_changes",
-      {
-        event: "*",
-        schema: "public",
-        table: "outline_rows",
-        filter: `case_id=eq.${CASE_ID}`
-      },
-      async () => {
-        await loadOutlineRows()
+      supabase
+        .channel("outline_rows_live_" + CASE_ID)
+        .on(
+          "postgres_changes",
+          {
+            event: "*",
+            schema: "public",
+            table: "outline_rows",
+            filter: `case_id=eq.${CASE_ID}`
+          },
+          async () => {
+            await loadOutlineRows()
+          }
+        )
+        .subscribe()
+    }
+
+    async function addTestRow() {
+      const { data, error } = await supabase
+        .from("outline_rows")
+        .insert({
+          case_id: CASE_ID,
+          heading: "New shared row",
+          description: "Created from website",
+          sort_order: Date.now()
+        })
+        .select()
+
+      if (error) {
+        console.error("Insert error:", error)
+        return
       }
-    )
-    .subscribe()
-}
 
-subscribeToOutlineRows()
+      console.log("Inserted row:", data)
+    }
 
-async function addTestRow() {
-  const { data, error } = await supabase
-    .from("outline_rows")
-    .insert({
-      case_id: CASE_ID,
-      heading: "New shared row",
-      description: "Created from website",
-      sort_order: Date.now()
-    })
-    .select()
+    window.addTestRow = addTestRow
 
-  if (error) {
-    console.error("Insert error:", error)
-    return
-  }
+    await loadOutlineRows()
+    subscribeToOutlineRows()
+  </script>
 
-  console.log("Inserted row:", data)
-}
-
-window.addTestRow = addTestRow
-
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2"
-console.log("SUPABASE_URL =", SUPABASE_URL)
-const SUPABASE_URL = "https://ewemahyfoegkpzgpqnsr.supabase.co"
-    
-const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV3ZW1haHlmb2Vna3B6Z3BxbnNyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM2OTg3OTIsImV4cCI6MjA4OTI3NDc5Mn0.1kGzNV3wKydciv6AMG9e8JneRla9oiD-BK2X-abEnsU"
-
-const urlParams = new URLSearchParams(window.location.search)
-const CASE_ID = urlParams.get("case") || "5c13ba35-1854-4b47-82dd-5bc39be3929c"
-    
-const supabase = createClient(SUPABASE_URL, SUPABASE_KEY)
-
-window.supabase = supabase
-window.CASE_ID = CASE_ID
-
-
-async function loadOutlineRows() {
-  const { data, error } = await supabase
-    .from("outline_rows")
-    .select("*")
-    .eq("case_id", CASE_ID)
-.order("sort_order", { ascending: true })
-  
-  if (error) {
-    console.error(error)
-    return
-  }
-
-  window.loadedRows = data
-  console.log("Loaded rows:", data)
-}
-
-loadOutlineRows()
-function subscribeToOutlineRows() {
-  supabase
-    .channel("outline_rows_live_" + CASE_ID)
-    .on(
-      "postgres_changes",
-      {
-        event: "*",
-        schema: "public",
-        table: "outline_rows",
-        filter: `case_id=eq.${CASE_ID}`
-      },
-      async () => {
-        await loadOutlineRows()
-      }
-    )
-    .subscribe()
-}
-
-subscribeToOutlineRows()
-</script>
-
-  
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Murski – Case Planner</title>
