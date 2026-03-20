@@ -28,8 +28,13 @@
         return
       }
 
-      window.loadedRows = data
-      console.log("Loaded rows:", data)
+     window.loadedRows = data
+console.log("Loaded rows:", data)
+
+if (window.syncOutlineFromSupabase) {
+  window.syncOutlineFromSupabase();
+  if (window.renderOutline) window.renderOutline();
+}
     }
 
     function subscribeToOutlineRows() {
@@ -874,7 +879,7 @@ window.updateOutlineRow = updateOutlineRow
       renderTags();
       toast('Tag added');
     }
-
+window.renderOutline = renderOutline;
     function deleteTag(id){
       const tag = state.tags.find(t=>t.id===id);
       if(!tag) return;
@@ -2129,10 +2134,45 @@ $('expandAll').addEventListener('click', expandAll);
     });
 
     // ===== Init =====
-    load();
-    renderTags();
-    setTab('outline');
-    renderExhibits();
+   load();
+syncOutlineFromSupabase();
+renderTags();
+renderOutline();
+setTab('outline');
+renderExhibits();
   </script>
+function load(){
+  const raw = localStorage.getItem(STORAGE_KEY);
+  if(raw){
+    try{
+      const parsed = JSON.parse(raw);
+      if(parsed && typeof parsed === 'object') state = Object.assign(state, parsed);
+    } catch(e){
+      console.warn('Failed to parse saved data', e);
+    }
+  }
+  normalizeState();
+  $('caseName').value = state.caseName || '';
+}
+function syncOutlineFromSupabase(){
+  if (!Array.isArray(window.loadedRows)) return;
+
+  state.outline = window.loadedRows.map((r) => ({
+    id: r.id,
+    parentId: r.parent_row_id,
+    order: Number(r.sort_order) || 0,
+    title: r.heading || '',
+    description: r.description || '',
+    tags: [],
+    collapsed: false,
+    detailsOpen: false,
+    witnessIds: [],
+    witnessData: {}
+  }));
+
+  safeSave();
+}
+
+window.syncOutlineFromSupabase = syncOutlineFromSupabase;
 </body>
 </html>
