@@ -1959,15 +1959,27 @@ window.renderOutline = renderOutline;
           syncSelectionHints();
         });
 
-        titleInput.addEventListener('input', ()=>{
-          n.title = titleInput.value;
-          safeSave();
-        });
+        titleInput.addEventListener('input', async ()=>{
+  n.title = titleInput.value;
+  safeSave();
 
-        descArea.addEventListener('input', ()=>{
-          n.description = descArea.value;
-          safeSave();
-        });
+  if (window.updateOutlineRow) {
+    await window.updateOutlineRow(n.id, {
+      heading: titleInput.value
+    });
+  }
+});
+
+      descArea.addEventListener('input', async ()=>{
+  n.description = descArea.value;
+  safeSave();
+
+  if (window.updateOutlineRow) {
+    await window.updateOutlineRow(n.id, {
+      description: descArea.value
+    });
+  }
+});
 
         tagsSel.addEventListener('change', ()=>{
           n.tags = Array.from(tagsSel.selectedOptions).map(o=>o.value);
