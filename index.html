@@ -784,18 +784,24 @@ window.updateOutlineRow = updateOutlineRow
 function syncOutlineFromSupabase(){
   if (!Array.isArray(window.loadedRows)) return;
 
-  state.outline = window.loadedRows.map((r) => ({
-    id: r.id,
-    parentId: r.parent_row_id,
-    order: Number(r.sort_order) || 0,
-    title: r.heading || '',
-    description: r.description || '',
-    tags: [],
-    collapsed: false,
-    detailsOpen: false,
-    witnessIds: [],
-    witnessData: {}
-  }));
+  const previousById = new Map((state.outline || []).map(row => [row.id, row]));
+
+  state.outline = window.loadedRows.map((r) => {
+    const prev = previousById.get(r.id);
+
+    return {
+      id: r.id,
+      parentId: r.parent_row_id,
+      order: Number(r.sort_order) || 0,
+      title: r.heading || '',
+      description: r.description || '',
+      tags: prev?.tags || [],
+      collapsed: prev?.collapsed || false,
+      detailsOpen: prev?.detailsOpen || false,
+      witnessIds: prev?.witnessIds || [],
+      witnessData: prev?.witnessData || {}
+    };
+  });
 
   safeSave();
 }
