@@ -110,6 +110,22 @@ async function updateOutlineRow(rowId, patch) {
   }
 }
 
+async function deleteOutlineRow(rowId) {
+  const { error } = await supabase
+    .from("outline_rows")
+    .delete()
+    .eq("id", rowId)
+
+  if (error) {
+    console.error("Delete row error:", error)
+    return false
+  }
+
+  return true
+}
+
+window.deleteOutlineRow = deleteOutlineRow
+
 window.createOutlineRow = createOutlineRow
 window.updateOutlineRow = updateOutlineRow
   </script>
@@ -2115,8 +2131,16 @@ function getNextSortOrder(parentId){
     ['actOutdent', (nid)=> outdentNode(nid)],
     ['actUp', (nid)=> moveNode(nid, -1)],
     ['actDown', (nid)=> moveNode(nid, 1)],
-    ['actDelete', (nid)=> deleteNode(nid)],
-  ];
+['actDelete', async (nid)=>{
+  const n = state.outline.find(x=>x.id===nid);
+  if(!n) return;
+
+  if(!confirm(`Delete "${n.title || 'this row'}"?`)) return;
+
+  if (window.deleteOutlineRow) {
+    await window.deleteOutlineRow(nid);
+  }
+}],  ];
 
   for(const [id, fn] of map){
     const b = $(id);
