@@ -1099,6 +1099,45 @@ window.syncOutlineFromSupabase = syncOutlineFromSupabase;
 }
 
 window.syncDocumentsFromSupabase = syncDocumentsFromSupabase;
+function syncWitnessCellsFromSupabase(){
+  if (!Array.isArray(window.loadedWitnessCells)) return;
+
+  const cellsByKey = new Map(
+    window.loadedWitnessCells.map(cell => [`${cell.row_id}::${cell.person_id}`, cell])
+  );
+
+  state.outline = (state.outline || []).map((node) => {
+    const nextWitnessIds = [];
+    const nextWitnessData = {};
+
+    for (const [key, cell] of cellsByKey.entries()) {
+      const [rowId, personId] = key.split('::');
+      if (rowId !== node.id) continue;
+
+      nextWitnessIds.push(personId);
+      nextWitnessData[personId] = {
+        exhibits: Array.isArray(cell.exhibits) ? cell.exhibits : [],
+        testimonyHtml: cell.testimony_html || '',
+        testimony: (cell.testimony_html || '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim()
+      };
+    }
+
+    const uniqueWitnessIds = Array.from(new Set([
+      ...(nextWitnessIds || []),
+      ...((node.witnessIds || []).filter(pid => nextWitnessData[pid]))
+    ]));
+
+    return {
+      ...node,
+      witnessIds: uniqueWitnessIds,
+      witnessData: nextWitnessData
+    };
+  });
+
+  safeSave();
+}
+
+window.syncWitnessCellsFromSupabase = syncWitnessCellsFromSupabase;
     // ====== Tabs ======
     const views = {
       outline: { tab: 'tabOutline', view:'viewOutline' },
@@ -1679,29 +1718,55 @@ function getNextSortOrder(parentId){
     }
 
     // ===== Witness attach / cell editing =====
-    function addWitnessToNode(nodeId, personId){
+    async function addWitnessToNode(nodeId, personId){
       const node = state.outline.find(n=>n.id===nodeId);
       if(!node) return;
       if(!personId) return;
       if(!node.witnessIds) node.witnessIds = [];
-      if(node.witnessIds.includes(personId)) return;
-      node.witnessIds.push(personId);
+      if(node.witnessIds.includes(personId)){
+        ui.activeWitnessColumnId = personId;
+        ui.selectedWitnessId = personId;
+        safeSave();
+        renderOutline();
+        return;
+      }
       if(!node.witnessData) node.witnessData = {};
-      if(!node.witnessData[personId]) node.witnessData[personId] = { exhibits: [], testimonyHtml: '' };
+      if(!node.witnessData[personId]) node.witnessData[personId] = { exhibits: [], testimonyHtml: '', testimony: '' };
+      node.witnessIds.push(personId);
       ui.activeWitnessColumnId = personId;
       ui.selectedWitnessId = personId;
       safeSave();
       renderOutline();
+
+      const saved = await window.upsertWitnessCell({
+        rowId: nodeId,
+        personId,
+        exhibits: node.witnessData[personId].exhibits || [],
+        testimonyHtml: node.witnessData[personId].testimonyHtml || ''
+      });
+
+      if (!saved) return;
+
+      await window.loadWitnessCells();
       toast('Witness added to row');
     }
 
-    function setCellExhibits(nodeId, personId, exhibitIds){
+    async function setCellExhibits(nodeId, personId, exhibitIds){
       const node = state.outline.find(n=>n.id===nodeId);
       if(!node) return;
       if(!node.witnessData) node.witnessData = {};
-      if(!node.witnessData[personId]) node.witnessData[personId] = { exhibits: [], testimonyHtml: '' };
+      if(!node.witnessData[personId]) node.witnessData[personId] = { exhibits: [], testimonyHtml: '', testimony: '' };
       node.witnessData[personId].exhibits = exhibitIds;
       safeSave();
+
+      const saved = await window.upsertWitnessCell({
+        rowId: nodeId,
+        personId,
+        exhibits: exhibitIds,
+        testimonyHtml: node.witnessData[personId].testimonyHtml || ''
+      });
+
+      if (saved) await window.loadWitnessCells();
     }
 
     function setCellTestimony(nodeId, personId, txt){
@@ -1713,15 +1778,24 @@ function getNextSortOrder(parentId){
       safeSave();
     }
 
-    function setCellTestimonyHtml(nodeId, personId, html){
+    async function setCellTestimonyHtml(nodeId, personId, html){
       const node = state.outline.find(n=>n.id===nodeId);
       if(!node) return;
       if(!node.witnessData) node.witnessData = {};
-      if(!node.witnessData[personId]) node.witnessData[personId] = { exhibits: [], testimonyHtml: '' };
+      if(!node.witnessData[personId]) node.witnessData[personId] = { exhibits: [], testimonyHtml: '', testimony: '' };
       node.witnessData[personId].testimonyHtml = html || '';
       // keep legacy plain text in sync (optional)
       node.witnessData[personId].testimony = (html || '').replace(/<[^>]*>/g,' ').replace(/\s+/g,' ').trim();
       safeSave();
+
+      const saved = await window.upsertWitnessCell({
+        rowId: nodeId,
+        personId,
+        exhibits: node.witnessData[personId].exhibits || [],
+        testimonyHtml: node.witnessData[personId].testimonyHtml || ''
+      });
+
+      if (saved) await window.loadWitnessCells();
     }
 
     function nextExhibitLabel(){
@@ -1756,29 +1830,47 @@ function getNextSortOrder(parentId){
       // (optional) keep exhibits that are no longer used? we'll keep them.
     }
 
-    function removeExhibitFromCell(nodeId, witnessId, docId){
+    async function removeExhibitFromCell(nodeId, witnessId, docId){
       const node = state.outline.find(n=>n.id===nodeId);
       if(!node || !node.witnessData || !node.witnessData[witnessId]) return;
       node.witnessData[witnessId].exhibits = (node.witnessData[witnessId].exhibits||[]).filter(x=>x!==docId);
       safeSave();
       renderOutline();
       renderExhibits();
+
+      const saved = await window.upsertWitnessCell({
+        rowId: nodeId,
+        personId: witnessId,
+        exhibits: node.witnessData[witnessId].exhibits || [],
+        testimonyHtml: node.witnessData[witnessId].testimonyHtml || ''
+      });
+
+      if (saved) await window.loadWitnessCells();
       toast('Exhibit removed');
     }
 
-    function addExhibitToCell(nodeId, witnessId, docId){
+    async function addExhibitToCell(nodeId, witnessId, docId){
       if(!nodeId || !witnessId || !docId) return;
       const node = state.outline.find(n=>n.id===nodeId);
       if(!node) return;
       if(!node.witnessData) node.witnessData = {};
-      if(!node.witnessData[witnessId]) node.witnessData[witnessId] = { exhibits: [], testimonyHtml: '' };
+      if(!node.witnessData[witnessId]) node.witnessData[witnessId] = { exhibits: [], testimonyHtml: '', testimony: '' };
       const exArr = node.witnessData[witnessId].exhibits || [];
       if(!exArr.includes(docId)) exArr.push(docId);
       node.witnessData[witnessId].exhibits = exArr;
-      const ex = getOrCreateExhibitForDoc(docId, true);
+      getOrCreateExhibitForDoc(docId, true);
       safeSave();
       renderOutline();
       renderExhibits();
+
+      const saved = await window.upsertWitnessCell({
+        rowId: nodeId,
+        personId: witnessId,
+        exhibits: node.witnessData[witnessId].exhibits || [],
+        testimonyHtml: node.witnessData[witnessId].testimonyHtml || ''
+      });
+
+      if (saved) await window.loadWitnessCells();
       toast('Exhibit added');
     }
 
@@ -2521,6 +2613,7 @@ $('expandAll').addEventListener('click', expandAll);
 syncOutlineFromSupabase();
 syncDocumentsFromSupabase();
 syncPeopleFromSupabase();
+syncWitnessCellsFromSupabase();
 renderTags();
 renderDocuments();
 renderPeople();
