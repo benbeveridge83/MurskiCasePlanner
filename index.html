@@ -72,6 +72,22 @@ function subscribeToDocuments() {
     )
     .subscribe()
 }
+    function subscribeToPeople() {
+  supabase
+    .channel("people_live_" + CASE_ID)
+    .on(
+      "postgres_changes",
+      {
+        event: "*",
+        schema: "public",
+        table: "people"
+      },
+      async () => {
+        await loadPeople()
+      }
+    )
+    .subscribe()
+}
     async function addTestRow() {
       const { data, error } = await supabase
         .from("outline_rows")
@@ -93,10 +109,12 @@ function subscribeToDocuments() {
 
     window.addTestRow = addTestRow
 
-  await loadOutlineRows()
+ await loadOutlineRows()
 await loadDocuments()
+await loadPeople()
 subscribeToOutlineRows()
 subscribeToDocuments()
+subscribeToPeople()
     async function createOutlineRow({ parentRowId = null, heading = "", description = "", sortOrder = 1 }) {
   const { data, error } = await supabase
     .from("outline_rows")
@@ -1258,7 +1276,66 @@ async function deleteDocument(id){
 
       renderOutline();
     }
+async function loadPeople() {
+  const { data, error } = await supabase
+    .from("people")
+    .select("*")
+    .eq("case_id", CASE_ID)
+    .order("created_at", { ascending: true })
 
+  if (error) {
+    console.error("Load people error:", error)
+    return
+  }
+
+  window.loadedPeople = data
+  console.log("Loaded people:", data)
+
+  if (window.syncPeopleFromSupabase) {
+    window.syncPeopleFromSupabase()
+  }
+
+  if (window.renderPeople) {
+    window.renderPeople()
+  }
+}
+
+async function createPersonRow({ name = "", description = "" }) {
+  const { data, error } = await supabase
+    .from("people")
+    .insert({
+      case_id: CASE_ID,
+      name,
+      description
+    })
+    .select()
+    .single()
+
+  if (error) {
+    console.error("Create person error:", error)
+    return null
+  }
+
+  return data
+}
+
+async function deletePersonRow(personId) {
+  const { error } = await supabase
+    .from("people")
+    .delete()
+    .eq("id", personId)
+
+  if (error) {
+    console.error("Delete person error:", error)
+    return false
+  }
+
+  return true
+}
+
+window.loadPeople = loadPeople
+window.createPersonRow = createPersonRow
+window.deletePersonRow = deletePersonRow
     function addPerson(){
       const name = ($('personName').value||'').trim();
       if(!name){ alert('Person name is required.'); return; }
