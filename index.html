@@ -16,26 +16,29 @@
     window.supabase = supabase
     window.CASE_ID = CASE_ID
 
-    async function loadOutlineRows() {
-      const { data, error } = await supabase
-        .from("outline_rows")
-        .select("*")
-        .eq("case_id", CASE_ID)
-        .order("sort_order", { ascending: true })
+   async function loadOutlineRows() {
+  const { data, error } = await supabase
+    .from("outline_rows")
+    .select("*")
+    .eq("case_id", CASE_ID)
+    .order("sort_order", { ascending: true })
 
-      if (error) {
-        console.error("Load error:", error)
-        return
-      }
+  if (error) {
+    console.error("Load error:", error)
+    return
+  }
 
-     window.loadedRows = data
-console.log("Loaded rows:", data)
+  window.loadedRows = data
+  console.log("Loaded rows:", data)
 
-if (window.syncOutlineFromSupabase) {
-  window.syncOutlineFromSupabase();
-  if (window.renderOutline) window.renderOutline();
+  if (window.syncOutlineFromSupabase) {
+    window.syncOutlineFromSupabase();
+  }
+
+  if (window.renderOutline) {
+    window.renderOutline();
+  }
 }
-    }
 
     function subscribeToOutlineRows() {
       supabase
