@@ -1336,17 +1336,27 @@ async function deletePersonRow(personId) {
 window.loadPeople = loadPeople
 window.createPersonRow = createPersonRow
 window.deletePersonRow = deletePersonRow
-    function addPerson(){
-      const name = ($('personName').value||'').trim();
-      if(!name){ alert('Person name is required.'); return; }
-      const description = ($('personDesc').value||'').trim();
-      const tags = Array.from($('personTags').selectedOptions).map(o=>o.value);
-      state.people.push({ id: uid(), name, description, tags });
-      safeSave();
-      $('personName').value=''; $('personDesc').value=''; $('personTags').selectedIndex=-1;
-      renderPeople();
-      toast('Person saved');
-    }
+ async function addPerson(){
+  const name = ($('personName').value||'').trim();
+  if(!name){ alert('Person name is required.'); return; }
+
+  const description = ($('personDesc').value||'').trim();
+
+  const created = await window.createPersonRow({
+    name,
+    description
+  });
+
+  if (!created) return;
+
+  await window.loadPeople();
+
+  $('personName').value='';
+  $('personDesc').value='';
+  $('personTags').selectedIndex=-1;
+
+  toast('Person saved');
+}
 
     function deletePerson(id){
       if(!id) return;
@@ -1733,7 +1743,26 @@ function getNextSortOrder(parentId){
         ex.label = 'CP-' + (idx + 1);
       });
     }
+function syncPeopleFromSupabase(){
+  if (!Array.isArray(window.loadedPeople)) return;
 
+  const previousById = new Map((state.people || []).map(p => [p.id, p]));
+
+  state.people = window.loadedPeople.map((p) => {
+    const prev = previousById.get(p.id);
+
+    return {
+      id: p.id,
+      name: p.name || '',
+      description: p.description || '',
+      tags: prev?.tags || []
+    };
+  });
+
+  safeSave();
+}
+
+window.syncPeopleFromSupabase = syncPeopleFromSupabase;
     function moveExhibit(docId, direction){
       syncExhibitOrderWithUsage();
       const arr = state.exhibitOrder || [];
