@@ -72,6 +72,66 @@ function subscribeToDocuments() {
     )
     .subscribe()
 }
+    async function loadPeople() {
+  const { data, error } = await supabase
+    .from("people")
+    .select("*")
+    .eq("case_id", CASE_ID)
+    .order("created_at", { ascending: true })
+
+  if (error) {
+    console.error("Load people error:", error)
+    return
+  }
+
+  window.loadedPeople = data
+  console.log("Loaded people:", data)
+
+  if (window.syncPeopleFromSupabase) {
+    window.syncPeopleFromSupabase()
+  }
+
+  if (window.renderPeople) {
+    window.renderPeople()
+  }
+}
+
+async function createPersonRow({ name = "", description = "" }) {
+  const { data, error } = await supabase
+    .from("people")
+    .insert({
+      case_id: CASE_ID,
+      name,
+      description
+    })
+    .select()
+    .single()
+
+  if (error) {
+    console.error("Create person error:", error)
+    return null
+  }
+
+  return data
+}
+
+async function deletePersonRow(personId) {
+  const { error } = await supabase
+    .from("people")
+    .delete()
+    .eq("id", personId)
+
+  if (error) {
+    console.error("Delete person error:", error)
+    return false
+  }
+
+  return true
+}
+
+window.loadPeople = loadPeople
+window.createPersonRow = createPersonRow
+window.deletePersonRow = deletePersonRow
     function subscribeToPeople() {
   supabase
     .channel("people_live_" + CASE_ID)
@@ -895,6 +955,26 @@ window.deleteDocumentRow = deleteDocumentRow
       normalizeState();
       $('caseName').value = state.caseName || '';
     }
+   function syncPeopleFromSupabase(){
+  if (!Array.isArray(window.loadedPeople)) return;
+
+  const previousById = new Map((state.people || []).map(p => [p.id, p]));
+
+  state.people = window.loadedPeople.map((p) => {
+    const prev = previousById.get(p.id);
+
+    return {
+      id: p.id,
+      name: p.name || '',
+      description: p.description || '',
+      tags: prev?.tags || []
+    };
+  });
+
+  safeSave();
+}
+
+window.syncPeopleFromSupabase = syncPeopleFromSupabase; 
 function syncOutlineFromSupabase(){
   if (!Array.isArray(window.loadedRows)) return;
 
@@ -1276,66 +1356,7 @@ async function deleteDocument(id){
 
       renderOutline();
     }
-async function loadPeople() {
-  const { data, error } = await supabase
-    .from("people")
-    .select("*")
-    .eq("case_id", CASE_ID)
-    .order("created_at", { ascending: true })
-
-  if (error) {
-    console.error("Load people error:", error)
-    return
-  }
-
-  window.loadedPeople = data
-  console.log("Loaded people:", data)
-
-  if (window.syncPeopleFromSupabase) {
-    window.syncPeopleFromSupabase()
-  }
-
-  if (window.renderPeople) {
-    window.renderPeople()
-  }
-}
-
-async function createPersonRow({ name = "", description = "" }) {
-  const { data, error } = await supabase
-    .from("people")
-    .insert({
-      case_id: CASE_ID,
-      name,
-      description
-    })
-    .select()
-    .single()
-
-  if (error) {
-    console.error("Create person error:", error)
-    return null
-  }
-
-  return data
-}
-
-async function deletePersonRow(personId) {
-  const { error } = await supabase
-    .from("people")
-    .delete()
-    .eq("id", personId)
-
-  if (error) {
-    console.error("Delete person error:", error)
-    return false
-  }
-
-  return true
-}
-
-window.loadPeople = loadPeople
-window.createPersonRow = createPersonRow
-window.deletePersonRow = deletePersonRow
+window.renderPeople = renderPeople;
  async function addPerson(){
   const name = ($('personName').value||'').trim();
   if(!name){ alert('Person name is required.'); return; }
@@ -2434,11 +2455,13 @@ $('expandAll').addEventListener('click', expandAll);
     });
 
     // ===== Init =====
-   load();
+  load();
 syncOutlineFromSupabase();
 syncDocumentsFromSupabase();
+syncPeopleFromSupabase();
 renderTags();
 renderDocuments();
+renderPeople();
 renderOutline();
 setTab('outline');
 renderExhibits();
