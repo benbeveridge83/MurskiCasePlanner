@@ -2085,45 +2085,48 @@ function getNextSortOrder(parentId){
       if(ex) ex.textContent = active ? ('Active witness column: ' + active.name) : 'Open a row, click a witness name, then add exhibits/testimony';
     }
 
-    function bindOutlineActionButtons(){
-      const map = [
-['actSibling', async (nid)=>{
-  const n = state.outline.find(x=>x.id===nid);
-  if (!n) return;
+   function bindOutlineActionButtons(){
+  const map = [
+    ['actSibling', async (nid)=>{
+      const n = state.outline.find(x=>x.id===nid);
+      if (!n) return;
 
-  const parentId = n.parentId || null;
-  const sortOrder = getNextSortOrder(parentId);
+      const parentId = n.parentId || null;
+      const sortOrder = getNextSortOrder(parentId);
 
-  await window.createOutlineRow({
-    parentRowId: parentId,
-    heading: "New heading",
-    description: "",
-    sortOrder
-  });
-['actChild', async (nid)=>{
-  const sortOrder = getNextSortOrder(nid);
+      await window.createOutlineRow({
+        parentRowId: parentId,
+        heading: "New heading",
+        description: "",
+        sortOrder
+      });
+    }],
+    ['actChild', async (nid)=>{
+      const sortOrder = getNextSortOrder(nid);
 
-  await window.createOutlineRow({
-    parentRowId: nid,
-    heading: "New heading",
-    description: "",
-    sortOrder
-  });
-}],        ['actIndent', (nid)=> indentNode(nid)],
-        ['actOutdent', (nid)=> outdentNode(nid)],
-        ['actUp', (nid)=> moveNode(nid, -1)],
-        ['actDown', (nid)=> moveNode(nid, 1)],
-        ['actDelete', (nid)=> deleteNode(nid)],
-      ];
-      for(const [id, fn] of map){
-        const b = $(id);
-        if(!b) continue;
-        b.addEventListener('click', ()=> runOnSelected(fn));
-      }
-      const addEx = $('actAddExhibit');
-      if(addEx) addEx.addEventListener('click', addExhibitToSelected);
-    }
+      await window.createOutlineRow({
+        parentRowId: nid,
+        heading: "New heading",
+        description: "",
+        sortOrder
+      });
+    }],
+    ['actIndent', (nid)=> indentNode(nid)],
+    ['actOutdent', (nid)=> outdentNode(nid)],
+    ['actUp', (nid)=> moveNode(nid, -1)],
+    ['actDown', (nid)=> moveNode(nid, 1)],
+    ['actDelete', (nid)=> deleteNode(nid)],
+  ];
 
+  for(const [id, fn] of map){
+    const b = $(id);
+    if(!b) continue;
+    b.addEventListener('click', ()=> runOnSelected(fn));
+  }
+
+  const addEx = $('actAddExhibit');
+  if(addEx) addEx.addEventListener('click', addExhibitToSelected);
+}
 bindOutlineActionButtons();
 
 $('addTop').addEventListener('click', async () => {
