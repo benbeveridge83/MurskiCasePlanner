@@ -1025,7 +1025,6 @@ window.syncDocumentsFromSupabase = syncDocumentsFromSupabase;
       renderTags();
       toast('Tag added');
     }
-window.renderOutline = renderOutline;
     function deleteTag(id){
       const tag = state.tags.find(t=>t.id===id);
       if(!tag) return;
@@ -1039,6 +1038,7 @@ window.renderOutline = renderOutline;
       renderTags();
       toast('Tag deleted');
     }
+window.renderOutline = renderOutline;
 
     function editTag(id){
       const tag = state.tags.find(t=>t.id===id);
@@ -1143,24 +1143,8 @@ async function addDocument(){
   toast('Document saved');
 }
 
-      doc.filename = file.name;
-      doc.hasFile = true;
+      d
 
-      // Store binary in IndexedDB and keep only metadata in localStorage
-      (async ()=>{
-        try{
-          await idbPutFile(doc.id, file);
-          state.documents.push(doc);
-          safeSave();
-          clearForm();
-          renderDocuments();
-          toast('Document saved');
-        }catch(err){
-          console.error(err);
-          alert('Save failed (could not store file in this browser).\n\nDetails: ' + (err && err.message ? err.message : String(err)) );
-        }
-      })();
-    }
 
 async function deleteDocument(id){
   const doc = state.documents.find(d=>d.id===id);
