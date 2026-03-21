@@ -1116,7 +1116,7 @@ window.renderOutline = renderOutline;
       renderOutline();
     }
 window.renderDocuments = renderDocuments;
- async function addDocument(){
+async function addDocument(){
   const name = ($('docName').value||'').trim();
   if(!name){ alert('Document name is required.'); return; }
 
@@ -1162,7 +1162,7 @@ window.renderDocuments = renderDocuments;
       })();
     }
 
-   async function deleteDocument(id){
+async function deleteDocument(id){
   const doc = state.documents.find(d=>d.id===id);
   if(!doc) return;
   if(!confirm(`Delete document “${doc.name}”?`)) return;
