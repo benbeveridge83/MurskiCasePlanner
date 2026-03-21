@@ -169,12 +169,14 @@ window.deletePersonRow = deletePersonRow
 
     window.addTestRow = addTestRow
 
- await loadOutlineRows()
+await loadOutlineRows()
 await loadDocuments()
 await loadPeople()
+await loadWitnessCells()
 subscribeToOutlineRows()
 subscribeToDocuments()
 subscribeToPeople()
+subscribeToWitnessCells()
     async function createOutlineRow({ parentRowId = null, heading = "", description = "", sortOrder = 1 }) {
   const { data, error } = await supabase
     .from("outline_rows")
@@ -195,7 +197,78 @@ subscribeToPeople()
 
   return data
 }
+   function subscribeToWitnessCells() {
+  supabase
+    .channel("witness_cells_live_" + CASE_ID)
+    .on(
+      "postgres_changes",
+      {
+        event: "*",
+        schema: "public",
+        table: "witness_cells"
+      },
+      async () => {
+        await loadWitnessCells()
+      }
+    )
+    .subscribe()
+} 
+async function loadWitnessCells() {
+  const { data, error } = await supabase
+    .from("witness_cells")
+    .select("*")
+    .eq("case_id", CASE_ID)
 
+  if (error) {
+    console.error("Load witness cells error:", error)
+    return
+  }
+
+  window.loadedWitnessCells = data
+  console.log("Loaded witness cells:", data)
+
+  if (window.syncWitnessCellsFromSupabase) {
+    window.syncWitnessCellsFromSupabase()
+  }
+
+  if (window.renderOutline) {
+    window.renderOutline()
+  }
+
+  if (window.renderExhibits) {
+    window.renderExhibits()
+  }
+}
+
+async function upsertWitnessCell({ rowId, personId, exhibits = [], testimonyHtml = "" }) {
+  const { data, error } = await supabase
+    .from("witness_cells")
+    .upsert(
+      {
+        case_id: CASE_ID,
+        row_id: rowId,
+        person_id: personId,
+        exhibits,
+        testimony_html: testimonyHtml,
+        updated_at: new Date().toISOString()
+      },
+      {
+        onConflict: "row_id,person_id"
+      }
+    )
+    .select()
+    .single()
+
+  if (error) {
+    console.error("Upsert witness cell error:", error)
+    return null
+  }
+
+  return data
+}
+
+window.loadWitnessCells = loadWitnessCells
+window.upsertWitnessCell = upsertWitnessCell
 async function updateOutlineRow(rowId, patch) {
   const { error } = await supabase
     .from("outline_rows")
