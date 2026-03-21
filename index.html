@@ -1139,10 +1139,11 @@ async function addDocument(){
 
   if (!created) return;
 
+  await window.loadDocuments();
+
   clearForm();
   toast('Document saved');
 }
-
       
 
 
