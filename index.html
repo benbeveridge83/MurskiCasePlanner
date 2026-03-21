@@ -40,23 +40,22 @@
   }
 }
 
-    function subscribeToOutlineRows() {
-      supabase
-        .channel("outline_rows_live_" + CASE_ID)
-        .on(
-          "postgres_changes",
-          {
-            event: "*",
-            schema: "public",
-            table: "outline_rows",
-            filter: `case_id=eq.${CASE_ID}`
-          },
-          async () => {
-            await loadOutlineRows()
-          }
-        )
-        .subscribe()
-    }
+   function subscribeToOutlineRows() {
+  supabase
+    .channel("outline_rows_live_" + CASE_ID)
+    .on(
+      "postgres_changes",
+      {
+        event: "*",
+        schema: "public",
+        table: "outline_rows"
+      },
+      async () => {
+        await loadOutlineRows()
+      }
+    )
+    .subscribe()
+}
 
     async function addTestRow() {
       const { data, error } = await supabase
