@@ -2138,8 +2138,17 @@ function getNextSortOrder(parentId){
   if(!confirm(`Delete "${n.title || 'this row'}"?`)) return;
 
   if (window.deleteOutlineRow) {
-    await window.deleteOutlineRow(nid);
+    const ok = await window.deleteOutlineRow(nid);
+    if (!ok) return;
   }
+
+  state.outline = state.outline.filter(x => x.id !== nid);
+
+  if (ui.selectedNodeId === nid) ui.selectedNodeId = null;
+  if (ui.selectedWitnessId) ui.selectedWitnessId = null;
+
+  safeSave();
+  renderOutline();
 }],  ];
 
   for(const [id, fn] of map){
