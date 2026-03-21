@@ -1136,7 +1136,6 @@ window.syncDocumentsFromSupabase = syncDocumentsFromSupabase;
       renderTags();
       toast('Tag deleted');
     }
-window.renderOutline = renderOutline;
 
     function editTag(id){
       const tag = state.tags.find(t=>t.id===id);
@@ -1379,21 +1378,29 @@ window.renderPeople = renderPeople;
   toast('Person saved');
 }
 
-    function deletePerson(id){
+    async function deletePerson(id){
       if(!id) return;
       const p = state.people.find(x=>x.id===id);
       if(!p) return;
       if(!confirm(`Delete person “${p.name}”? This will remove them from all outline witness columns.`)) return;
+
+      const ok = await window.deletePersonRow(id);
+      if (!ok) return;
+
       state.people = state.people.filter(x=>x.id!==id);
+
       for(const n of state.outline){
         n.witnessIds = (n.witnessIds||[]).filter(wid=>wid!==id);
         if(n.witnessData && n.witnessData[id]) delete n.witnessData[id];
       }
+
       if(ui.selectedPersonId===id) ui.selectedPersonId = null;
       if(ui.selectedWitnessId===id) ui.selectedWitnessId = null;
       if(ui.activeWitnessColumnId===id) ui.activeWitnessColumnId = null;
+
       safeSave();
       renderPeople();
+      renderOutline();
       toast('Person deleted');
     }
 
@@ -1764,27 +1771,7 @@ function getNextSortOrder(parentId){
         ex.label = 'CP-' + (idx + 1);
       });
     }
-function syncPeopleFromSupabase(){
-  if (!Array.isArray(window.loadedPeople)) return;
-
-  const previousById = new Map((state.people || []).map(p => [p.id, p]));
-
-  state.people = window.loadedPeople.map((p) => {
-    const prev = previousById.get(p.id);
-
-    return {
-      id: p.id,
-      name: p.name || '',
-      description: p.description || '',
-      tags: prev?.tags || []
-    };
-  });
-
-  safeSave();
-}
-
-window.syncPeopleFromSupabase = syncPeopleFromSupabase;
-    function moveExhibit(docId, direction){
+function moveExhibit(docId, direction){
       syncExhibitOrderWithUsage();
       const arr = state.exhibitOrder || [];
       const idx = arr.indexOf(docId);
@@ -2291,6 +2278,8 @@ window.syncPeopleFromSupabase = syncPeopleFromSupabase;
         });
       }
     }
+
+window.renderOutline = renderOutline;
 
     // ====== Outline bulk controls =====
     function collapseAll(){
