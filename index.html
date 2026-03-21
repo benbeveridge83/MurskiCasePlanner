@@ -56,7 +56,22 @@
     )
     .subscribe()
 }
-
+function subscribeToDocuments() {
+  supabase
+    .channel("documents_live_" + CASE_ID)
+    .on(
+      "postgres_changes",
+      {
+        event: "*",
+        schema: "public",
+        table: "documents"
+      },
+      async () => {
+        await loadDocuments()
+      }
+    )
+    .subscribe()
+}
     async function addTestRow() {
       const { data, error } = await supabase
         .from("outline_rows")
@@ -78,8 +93,10 @@
 
     window.addTestRow = addTestRow
 
-    await loadOutlineRows()
-    subscribeToOutlineRows()
+  await loadOutlineRows()
+await loadDocuments()
+subscribeToOutlineRows()
+subscribeToDocuments()
     async function createOutlineRow({ parentRowId = null, heading = "", description = "", sortOrder = 1 }) {
   const { data, error } = await supabase
     .from("outline_rows")
@@ -130,6 +147,67 @@ window.deleteOutlineRow = deleteOutlineRow
 
 window.createOutlineRow = createOutlineRow
 window.updateOutlineRow = updateOutlineRow
+    async function loadDocuments() {
+  const { data, error } = await supabase
+    .from("documents")
+    .select("*")
+    .eq("case_id", CASE_ID)
+    .order("created_at", { ascending: true })
+
+  if (error) {
+    console.error("Load documents error:", error)
+    return
+  }
+
+  window.loadedDocuments = data
+  console.log("Loaded documents:", data)
+
+  if (window.syncDocumentsFromSupabase) {
+    window.syncDocumentsFromSupabase()
+  }
+
+  if (window.renderDocuments) {
+    window.renderDocuments()
+  }
+}
+
+async function createDocument({ name = "", docDate = null, description = "" }) {
+  const { data, error } = await supabase
+    .from("documents")
+    .insert({
+      case_id: CASE_ID,
+      name,
+      doc_date: docDate,
+      description
+    })
+    .select()
+    .single()
+
+  if (error) {
+    console.error("Create document error:", error)
+    return null
+  }
+
+  return data
+}
+
+async function deleteDocumentRow(docId) {
+  const { error } = await supabase
+    .from("documents")
+    .delete()
+    .eq("id", docId)
+
+  if (error) {
+    console.error("Delete document error:", error)
+    return false
+  }
+
+  return true
+}
+
+window.loadDocuments = loadDocuments
+window.createDocument = createDocument
+window.deleteDocumentRow = deleteDocumentRow
   </script>
 
   <meta charset="utf-8" />
@@ -825,6 +903,31 @@ function syncOutlineFromSupabase(){
 }
 
 window.syncOutlineFromSupabase = syncOutlineFromSupabase;
+    function syncDocumentsFromSupabase(){
+  if (!Array.isArray(window.loadedDocuments)) return;
+
+  const previousById = new Map((state.documents || []).map(doc => [doc.id, doc]));
+
+  state.documents = window.loadedDocuments.map((d) => {
+    const prev = previousById.get(d.id);
+
+    return {
+      id: d.id,
+      name: d.name || '',
+      date: d.doc_date || '',
+      description: d.description || '',
+      tags: prev?.tags || [],
+      filename: prev?.filename || '',
+      hasFile: prev?.hasFile || false,
+      dataUrl: prev?.dataUrl || '',
+      exhibitLabel: prev?.exhibitLabel || ''
+    };
+  });
+
+  safeSave();
+}
+
+window.syncDocumentsFromSupabase = syncDocumentsFromSupabase;
     // ====== Tabs ======
     const views = {
       outline: { tab: 'tabOutline', view:'viewOutline' },
@@ -1012,29 +1115,33 @@ window.renderOutline = renderOutline;
 
       renderOutline();
     }
+window.renderDocuments = renderDocuments;
+ async function addDocument(){
+  const name = ($('docName').value||'').trim();
+  if(!name){ alert('Document name is required.'); return; }
 
-    function addDocument(){
-      const name = ($('docName').value||'').trim();
-      if(!name){ alert('Document name is required.'); return; }
-      const date = $('docDate').value || '';
-      const description = ($('docDesc').value||'').trim();
-      const tags = Array.from($('docTags').selectedOptions).map(o=>o.value);
-      const file = $('docFile').files && $('docFile').files[0] ? $('docFile').files[0] : null;
+  const date = $('docDate').value || null;
+  const description = ($('docDesc').value||'').trim();
 
-      const doc = { id: uid(), name, date, description, tags, filename:'', hasFile:false, dataUrl:'' };
+  const clearForm = ()=>{
+    $('docName').value='';
+    $('docDate').value='';
+    $('docDesc').value='';
+    $('docTags').selectedIndex=-1;
+    $('docFile').value='';
+  };
 
-      const clearForm = ()=>{
-        $('docName').value=''; $('docDate').value=''; $('docDesc').value=''; $('docTags').selectedIndex=-1; $('docFile').value='';
-      };
+  const created = await window.createDocument({
+    name,
+    docDate: date,
+    description
+  });
 
-      if(!file){
-        state.documents.push(doc);
-        safeSave();
-        clearForm();
-        renderDocuments();
-        toast('Document saved');
-        return;
-      }
+  if (!created) return;
+
+  clearForm();
+  toast('Document saved');
+}
 
       doc.filename = file.name;
       doc.hasFile = true;
@@ -1055,25 +1162,28 @@ window.renderOutline = renderOutline;
       })();
     }
 
-    function deleteDocument(id){
-      const doc = state.documents.find(d=>d.id===id);
-      if(!doc) return;
-      if(!confirm(`Delete document “${doc.name}”?`)) return;
-      state.documents = state.documents.filter(d=>d.id!==id);
-      // remove from outline witness exhibit selections
-      for(const n of state.outline){
-        if(!n.witnessData) continue;
-        for(const wid of Object.keys(n.witnessData)){
-          n.witnessData[wid].exhibits = (n.witnessData[wid].exhibits||[]).filter(eid=>eid!==id);
-        }
-      }
-      (async ()=>{
-        try{ await idbDelFile(id); }catch(e){}
-      })();
-      safeSave();
-      renderDocuments();
-      toast('Document deleted');
+   async function deleteDocument(id){
+  const doc = state.documents.find(d=>d.id===id);
+  if(!doc) return;
+  if(!confirm(`Delete document “${doc.name}”?`)) return;
+
+  const ok = await window.deleteDocumentRow(id);
+  if (!ok) return;
+
+  state.documents = state.documents.filter(d=>d.id!==id);
+
+  for(const n of state.outline){
+    if(!n.witnessData) continue;
+    for(const wid of Object.keys(n.witnessData)){
+      n.witnessData[wid].exhibits = (n.witnessData[wid].exhibits||[]).filter(eid=>eid!==id);
     }
+  }
+
+  safeSave();
+  renderDocuments();
+  renderOutline();
+  toast('Document deleted');
+}
 
     async function downloadDocument(id){
       const d = state.documents.find(x=>x.id===id);
@@ -2235,7 +2345,9 @@ $('expandAll').addEventListener('click', expandAll);
     // ===== Init =====
    load();
 syncOutlineFromSupabase();
+syncDocumentsFromSupabase();
 renderTags();
+renderDocuments();
 renderOutline();
 setTab('outline');
 renderExhibits();
