@@ -813,10 +813,10 @@
         const cmp = av.localeCompare(bv);
         return ui.docSort.dir === 'asc' ? cmp : -cmp;
       });
-      wrap.innerHTML = `<div class="card" style="box-shadow:none; padding:0"><div style="padding:12px 14px 0 14px"><div class="hint">Click a file name to download it.</div></div><div style="overflow:auto"><table class="docDownloadTable" style="width:100%; border-collapse:collapse"><thead><tr><th><button type="button" data-sort-field="file">File name ${ui.docSort.field==='file' ? (ui.docSort.dir==='asc' ? '↑' : '↓') : ''}</button></th><th><button type="button" data-sort-field="name">Document name ${ui.docSort.field==='name' ? (ui.docSort.dir==='asc' ? '↑' : '↓') : ''}</button></th></tr></thead><tbody>${docs.map(d=>`<tr><td>${d.filename || '<span class="hint">No file</span>'}</td><td>${escapeHtml(d.name||'')}</td></tr>`).join('')}</tbody></table></div></div>`;
+      wrap.innerHTML = `<div class="card" style="box-shadow:none; padding:0"><div style="padding:12px 14px 0 14px"><div class="hint">Click a file name to download it.</div></div><div style="overflow:auto"><table class="docDownloadTable" style="width:100%; border-collapse:collapse"><thead><tr><th><button type="button" data-sort-field="file">File name ${ui.docSort.field==='file' ? (ui.docSort.dir==='asc' ? '↑' : '↓') : ''}</button></th><th><button type="button" data-sort-field="name">Document name ${ui.docSort.field==='name' ? (ui.docSort.dir==='asc' ? '↑' : '↓') : ''}</button></th></tr></thead><tbody>${docs.map(d=>`<tr><td>${getDocumentFileName(d) || '<span class="hint">No file</span>'}</td><td>${escapeHtml(d.name||'')}</td></tr>`).join('')}</tbody></table></div></div>`;
       wrap.querySelectorAll('[data-sort-field]').forEach(btn=>btn.addEventListener('click', ()=>{ const field = btn.getAttribute('data-sort-field'); if(ui.docSort.field===field) ui.docSort.dir = ui.docSort.dir==='asc' ? 'desc' : 'asc'; else { ui.docSort.field=field; ui.docSort.dir='asc'; } renderDocumentDownloadList(); }));
       const rows = wrap.querySelectorAll('tbody tr');
-      rows.forEach((tr, idx)=>{ tr.style.cursor='pointer'; tr.addEventListener('click', ()=> downloadDocument(docs[idx].id)); });
+      rows.forEach((tr, idx)=>{ const doc = docs[idx]; const canDownload = !!(doc.filePath || doc.dataUrl || doc.hasFile); tr.style.cursor = canDownload ? 'pointer' : 'default'; if(canDownload){ tr.addEventListener('click', ()=> downloadDocument(doc.id)); } });
     }
     function renderDocuments(){ const list = $('docList'); list.innerHTML = ''; $('docEmpty').style.display = state.documents.length ? 'none' : ''; renderDocumentDownloadList(); if(!state.documents.length){ renderOutline(); return; } const docs = state.documents.slice().sort((a,b)=> (b.date||'').localeCompare(a.date||'') || (a.name||'').localeCompare(b.name||'')); const usedTagIds = Array.from(new Set(docs.flatMap(d => Array.isArray(d.tags) ? d.tags : []).filter(Boolean))); const tagColumns = state.tags.filter(t => usedTagIds.includes(t.id)).slice().sort(sortByName); const colCount = 1 + tagColumns.length; const table = document.createElement('table'); table.className = 'docRepoTable'; table.innerHTML = `<thead><tr><th style="width:100%">Document</th>${tagColumns.map(t => `<th class="tagMatrixHead">${escapeHtml(t.name)}</th>`).join('')}</tr></thead><tbody></tbody>`; const tbody = table.querySelector('tbody'); for(const d of docs){ const expanded = !!ui.expandedDocIds[d.id]; const tr = document.createElement('tr'); tr.className = 'docSummaryRow' + (ui.selectedDocId===d.id ? ' selectedDocRow' : ''); tr.setAttribute('data-doc-toggle', d.id); tr.innerHTML = `<td class="docNameCell"><div class="docRowTitle"><span class="docExpandCaret">${expanded ? '&#9662;' : '&#9656;'}</span><span>${escapeHtml(d.name)}</span></div></td>${tagColumns.map(t => `<td class="tagMatrixCell ${((d.tags||[]).includes(t.id)) ? 'isTagged' : ''}"><span></span></td>`).join('')}`; tbody.appendChild(tr); if(expanded){ const detailTr = document.createElement('tr'); detailTr.className = 'docDetailRow'; detailTr.innerHTML = `<td colspan="${colCount}"><div class="docExpandedPanel"><div class="docExpandedMeta">${d.date ? `<div><b>Date:</b> ${escapeHtml(d.date)}</div>` : ''}${d.filename ? `<div><b>File:</b> ${escapeHtml(d.filename)}</div>` : ''}${d.description ? `<div><b>Description:</b> ${escapeHtml(d.description)}</div>` : '<div class="hint">No description added.</div>'}</div><div style="margin-top:10px"><div class="label">Tags</div>${renderAssignedTagPills(d.tags || [], 'document', d.id)}${renderTagPicker('document', d.id, d.tags || [])}</div><div style="margin-top:10px; display:flex; gap:8px; align-items:center; flex-wrap:wrap"><button class="mini" data-act="view" data-id="${d.id}">View</button><button class="mini" data-act="dl" data-id="${d.id}">Download</button><button class="mini" data-act="del" data-id="${d.id}" style="border-color: rgba(239,68,68,.35); color:#991b1b">Delete</button></div><div data-doc-viewer="${d.id}" style="margin-top:12px"></div></div></td>`; tbody.appendChild(detailTr); } } list.appendChild(table); list.querySelectorAll('[data-doc-toggle]').forEach(row=>{ row.addEventListener('click', (ev)=>{ if(ev.target && (ev.target.closest('button') || ev.target.closest('select') || ev.target.closest('a'))) return; const id = row.getAttribute('data-doc-toggle'); ui.selectedDocId = id; ui.expandedDocIds[id] = !ui.expandedDocIds[id]; renderDocuments(); }); }); list.querySelectorAll('button[data-act]').forEach(btn=>{ btn.addEventListener('click', async (ev)=>{ ev.preventDefault(); ev.stopPropagation(); const id = btn.getAttribute('data-id'); const act = btn.getAttribute('data-act'); if(act==='del') deleteDocument(id); if(act==='dl') downloadDocument(id); if(act==='view'){ const d = state.documents.find(x=>x.id===id); const holder = list.querySelector(`[data-doc-viewer="${id}"]`); if(!d || !holder) return; const url = await getDocumentPreviewUrl(d); if(!url){ holder.innerHTML = '<div class="hint">No file stored for this document.</div>'; return; } const isPdf = (d.filename||'').toLowerCase().endsWith('.pdf') || String(url).startsWith('data:application/pdf'); holder.innerHTML = `<div class="label">Document viewer</div>${isPdf ? `<iframe class="docViewerFrame" src="${url}"></iframe>` : `<iframe class="docViewerFrame" src="${url}"></iframe>`}`; } }); }); list.querySelectorAll('.tagPicker').forEach(sel=>{ sel.addEventListener('change', async (ev)=>{ ev.stopPropagation(); const itemId = sel.getAttribute('data-item-id'); const tagId = sel.value; if(!itemId || !tagId) return; const saved = await window.assignDocumentTag(itemId, tagId); if(saved) await window.loadDocumentTags(); }); }); list.querySelectorAll('.tagRemoveBtn').forEach(btn=>{ btn.addEventListener('click', async (ev)=>{ ev.preventDefault(); ev.stopPropagation(); const itemId = btn.getAttribute('data-item-id'); const tagId = btn.getAttribute('data-tag-id'); const ok = await window.removeDocumentTag(itemId, tagId); if(ok) await window.loadDocumentTags(); }); }); renderOutline(); }
     window.renderDocuments = renderDocuments;
@@ -828,19 +828,40 @@
       const file = $('docFile').files && $('docFile').files[0] ? $('docFile').files[0] : null;
       const created = await window.createDocument({ name, docDate: date, description });
       if (!created) return;
-      const localDoc = { id: created.id, name: created.name || name, date: created.doc_date || date || '', description: created.description || description, tags: [], filename: '', hasFile: false, dataUrl: '', exhibitLabel: '' };
+
+      let finalDoc = created;
       if(file){
-        try{
-          await idbPutFile(created.id, file);
-          localDoc.filename = file.name || '';
-          localDoc.hasFile = true;
-          localDoc.dataUrl = await fileToDataUrl(file);
-        }catch(err){
-          console.warn('Local file storage failed:', err);
-          alert('The document record was saved, but the file could not be stored locally in this browser.');
+        const filePath = await window.uploadDocumentFile(created.id, file);
+        if(!filePath){
+          alert('The document record was saved, but the file upload to Supabase Storage failed.');
+        } else {
+          const patched = await window.updateDocumentRow(created.id, {
+            file_path: filePath,
+            original_file_name: file.name || '',
+            mime_type: file.type || '',
+            file_size: Number(file.size || 0) || 0
+          });
+          if(patched) finalDoc = patched;
         }
       }
-      const i = state.documents.findIndex(d=>d.id===created.id);
+
+      const localDoc = {
+        id: finalDoc.id,
+        name: finalDoc.name || name,
+        date: finalDoc.doc_date || date || '',
+        description: finalDoc.description || description,
+        tags: [],
+        filename: finalDoc.original_file_name || '',
+        originalFileName: finalDoc.original_file_name || '',
+        filePath: finalDoc.file_path || '',
+        mimeType: finalDoc.mime_type || '',
+        fileSize: Number(finalDoc.file_size || 0) || 0,
+        hasFile: !!finalDoc.file_path,
+        dataUrl: '',
+        exhibitLabel: ''
+      };
+
+      const i = state.documents.findIndex(d=>d.id===finalDoc.id);
       if(i >= 0) state.documents[i] = { ...state.documents[i], ...localDoc };
       else state.documents.push(localDoc);
       safeSave();
@@ -849,8 +870,28 @@
       $('docName').value=''; $('docDate').value=''; $('docDesc').value=''; $('docFile').value='';
       toast(file ? 'Document and file saved' : 'Document saved');
     }
-    async function deleteDocument(id){ const doc = state.documents.find(d=>d.id===id); if(!doc) return; if(!confirm(`Delete document “${doc.name}”?`)) return; const ok = await window.deleteDocumentRow(id); if (!ok) return; try{ await idbDeleteFile(id); }catch(err){ console.warn('Local file delete failed:', err); } state.documents = state.documents.filter(d=>d.id!==id); for(const n of state.outline){ if(!n.witnessData) continue; for(const wid of Object.keys(n.witnessData)){ n.witnessData[wid].exhibits = (n.witnessData[wid].exhibits||[]).filter(eid=>eid!==id); } } safeSave(); renderDocuments(); renderOutline(); toast('Document deleted'); }
-    async function downloadDocument(id){ const d = state.documents.find(x=>x.id===id); if(!d) return; try{ if(d.hasFile){ const blob = await idbGetFile(d.id); if(blob){ const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = d.filename || (d.name + '.bin'); document.body.appendChild(a); a.click(); document.body.removeChild(a); setTimeout(()=>URL.revokeObjectURL(url), 500); return; } } }catch(err){ console.warn('IndexedDB download failed, falling back if possible', err); } if(d.dataUrl){ const a = document.createElement('a'); a.href = d.dataUrl; a.download = d.filename || (d.name + '.bin'); document.body.appendChild(a); a.click(); document.body.removeChild(a); }else{ alert('No file is stored for this document in this browser. The document record exists, but the uploaded file is not available here.'); } }
+    async function deleteDocument(id){ const doc = state.documents.find(d=>d.id===id); if(!doc) return; if(!confirm(`Delete document “${doc.name}”?`)) return; if(doc.filePath){ await window.deleteDocumentFile(doc.filePath); } const ok = await window.deleteDocumentRow(id); if (!ok) return; try{ await idbDeleteFile(id); }catch(err){ console.warn('Local file delete failed:', err); } state.documents = state.documents.filter(d=>d.id!==id); for(const n of state.outline){ if(!n.witnessData) continue; for(const wid of Object.keys(n.witnessData)){ n.witnessData[wid].exhibits = (n.witnessData[wid].exhibits||[]).filter(eid=>eid!==id); } } safeSave(); renderDocuments(); renderOutline(); toast('Document deleted'); }
+    async function downloadDocument(id){
+      const d = state.documents.find(x=>x.id===id);
+      if(!d) return;
+      if(d.filePath && window.getDocumentPublicUrl){
+        const publicUrl = window.getDocumentPublicUrl(d.filePath);
+        if(publicUrl){
+          const a = document.createElement('a');
+          a.href = publicUrl;
+          a.target = '_blank';
+          a.rel = 'noopener';
+          a.download = d.originalFileName || d.filename || (d.name + '.bin');
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          return;
+        }
+      }
+      try{ if(d.hasFile){ const blob = await idbGetFile(d.id); if(blob){ const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = d.originalFileName || d.filename || (d.name + '.bin'); document.body.appendChild(a); a.click(); document.body.removeChild(a); setTimeout(()=>URL.revokeObjectURL(url), 500); return; } } }catch(err){ console.warn('IndexedDB download failed, falling back if possible', err); }
+      if(d.dataUrl){ const a = document.createElement('a'); a.href = d.dataUrl; a.download = d.originalFileName || d.filename || (d.name + '.bin'); document.body.appendChild(a); a.click(); document.body.removeChild(a); }
+      else{ alert('No file is stored for this document yet. Re-upload the file in this version if this is an older local-only document.'); }
+    }
     $('addDoc').addEventListener('click', addDocument);
     $('collapseAllDocs')?.addEventListener('click', ()=>{ ui.expandedDocIds = {}; renderDocuments(); });
     $('toggleDownloadList')?.addEventListener('click', ()=>{ ui.showDocDownloadList = !ui.showDocDownloadList; renderDocuments(); });
