@@ -896,7 +896,7 @@ function renderTags(){ const list = $('tagList'); list.innerHTML = ''; $('tagEmp
       const rows = wrap.querySelectorAll('tbody tr');
       rows.forEach((tr, idx)=>{ const doc = docs[idx]; const canDownload = !!(doc.filePath || doc.dataUrl || doc.hasFile); tr.style.cursor = canDownload ? 'pointer' : 'default'; if(canDownload){ tr.addEventListener('click', ()=> downloadDocument(doc.id)); } });
     }
-  function renderDocuments(){
+   function renderDocuments(){
   const list = $('docList');
   list.innerHTML = '';
   $('docEmpty').style.display = state.documents.length ? 'none' : '';
