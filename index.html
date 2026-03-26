@@ -661,7 +661,7 @@
   <style>
     :root{--bg:#ffffff;--surface:#ffffff;--surface2:#f7f8fb;--text:#0f172a;--muted:#64748b;--border:#e2e8f0;--shadow: 0 10px 30px rgba(2,6,23,.08);--shadow2: 0 6px 18px rgba(2,6,23,.08);--brand:#2563eb;--brand2:#1d4ed8;--danger:#ef4444;--ok:#16a34a;--ring: rgba(37,99,235,.25);--radius:16px;--radius2:12px;--font: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";}
     *{box-sizing:border-box} html,body{height:100%}
-    body{margin:0;font-family:var(--font);color:var(--text);background: linear-gradient(180deg, #ffffff 0%, #fbfcff 65%, #ffffff 100%);} .topbar{position:sticky; top:0; z-index:20;background: rgba(255,255,255,.85);backdrop-filter: blur(10px);border-bottom:1px solid var(--border);} .topbar-inner{max-width: 1280px;margin:0 auto;padding:14px 16px;display:flex;gap:12px;align-items:center;flex-wrap:wrap;} .docRepoTable{width:100%;border-collapse:collapse;} .docRepoTable th,.docRepoTable td{border-bottom:1px solid var(--line);padding:10px;vertical-align:middle;} .docRepoTable th{font-size:12px;text-transform:uppercase;letter-spacing:.03em;color:var(--muted);background:#f8fbff;} .docSummaryRow{cursor:pointer;} .docSummaryRow:hover{background:#f8fbff;} .docSummaryRow.selectedDocRow{background:rgba(37,99,235,.08);} .docNameCell{white-space:nowrap;} .docRowTitle{display:flex;align-items:center;gap:10px;font-weight:700;} .docExpandCaret{display:inline-block;width:14px;color:var(--muted);} .tagMatrixHead{text-align:center;min-width:92px;} .tagMatrixCell{text-align:center;width:92px;} .tagMatrixCell span{display:inline-block;width:18px;height:18px;border:1px solid var(--border);border-radius:4px;background:#fff;} .tagMatrixCell.isTagged span{background:var(--brand);border-color:var(--brand);} .docDetailRow td{background:#fcfdff;} .docExpandedPanel{padding:6px 2px 2px;} .docExpandedMeta{display:grid;gap:6px;} .brand{display:flex; gap:10px; align-items:center; min-width: 260px} .dot{width:14px; height:14px; border-radius:50%; background:var(--brand); box-shadow: 0 0 0 4px rgba(37,99,235,.12)} .pill{display:inline-flex;align-items:center;padding:6px 10px;border-radius:999px;border:1px solid rgba(37,99,235,.18);background: rgba(37,99,235,.07);color: rgba(29,78,216,.95);font-size:12px;font-weight:700;gap:6px;line-height:1;} .pill .tagRemoveBtn{border:none;background:transparent;padding:0 0 0 2px;cursor:pointer;color:#991b1b;font-weight:900;box-shadow:none;} .tagPicker{min-width:180px;} .grow{flex:1}
+    body{margin:0;font-family:var(--font);color:var(--text);background: linear-gradient(180deg, #ffffff 0%, #fbfcff 65%, #ffffff 100%);} .topbar{position:sticky; top:0; z-index:20;background: rgba(255,255,255,.85);backdrop-filter: blur(10px);border-bottom:1px solid var(--border);} .topbar-inner{max-width: 1280px;margin:0 auto;padding:14px 16px;display:flex;gap:12px;align-items:center;flex-wrap:wrap;} .docRepoTable{width:100%;border-collapse:collapse;} .docRepoTable th,.docRepoTable td{border-bottom:1px solid var(--line);padding:10px;vertical-align:middle;} .docRepoTable th{font-size:12px;text-transform:uppercase;letter-spacing:.03em;color:var(--muted);background:#f8fbff;} .docSummaryRow{cursor:pointer;} .docSummaryRow:hover{background:#f8fbff;} .docSummaryRow.selectedDocRow{background:rgba(37,99,235,.08);} .docNameCell{white-space:nowrap;} .docRowTitle{display:flex;align-items:center;gap:10px;font-weight:700;} .docExpandCaret{display:inline-block;width:14px;color:var(--muted);} .tagMatrixHead{text-align:center;min-width:92px;} .tagMatrixCell{text-align:center;width:92px;} .tagMatrixCell span{display:inline-block;width:18px;height:18px;border:1px solid var(--border);border-radius:4px;background:#fff;} .tagMatrixCell.isTagged span{background:var(--brand);border-color:var(--brand);} .docDetailRow td{background:#fcfdff;} .docExpandedPanel{padding:6px 2px 2px;} .docExpandedMeta{display:grid;gap:6px;} .docStatusBadge{display:inline-flex;align-items:center;gap:6px;padding:5px 10px;border-radius:999px;font-size:12px;font-weight:700;border:1px solid var(--border);background:#fff;} .docStatusBadge.isExhibit{border-color:rgba(37,99,235,.24);background:rgba(37,99,235,.08);color:rgba(29,78,216,.98);} .docStatusBadge.notExhibit{color:var(--muted);} .docHeadingList{margin:6px 0 0 0;padding-left:18px;color:var(--muted);} .docIndexRow{border:1px solid var(--line);border-radius:14px;padding:14px;background:#fff;display:grid;gap:10px;} .docIndexTop{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap;} .docIndexMeta{display:flex;gap:8px;flex-wrap:wrap;align-items:center;} .docIndexFilters{display:flex;gap:10px;flex-wrap:wrap;align-items:end;margin:10px 0 14px 0;} .docIndexFilters > div{min-width:220px;} .docHeadingNote{font-size:12px;color:var(--muted);} .brand{display:flex; gap:10px; align-items:center; min-width: 260px} .dot{width:14px; height:14px; border-radius:50%; background:var(--brand); box-shadow: 0 0 0 4px rgba(37,99,235,.12)} .pill{display:inline-flex;align-items:center;padding:6px 10px;border-radius:999px;border:1px solid rgba(37,99,235,.18);background: rgba(37,99,235,.07);color: rgba(29,78,216,.95);font-size:12px;font-weight:700;gap:6px;line-height:1;} .pill .tagRemoveBtn{border:none;background:transparent;padding:0 0 0 2px;cursor:pointer;color:#991b1b;font-weight:900;box-shadow:none;} .tagPicker{min-width:180px;} .grow{flex:1}
     input[type="text"], input[type="date"], textarea, select{width:100%;border:1px solid var(--border);border-radius: 14px;padding:10px 12px;font-size:14px;outline:none;background: #fff;box-shadow: 0 1px 0 rgba(15,23,42,.02);} textarea{min-height: 86px; resize: vertical} select[multiple]{min-height: 92px} input:focus, textarea:focus, select:focus{border-color: rgba(37,99,235,.45); box-shadow: 0 0 0 4px var(--ring)} .caseName{width: min(520px, 60vw)}
     button{border:1px solid var(--border);background:#fff;border-radius: 999px;padding:10px 14px;font-weight:800;font-size:14px;cursor:pointer;box-shadow: 0 2px 0 rgba(15,23,42,.03);} button:hover{border-color: rgba(15,23,42,.20)} .btnPrimary{background: var(--brand); border-color: rgba(29,78,216,.35); color:#fff} .btnPrimary:hover{background: var(--brand2)} .btnDanger{background: rgba(239,68,68,.09); border-color: rgba(239,68,68,.25); color:#991b1b} .btnGhost{background: var(--surface2)} .row{display:flex; gap:10px; align-items:center; flex-wrap:wrap}
     .tabs{max-width: 1280px;margin: 10px auto 0;padding: 0 16px;display:flex;gap:10px;align-items:center;} .tab{padding:10px 14px;border-radius: 999px;border:1px solid var(--border);background:#fff;font-weight:900;color: rgba(15,23,42,.75);cursor:pointer;user-select:none;} .tab.active{background: rgba(37,99,235,.08);border-color: rgba(37,99,235,.30);color: rgba(29,78,216,.98);box-shadow: 0 0 0 4px rgba(37,99,235,.08);} .container{max-width: 1280px; margin: 14px auto 40px; padding: 0 16px}
@@ -727,7 +727,7 @@
       <div id="outlineEmpty" class="empty" style="display:none; margin-top:12px">No outline items yet. Click “Add top-level heading”.</div>
       <div id="matrixWrap" class="matrixWrap" style="display:none"><div id="matrix" class="matrix"></div></div>
     </div>
-    <div id="viewDocuments" class="card" style="display:none"><h2>Documents</h2><div class="hint">Upload documents for this case. These can be selected as exhibits in the Case Outline witness columns.</div><div class="grid2"><div class="card" style="box-shadow:none"><h2 style="margin-bottom:8px">Add document</h2><div class="hint" style="margin-bottom:10px">Only <b>Name</b> is required. Date/tags/description are optional.</div><div class="label">Document name <span style="color:var(--danger)">*</span></div><input id="docName" type="text" placeholder="e.g., Leah Bankruptcy" /><div class="label" style="margin-top:10px">Document date (optional)</div><input id="docDate" type="date" /><div class="label" style="margin-top:10px">Description (optional)</div><textarea id="docDesc" placeholder="What is this document? What does it prove?"></textarea><div class="hint" style="margin-top:10px">Assign tags after saving from the repository list.</div><div class="label" style="margin-top:10px">File (optional)</div><input id="docFile" type="file" /><div class="hint" style="margin-top:6px">If you attach a file, it uploads to Supabase Storage so it can be viewed and downloaded from other tabs and computers.</div><div style="margin-top:10px; display:flex; gap:10px; flex-wrap:wrap; align-items:center"><button id="addDoc" class="btnPrimary">Save document</button></div></div><div class="card" style="box-shadow:none"><div style="display:flex; justify-content:space-between; gap:10px; align-items:center; flex-wrap:wrap"><h2 style="margin-bottom:8px">Document repository</h2><div style="display:flex; gap:8px; flex-wrap:wrap"><button id="collapseAllDocs" class="btnGhost">Collapse all</button><button id="toggleDownloadList" class="btnGhost">Download list</button></div></div><div id="docDownloadListWrap" style="display:none; margin:10px 0 14px 0"></div><div id="docList" style="display:flex; flex-direction:column; gap:10px"></div><div id="docEmpty" class="empty" style="display:none">No documents yet.</div></div></div></div>
+    <div id="viewDocuments" class="card" style="display:none"><h2>Documents</h2><div class="hint">Upload documents for this case. These can be selected as exhibits in the Case Outline witness columns.</div><div class="grid2"><div class="card" style="box-shadow:none"><h2 style="margin-bottom:8px">Add document</h2><div class="hint" style="margin-bottom:10px">Only <b>Name</b> is required. Date/tags/description are optional.</div><div class="label">Document name <span style="color:var(--danger)">*</span></div><input id="docName" type="text" placeholder="e.g., Leah Bankruptcy" /><div class="label" style="margin-top:10px">Document date (optional)</div><input id="docDate" type="date" /><div class="label" style="margin-top:10px">Description (optional)</div><textarea id="docDesc" placeholder="What is this document? What does it prove?"></textarea><div class="hint" style="margin-top:10px">Use the Tag + exhibit index to assign tags and filter the document list.</div><div class="label" style="margin-top:10px">File (optional)</div><input id="docFile" type="file" /><div class="hint" style="margin-top:6px">If you attach a file, it uploads to Supabase Storage so it can be viewed and downloaded from other tabs and computers.</div><div style="margin-top:10px; display:flex; gap:10px; flex-wrap:wrap; align-items:center"><button id="addDoc" class="btnPrimary">Save document</button></div></div><div class="card" style="box-shadow:none"><div style="display:flex; justify-content:space-between; gap:10px; align-items:center; flex-wrap:wrap"><h2 style="margin-bottom:8px">Document repository</h2><div style="display:flex; gap:8px; flex-wrap:wrap"><button id="collapseAllDocs" class="btnGhost">Collapse all</button><button id="toggleDownloadList" class="btnGhost">Download list</button><button id="toggleDocTagIndex" class="btnGhost">Tag + exhibit index</button></div></div><div class="hint" style="margin-bottom:10px">Tags are hidden here so this list stays cleaner. Use the Tag + exhibit index for tags, exhibit filters, and heading details.</div><div id="docDownloadListWrap" style="display:none; margin:10px 0 14px 0"></div><div id="docList" style="display:flex; flex-direction:column; gap:10px"></div><div id="docEmpty" class="empty" style="display:none">No documents yet.</div></div></div><div id="docTagIndexCard" class="card" style="display:none; margin-top:14px; box-shadow:none"><div style="display:flex; justify-content:space-between; gap:10px; align-items:center; flex-wrap:wrap"><div><h2 style="margin-bottom:8px">Tag + exhibit index</h2><div class="hint">See which tags belong to each document, filter by tag or exhibit status, and see where each exhibit appears in the outline.</div></div><button id="closeDocTagIndex" class="btnGhost">Close</button></div><div class="docIndexFilters"><div><div class="label">Filter by tag</div><select id="docTagFilter"></select></div><div><div class="label">Filter by exhibit status</div><select id="docExhibitFilter"><option value="all">All documents</option><option value="exhibit">Exhibits only</option><option value="not_exhibit">Not added as exhibits</option></select></div></div><div id="docTagIndexList" style="display:flex; flex-direction:column; gap:10px"></div><div id="docTagIndexEmpty" class="empty" style="display:none">No documents match the current filters.</div></div></div>
     <div id="viewExhibits" class="card" style="display:none"><h2>Exhibits</h2><div class="hint">Documents you have used as exhibits appear here.</div><div class="card" style="box-shadow:none"><h2 style="margin-bottom:8px">Exhibit table</h2><div id="exhibitEmpty" class="empty" style="display:none">No exhibits yet. Add an exhibit from a row/witness intersection.</div><div style="overflow:auto"><table id="exhibitTable" style="width:100%; border-collapse:collapse; display:none"><thead><tr><th style="text-align:left; padding:10px; border-bottom:1px solid var(--line); width:140px">Exhibit</th><th style="text-align:left; padding:10px; border-bottom:1px solid var(--line)">Document name</th></tr></thead><tbody id="exhibitTableBody"></tbody></table></div></div></div>
     <div id="viewPeople" class="card" style="display:none"><h2>People</h2><div class="hint">Add people (including witnesses). Witnesses can then be attached to outline rows.</div><div class="grid2"><div class="card" style="box-shadow:none"><h2 style="margin-bottom:8px">Add person</h2><div class="label">Name <span style="color:var(--danger)">*</span></div><input id="personName" type="text" placeholder="e.g., Leah Murski" /><div class="label" style="margin-top:10px">Notes / Role (optional)</div><textarea id="personDesc" placeholder="e.g., Mother, Father, Therapist, Teacher, etc."></textarea><div class="hint" style="margin-top:10px">Assign tags after saving from the people list.</div><div style="margin-top:10px; display:flex; gap:10px; flex-wrap:wrap; align-items:center"><button id="addPerson" class="btnPrimary">Save person</button></div></div><div class="card" style="box-shadow:none"><h2 style="margin-bottom:8px">People list</h2><div id="peopleList" style="display:flex; flex-direction:column; gap:10px"></div><div id="peopleEmpty" class="empty" style="display:none">No people yet.</div></div></div></div>
     <div id="viewTimeline" class="card" style="display:none"><h2>Timeline</h2><div class="hint">Add events and map them by date and tag. Click an event name in the grid to open all event details.</div><div class="grid2"><div class="card" style="box-shadow:none"><div style="display:flex; justify-content:space-between; gap:10px; align-items:center; flex-wrap:wrap"><h2 style="margin-bottom:8px">Events</h2><div style="display:flex; gap:8px; flex-wrap:wrap"><button id="timelineAddTagBtn" class="btnGhost">Add tag</button><button id="timelineAddEventBtn" class="btnPrimary">+ Add event</button></div></div><div id="timelineEventForm" style="display:none; margin-top:8px; border:1px solid var(--line); border-radius:14px; padding:14px; background:#fafcff"><div class="label">Event name <span style="color:var(--danger)">*</span></div><input id="timelineName" type="text" placeholder="e.g., Temporary orders hearing" /><div class="label" style="margin-top:10px">Event date</div><input id="timelineDate" type="date" /><div class="label" style="margin-top:10px">Description</div><textarea id="timelineDesc" placeholder="What happened? Why does it matter?"></textarea><div class="label" style="margin-top:10px">Location</div><input id="timelineLocation" type="text" placeholder="e.g., DuPage County Courthouse" /><div class="label" style="margin-top:10px">Tags</div><div id="timelineTagChoices" class="checkGrid"></div><div class="label" style="margin-top:10px">Documents</div><div id="timelineDocChoices" class="checkGrid"></div><div class="label" style="margin-top:10px">Witnesses</div><div id="timelineWitnessChoices" class="checkGrid"></div><div id="timelineWitnessTestimonyWrap" style="margin-top:10px"></div><div style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap"><button id="timelineSaveEvent" class="btnPrimary">Save event</button><button id="timelineCancelEvent" class="btnGhost">Cancel</button></div></div><div id="timelineEmpty" class="empty" style="display:none; margin-top:12px">No events yet. Click “Add event”.</div><div id="timelineMatrixWrap" style="overflow:auto; margin-top:12px"></div></div><div class="card" style="box-shadow:none"><h2 style="margin-bottom:8px">Event details</h2><div id="timelineDetail" class="empty">Click an event name in the timeline to see full details.</div></div></div></div>
@@ -737,7 +737,7 @@
   <script>
     const STORAGE_KEY = 'murski_case_planner_v1';
     let state = { caseName: '', tags: [], people: [], documents: [], outline: [], timelineEvents: [] };
-    const ui = { selectedNodeId: null, selectedWitnessId: null, selectedDocId: null, selectedPersonId: null, activeWitnessColumnId: null, expandedDocIds: {}, showDocDownloadList: false, docSort: { field: 'file', dir: 'asc' }, outlineCompact: false, timelineSelectedId: null, timelineEditingId: null };
+    const ui = { selectedNodeId: null, selectedWitnessId: null, selectedDocId: null, selectedPersonId: null, activeWitnessColumnId: null, expandedDocIds: {}, showDocDownloadList: false, showDocTagIndex: false, docTagFilter: '', docExhibitFilter: 'all', docSort: { field: 'file', dir: 'asc' }, outlineCompact: false, timelineSelectedId: null, timelineEditingId: null };
     const $ = (id) => document.getElementById(id);
     function uid(){ return Math.random().toString(16).slice(2) + Date.now().toString(16); }
     function toast(msg){ const el = $('toast'); el.textContent = msg; el.classList.add('show'); clearTimeout(toast._t); toast._t = setTimeout(()=> el.classList.remove('show'), 2200); }
@@ -857,7 +857,7 @@
     $('timelineAddEventBtn')?.addEventListener('click', ()=>openTimelineForm());
     $('timelineCancelEvent')?.addEventListener('click', ()=>closeTimelineForm());
     $('timelineSaveEvent')?.addEventListener('click', ()=>saveTimelineEvent());
-function renderTags(){ const list = $('tagList'); list.innerHTML = ''; $('tagEmpty').style.display = state.tags.length ? 'none' : ''; for(const t of state.tags.slice().sort(sortByName)){ const row = document.createElement('div'); row.className = 'itemRow'; row.innerHTML = `<div><b>${escapeHtml(t.name)}</b></div><div style="display:flex; gap:8px; align-items:center"><button class="mini" data-act="edit" data-id="${t.id}">Edit</button><button class="mini" data-act="del" data-id="${t.id}" style="border-color: rgba(239,68,68,.35); color:#991b1b">Delete</button></div>`; list.appendChild(row); } list.querySelectorAll('button').forEach(btn=>{ btn.addEventListener('click', async ()=>{ const id = btn.getAttribute('data-id'); const act = btn.getAttribute('data-act'); if(act === 'del') await deleteTag(id); if(act === 'edit') await editTag(id); }); }); renderDocuments(); renderPeople(); renderOutline(); renderTimeline(); }
+function renderTags(){ const list = $('tagList'); list.innerHTML = ''; $('tagEmpty').style.display = state.tags.length ? 'none' : ''; for(const t of state.tags.slice().sort(sortByName)){ const row = document.createElement('div'); row.className = 'itemRow'; row.innerHTML = `<div><b>${escapeHtml(t.name)}</b></div><div style="display:flex; gap:8px; align-items:center"><button class="mini" data-act="edit" data-id="${t.id}">Edit</button><button class="mini" data-act="del" data-id="${t.id}" style="border-color: rgba(239,68,68,.35); color:#991b1b">Delete</button></div>`; list.appendChild(row); } list.querySelectorAll('button').forEach(btn=>{ btn.addEventListener('click', async ()=>{ const id = btn.getAttribute('data-id'); const act = btn.getAttribute('data-act'); if(act === 'del') await deleteTag(id); if(act === 'edit') await editTag(id); }); }); renderDocuments(); renderDocumentTagIndex(); renderPeople(); renderOutline(); renderTimeline(); }
     async function addTag(){ const name = ($('tagName').value || '').trim(); if(!name){ toast('Tag name required'); return; } const exists = state.tags.some(t => t.name.toLowerCase() === name.toLowerCase()); if(exists){ alert('That tag name already exists.'); return; } const created = await window.createTagRow({ name }); if(!created) return; await window.loadTags(); $('tagName').value = ''; toast('Tag added'); }
     async function deleteTag(id){ const tag = state.tags.find(t=>t.id===id); if(!tag) return; if(!confirm(`Delete tag “${tag.name}”? This will remove it everywhere.`)) return; const ok = await window.deleteTagRow(id); if(!ok) return; await window.loadTags(); await window.loadRowTags(); await window.loadDocumentTags(); await window.loadPersonTags(); toast('Tag deleted'); }
     async function editTag(id){ const tag = state.tags.find(t=>t.id===id); if(!tag) return; const newName = prompt('Tag name:', tag.name); if(newName === null) return; const name = newName.trim(); if(!name){ alert('Name cannot be blank.'); return; } const conflict = state.tags.some(t => t.id !== id && t.name.toLowerCase() === name.toLowerCase()); if(conflict){ alert('Another tag already has that name.'); return; } const saved = await window.updateTagRow(id, { name }); if(!saved) return; await window.loadTags(); toast('Tag updated'); }
@@ -896,11 +896,16 @@ function renderTags(){ const list = $('tagList'); list.innerHTML = ''; $('tagEmp
       const rows = wrap.querySelectorAll('tbody tr');
       rows.forEach((tr, idx)=>{ const doc = docs[idx]; const canDownload = !!(doc.filePath || doc.dataUrl || doc.hasFile); tr.style.cursor = canDownload ? 'pointer' : 'default'; if(canDownload){ tr.addEventListener('click', ()=> downloadDocument(doc.id)); } });
     }
-   function renderDocuments(){
+   function getRowTitlePath(rowId){ const parts = []; let cur = state.outline.find(n=>n.id===rowId); const seen = new Set(); while(cur && !seen.has(cur.id)){ seen.add(cur.id); parts.unshift((cur.title || 'Untitled heading').trim()); cur = cur.parentId ? state.outline.find(n=>n.id===cur.parentId) : null; } return parts.filter(Boolean).join(' > ') || 'Untitled heading'; }
+    function getDocumentExhibitMeta(docId){ rebuildExhibitsFromOutline(); syncExhibitOrderWithUsage(); const exhibit = (state.exhibits || []).find(ex => ex && ex.docId === docId) || null; const assignments = []; for(const n of state.outline || []){ if(!n || !n.witnessData) continue; for(const wid of Object.keys(n.witnessData)){ const wd = n.witnessData[wid] || {}; if(!(wd.exhibits || []).includes(docId)) continue; const person = (state.people || []).find(p=>p.id===wid); assignments.push({ rowId: n.id, rowTitle: n.title || 'Untitled heading', rowPath: getRowTitlePath(n.id), witnessId: wid, witnessName: person?.name || '' }); } } const headingNames = Array.from(new Set(assignments.map(a=>a.rowPath).filter(Boolean))); const tooltip = exhibit ? `Added as ${exhibit.label || 'an exhibit'}
+${headingNames.length ? 'Headings: ' + headingNames.join(' | ') : 'Heading not found'}` : 'Not added as an exhibit'; return { isExhibit: !!exhibit, label: exhibit?.label || '', assignments, headingNames, tooltip }; }
+    function renderDocumentTagIndex(){ const wrap = $('docTagIndexCard'); const list = $('docTagIndexList'); const empty = $('docTagIndexEmpty'); const tagSel = $('docTagFilter'); const exSel = $('docExhibitFilter'); if(!wrap || !list || !empty || !tagSel || !exSel) return; wrap.style.display = ui.showDocTagIndex ? '' : 'none'; tagSel.innerHTML = '<option value="">All tags</option>' + state.tags.slice().sort(sortByName).map(t=>`<option value="${t.id}" ${ui.docTagFilter===t.id ? 'selected' : ''}>${escapeHtml(t.name)}</option>`).join(''); exSel.value = ui.docExhibitFilter || 'all'; const docs = state.documents.slice().sort((a,b)=>(b.date||'').localeCompare(a.date||'') || (a.name||'').localeCompare(b.name||'')); const filtered = docs.filter(d=>{ const meta = getDocumentExhibitMeta(d.id); if(ui.docTagFilter && !(d.tags || []).includes(ui.docTagFilter)) return false; if((ui.docExhibitFilter || 'all') === 'exhibit' && !meta.isExhibit) return false; if((ui.docExhibitFilter || 'all') === 'not_exhibit' && meta.isExhibit) return false; return true; }); list.innerHTML = ''; empty.style.display = filtered.length ? 'none' : ''; for(const d of filtered){ const meta = getDocumentExhibitMeta(d.id); const row = document.createElement('div'); row.className = 'docIndexRow'; row.innerHTML = `<div class="docIndexTop"><div><div style="font-weight:700; font-size:16px">${escapeHtml(d.name)}</div><div class="docHeadingNote">${escapeHtml(d.date || 'No date')} • ${d.originalFileName || d.filename ? escapeHtml(d.originalFileName || d.filename) : 'No file attached'}</div></div><div class="docIndexMeta"><span class="docStatusBadge ${meta.isExhibit ? 'isExhibit' : 'notExhibit'}" title="${escapeHtml(meta.tooltip)}">${meta.isExhibit ? escapeHtml(meta.label || 'Exhibit') : 'Not an exhibit'}</span></div></div><div><div class="label">Tags</div>${renderAssignedTagPills(d.tags || [], 'document', d.id)}${renderTagPicker('document', d.id, d.tags || [])}</div><div><div class="label">Exhibit locations</div>${meta.isExhibit ? `<ul class="docHeadingList">${meta.assignments.map(a=>`<li><b>${escapeHtml(meta.label)}</b> • ${escapeHtml(a.rowPath)}${a.witnessName ? ` <span class="docHeadingNote">(${escapeHtml(a.witnessName)})</span>` : ''}</li>`).join('')}</ul>` : '<div class="hint">This document has not been added as an exhibit yet.</div>'}</div></div>`; list.appendChild(row); } list.querySelectorAll('.tagPicker').forEach(sel=>{ sel.addEventListener('change', async ()=>{ const itemId = sel.getAttribute('data-item-id'); const tagId = sel.value; if(!itemId || !tagId) return; const saved = await window.assignDocumentTag(itemId, tagId); if(saved) await window.loadDocumentTags(); }); }); list.querySelectorAll('.tagRemoveBtn').forEach(btn=>{ btn.addEventListener('click', async ()=>{ const itemId = btn.getAttribute('data-item-id'); const tagId = btn.getAttribute('data-tag-id'); const ok = await window.removeDocumentTag(itemId, tagId); if(ok) await window.loadDocumentTags(); }); }); }
+    function renderDocuments(){
   const list = $('docList');
   list.innerHTML = '';
   $('docEmpty').style.display = state.documents.length ? 'none' : '';
   renderDocumentDownloadList();
+  renderDocumentTagIndex();
   if(!state.documents.length){
     renderOutline();
     return;
@@ -910,19 +915,14 @@ function renderTags(){ const list = $('tagList'); list.innerHTML = ''; $('tagEmp
     (b.date||'').localeCompare(a.date||'') || (a.name||'').localeCompare(b.name||'')
   );
 
-  const usedTagIds = Array.from(new Set(
-    docs.flatMap(d => Array.isArray(d.tags) ? d.tags : []).filter(Boolean)
-  ));
-  const tagColumns = state.tags.filter(t => usedTagIds.includes(t.id)).slice().sort(sortByName);
-  const colCount = 1 + tagColumns.length;
-
   const table = document.createElement('table');
   table.className = 'docRepoTable';
   table.innerHTML = `
     <thead>
       <tr>
-        <th style="width:100%">Document</th>
-        ${tagColumns.map(t => `<th class="tagMatrixHead">${escapeHtml(t.name)}</th>`).join('')}
+        <th style="width:52%">Document</th>
+        <th style="width:18%">Date</th>
+        <th style="width:30%">Exhibit status</th>
       </tr>
     </thead>
     <tbody></tbody>
@@ -931,10 +931,12 @@ function renderTags(){ const list = $('tagList'); list.innerHTML = ''; $('tagEmp
 
   for(const d of docs){
     const expanded = !!ui.expandedDocIds[d.id];
+    const meta = getDocumentExhibitMeta(d.id);
 
     const tr = document.createElement('tr');
     tr.className = 'docSummaryRow' + (ui.selectedDocId===d.id ? ' selectedDocRow' : '');
     tr.setAttribute('data-doc-toggle', d.id);
+    tr.title = meta.tooltip;
 
     tr.innerHTML = `
       <td class="docNameCell">
@@ -943,11 +945,12 @@ function renderTags(){ const list = $('tagList'); list.innerHTML = ''; $('tagEmp
           <span>${escapeHtml(d.name)}</span>
         </div>
       </td>
-      ${tagColumns.map(t => `
-        <td class="tagMatrixCell ${((d.tags||[]).includes(t.id)) ? 'isTagged' : ''}">
-          <span></span>
-        </td>
-      `).join('')}
+      <td>${escapeHtml(d.date || '')}</td>
+      <td>
+        <span class="docStatusBadge ${meta.isExhibit ? 'isExhibit' : 'notExhibit'}" title="${escapeHtml(meta.tooltip)}">
+          ${meta.isExhibit ? escapeHtml(meta.label || 'Exhibit') : 'Not an exhibit'}
+        </span>
+      </td>
     `;
     tbody.appendChild(tr);
 
@@ -955,24 +958,28 @@ function renderTags(){ const list = $('tagList'); list.innerHTML = ''; $('tagEmp
       const detailTr = document.createElement('tr');
       detailTr.className = 'docDetailRow';
       detailTr.innerHTML = `
-        <td colspan="${colCount}">
+        <td colspan="3">
           <div class="docExpandedPanel">
             <div style="display:grid; gap:10px; max-width:900px">
               <div>
                 <div class="label">Document name</div>
                 <input type="text" data-doc-edit-name="${d.id}" value="${escapeHtml(d.name || '')}" />
               </div>
-
               <div>
                 <div class="label">Document date</div>
                 <input type="date" data-doc-edit-date="${d.id}" value="${escapeHtml(d.date || '')}" />
               </div>
-
               <div>
                 <div class="label">Description</div>
                 <textarea data-doc-edit-desc="${d.id}" placeholder="What is this document? What does it prove?">${escapeHtml(d.description || '')}</textarea>
               </div>
-
+              <div>
+                <div class="label">Exhibit status</div>
+                <div style="display:grid; gap:6px; margin-top:4px">
+                  <div><span class="docStatusBadge ${meta.isExhibit ? 'isExhibit' : 'notExhibit'}" title="${escapeHtml(meta.tooltip)}">${meta.isExhibit ? escapeHtml(meta.label || 'Exhibit') : 'Not an exhibit'}</span></div>
+                  ${meta.isExhibit ? `<ul class="docHeadingList">${meta.assignments.map(a=>`<li>${escapeHtml(a.rowPath)}${a.witnessName ? ` <span class="docHeadingNote">(${escapeHtml(a.witnessName)})</span>` : ''}</li>`).join('')}</ul>` : '<div class="hint">This document has not been added as an exhibit yet.</div>'}
+                </div>
+              </div>
               <div>
                 <div class="label">Replace / add file</div>
                 <input type="file" data-doc-edit-file="${d.id}" />
@@ -980,20 +987,12 @@ function renderTags(){ const list = $('tagList'); list.innerHTML = ''; $('tagEmp
                   Current file: ${d.originalFileName || d.filename ? escapeHtml(d.originalFileName || d.filename) : 'No file'}
                 </div>
               </div>
-
-              <div>
-                <div class="label">Tags</div>
-                ${renderAssignedTagPills(d.tags || [], 'document', d.id)}
-                ${renderTagPicker('document', d.id, d.tags || [])}
-              </div>
-
               <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:4px">
                 <button class="mini" data-act="saveDocEdits" data-id="${d.id}">Save changes</button>
                 <button class="mini" data-act="view" data-id="${d.id}">View file</button>
                 <button class="mini" data-act="dl" data-id="${d.id}">Download file</button>
                 <button class="mini" data-act="del" data-id="${d.id}" style="border-color: rgba(239,68,68,.35); color:#991b1b">Delete</button>
               </div>
-
               <div data-doc-viewer="${d.id}" style="margin-top:12px"></div>
             </div>
           </div>
@@ -1019,100 +1018,44 @@ function renderTags(){ const list = $('tagList'); list.innerHTML = ''; $('tagEmp
     btn.addEventListener('click', async (ev)=>{
       ev.preventDefault();
       ev.stopPropagation();
-
       const id = btn.getAttribute('data-id');
       const act = btn.getAttribute('data-act');
-
       if(act === 'saveDocEdits'){
         const doc = state.documents.find(x=>x.id===id);
         if(!doc) return;
-
         const nameEl = list.querySelector(`[data-doc-edit-name="${id}"]`);
         const dateEl = list.querySelector(`[data-doc-edit-date="${id}"]`);
         const descEl = list.querySelector(`[data-doc-edit-desc="${id}"]`);
         const fileEl = list.querySelector(`[data-doc-edit-file="${id}"]`);
-
         const newName = (nameEl?.value || '').trim();
         const newDate = dateEl?.value || null;
         const newDesc = (descEl?.value || '').trim();
-
-        if(!newName){
-          alert('Document name is required.');
-          return;
-        }
-
-        let patch = {
-          name: newName,
-          doc_date: newDate,
-          description: newDesc
-        };
-
-        const updated = await window.updateDocumentRow(id, patch);
-        if(!updated){
-          alert('Failed to save document changes.');
-          return;
-        }
-
+        if(!newName){ alert('Document name is required.'); return; }
+        const updated = await window.updateDocumentRow(id, { name: newName, doc_date: newDate, description: newDesc });
+        if(!updated){ alert('Failed to save document changes.'); return; }
         const newFile = fileEl?.files && fileEl.files[0] ? fileEl.files[0] : null;
         if(newFile){
-          if(doc.filePath){
-            await window.deleteDocumentFile(doc.filePath);
-          }
-
+          if(doc.filePath) await window.deleteDocumentFile(doc.filePath);
           const newPath = await window.uploadDocumentFile(id, newFile);
-          if(!newPath){
-            alert('Document details saved, but file upload failed.');
-          } else {
-            await window.updateDocumentRow(id, {
-              file_path: newPath,
-              original_file_name: newFile.name || '',
-              mime_type: newFile.type || '',
-              file_size: Number(newFile.size || 0) || 0
-            });
+          if(!newPath){ alert('Document details saved, but file upload failed.'); }
+          else {
+            await window.updateDocumentRow(id, { file_path: newPath, original_file_name: newFile.name || '', mime_type: newFile.type || '', file_size: Number(newFile.size || 0) || 0 });
           }
         }
-
         await window.loadDocuments();
         renderDocuments();
         toast('Document updated');
       }
-
       if(act === 'del') deleteDocument(id);
       if(act === 'dl') downloadDocument(id);
-
       if(act === 'view'){
         const d = state.documents.find(x=>x.id===id);
         const holder = list.querySelector(`[data-doc-viewer="${id}"]`);
         if(!d || !holder) return;
         const url = await getDocumentPreviewUrl(d);
-        if(!url){
-          holder.innerHTML = '<div class="hint">No file stored for this document.</div>';
-          return;
-        }
+        if(!url){ holder.innerHTML = '<div class="hint">No file stored for this document.</div>'; return; }
         holder.innerHTML = `<div class="label">Document viewer</div><iframe class="docViewerFrame" src="${url}"></iframe>`;
       }
-    });
-  });
-
-  list.querySelectorAll('.tagPicker').forEach(sel=>{
-    sel.addEventListener('change', async (ev)=>{
-      ev.stopPropagation();
-      const itemId = sel.getAttribute('data-item-id');
-      const tagId = sel.value;
-      if(!itemId || !tagId) return;
-      const saved = await window.assignDocumentTag(itemId, tagId);
-      if(saved) await window.loadDocumentTags();
-    });
-  });
-
-  list.querySelectorAll('.tagRemoveBtn').forEach(btn=>{
-    btn.addEventListener('click', async (ev)=>{
-      ev.preventDefault();
-      ev.stopPropagation();
-      const itemId = btn.getAttribute('data-item-id');
-      const tagId = btn.getAttribute('data-tag-id');
-      const ok = await window.removeDocumentTag(itemId, tagId);
-      if(ok) await window.loadDocumentTags();
     });
   });
 
@@ -1206,6 +1149,10 @@ function renderTags(){ const list = $('tagList'); list.innerHTML = ''; $('tagEmp
     $('addDoc').addEventListener('click', addDocument);
     $('collapseAllDocs')?.addEventListener('click', ()=>{ ui.expandedDocIds = {}; renderDocuments(); });
     $('toggleDownloadList')?.addEventListener('click', ()=>{ ui.showDocDownloadList = !ui.showDocDownloadList; renderDocuments(); });
+    $('toggleDocTagIndex')?.addEventListener('click', ()=>{ ui.showDocTagIndex = !ui.showDocTagIndex; renderDocuments(); });
+    $('closeDocTagIndex')?.addEventListener('click', ()=>{ ui.showDocTagIndex = false; renderDocuments(); });
+    $('docTagFilter')?.addEventListener('change', (ev)=>{ ui.docTagFilter = ev.target.value || ''; renderDocumentTagIndex(); });
+    $('docExhibitFilter')?.addEventListener('change', (ev)=>{ ui.docExhibitFilter = ev.target.value || 'all'; renderDocumentTagIndex(); });
     function renderPeople(){ const list = $('peopleList'); list.innerHTML = ''; const before = state.people.length; state.people = (state.people || []).filter(p => p && (p.name||'').trim()).map(p => ({ id: p.id || uid(), name: String(p.name||'').trim(), description: String(p.description||'').trim(), tags: Array.isArray(p.tags) ? p.tags.filter(Boolean) : [] })); $('peopleEmpty').style.display = state.people.length ? 'none' : ''; if(state.people.length !== before) safeSave(); for(const p of state.people.slice().sort((a,b)=> (a.name||'').localeCompare(b.name||'')) ){ const row = document.createElement('div'); row.className = 'itemRow selectable' + (ui.selectedPersonId===p.id ? ' selectedDoc' : ''); row.innerHTML = `<div style="flex:1"><b>${escapeHtml(p.name)}</b><small>${p.description ? escapeHtml(p.description) : ''}</small><div style="margin-top:8px"><div class="label">Tags</div>${renderAssignedTagPills(p.tags || [], 'person', p.id)}${renderTagPicker('person', p.id, p.tags || [])}</div></div><div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap"><button class="mini" data-act="edit" data-id="${p.id}">Edit</button><button class="mini" data-act="del" data-id="${p.id}" style="border-color: rgba(239,68,68,.35); color:#991b1b">Delete</button></div>`; row.addEventListener('click', (e)=>{ if(e.target && e.target.tagName==='BUTTON') return; ui.selectedPersonId = p.id; toast('Selected person: ' + p.name); renderPeople(); }); list.appendChild(row); } list.querySelectorAll('button[data-act]').forEach(btn=>{ btn.addEventListener('click', (ev)=>{ ev.preventDefault(); ev.stopPropagation(); const id = btn.getAttribute('data-id'); const act = btn.getAttribute('data-act'); if(act==='del') deletePerson(id); if(act==='edit') editPerson(id); }); }); list.querySelectorAll('.tagPicker').forEach(sel=>{ sel.addEventListener('change', async ()=>{ const itemId = sel.getAttribute('data-item-id'); const tagId = sel.value; if(!itemId || !tagId) return; const saved = await window.assignPersonTag(itemId, tagId); if(saved) await window.loadPersonTags(); }); }); list.querySelectorAll('.tagRemoveBtn').forEach(btn=>{ btn.addEventListener('click', async (ev)=>{ ev.stopPropagation(); const itemId = btn.getAttribute('data-item-id'); const tagId = btn.getAttribute('data-tag-id'); const ok = await window.removePersonTag(itemId, tagId); if(ok) await window.loadPersonTags(); }); }); renderOutline(); }
     window.renderPeople = renderPeople;
     async function addPerson(){ const name = ($('personName').value||'').trim(); if(!name){ alert('Person name is required.'); return; } const description = ($('personDesc').value||'').trim(); const created = await window.createPersonRow({ name, description }); if (!created) return; await window.loadPeople(); safeSave(); renderPeople(); $('personName').value=''; $('personDesc').value=''; toast('Person saved'); }
