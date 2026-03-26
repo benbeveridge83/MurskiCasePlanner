@@ -1160,37 +1160,76 @@ function renderTags(){ const list = $('tagList'); list.innerHTML = ''; $('tagEmp
       }
     }
 
-    const localDoc = {
-      id: finalDoc.id,
-      name: finalDoc.name || name,
-      date: finalDoc.doc_date || date || '',
-      description: finalDoc.description || description,
-      tags: [],
-      filename: finalDoc.original_file_name || '',
-      originalFileName: finalDoc.original_file_name || '',
-      filePath: finalDoc.file_path || '',
-      mimeType: finalDoc.mime_type || '',
-      fileSize: Number(finalDoc.file_size || 0) || 0,
-      hasFile: !!finalDoc.file_path,
-      dataUrl: '',
-      exhibitLabel: ''
-    };
-
-    const i = state.documents.findIndex(d => d.id === finalDoc.id);
-    if(i >= 0) state.documents[i] = { ...state.documents[i], ...localDoc };
-    else state.documents.push(localDoc);
-
-    safeSave();
-    await window.loadDocuments();
-    renderDocuments();
-
-    $('docName').value = '';
-    $('docDate').value = '';
-    $('docDesc').value = '';
-    $('docFile').value = '';
-
-    toast(file ? 'Document and file saved' : 'Document saved');
+   async function addDocument(){
+  const name = ($('docName').value || '').trim();
+  if(!name){
+    alert('Document name is required.');
+    return;
   }
+
+  const date = $('docDate').value || null;
+  const description = ($('docDesc').value || '').trim();
+  const file = $('docFile').files && $('docFile').files[0] ? $('docFile').files[0] : null;
+
+  const created = await window.createDocument({
+    name,
+    docDate: date,
+    description
+  });
+
+  if(!created){
+    alert('Failed to save document.');
+    return;
+  }
+
+  let finalDoc = created;
+
+  if(file){
+    const path = await window.uploadDocumentFile(created.id, file);
+    if(!path){
+      alert('Document was created, but file upload failed.');
+    } else {
+      const updated = await window.updateDocumentRow(created.id, {
+        file_path: path,
+        original_file_name: file.name || '',
+        mime_type: file.type || '',
+        file_size: Number(file.size || 0) || 0
+      });
+      if(updated) finalDoc = updated;
+    }
+  }
+
+  const localDoc = {
+    id: finalDoc.id,
+    name: finalDoc.name || name,
+    date: finalDoc.doc_date || date || '',
+    description: finalDoc.description || description,
+    tags: [],
+    filename: finalDoc.original_file_name || '',
+    originalFileName: finalDoc.original_file_name || '',
+    filePath: finalDoc.file_path || '',
+    mimeType: finalDoc.mime_type || '',
+    fileSize: Number(finalDoc.file_size || 0) || 0,
+    hasFile: !!finalDoc.file_path,
+    dataUrl: '',
+    exhibitLabel: ''
+  };
+
+  const i = state.documents.findIndex(d => d.id === finalDoc.id);
+  if(i >= 0) state.documents[i] = { ...state.documents[i], ...localDoc };
+  else state.documents.push(localDoc);
+
+  safeSave();
+  await window.loadDocuments();
+  renderDocuments();
+
+  $('docName').value = '';
+  $('docDate').value = '';
+  $('docDesc').value = '';
+  $('docFile').value = '';
+
+  toast(file ? 'Document and file saved' : 'Document saved');
+}
 
   async function deleteDocument(id){
     // keep your existing deleteDocument code
