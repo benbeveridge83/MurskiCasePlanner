@@ -896,32 +896,228 @@ function renderTags(){ const list = $('tagList'); list.innerHTML = ''; $('tagEmp
       const rows = wrap.querySelectorAll('tbody tr');
       rows.forEach((tr, idx)=>{ const doc = docs[idx]; const canDownload = !!(doc.filePath || doc.dataUrl || doc.hasFile); tr.style.cursor = canDownload ? 'pointer' : 'default'; if(canDownload){ tr.addEventListener('click', ()=> downloadDocument(doc.id)); } });
     }
-    function renderDocuments(){ const list = $('docList'); list.innerHTML = ''; $('docEmpty').style.display = state.documents.length ? 'none' : ''; renderDocumentDownloadList(); if(!state.documents.length){ renderOutline(); return; } const docs = state.documents.slice().sort((a,b)=> (b.date||'').localeCompare(a.date||'') || (a.name||'').localeCompare(b.name||'')); const usedTagIds = Array.from(new Set(docs.flatMap(d => Array.isArray(d.tags) ? d.tags : []).filter(Boolean))); const tagColumns = state.tags.filter(t => usedTagIds.includes(t.id)).slice().sort(sortByName); const colCount = 1 + tagColumns.length; const table = document.createElement('table'); table.className = 'docRepoTable'; table.innerHTML = `<thead><tr><th style="width:100%">Document</th>${tagColumns.map(t => `<th class="tagMatrixHead">${escapeHtml(t.name)}</th>`).join('')}</tr></thead><tbody></tbody>`; const tbody = table.querySelector('tbody'); for(const d of docs){ const expanded = !!ui.expandedDocIds[d.id]; const tr = document.createElement('tr'); tr.className = 'docSummaryRow' + (ui.selectedDocId===d.id ? ' selectedDocRow' : ''); tr.setAttribute('data-doc-toggle', d.id); tr.innerHTML = `<td class="docNameCell"><div class="docRowTitle"><span class="docExpandCaret">${expanded ? '&#9662;' : '&#9656;'}</span><span>${escapeHtml(d.name)}</span></div></td>${tagColumns.map(t => `<td class="tagMatrixCell ${((d.tags||[]).includes(t.id)) ? 'isTagged' : ''}"><span></span></td>`).join('')}`; tbody.appendChild(tr); if(expanded){ const detailTr = document.createElement('tr'); detailTr.className = 'docDetailRow'; detailTr.innerHTML = `<td colspan="${colCount}"><div class="docExpandedPanel"><div class="docExpandedMeta">${d.date ? `<div><b>Date:</b> ${escapeHtml(d.date)}</div>` : ''}${d.filename ? `<div><b>File:</b> ${escapeHtml(d.filename)}</div>` : ''}${d.description ? `<div><b>Description:</b> ${escapeHtml(d.description)}</div>` : '<div class="hint">No description added.</div>'}</div><div style="margin-top:10px"><div class="label">Tags</div>${renderAssignedTagPills(d.tags || [], 'document', d.id)}${renderTagPicker('document', d.id, d.tags || [])}</div><div style="margin-top:10px; display:flex; gap:8px; align-items:center; flex-wrap:wrap"><button class="mini" data-act="view" data-id="${d.id}">View</button><button class="mini" data-act="dl" data-id="${d.id}">Download</button><button class="mini" data-act="del" data-id="${d.id}" style="border-color: rgba(239,68,68,.35); color:#991b1b">Delete</button></div><div data-doc-viewer="${d.id}" style="margin-top:12px"></div></div></td>`; tbody.appendChild(detailTr); } } list.appendChild(table); list.querySelectorAll('[data-doc-toggle]').forEach(row=>{ row.addEventListener('click', (ev)=>{ if(ev.target && (ev.target.closest('button') || ev.target.closest('select') || ev.target.closest('a'))) return; const id = row.getAttribute('data-doc-toggle'); ui.selectedDocId = id; ui.expandedDocIds[id] = !ui.expandedDocIds[id]; renderDocuments(); }); }); list.querySelectorAll('button[data-act]').forEach(btn=>{ btn.addEventListener('click', async (ev)=>{ ev.preventDefault(); ev.stopPropagation(); const id = btn.getAttribute('data-id'); const act = btn.getAttribute('data-act'); if(act==='del') deleteDocument(id); if(act==='dl') downloadDocument(id); if(act==='view'){ const d = state.documents.find(x=>x.id===id); const holder = list.querySelector(`[data-doc-viewer="${id}"]`); if(!d || !holder) return; const url = await getDocumentPreviewUrl(d); if(!url){ holder.innerHTML = '<div class="hint">No file stored for this document.</div>'; return; } const isPdf = (d.filename||'').toLowerCase().endsWith('.pdf') || String(url).startsWith('data:application/pdf'); holder.innerHTML = `<div class="label">Document viewer</div>${isPdf ? `<iframe class="docViewerFrame" src="${url}"></iframe>` : `<iframe class="docViewerFrame" src="${url}"></iframe>`}`; } }); }); list.querySelectorAll('.tagPicker').forEach(sel=>{ sel.addEventListener('change', async (ev)=>{ ev.stopPropagation(); const itemId = sel.getAttribute('data-item-id'); const tagId = sel.value; if(!itemId || !tagId) return; const saved = await window.assignDocumentTag(itemId, tagId); if(saved) await window.loadDocumentTags(); }); }); list.querySelectorAll('.tagRemoveBtn').forEach(btn=>{ btn.addEventListener('click', async (ev)=>{ ev.preventDefault(); ev.stopPropagation(); const itemId = btn.getAttribute('data-item-id'); const tagId = btn.getAttribute('data-tag-id'); const ok = await window.removeDocumentTag(itemId, tagId); if(ok) await window.loadDocumentTags(); }); }); renderOutline(); }
-    window.renderDocuments = renderDocuments;
-    async function addDocument(){
-      const name = ($('docName').value||'').trim();
-      if(!name){ alert('Document name is required.'); return; }
-      const date = $('docDate').value || null;
-      const description = ($('docDesc').value||'').trim();
-      const file = $('docFile').files && $('docFile').files[0] ? $('docFile').files[0] : null;
-      const created = await window.createDocument({ name, docDate: date, description });
-      if (!created) return;
+  function renderDocuments(){
+  const list = $('docList');
+  list.innerHTML = '';
+  $('docEmpty').style.display = state.documents.length ? 'none' : '';
+  renderDocumentDownloadList();
+  if(!state.documents.length){
+    renderOutline();
+    return;
+  }
 
-      let finalDoc = created;
-      if(file){
-        const filePath = await window.uploadDocumentFile(created.id, file);
-        if(!filePath){
-          alert('The document record was saved, but the file upload to Supabase Storage failed.');
-        } else {
-          const patched = await window.updateDocumentRow(created.id, {
-            file_path: filePath,
-            original_file_name: file.name || '',
-            mime_type: file.type || '',
-            file_size: Number(file.size || 0) || 0
-          });
-          if(patched) finalDoc = patched;
+  const docs = state.documents.slice().sort((a,b)=>
+    (b.date||'').localeCompare(a.date||'') || (a.name||'').localeCompare(b.name||'')
+  );
+
+  const usedTagIds = Array.from(new Set(
+    docs.flatMap(d => Array.isArray(d.tags) ? d.tags : []).filter(Boolean)
+  ));
+  const tagColumns = state.tags.filter(t => usedTagIds.includes(t.id)).slice().sort(sortByName);
+  const colCount = 1 + tagColumns.length;
+
+  const table = document.createElement('table');
+  table.className = 'docRepoTable';
+  table.innerHTML = `
+    <thead>
+      <tr>
+        <th style="width:100%">Document</th>
+        ${tagColumns.map(t => `<th class="tagMatrixHead">${escapeHtml(t.name)}</th>`).join('')}
+      </tr>
+    </thead>
+    <tbody></tbody>
+  `;
+  const tbody = table.querySelector('tbody');
+
+  for(const d of docs){
+    const expanded = !!ui.expandedDocIds[d.id];
+
+    const tr = document.createElement('tr');
+    tr.className = 'docSummaryRow' + (ui.selectedDocId===d.id ? ' selectedDocRow' : '');
+    tr.setAttribute('data-doc-toggle', d.id);
+
+    tr.innerHTML = `
+      <td class="docNameCell">
+        <div class="docRowTitle">
+          <span class="docExpandCaret">${expanded ? '&#9662;' : '&#9656;'}</span>
+          <span>${escapeHtml(d.name)}</span>
+        </div>
+      </td>
+      ${tagColumns.map(t => `
+        <td class="tagMatrixCell ${((d.tags||[]).includes(t.id)) ? 'isTagged' : ''}">
+          <span></span>
+        </td>
+      `).join('')}
+    `;
+    tbody.appendChild(tr);
+
+    if(expanded){
+      const detailTr = document.createElement('tr');
+      detailTr.className = 'docDetailRow';
+      detailTr.innerHTML = `
+        <td colspan="${colCount}">
+          <div class="docExpandedPanel">
+            <div style="display:grid; gap:10px; max-width:900px">
+              <div>
+                <div class="label">Document name</div>
+                <input type="text" data-doc-edit-name="${d.id}" value="${escapeHtml(d.name || '')}" />
+              </div>
+
+              <div>
+                <div class="label">Document date</div>
+                <input type="date" data-doc-edit-date="${d.id}" value="${escapeHtml(d.date || '')}" />
+              </div>
+
+              <div>
+                <div class="label">Description</div>
+                <textarea data-doc-edit-desc="${d.id}" placeholder="What is this document? What does it prove?">${escapeHtml(d.description || '')}</textarea>
+              </div>
+
+              <div>
+                <div class="label">Replace / add file</div>
+                <input type="file" data-doc-edit-file="${d.id}" />
+                <div class="hint" style="margin-top:6px">
+                  Current file: ${d.originalFileName || d.filename ? escapeHtml(d.originalFileName || d.filename) : 'No file'}
+                </div>
+              </div>
+
+              <div>
+                <div class="label">Tags</div>
+                ${renderAssignedTagPills(d.tags || [], 'document', d.id)}
+                ${renderTagPicker('document', d.id, d.tags || [])}
+              </div>
+
+              <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:4px">
+                <button class="mini" data-act="saveDocEdits" data-id="${d.id}">Save changes</button>
+                <button class="mini" data-act="view" data-id="${d.id}">View file</button>
+                <button class="mini" data-act="dl" data-id="${d.id}">Download file</button>
+                <button class="mini" data-act="del" data-id="${d.id}" style="border-color: rgba(239,68,68,.35); color:#991b1b">Delete</button>
+              </div>
+
+              <div data-doc-viewer="${d.id}" style="margin-top:12px"></div>
+            </div>
+          </div>
+        </td>
+      `;
+      tbody.appendChild(detailTr);
+    }
+  }
+
+  list.appendChild(table);
+
+  list.querySelectorAll('[data-doc-toggle]').forEach(row=>{
+    row.addEventListener('click', (ev)=>{
+      if(ev.target && (ev.target.closest('button') || ev.target.closest('select') || ev.target.closest('input') || ev.target.closest('textarea') || ev.target.closest('a'))) return;
+      const id = row.getAttribute('data-doc-toggle');
+      ui.selectedDocId = id;
+      ui.expandedDocIds[id] = !ui.expandedDocIds[id];
+      renderDocuments();
+    });
+  });
+
+  list.querySelectorAll('button[data-act]').forEach(btn=>{
+    btn.addEventListener('click', async (ev)=>{
+      ev.preventDefault();
+      ev.stopPropagation();
+
+      const id = btn.getAttribute('data-id');
+      const act = btn.getAttribute('data-act');
+
+      if(act === 'saveDocEdits'){
+        const doc = state.documents.find(x=>x.id===id);
+        if(!doc) return;
+
+        const nameEl = list.querySelector(`[data-doc-edit-name="${id}"]`);
+        const dateEl = list.querySelector(`[data-doc-edit-date="${id}"]`);
+        const descEl = list.querySelector(`[data-doc-edit-desc="${id}"]`);
+        const fileEl = list.querySelector(`[data-doc-edit-file="${id}"]`);
+
+        const newName = (nameEl?.value || '').trim();
+        const newDate = dateEl?.value || null;
+        const newDesc = (descEl?.value || '').trim();
+
+        if(!newName){
+          alert('Document name is required.');
+          return;
         }
+
+        let patch = {
+          name: newName,
+          doc_date: newDate,
+          description: newDesc
+        };
+
+        const updated = await window.updateDocumentRow(id, patch);
+        if(!updated){
+          alert('Failed to save document changes.');
+          return;
+        }
+
+        const newFile = fileEl?.files && fileEl.files[0] ? fileEl.files[0] : null;
+        if(newFile){
+          if(doc.filePath){
+            await window.deleteDocumentFile(doc.filePath);
+          }
+
+          const newPath = await window.uploadDocumentFile(id, newFile);
+          if(!newPath){
+            alert('Document details saved, but file upload failed.');
+          } else {
+            await window.updateDocumentRow(id, {
+              file_path: newPath,
+              original_file_name: newFile.name || '',
+              mime_type: newFile.type || '',
+              file_size: Number(newFile.size || 0) || 0
+            });
+          }
+        }
+
+        await window.loadDocuments();
+        renderDocuments();
+        toast('Document updated');
       }
+
+      if(act === 'del') deleteDocument(id);
+      if(act === 'dl') downloadDocument(id);
+
+      if(act === 'view'){
+        const d = state.documents.find(x=>x.id===id);
+        const holder = list.querySelector(`[data-doc-viewer="${id}"]`);
+        if(!d || !holder) return;
+        const url = await getDocumentPreviewUrl(d);
+        if(!url){
+          holder.innerHTML = '<div class="hint">No file stored for this document.</div>';
+          return;
+        }
+        holder.innerHTML = `<div class="label">Document viewer</div><iframe class="docViewerFrame" src="${url}"></iframe>`;
+      }
+    });
+  });
+
+  list.querySelectorAll('.tagPicker').forEach(sel=>{
+    sel.addEventListener('change', async (ev)=>{
+      ev.stopPropagation();
+      const itemId = sel.getAttribute('data-item-id');
+      const tagId = sel.value;
+      if(!itemId || !tagId) return;
+      const saved = await window.assignDocumentTag(itemId, tagId);
+      if(saved) await window.loadDocumentTags();
+    });
+  });
+
+  list.querySelectorAll('.tagRemoveBtn').forEach(btn=>{
+    btn.addEventListener('click', async (ev)=>{
+      ev.preventDefault();
+      ev.stopPropagation();
+      const itemId = btn.getAttribute('data-item-id');
+      const tagId = btn.getAttribute('data-tag-id');
+      const ok = await window.removeDocumentTag(itemId, tagId);
+      if(ok) await window.loadDocumentTags();
+    });
+  });
+
+  renderOutline();
+}
 
       const localDoc = {
         id: finalDoc.id,
