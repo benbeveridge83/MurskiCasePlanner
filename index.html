@@ -818,7 +818,7 @@
         el.setAttribute('href', '?' + href.toString());
       });
     }
-    function setTab(which, opts={}){ const target = views[which] ? which : 'outline'; ui.currentView = target; for(const k of Object.keys(views)){ const on = k === target; $(views[k].tab).classList.toggle('active', on); $(views[k].view).style.display = on ? '' : 'none'; } updateViewLinks(target); if(opts.pushState !== false){ const params = new URLSearchParams(window.location.search); params.set('case', getCaseId()); params.set('view', target); history.replaceState(null, '', '?' + params.toString()); } if(target==='exhibits') renderExhibits(); if(target==='timeline') renderTimeline(); if(target==='tagindex') renderDocumentTagIndex(); }
+    function setTab(which, opts={}){ const target = views[which] ? which : 'outline'; ui.currentView = target; for(const k of Object.keys(views)){ const on = k === target; const tabEl = $(views[k].tab); const viewEl = $(views[k].view); if(tabEl) tabEl.classList.toggle('active', on); if(viewEl) viewEl.style.display = on ? 'block' : 'none'; } updateViewLinks(target); if(opts.pushState !== false){ const params = new URLSearchParams(window.location.search); const caseId = getCaseId(); if(caseId) params.set('case', caseId); else params.delete('case'); params.set('view', target); history.replaceState(null, '', '?' + params.toString()); } if(target==='documents') renderDocuments(); if(target==='exhibits') renderExhibits(); if(target==='timeline') renderTimeline(); if(target==='tagindex') renderDocumentTagIndex(); }
     $('tabOutline').addEventListener('click', (e)=>{ e.preventDefault(); setTab('outline'); }); $('tabDocuments').addEventListener('click', (e)=>{ e.preventDefault(); setTab('documents'); }); $('tabTagIndex').addEventListener('click', (e)=>{ e.preventDefault(); setTab('tagindex'); }); $('tabExhibits').addEventListener('click', (e)=>{ e.preventDefault(); setTab('exhibits'); }); $('tabPeople').addEventListener('click', (e)=>{ e.preventDefault(); setTab('people'); }); $('tabTimeline').addEventListener('click', (e)=>{ e.preventDefault(); setTab('timeline'); }); $('tabSettings').addEventListener('click', (e)=>{ e.preventDefault(); setTab('settings'); }); $('timelineAddTagBtn')?.addEventListener('click', ()=> setTab('settings'));
     function escapeHtml(str){ return (str||'').replace(/[&<>\"']/g, (c)=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c])); }
     function sortByName(a,b){ return (a.name||'').localeCompare(b.name||''); }
@@ -996,9 +996,11 @@ ${headingNames.length ? 'Headings: ' + headingNames.join(' | ') : 'Heading not f
     function renderDocumentTagIndex(){
       const wrap = $('viewTagIndex');
       if(!wrap) return;
-      if(ui.currentView !== 'tagindex' && wrap.style.display === 'none'){
+      if(ui.currentView !== 'tagindex'){
+        wrap.style.display = 'none';
         return;
       }
+      wrap.style.display = 'block';
       const tableWrap = $('docTagIndexTableWrap');
       const empty = $('docTagIndexEmpty');
       const exSel = $('docExhibitFilter');
@@ -1082,6 +1084,7 @@ ${headingNames.length ? 'Headings: ' + headingNames.join(' | ') : 'Heading not f
           const id = row.getAttribute('data-doc-index-toggle');
           ui.selectedDocId = id;
           ui.docTagIndexExpandedIds[id] = !ui.docTagIndexExpandedIds[id];
+          renderDocumentTagIndex();
                 });
       });
       tableWrap.querySelectorAll('.tagPicker').forEach(sel=>{
@@ -1099,11 +1102,17 @@ ${headingNames.length ? 'Headings: ' + headingNames.join(' | ') : 'Heading not f
       filterBoxWrap.querySelectorAll('input[type="checkbox"]').forEach(cb=>{
         cb.addEventListener('change', ()=>{
           ui.docTagFilterIds = Array.from(filterBoxWrap.querySelectorAll('input[type="checkbox"]:checked')).map(x=>x.value);
+          renderDocumentTagIndex();
                 });
       });
+      exSel.onchange = ()=>{ ui.docExhibitFilter = exSel.value || 'all'; renderDocumentTagIndex(); };
+      usedOnly.onchange = ()=>{ ui.docTagIndexShowUsedOnly = !!usedOnly.checked; renderDocumentTagIndex(); };
+      noTagsOnly.onchange = ()=>{ ui.docTagNoTagsOnly = !!noTagsOnly.checked; renderDocumentTagIndex(); };
       syncDocTagIndexScrollbars();
     }
     function renderDocuments(){
+  const tagIndexView = $('viewTagIndex');
+  if(tagIndexView && ui.currentView !== 'tagindex') tagIndexView.style.display = 'none';
   const list = $('docList');
   list.innerHTML = '';
   $('docEmpty').style.display = state.documents.length ? 'none' : '';
@@ -1470,7 +1479,7 @@ ${headingNames.length ? 'Headings: ' + headingNames.join(' | ') : 'Heading not f
     $('importBtn').addEventListener('click', ()=> $('importFile').click());
     $('importFile').addEventListener('change', async ()=>{ const file = $('importFile').files && $('importFile').files[0]; $('importFile').value = ''; if(!file) return; try{ const text = await file.text(); const parsed = JSON.parse(text); if(!parsed || typeof parsed !== 'object') throw new Error('Invalid JSON'); state = Object.assign({caseName:'',tags:[],people:[],documents:[],exhibits:[],outline:[],timelineEvents:[]}, parsed); safeSave(); $('caseName').value = state.caseName || ''; renderTags(); toast('Imported JSON'); } catch(e){ console.error(e); alert('Import failed: ' + (e && e.message ? e.message : e)); } });
     $('resetBtn').addEventListener('click', ()=>{ if(!confirm('Reset local data for this case planner? This cannot be undone (unless you exported JSON).')) return; localStorage.removeItem(STORAGE_KEY); state = { caseName:'', tags:[], people:[], documents:[], exhibits:[], outline:[], timelineEvents:[] }; $('caseName').value=''; renderTags(); toast('Reset complete'); setTab('outline'); renderExhibits(); });
-    load(); syncOutlineFromSupabase(); syncDocumentsFromSupabase(); syncPeopleFromSupabase(); syncWitnessCellsFromSupabase(); syncTagsFromSupabase(); syncTagAssignmentsFromSupabase(); renderTags(); renderDocuments(); renderPeople(); renderOutline(); setTab(window.INITIAL_VIEW || "outline", { pushState:false }); renderExhibits();
+    load(); syncOutlineFromSupabase(); syncDocumentsFromSupabase(); syncPeopleFromSupabase(); syncWitnessCellsFromSupabase(); syncTagsFromSupabase(); syncTagAssignmentsFromSupabase(); renderTags(); renderDocuments(); renderPeople(); renderOutline(); renderExhibits(); setTab(window.INITIAL_VIEW || 'outline', { pushState:false });
   </script>
 </body>
 </html>
