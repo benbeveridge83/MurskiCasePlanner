@@ -11,6 +11,7 @@
     const urlParams = new URLSearchParams(window.location.search)
     const CASE_ID = urlParams.get("case") || "5c13ba35-1854-4b47-82dd-5bc39be3929c"
     const INITIAL_VIEW = (urlParams.get("view") || "outline").toLowerCase()
+    window.INITIAL_VIEW = INITIAL_VIEW
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_KEY)
     const DOCUMENT_BUCKET = "case-documents"
@@ -344,6 +345,7 @@
       return true
     }
 
+    window.loadOutlineRows = loadOutlineRows
     window.loadPeople = loadPeople
     window.createPersonRow = createPersonRow
     window.deletePersonRow = deletePersonRow
@@ -1465,7 +1467,7 @@ ${headingNames.length ? 'Headings: ' + headingNames.join(' | ') : 'Heading not f
     $('importBtn').addEventListener('click', ()=> $('importFile').click());
     $('importFile').addEventListener('change', async ()=>{ const file = $('importFile').files && $('importFile').files[0]; $('importFile').value = ''; if(!file) return; try{ const text = await file.text(); const parsed = JSON.parse(text); if(!parsed || typeof parsed !== 'object') throw new Error('Invalid JSON'); state = Object.assign({caseName:'',tags:[],people:[],documents:[],exhibits:[],outline:[],timelineEvents:[]}, parsed); safeSave(); $('caseName').value = state.caseName || ''; renderTags(); toast('Imported JSON'); } catch(e){ console.error(e); alert('Import failed: ' + (e && e.message ? e.message : e)); } });
     $('resetBtn').addEventListener('click', ()=>{ if(!confirm('Reset local data for this case planner? This cannot be undone (unless you exported JSON).')) return; localStorage.removeItem(STORAGE_KEY); state = { caseName:'', tags:[], people:[], documents:[], exhibits:[], outline:[], timelineEvents:[] }; $('caseName').value=''; renderTags(); toast('Reset complete'); setTab('outline'); renderExhibits(); });
-    load(); syncOutlineFromSupabase(); syncDocumentsFromSupabase(); syncPeopleFromSupabase(); syncWitnessCellsFromSupabase(); syncTagsFromSupabase(); syncTagAssignmentsFromSupabase(); renderTags(); renderDocuments(); renderPeople(); renderOutline(); setTab(INITIAL_VIEW, { pushState:false }); renderExhibits();
+    load(); syncOutlineFromSupabase(); syncDocumentsFromSupabase(); syncPeopleFromSupabase(); syncWitnessCellsFromSupabase(); syncTagsFromSupabase(); syncTagAssignmentsFromSupabase(); renderTags(); renderDocuments(); renderPeople(); renderOutline(); setTab(window.INITIAL_VIEW || "outline", { pushState:false }); renderExhibits();
   </script>
 </body>
 </html>
