@@ -746,11 +746,12 @@
   </div>
   <div id="toast" class="toast"></div>
   <script>
-    const CASE_ID = window.CASE_ID || new URLSearchParams(window.location.search).get('case') || '';
-    const INITIAL_VIEW = window.INITIAL_VIEW || (new URLSearchParams(window.location.search).get('view') || 'outline').toLowerCase();
+    const CASE_ID = String(window.CASE_ID || new URLSearchParams(window.location.search).get('case') || '');
+    const INITIAL_VIEW = String(window.INITIAL_VIEW || (new URLSearchParams(window.location.search).get('view') || 'outline')).toLowerCase();
+    const getCaseId = () => String(window.CASE_ID || CASE_ID || new URLSearchParams(window.location.search).get('case') || '');
     const STORAGE_KEY = 'murski_case_planner_v1';
     let state = { caseName: '', tags: [], people: [], documents: [], outline: [], timelineEvents: [] };
-    const ui = { selectedNodeId: null, selectedWitnessId: null, selectedDocId: null, selectedPersonId: null, activeWitnessColumnId: null, expandedDocIds: {}, showDocDownloadList: false, showDocTagIndex: false, docTagFilterIds: [], docTagIndexExpandedIds: {}, docTagIndexShowUsedOnly: false, docTagNoTagsOnly: false, docExhibitFilter: 'all', docSort: { field: 'file', dir: 'asc' }, outlineCompact: false, timelineSelectedId: null, timelineEditingId: null };
+    const ui = { selectedNodeId: null, selectedWitnessId: null, selectedDocId: null, selectedPersonId: null, activeWitnessColumnId: null, expandedDocIds: {}, showDocDownloadList: false, showDocTagIndex: false, docTagFilterIds: [], docTagIndexExpandedIds: {}, docTagIndexShowUsedOnly: false, docTagNoTagsOnly: false, docExhibitFilter: 'all', docSort: { field: 'file', dir: 'asc' }, outlineCompact: false, timelineSelectedId: null, timelineEditingId: null, currentView: INITIAL_VIEW };
     const $ = (id) => document.getElementById(id);
     function uid(){ return Math.random().toString(16).slice(2) + Date.now().toString(16); }
     function toast(msg){ const el = $('toast'); el.textContent = msg; el.classList.add('show'); clearTimeout(toast._t); toast._t = setTimeout(()=> el.classList.remove('show'), 2200); }
@@ -806,18 +807,18 @@
         const el = $(views[key].tab);
         if(!el || el.tagName !== 'A') continue;
         const params = new URLSearchParams(window.location.search);
-        params.set('case', CASE_ID);
+        params.set('case', getCaseId());
         params.set('view', key);
         el.href = '?' + params.toString();
       }
       document.querySelectorAll('[href*="view=documents"], [href*="view=tagindex"], [href*="view=settings"], [href*="view=outline"], [href*="view=people"], [href*="view=timeline"], [href*="view=exhibits"]').forEach((el)=>{
         if(!el.getAttribute('href') || !el.getAttribute('href').startsWith('?')) return;
         const href = new URLSearchParams(el.getAttribute('href').slice(1));
-        href.set('case', CASE_ID);
+        href.set('case', getCaseId());
         el.setAttribute('href', '?' + href.toString());
       });
     }
-    function setTab(which, opts={}){ const target = views[which] ? which : 'outline'; for(const k of Object.keys(views)){ const on = k === target; $(views[k].tab).classList.toggle('active', on); $(views[k].view).style.display = on ? '' : 'none'; } updateViewLinks(target); if(opts.pushState !== false){ const params = new URLSearchParams(window.location.search); params.set('case', CASE_ID); params.set('view', target); history.replaceState(null, '', '?' + params.toString()); } if(target==='exhibits') renderExhibits(); if(target==='timeline') renderTimeline(); if(target==='tagindex') renderDocumentTagIndex(); }
+    function setTab(which, opts={}){ const target = views[which] ? which : 'outline'; ui.currentView = target; for(const k of Object.keys(views)){ const on = k === target; $(views[k].tab).classList.toggle('active', on); $(views[k].view).style.display = on ? '' : 'none'; } updateViewLinks(target); if(opts.pushState !== false){ const params = new URLSearchParams(window.location.search); params.set('case', getCaseId()); params.set('view', target); history.replaceState(null, '', '?' + params.toString()); } if(target==='exhibits') renderExhibits(); if(target==='timeline') renderTimeline(); if(target==='tagindex') renderDocumentTagIndex(); }
     $('tabOutline').addEventListener('click', (e)=>{ e.preventDefault(); setTab('outline'); }); $('tabDocuments').addEventListener('click', (e)=>{ e.preventDefault(); setTab('documents'); }); $('tabTagIndex').addEventListener('click', (e)=>{ e.preventDefault(); setTab('tagindex'); }); $('tabExhibits').addEventListener('click', (e)=>{ e.preventDefault(); setTab('exhibits'); }); $('tabPeople').addEventListener('click', (e)=>{ e.preventDefault(); setTab('people'); }); $('tabTimeline').addEventListener('click', (e)=>{ e.preventDefault(); setTab('timeline'); }); $('tabSettings').addEventListener('click', (e)=>{ e.preventDefault(); setTab('settings'); }); $('timelineAddTagBtn')?.addEventListener('click', ()=> setTab('settings'));
     function escapeHtml(str){ return (str||'').replace(/[&<>\"']/g, (c)=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c])); }
     function sortByName(a,b){ return (a.name||'').localeCompare(b.name||''); }
@@ -886,7 +887,7 @@
     $('timelineAddEventBtn')?.addEventListener('click', ()=>openTimelineForm());
     $('timelineCancelEvent')?.addEventListener('click', ()=>closeTimelineForm());
     $('timelineSaveEvent')?.addEventListener('click', ()=>saveTimelineEvent());
-function renderTags(){ const list = $('tagList'); list.innerHTML = ''; $('tagEmpty').style.display = state.tags.length ? 'none' : ''; for(const t of state.tags.slice().sort(sortByName)){ const row = document.createElement('div'); row.className = 'itemRow'; row.innerHTML = `<div><b>${escapeHtml(t.name)}</b></div><div style="display:flex; gap:8px; align-items:center"><button class="mini" data-act="edit" data-id="${t.id}">Edit</button><button class="mini" data-act="del" data-id="${t.id}" style="border-color: rgba(239,68,68,.35); color:#991b1b">Delete</button></div>`; list.appendChild(row); } list.querySelectorAll('button').forEach(btn=>{ btn.addEventListener('click', async ()=>{ const id = btn.getAttribute('data-id'); const act = btn.getAttribute('data-act'); if(act === 'del') await deleteTag(id); if(act === 'edit') await editTag(id); }); }); renderDocuments(); renderDocumentTagIndex(); renderPeople(); renderOutline(); renderTimeline(); }
+function renderTags(){ const list = $('tagList'); list.innerHTML = ''; $('tagEmpty').style.display = state.tags.length ? 'none' : ''; for(const t of state.tags.slice().sort(sortByName)){ const row = document.createElement('div'); row.className = 'itemRow'; row.innerHTML = `<div><b>${escapeHtml(t.name)}</b></div><div style="display:flex; gap:8px; align-items:center"><button class="mini" data-act="edit" data-id="${t.id}">Edit</button><button class="mini" data-act="del" data-id="${t.id}" style="border-color: rgba(239,68,68,.35); color:#991b1b">Delete</button></div>`; list.appendChild(row); } list.querySelectorAll('button').forEach(btn=>{ btn.addEventListener('click', async ()=>{ const id = btn.getAttribute('data-id'); const act = btn.getAttribute('data-act'); if(act === 'del') await deleteTag(id); if(act === 'edit') await editTag(id); }); }); renderDocuments(); if(ui.currentView==='tagindex') renderDocumentTagIndex(); renderPeople(); renderOutline(); renderTimeline(); }
     async function addTag(){ const name = ($('tagName').value || '').trim(); if(!name){ toast('Tag name required'); return; } const exists = state.tags.some(t => t.name.toLowerCase() === name.toLowerCase()); if(exists){ alert('That tag name already exists.'); return; } const created = await window.createTagRow({ name }); if(!created) return; await window.loadTags(); $('tagName').value = ''; toast('Tag added'); }
     async function deleteTag(id){ const tag = state.tags.find(t=>t.id===id); if(!tag) return; if(!confirm(`Delete tag “${tag.name}”? This will remove it everywhere.`)) return; const ok = await window.deleteTagRow(id); if(!ok) return; await window.loadTags(); await window.loadRowTags(); await window.loadDocumentTags(); await window.loadPersonTags(); toast('Tag deleted'); }
     async function editTag(id){ const tag = state.tags.find(t=>t.id===id); if(!tag) return; const newName = prompt('Tag name:', tag.name); if(newName === null) return; const name = newName.trim(); if(!name){ alert('Name cannot be blank.'); return; } const conflict = state.tags.some(t => t.id !== id && t.name.toLowerCase() === name.toLowerCase()); if(conflict){ alert('Another tag already has that name.'); return; } const saved = await window.updateTagRow(id, { name }); if(!saved) return; await window.loadTags(); toast('Tag updated'); }
@@ -994,6 +995,10 @@ ${headingNames.length ? 'Headings: ' + headingNames.join(' | ') : 'Heading not f
     }
     function renderDocumentTagIndex(){
       const wrap = $('viewTagIndex');
+      if(!wrap) return;
+      if(ui.currentView !== 'tagindex' && wrap.style.display === 'none'){
+        return;
+      }
       const tableWrap = $('docTagIndexTableWrap');
       const empty = $('docTagIndexEmpty');
       const exSel = $('docExhibitFilter');
@@ -1077,8 +1082,7 @@ ${headingNames.length ? 'Headings: ' + headingNames.join(' | ') : 'Heading not f
           const id = row.getAttribute('data-doc-index-toggle');
           ui.selectedDocId = id;
           ui.docTagIndexExpandedIds[id] = !ui.docTagIndexExpandedIds[id];
-          renderDocumentTagIndex();
-        });
+                });
       });
       tableWrap.querySelectorAll('.tagPicker').forEach(sel=>{
         sel.addEventListener('change', async ()=>{ await handleTagPickerChange(sel); });
@@ -1095,8 +1099,7 @@ ${headingNames.length ? 'Headings: ' + headingNames.join(' | ') : 'Heading not f
       filterBoxWrap.querySelectorAll('input[type="checkbox"]').forEach(cb=>{
         cb.addEventListener('change', ()=>{
           ui.docTagFilterIds = Array.from(filterBoxWrap.querySelectorAll('input[type="checkbox"]:checked')).map(x=>x.value);
-          renderDocumentTagIndex();
-        });
+                });
       });
       syncDocTagIndexScrollbars();
     }
@@ -1105,7 +1108,6 @@ ${headingNames.length ? 'Headings: ' + headingNames.join(' | ') : 'Heading not f
   list.innerHTML = '';
   $('docEmpty').style.display = state.documents.length ? 'none' : '';
   renderDocumentDownloadList();
-  renderDocumentTagIndex();
   if(!state.documents.length){
     renderOutline();
     return;
