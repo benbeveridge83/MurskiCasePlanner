@@ -746,6 +746,8 @@
   </div>
   <div id="toast" class="toast"></div>
   <script>
+    const CASE_ID = window.CASE_ID || new URLSearchParams(window.location.search).get('case') || '';
+    const INITIAL_VIEW = window.INITIAL_VIEW || (new URLSearchParams(window.location.search).get('view') || 'outline').toLowerCase();
     const STORAGE_KEY = 'murski_case_planner_v1';
     let state = { caseName: '', tags: [], people: [], documents: [], outline: [], timelineEvents: [] };
     const ui = { selectedNodeId: null, selectedWitnessId: null, selectedDocId: null, selectedPersonId: null, activeWitnessColumnId: null, expandedDocIds: {}, showDocDownloadList: false, showDocTagIndex: false, docTagFilterIds: [], docTagIndexExpandedIds: {}, docTagIndexShowUsedOnly: false, docTagNoTagsOnly: false, docExhibitFilter: 'all', docSort: { field: 'file', dir: 'asc' }, outlineCompact: false, timelineSelectedId: null, timelineEditingId: null };
@@ -1000,7 +1002,6 @@ ${headingNames.length ? 'Headings: ' + headingNames.join(' | ') : 'Heading not f
       const noTagsOnly = $('docTagNoTagsOnly');
       if(!wrap || !tableWrap || !empty || !exSel || !filterBoxWrap || !usedOnly || !noTagsOnly) return;
 
-      wrap.style.display = '';
       exSel.value = ui.docExhibitFilter || 'all';
       usedOnly.checked = !!ui.docTagIndexShowUsedOnly;
       noTagsOnly.checked = !!ui.docTagNoTagsOnly;
