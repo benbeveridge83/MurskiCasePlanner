@@ -723,6 +723,10 @@
     .docTagIndexScrollTopInner{height:1px;}
     .docTagIndexTableShell{overflow:visible; margin-top:0;}
     .docTagIndexTableWrap{overflow:auto; border:1px solid var(--border); border-top:none; border-radius:0 0 12px 12px; background:#fff; max-height:none;}
+    body.tagindex-active .container{max-width:none; width:100%; padding-left:6px; padding-right:6px;}
+    body.tagindex-active #viewTagIndex{width:100%; max-width:none;}
+    body.tagindex-active .docTagIndexTableShell, body.tagindex-active .docTagIndexTableWrap{width:100%; max-width:none;}
+    body.tagindex-active #docTagIndexTable{width:max-content; min-width:100%;}
     .docOpenLink{display:inline-flex; align-items:center; gap:6px; text-decoration:none;}
 
 
@@ -818,7 +822,7 @@
         el.setAttribute('href', '?' + href.toString());
       });
     }
-    function setTab(which, opts={}){ const target = views[which] ? which : 'outline'; ui.currentView = target; for(const k of Object.keys(views)){ const on = k === target; const tabEl = $(views[k].tab); const viewEl = $(views[k].view); if(tabEl) tabEl.classList.toggle('active', on); if(viewEl) viewEl.style.display = on ? 'block' : 'none'; } updateViewLinks(target); if(opts.pushState !== false){ const params = new URLSearchParams(window.location.search); const caseId = getCaseId(); if(caseId) params.set('case', caseId); else params.delete('case'); params.set('view', target); history.replaceState(null, '', '?' + params.toString()); } if(target==='documents') renderDocuments(); if(target==='exhibits') renderExhibits(); if(target==='timeline') renderTimeline(); if(target==='tagindex') renderDocumentTagIndex(); }
+    function setTab(which, opts={}){ const target = views[which] ? which : 'outline'; ui.currentView = target; document.body.classList.toggle('tagindex-active', target === 'tagindex'); for(const k of Object.keys(views)){ const on = k === target; const tabEl = $(views[k].tab); const viewEl = $(views[k].view); if(tabEl) tabEl.classList.toggle('active', on); if(viewEl) viewEl.style.display = on ? 'block' : 'none'; } updateViewLinks(target); if(opts.pushState !== false){ const params = new URLSearchParams(window.location.search); const caseId = getCaseId(); if(caseId) params.set('case', caseId); else params.delete('case'); params.set('view', target); history.replaceState(null, '', '?' + params.toString()); } if(target==='documents') renderDocuments(); if(target==='exhibits') renderExhibits(); if(target==='timeline') renderTimeline(); if(target==='tagindex') renderDocumentTagIndex(); }
     $('tabOutline').addEventListener('click', (e)=>{ e.preventDefault(); setTab('outline'); }); $('tabDocuments').addEventListener('click', (e)=>{ e.preventDefault(); setTab('documents'); }); $('tabTagIndex').addEventListener('click', (e)=>{ e.preventDefault(); setTab('tagindex'); }); $('tabExhibits').addEventListener('click', (e)=>{ e.preventDefault(); setTab('exhibits'); }); $('tabPeople').addEventListener('click', (e)=>{ e.preventDefault(); setTab('people'); }); $('tabTimeline').addEventListener('click', (e)=>{ e.preventDefault(); setTab('timeline'); }); $('tabSettings').addEventListener('click', (e)=>{ e.preventDefault(); setTab('settings'); }); $('timelineAddTagBtn')?.addEventListener('click', ()=> setTab('settings'));
     function escapeHtml(str){ return (str||'').replace(/[&<>\"']/g, (c)=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c])); }
     function sortByName(a,b){ return (a.name||'').localeCompare(b.name||''); }
@@ -1046,6 +1050,7 @@ ${headingNames.length ? 'Headings: ' + headingNames.join(' | ') : 'Heading not f
       if(!filteredDocs.length) return;
 
       const table = document.createElement('table');
+      table.id = 'docTagIndexTable';
       table.className = 'docRepoTable docTagMatrixTable';
       const thead = document.createElement('thead');
       const headRow = document.createElement('tr');
