@@ -851,6 +851,16 @@
     window.syncWitnessCellsFromSupabase = syncWitnessCellsFromSupabase;
     window.addEventListener('storage', async (event) => { if (event.key !== window.LOCAL_SYNC_KEY || !event.newValue) return; let payload = null; try { payload = JSON.parse(event.newValue); } catch (e) { console.warn('Bad sync payload:', e); } console.log('Local sync event received:', payload); if (!payload || !payload.type) return; if (payload.type === 'witness_cells_changed') { await window.loadWitnessCells(); return; } if (payload.type === 'rows_changed') { await window.loadOutlineRows(); await window.loadWitnessCells(); return; } if (payload.type === 'people_changed') { await window.loadPeople(); await window.loadWitnessCells(); return; } if (payload.type === 'documents_changed') { await window.loadDocuments(); await window.loadWitnessCells(); return; } if (payload.type === 'tags_changed') { await window.loadTags(); return; } if (payload.type === 'row_tags_changed') { await window.loadRowTags(); return; } if (payload.type === 'document_tags_changed') { await window.loadDocumentTags(); return; } if (payload.type === 'person_tags_changed') { await window.loadPersonTags(); return; } });
     const views = { outline: { tab: 'tabOutline', view:'viewOutline' }, documents: { tab: 'tabDocuments', view:'viewDocuments' }, tagindex: { tab: 'tabTagIndex', view:'viewTagIndex' }, outlineindex: { tab: 'tabOutlineIndex', view:'viewOutlineIndex' }, exhibits: { tab: 'tabExhibits', view:'viewExhibits' }, people: { tab: 'tabPeople', view:'viewPeople' }, timeline: { tab: 'tabTimeline', view:'viewTimeline' }, settings: { tab: 'tabSettings', view:'viewSettings' } };
+    function getInitialViewFromUrl(){
+      try {
+        const params = new URLSearchParams(window.location.search || '');
+        const raw = (params.get('view') || '').toLowerCase();
+        return views[raw] ? raw : 'outline';
+      } catch (e) {
+        return 'outline';
+      }
+    }
+
     function buildViewHref(viewName){
       const url = new URL(window.location.href);
       const caseId = getCaseId();
@@ -1882,7 +1892,7 @@ ${headingNames.length ? 'Headings: ' + headingNames.join(' | ') : 'Heading not f
 
         const leftSub = document.createElement('div');
         leftSub.className = 'leftSub' + ((n.detailsOpen && !ui.outlineCompact) ? ' open' : '');
-        leftSub.innerHTML = `<div><div class="label">Date</div><input data-act="rowDate" type="date" value="${safeDateInputValue(n.rowDate)}" /><div class="label" style="margin-top:8px">Description</div><textarea data-act="desc" placeholder="Details / notes">${escapeHtml(n.description||'')}</textarea></div><div><div class="label">Tags</div><div data-act="rowTags"></div><div data-act="rowTagPicker"></div><div class="label" style="margin-top:8px">Add witness</div><select data-act="addWitness"></select><div class="label" style="margin-top:8px">Witnesses on this row</div><div class="witnessList" data-act="witnessList"></div><div class="witnessEmpty" data-act="witnessEmpty" style="display:none">No witnesses attached yet.</div><div class="label" style="margin-top:8px">Exhibits on this row</div><div class="witnessList" data-act="exhibitList"></div><div class="witnessEmpty" data-act="exhibitEmpty" style="display:none">No exhibits attached yet.</div></div>`;
+        leftSub.innerHTML = `<div><div class="label">Date</div><input data-act="rowDate" type="date" value="${safeDateInputValue(n.rowDate)}" /><div class="label" style="margin-top:8px">Description</div><textarea data-act="desc" placeholder="Details / notes">${escapeHtml(n.description||'')}</textarea></div><div><div class="label">Tags</div><div data-act="rowTags"></div><div data-act="rowTagPicker"></div><div class="label" style="margin-top:8px">Add witness</div><select data-act="addWitness"></select><div class="label" style="margin-top:8px">Witnesses on this row</div><div class="witnessList" data-act="witnessList"></div><div class="witnessEmpty" data-act="witnessEmpty" style="display:none">No witnesses attached yet.</div><div class="label" style="margin-top:8px">Exhibits on this row</div><div class="witnessList" data-act="exhibitList"></div><div class="witnessEmpty" data-act="exhibitEmpty" style="display:none">No exhibits attached yet.</div><div class="label" style="margin-top:8px">Selected document</div><div class="hint" data-act="selectedDocName">No document selected.</div><div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:6px"><button type="button" class="mini" data-act="viewSelectedDoc">View file</button><button type="button" class="mini" data-act="downloadSelectedDoc">Download file</button></div><div data-act="selectedDocViewer" style="margin-top:10px"></div></div>`;
         titleBox.append(titleRow, leftSub);
         if(depth) titleBox.style.marginLeft = (ui.outlineCompact ? 18 : 22) + 'px';
 
@@ -1956,6 +1966,10 @@ ${headingNames.length ? 'Headings: ' + headingNames.join(' | ') : 'Heading not f
         const witnessEmpty = leftSub.querySelector('[data-act="witnessEmpty"]');
         const exhibitList = leftSub.querySelector('[data-act="exhibitList"]');
         const exhibitEmpty = leftSub.querySelector('[data-act="exhibitEmpty"]');
+        const selectedDocName = leftSub.querySelector('[data-act="selectedDocName"]');
+        const viewSelectedDocBtn = leftSub.querySelector('[data-act="viewSelectedDoc"]');
+        const downloadSelectedDocBtn = leftSub.querySelector('[data-act="downloadSelectedDoc"]');
+        const selectedDocViewer = leftSub.querySelector('[data-act="selectedDocViewer"]');
         const attachedWitnesses = (n.witnessIds || []).map(id => state.people.find(p=>p.id===id)).filter(Boolean);
 
         if(rowTags) rowTags.innerHTML = renderAssignedTagPills(n.tags || [], 'row', n.id);
@@ -1999,6 +2013,32 @@ ${headingNames.length ? 'Headings: ' + headingNames.join(' | ') : 'Heading not f
           }
           exhibitEmpty.style.display = 'none';
         } else exhibitEmpty.style.display = '';
+
+        const selectedDoc = state.documents.find(d=>d.id===ui.selectedDocId) || null;
+        if(selectedDocName){
+          selectedDocName.textContent = selectedDoc ? selectedDoc.name : 'No document selected.';
+        }
+        if(viewSelectedDocBtn){
+          viewSelectedDocBtn.disabled = !selectedDoc;
+          viewSelectedDocBtn.addEventListener('click', async (e)=>{
+            e.stopPropagation();
+            if(!selectedDoc || !selectedDocViewer) return;
+            const url = await getDocumentPreviewUrl(selectedDoc);
+            if(!url){
+              selectedDocViewer.innerHTML = '<div class="hint">No file stored for this document.</div>';
+              return;
+            }
+            selectedDocViewer.innerHTML = `<iframe class="docViewerFrame" src="${url}"></iframe>`;
+          });
+        }
+        if(downloadSelectedDocBtn){
+          downloadSelectedDocBtn.disabled = !selectedDoc;
+          downloadSelectedDocBtn.addEventListener('click', async (e)=>{
+            e.stopPropagation();
+            if(!selectedDoc) return;
+            await downloadDocument(selectedDoc.id);
+          });
+        }
 
         detailToggle?.addEventListener('click', (e)=>{ e.stopPropagation(); ui.selectedNodeId = n.id; ui.selectedWitnessId = null; syncSelectionHints(); toggleDetails(n.id); });
         titleInput.addEventListener('click', (e)=>{ e.stopPropagation(); ui.selectedNodeId = n.id; ui.selectedWitnessId = null; syncSelectionHints(); if(!ui.outlineCompact && !n.detailsOpen){ n.detailsOpen = true; safeSave(); renderOutline(); focusTitle(n.id); } });
@@ -2058,7 +2098,7 @@ ${headingNames.length ? 'Headings: ' + headingNames.join(' | ') : 'Heading not f
     $('importBtn').addEventListener('click', ()=> $('importFile').click());
     $('importFile').addEventListener('change', async ()=>{ const file = $('importFile').files && $('importFile').files[0]; $('importFile').value = ''; if(!file) return; try{ const text = await file.text(); const parsed = JSON.parse(text); if(!parsed || typeof parsed !== 'object') throw new Error('Invalid JSON'); state = Object.assign({caseName:'',tags:[],people:[],documents:[],exhibits:[],outline:[],timelineEvents:[]}, parsed); safeSave(); $('caseName').value = state.caseName || ''; renderTags(); toast('Imported JSON'); } catch(e){ console.error(e); alert('Import failed: ' + (e && e.message ? e.message : e)); } });
     $('resetBtn').addEventListener('click', ()=>{ if(!confirm('Reset local data for this case planner? This cannot be undone (unless you exported JSON).')) return; localStorage.removeItem(STORAGE_KEY); state = { caseName:'', tags:[], people:[], documents:[], exhibits:[], outline:[], timelineEvents:[] }; $('caseName').value=''; renderTags(); toast('Reset complete'); setTab('outline'); renderExhibits(); });
-    load(); syncOutlineFromSupabase(); syncDocumentsFromSupabase(); syncPeopleFromSupabase(); syncWitnessCellsFromSupabase(); syncTagsFromSupabase(); syncTagAssignmentsFromSupabase(); renderTags(); renderDocuments(); renderPeople(); renderOutline(); renderExhibits(); setTab(window.INITIAL_VIEW || 'outline', { pushState:false });
+    load(); syncOutlineFromSupabase(); syncDocumentsFromSupabase(); syncPeopleFromSupabase(); syncWitnessCellsFromSupabase(); syncTagsFromSupabase(); syncTagAssignmentsFromSupabase(); renderTags(); renderDocuments(); renderPeople(); renderOutline(); renderExhibits(); setTab(getInitialViewFromUrl(), { pushState:false });
   </script>
 </body>
 </html>
