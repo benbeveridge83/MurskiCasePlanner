@@ -33,32 +33,59 @@
       }
     }
 
-    async function loadOutlineRows() {
-      const { data, error } = await supabase
-        .from("outline_rows")
-        .select("*")
-        .eq("case_id", CASE_ID)
-        .order("sort_order", { ascending: true })
+    let outlineLoadInFlight = null
+    let outlineLoadQueued = false
+    let outlineRealtimeTimer = null
+    let suppressOutlineRealtimeUntil = 0
 
-      if (error) {
-        console.error("Load error:", error)
-        return
+    function suppressOutlineRealtime(ms = 1200) {
+      suppressOutlineRealtimeUntil = Math.max(suppressOutlineRealtimeUntil, Date.now() + ms)
+      window.suppressOutlineRealtimeUntil = suppressOutlineRealtimeUntil
+    }
+
+    async function loadOutlineRows(force = false) {
+      if (!force && outlineLoadInFlight) {
+        outlineLoadQueued = true
+        return outlineLoadInFlight
       }
 
-      window.loadedRows = data
-      console.log("Loaded rows:", data)
+      outlineLoadInFlight = (async () => {
+        const { data, error } = await supabase
+          .from("outline_rows")
+          .select("*")
+          .eq("case_id", CASE_ID)
+          .order("sort_order", { ascending: true })
 
-      if (window.syncOutlineFromSupabase) {
-        window.syncOutlineFromSupabase();
-      }
+        if (error) {
+          console.error("Load error:", error)
+          return
+        }
 
-      if (window.isOutlineEditing) {
-        window.pendingOutlineRefresh = true;
-        return;
-      }
+        window.loadedRows = data
+        console.log("Loaded rows:", data)
 
-      if (window.renderOutline) {
-        window.renderOutline();
+        if (window.syncOutlineFromSupabase) {
+          window.syncOutlineFromSupabase();
+        }
+
+        if (window.isOutlineEditing) {
+          window.pendingOutlineRefresh = true;
+          return;
+        }
+
+        if (window.renderOutline) {
+          window.renderOutline();
+        }
+      })()
+
+      try {
+        await outlineLoadInFlight
+      } finally {
+        outlineLoadInFlight = null
+        if (outlineLoadQueued) {
+          outlineLoadQueued = false
+          queueMicrotask(() => loadOutlineRows())
+        }
       }
     }
 
@@ -73,7 +100,11 @@
             table: "outline_rows"
           },
           async () => {
-            await loadOutlineRows()
+            const wait = Math.max(0, suppressOutlineRealtimeUntil - Date.now())
+            clearTimeout(outlineRealtimeTimer)
+            outlineRealtimeTimer = setTimeout(async () => {
+              await loadOutlineRows(true)
+            }, wait || 120)
           }
         )
         .subscribe()
@@ -537,6 +568,8 @@
     window.deleteOutlineRow = deleteOutlineRow
     window.createOutlineRow = createOutlineRow
     window.updateOutlineRow = updateOutlineRow
+    window.loadOutlineRows = loadOutlineRows
+    window.suppressOutlineRealtime = suppressOutlineRealtime
 
     async function loadDocuments() {
       const { data, error } = await supabase
@@ -705,6 +738,17 @@
     .outlineCompact .titleInput{font-weight:700;}
     .outlineCompact .caret{margin-top:1px;}
 
+    .outlineDragHandle{width:26px;height:26px;border-radius:8px;border:1px dashed var(--border);background:var(--surface2);display:inline-flex;align-items:center;justify-content:center;cursor:grab;font-size:14px;color:var(--muted);flex:0 0 auto;}
+    .outlineDragHandle:active{cursor:grabbing;}
+    .mLeft.isDragSource{opacity:.6;}
+    .mLeft.drop-before{box-shadow: inset 0 3px 0 var(--brand);}
+    .mLeft.drop-after{box-shadow: inset 0 -3px 0 var(--brand);}
+    .rowControlsWrap{position:relative;display:inline-flex;align-items:center;flex:0 0 auto;}
+    .rowControlsBtn{padding:5px 10px;border-radius:999px;font-size:12px;font-weight:800;background:var(--surface2);box-shadow:none;}
+    .rowControlsMenu{position:absolute;top:calc(100% + 6px);left:0;display:none;grid-template-columns:repeat(2,minmax(96px,1fr));gap:6px;min-width:220px;padding:10px;border:1px solid var(--border);border-radius:14px;background:#fff;box-shadow:var(--shadow2);z-index:40;}
+    .rowControlsWrap:hover .rowControlsMenu,.rowControlsWrap:focus-within .rowControlsMenu{display:grid;}
+    .rowControlItem{padding:7px 10px;border-radius:10px;border:1px solid var(--border);background:#fff;font-size:12px;font-weight:800;cursor:pointer;box-shadow:none;}
+    .rowControlItem:hover{background:rgba(37,99,235,.06);border-color:rgba(37,99,235,.25);}
     .checkGrid{display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:8px; margin-top:8px;}
     .checkItem{display:flex; align-items:center; gap:8px; border:1px solid var(--line); border-radius:10px; padding:8px 10px; background:white;}
     .timelineTable{width:100%; border-collapse:collapse;}
@@ -1559,11 +1603,13 @@ ${headingNames.length ? 'Headings: ' + headingNames.join(' | ') : 'Heading not f
     async function persistOutlineStructure(nodeIds){
       if(!window.updateOutlineRow) return;
       const ids = Array.from(new Set((nodeIds || []).filter(Boolean)));
-      for(const id of ids){
+      if(!ids.length) return;
+      if(window.suppressOutlineRealtime) window.suppressOutlineRealtime(1500);
+      await Promise.all(ids.map(async (id)=>{
         const node = state.outline.find(n=>n.id===id);
-        if(!node) continue;
+        if(!node) return;
         await window.updateOutlineRow(id, { parent_row_id: node.parentId || null, sort_order: Number(node.order) || 0 });
-      }
+      }));
     }
     async function moveNode(id, dir){ const node = state.outline.find(n=>n.id===id); if(!node) return; const sibs = childrenOf(node.parentId); const idx = sibs.findIndex(x=>x.id===id); const swapWith = idx + dir; if(swapWith < 0 || swapWith >= sibs.length) return; const other = sibs[swapWith]; const tmp = node.order; node.order = other.order; other.order = tmp; normalizeOrders(node.parentId); safeSave(); renderOutline(); await persistOutlineStructure([node.id, other.id, ...childrenOf(node.parentId).map(x=>x.id)]); focusTitle(id); }
     async function indentNode(id){ const node = state.outline.find(n=>n.id===id); if(!node) return; const oldParent = node.parentId; const sibs = childrenOf(node.parentId); const idx = sibs.findIndex(x=>x.id===id); if(idx<=0) return; const newParent = sibs[idx-1]; node.parentId = newParent.id; node.order = childrenOf(newParent.id).length; normalizeOrders(newParent.id); normalizeOrders(oldParent); safeSave(); renderOutline(); await persistOutlineStructure([node.id, ...childrenOf(newParent.id).map(x=>x.id), ...childrenOf(oldParent).map(x=>x.id)]); focusTitle(id); }
@@ -1604,26 +1650,336 @@ ${headingNames.length ? 'Headings: ' + headingNames.join(' | ') : 'Heading not f
     function moveExhibit(docId, direction){ syncExhibitOrderWithUsage(); const arr = state.exhibitOrder || []; const idx = arr.indexOf(docId); if(idx < 0) return; const next = idx + direction; if(next < 0 || next >= arr.length) return; const tmp = arr[idx]; arr[idx] = arr[next]; arr[next] = tmp; syncExhibitOrderWithUsage(); safeSave(); renderExhibits(); renderOutline(); }
     function renderExhibits(){ const body = $('exhibitTableBody'); const table = $('exhibitTable'); const empty = $('exhibitEmpty'); if(!body || !table || !empty) return; rebuildExhibitsFromOutline(); syncExhibitOrderWithUsage(); body.innerHTML = ''; const rows = []; for(const ex of (state.exhibits || [])){ if(!ex) continue; const doc = state.documents.find(d => d.id === ex.docId); rows.push({ docId: ex.docId, label: ex.label || '', docName: doc && doc.name ? doc.name : '(missing document)' }); } if(!rows.length){ empty.style.display = ''; table.style.display = 'none'; return; } empty.style.display = 'none'; table.style.display = 'table'; rows.forEach((rowData, idx) => { const tr = document.createElement('tr'); tr.innerHTML = `<td style="padding:10px; border-bottom:1px solid var(--line); font-weight:700; white-space:nowrap">${escapeHtml(rowData.label)}</td><td style="padding:10px; border-bottom:1px solid var(--line)">${escapeHtml(rowData.docName)}</td><td style="padding:10px; border-bottom:1px solid var(--line); white-space:nowrap; text-align:right"><button class="btnSmall" ${idx===0 ? 'disabled' : ''} data-move="up">Up</button><button class="btnSmall" ${idx===rows.length-1 ? 'disabled' : ''} data-move="down">Down</button></td>`; tr.querySelector('[data-move="up"]').addEventListener('click', ()=> moveExhibit(rowData.docId, -1)); tr.querySelector('[data-move="down"]').addEventListener('click', ()=> moveExhibit(rowData.docId, 1)); body.appendChild(tr); }); }
     function flattenVisible(){ const out=[]; function walk(parentId){ const kids = childrenOf(parentId); for(const k of kids){ out.push(k); if(!k.collapsed) walk(k.id); } } walk(null); return out; }
-    function renderOutline(){ syncSelectionHints(); const empty = $('outlineEmpty'); const wrap = $('matrixWrap'); const matrix = $('matrix'); if(ui.outlineCompact) matrix.classList.add('outlineCompact'); else matrix.classList.remove('outlineCompact'); empty.style.display = state.outline.length ? 'none' : ''; wrap.style.display = state.outline.length ? '' : 'none'; if(!state.outline.length){ matrix.innerHTML = ''; return; } const witnessIds = allWitnessIds(); const witnesses = witnessIds.map(id => state.people.find(p=>p.id===id)).filter(Boolean); const activeWitness = witnesses.find(w => w.id === ui.activeWitnessColumnId) || witnesses[0] || null; if(activeWitness && ui.activeWitnessColumnId !== activeWitness.id) ui.activeWitnessColumnId = activeWitness.id; matrix.innerHTML = ''; const head = document.createElement('div'); head.className = 'mRow mHead'; const leftHead = document.createElement('div'); leftHead.className = 'leftHead'; leftHead.textContent = ui.outlineCompact ? 'Outline' : 'Heading / Notes'; const rightHead = document.createElement('div'); rightHead.className = 'wHead'; const wh = document.createElement('div'); wh.className = 'wColHead'; wh.innerHTML = !activeWitness ? 'Witness column<small>Add a witness to any row</small>' : `<div>${escapeHtml(activeWitness.name)}<small>Active witness • Exhibits + testimony</small></div>`; rightHead.appendChild(wh); head.appendChild(leftHead); head.appendChild(rightHead); matrix.appendChild(head); const rows = flattenVisible(); for(const n of rows){ const row = document.createElement('div'); row.className = 'mRow'; const left = document.createElement('div'); left.className = 'mLeft' + (ui.selectedNodeId===n.id ? ' selected' : ''); left.setAttribute('data-id', n.id); left.addEventListener('click', (e)=>{ const t = e.target; if(t && t.closest && t.closest('input, textarea, select, button, .rte, .rtbar, .chip, .exPick')) return; if(t && t.classList && t.classList.contains('caret')) return; ui.selectedNodeId = n.id; syncSelectionHints(); renderOutline(); }); const depth = depthOf(n.id); const indent = document.createElement('div'); indent.className = 'mIndent'; const depthPad = depth ? ((ui.outlineCompact ? 36 : 30) * depth) : 0; indent.style.width = depthPad + 'px'; left.style.paddingLeft = (8 + depthPad) + 'px'; left.setAttribute('data-depth', String(depth)); left.title = depth ? ('Level ' + (depth + 1)) : 'Top level'; if(depth){ left.style.background = 'linear-gradient(to right, rgba(37,99,235,.08), rgba(37,99,235,0) 120px)'; left.style.boxShadow = 'inset 4px 0 0 rgba(37,99,235,.18)'; } const guide = document.createElement('div'); guide.className = 'treeGuide'; guide.style.width = depth ? '16px' : '0px'; guide.style.visibility = depth ? 'visible' : 'hidden'; const branch = document.createElement('div'); branch.className = 'treeBranch'; branch.textContent = depth ? '↳' : ''; const caret = document.createElement('div'); caret.className = 'caret'; const hasKids = state.outline.some(x=>x.parentId===n.id); caret.textContent = hasKids ? (n.collapsed ? '▶' : '▼') : '•'; caret.title = hasKids ? (n.collapsed ? 'Expand' : 'Collapse') : ''; caret.addEventListener('click', ()=>{ if(hasKids) setCollapsed(n.id, !n.collapsed); }); const attachedWitnesses = (n.witnessIds || []).map(id => state.people.find(p=>p.id===id)).filter(Boolean); const titleBox = document.createElement('div'); titleBox.className = 'titleBox'; titleBox.innerHTML = `<div class="titleRow">${ui.outlineCompact ? '' : `<button type="button" class="detailToggle" data-act="toggleDetails" title="${n.detailsOpen ? 'Collapse details' : 'Expand details'}">${n.detailsOpen ? '−' : '+'}</button>`}${depth ? `<span class="pill" style="margin-right:6px; padding:4px 8px; font-size:11px">Child row</span>` : ''}<input class="titleInput" data-act="title" type="text" placeholder="Heading" value="${escapeHtml(n.title||'')}" /></div><div class="leftSub ${(n.detailsOpen && !ui.outlineCompact) ? 'open' : ''}"><div><div class="label">Date</div><input data-act="rowDate" type="date" value="${safeDateInputValue(n.rowDate)}" /><div class="label" style="margin-top:8px">Description</div><textarea data-act="desc" placeholder="Details / notes">${escapeHtml(n.description||'')}</textarea></div><div><div class="label">Tags</div><div data-act="rowTags"></div><div data-act="rowTagPicker"></div><div class="label" style="margin-top:8px">Add witness</div><select data-act="addWitness"></select><div class="label" style="margin-top:8px">Witnesses on this row</div><div class="witnessList" data-act="witnessList"></div><div class="witnessEmpty" data-act="witnessEmpty" style="display:none">No witnesses attached yet.</div><div class="label" style="margin-top:8px">Exhibits on this row</div><div class="witnessList" data-act="exhibitList"></div><div class="witnessEmpty" data-act="exhibitEmpty" style="display:none">No exhibits attached yet.</div></div></div>`; left.appendChild(indent); left.appendChild(guide); left.appendChild(branch); left.appendChild(caret); left.appendChild(titleBox); if(depth){ titleBox.style.marginLeft = (ui.outlineCompact ? 18 : 22) + 'px'; } const cells = document.createElement('div'); cells.className = 'mCells'; const c = document.createElement('div'); c.className = 'cell' + (n.detailsOpen ? '' : ' compact'); if(!activeWitness){ c.innerHTML = n.detailsOpen ? `<div class="hint">No witness column yet. Use “Add witness” on a row, then click that witness name in the row details.</div>` : `<div class="cellSummary">No active witness column</div>`; c.addEventListener('click', (e)=>{ e.stopPropagation(); ui.selectedNodeId = n.id; ui.selectedWitnessId = null; syncSelectionHints(); if(!n.detailsOpen) toggleDetails(n.id); else renderOutline(); }); cells.appendChild(c); } else { const witnessAttached = (n.witnessIds || []).includes(activeWitness.id); const wd = (n.witnessData && n.witnessData[activeWitness.id]) ? n.witnessData[activeWitness.id] : { exhibits: [], testimonyHtml: '' }; const exCount = (wd.exhibits || []).length; const testimonyText = String((wd.testimonyHtml || wd.testimony || '')).replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim(); const testimonySummary = testimonyText ? 'Testimony added' : 'No testimony'; if(!n.detailsOpen){ c.innerHTML = witnessAttached ? `<div class="cellSummary">${exCount ? exCount + ' exhibit' + (exCount===1 ? '' : 's') : 'No exhibits'} • ${testimonySummary}</div>` : `<div class="cellSummary">${escapeHtml(activeWitness.name)} not attached to this row</div>`; c.addEventListener('click', (e)=>{ e.stopPropagation(); ui.selectedNodeId = n.id; ui.selectedWitnessId = activeWitness.id; syncSelectionHints(); toggleDetails(n.id); }); cells.appendChild(c); } else if(!witnessAttached){ c.innerHTML = `<div class="hint">${escapeHtml(activeWitness.name)} is not attached to this row yet. Use the witness list in row details to switch columns, or add this witness to the row.</div>`; c.addEventListener('click', (e)=>{ e.stopPropagation(); ui.selectedNodeId = n.id; ui.selectedWitnessId = activeWitness.id; syncSelectionHints(); renderOutline(); }); cells.appendChild(c); } else { c.innerHTML = `<div class="label">Exhibits</div><select class="exPick" data-act="exPick" data-wid="${activeWitness.id}"><option value="">+ Add exhibit…</option></select><div class="chiprow" data-act="exList" data-wid="${activeWitness.id}"></div><div class="label" style="margin-top:10px">Testimony</div><div class="rtbar" data-act="rtbar" data-wid="${activeWitness.id}"><button type="button" class="rtbtn" data-cmd="bold"><b>B</b></button><button type="button" class="rtbtn" data-cmd="italic"><i>I</i></button><button type="button" class="rtbtn" data-cmd="underline"><u>U</u></button><button type="button" class="rtbtn" data-cmd="insertUnorderedList">• List</button><button type="button" class="rtbtn" data-cmd="insertOrderedList">1. List</button></div><div class="rte" contenteditable="true" data-act="testimony" data-wid="${activeWitness.id}" placeholder="Key testimony to elicit through this witness"></div>`; c.addEventListener('click', ()=>{ ui.selectedNodeId = n.id; ui.selectedWitnessId = activeWitness.id; syncSelectionHints(); renderOutline(); }); const chipRow = c.querySelector('[data-act="exList"]'); chipRow.innerHTML = ''; const exIds = (wd.exhibits||[]); for(const did of exIds){ const doc = state.documents.find(x=>x.id===did); getOrCreateExhibitForDoc(did, false); const chip = document.createElement('span'); chip.className = 'chip'; chip.innerHTML = `${escapeHtml(doc ? doc.name : 'Document')} <button title="Remove">×</button>`; chip.querySelector('button').addEventListener('click', (ev)=>{ ev.stopPropagation(); removeExhibitFromCell(n.id, activeWitness.id, did); }); chipRow.appendChild(chip); } const pick = c.querySelector('[data-act="exPick"]'); if(pick){ pick.innerHTML = '<option value="">+ Add exhibit…</option>'; const docsSorted = state.documents.slice().sort((a,b)=> (a.name||'').localeCompare(b.name||'')); for(const doc of docsSorted){ const opt = document.createElement('option'); opt.value = doc.id; opt.textContent = doc.name; pick.appendChild(opt); } pick.addEventListener('click', (ev)=>{ ev.stopPropagation(); }); pick.addEventListener('change', (ev)=>{ ev.stopPropagation(); const docId = pick.value; if(!docId) return; addExhibitToCell(n.id, activeWitness.id, docId); pick.value = ''; }); } const rte = c.querySelector('[data-act="testimony"][contenteditable="true"]'); const rteKey = testimonyCellKey(n.id, activeWitness.id); rte.innerHTML = wd.testimonyHtml || wd.testimony || ''; rte.addEventListener('focus', ()=>{ activeTestimonyEditKey = rteKey; }); rte.addEventListener('click', (ev)=>{ ev.stopPropagation(); }); rte.addEventListener('input', ()=>{ activeTestimonyEditKey = rteKey; updateLocalTestimonyState(n.id, activeWitness.id, rte.innerHTML); scheduleTestimonySave(n.id, activeWitness.id, rte.innerHTML); }); rte.addEventListener('blur', async ()=>{ await flushTestimonySave(n.id, activeWitness.id, rte.innerHTML); if(activeTestimonyEditKey === rteKey) activeTestimonyEditKey = null; }); const bar = c.querySelector('[data-act="rtbar"]'); bar.querySelectorAll('[data-cmd]').forEach(btn=>{ btn.addEventListener('click', (ev)=>{ ev.preventDefault(); ev.stopPropagation(); activeTestimonyEditKey = rteKey; rte.focus(); const cmd = btn.getAttribute('data-cmd'); document.execCommand(cmd, false, null); updateLocalTestimonyState(n.id, activeWitness.id, rte.innerHTML); scheduleTestimonySave(n.id, activeWitness.id, rte.innerHTML); }); }); cells.appendChild(c); } } row.appendChild(left); row.appendChild(cells); matrix.appendChild(row);
-        const titleInput = titleBox.querySelector('input[data-act="title"]'); const detailToggle = titleBox.querySelector('[data-act="toggleDetails"]'); const descArea = titleBox.querySelector('textarea[data-act="desc"]'); const rowDateInput = titleBox.querySelector('input[data-act="rowDate"]'); const rowTags = titleBox.querySelector('[data-act="rowTags"]'); const rowTagPicker = titleBox.querySelector('[data-act="rowTagPicker"]'); const addWitSel = titleBox.querySelector('select[data-act="addWitness"]'); const witnessList = titleBox.querySelector('[data-act="witnessList"]'); const witnessEmpty = titleBox.querySelector('[data-act="witnessEmpty"]'); const exhibitList = titleBox.querySelector('[data-act="exhibitList"]'); const exhibitEmpty = titleBox.querySelector('[data-act="exhibitEmpty"]');
+    let outlineDragState = { draggedId: null, overId: null, position: null };
+    function siblingRowsFor(nodeId){ const node = state.outline.find(n=>n.id===nodeId); return node ? childrenOf(node.parentId) : []; }
+    async function reorderNodeRelative(draggedId, targetId, position = 'after'){
+      if(!draggedId || !targetId || draggedId === targetId) return;
+      const dragged = state.outline.find(n=>n.id===draggedId);
+      const target = state.outline.find(n=>n.id===targetId);
+      if(!dragged || !target) return;
+      if((dragged.parentId || null) !== (target.parentId || null)) return;
+      const siblings = childrenOf(dragged.parentId).filter(n=>n.id !== draggedId);
+      const targetIndex = siblings.findIndex(n=>n.id === targetId);
+      if(targetIndex < 0) return;
+      const insertIndex = position === 'before' ? targetIndex : targetIndex + 1;
+      siblings.splice(insertIndex, 0, dragged);
+      siblings.forEach((node, idx)=>{ node.order = idx; });
+      safeSave();
+      renderOutline();
+      await persistOutlineStructure(siblings.map(n=>n.id));
+      focusTitle(draggedId);
+    }
+    async function runRowControl(action, nodeId){
+      if(!nodeId) return;
+      ui.selectedNodeId = nodeId;
+      ui.selectedWitnessId = null;
+      syncSelectionHints();
+      if(action === 'sibling'){
+        const n = state.outline.find(x=>x.id===nodeId); if(!n) return;
+        const sortOrder = getNextSortOrder(n.parentId || null);
+        await window.createOutlineRow({ parentRowId: n.parentId || null, heading: 'New heading', description: '', sortOrder });
+        return;
+      }
+      if(action === 'child'){
+        const sortOrder = getNextSortOrder(nodeId);
+        await window.createOutlineRow({ parentRowId: nodeId, heading: 'New heading', description: '', sortOrder });
+        return;
+      }
+      if(action === 'indent') return indentNode(nodeId);
+      if(action === 'outdent') return outdentNode(nodeId);
+      if(action === 'up') return moveNode(nodeId, -1);
+      if(action === 'down') return moveNode(nodeId, 1);
+      if(action === 'delete'){
+        const n = state.outline.find(x=>x.id===nodeId); if(!n) return;
+        if(!confirm(`Delete "${n.title || 'this row'}"?`)) return;
+        if(window.deleteOutlineRow){ const ok = await window.deleteOutlineRow(nodeId); if(!ok) return; }
+        state.outline = state.outline.filter(x => x.id !== nodeId);
+        if(ui.selectedNodeId === nodeId) ui.selectedNodeId = null;
+        if(ui.selectedWitnessId) ui.selectedWitnessId = null;
+        safeSave();
+        renderOutline();
+      }
+    }
+    function renderOutline(){
+      syncSelectionHints();
+      const empty = $('outlineEmpty');
+      const wrap = $('matrixWrap');
+      const matrix = $('matrix');
+      if(ui.outlineCompact) matrix.classList.add('outlineCompact'); else matrix.classList.remove('outlineCompact');
+      empty.style.display = state.outline.length ? 'none' : '';
+      wrap.style.display = state.outline.length ? '' : 'none';
+      if(!state.outline.length){ matrix.innerHTML = ''; return; }
+
+      const witnessIds = allWitnessIds();
+      const witnesses = witnessIds.map(id => state.people.find(p=>p.id===id)).filter(Boolean);
+      const activeWitness = witnesses.find(w => w.id === ui.activeWitnessColumnId) || witnesses[0] || null;
+      if(activeWitness && ui.activeWitnessColumnId !== activeWitness.id) ui.activeWitnessColumnId = activeWitness.id;
+
+      matrix.innerHTML = '';
+      const head = document.createElement('div');
+      head.className = 'mRow mHead';
+      head.innerHTML = `<div class="leftHead">${ui.outlineCompact ? 'Outline' : 'Heading / Notes'}</div><div class="wHead"><div class="wColHead">${!activeWitness ? 'Witness column<small>Add a witness to any row</small>' : `<div>${escapeHtml(activeWitness.name)}<small>Active witness • Exhibits + testimony</small></div>`}</div></div>`;
+      matrix.appendChild(head);
+
+      const rows = flattenVisible();
+      for(const n of rows){
+        const row = document.createElement('div');
+        row.className = 'mRow';
+
+        const left = document.createElement('div');
+        left.className = 'mLeft' + (ui.selectedNodeId===n.id ? ' selected' : '');
+        left.dataset.id = n.id;
+
+        const depth = depthOf(n.id);
+        const depthPad = depth ? ((ui.outlineCompact ? 36 : 30) * depth) : 0;
+        left.style.paddingLeft = (8 + depthPad) + 'px';
+        left.dataset.depth = String(depth);
+        left.title = depth ? ('Level ' + (depth + 1)) : 'Top level';
+        if(depth){
+          left.style.background = 'linear-gradient(to right, rgba(37,99,235,.08), rgba(37,99,235,0) 120px)';
+          left.style.boxShadow = 'inset 4px 0 0 rgba(37,99,235,.18)';
+        }
+        if(outlineDragState.overId === n.id && outlineDragState.position){
+          left.classList.add(outlineDragState.position === 'before' ? 'drop-before' : 'drop-after');
+        }
+        if(outlineDragState.draggedId === n.id){
+          left.classList.add('isDragSource');
+        }
+
+        left.addEventListener('click', (e)=>{
+          const t = e.target;
+          if(t && t.closest && t.closest('input, textarea, select, button, .rte, .rtbar, .chip, .exPick, .rowControlsMenu, .outlineDragHandle')) return;
+          if(t && t.classList && t.classList.contains('caret')) return;
+          ui.selectedNodeId = n.id;
+          syncSelectionHints();
+          renderOutline();
+        });
+        left.addEventListener('dragover', (e)=>{
+          if(!outlineDragState.draggedId || outlineDragState.draggedId === n.id) return;
+          const dragged = state.outline.find(x=>x.id===outlineDragState.draggedId);
+          if(!dragged || (dragged.parentId || null) !== (n.parentId || null)) return;
+          e.preventDefault();
+          const rect = left.getBoundingClientRect();
+          outlineDragState.overId = n.id;
+          outlineDragState.position = (e.clientY - rect.top) < rect.height / 2 ? 'before' : 'after';
+          renderOutline();
+        });
+        left.addEventListener('dragleave', ()=>{
+          if(outlineDragState.overId === n.id){ outlineDragState.overId = null; outlineDragState.position = null; renderOutline(); }
+        });
+        left.addEventListener('drop', async (e)=>{
+          e.preventDefault();
+          const draggedId = outlineDragState.draggedId;
+          const position = outlineDragState.position || 'after';
+          outlineDragState = { draggedId: null, overId: null, position: null };
+          await reorderNodeRelative(draggedId, n.id, position);
+        });
+
+        const indent = document.createElement('div');
+        indent.className = 'mIndent';
+        indent.style.width = depthPad + 'px';
+        const guide = document.createElement('div');
+        guide.className = 'treeGuide';
+        guide.style.width = depth ? '16px' : '0px';
+        guide.style.visibility = depth ? 'visible' : 'hidden';
+        const branch = document.createElement('div');
+        branch.className = 'treeBranch';
+        branch.textContent = depth ? '↳' : '';
+        const caret = document.createElement('div');
+        caret.className = 'caret';
+        const hasKids = state.outline.some(x=>x.parentId===n.id);
+        caret.textContent = hasKids ? (n.collapsed ? '▶' : '▼') : '•';
+        caret.title = hasKids ? (n.collapsed ? 'Expand' : 'Collapse') : '';
+        caret.addEventListener('click', ()=>{ if(hasKids) setCollapsed(n.id, !n.collapsed); });
+
+        const titleBox = document.createElement('div');
+        titleBox.className = 'titleBox';
+        const titleRow = document.createElement('div');
+        titleRow.className = 'titleRow';
+
+        const dragHandle = document.createElement('button');
+        dragHandle.type = 'button';
+        dragHandle.className = 'outlineDragHandle';
+        dragHandle.title = depth ? 'Drag within this parent only' : 'Drag to reorder top-level headings';
+        dragHandle.textContent = '⋮⋮';
+        dragHandle.draggable = true;
+        dragHandle.addEventListener('dragstart', (e)=>{
+          outlineDragState = { draggedId: n.id, overId: null, position: null };
+          e.dataTransfer.effectAllowed = 'move';
+          try { e.dataTransfer.setData('text/plain', n.id); } catch {}
+        });
+        dragHandle.addEventListener('dragend', ()=>{ outlineDragState = { draggedId: null, overId: null, position: null }; renderOutline(); });
+
+        const detailToggle = document.createElement('button');
+        detailToggle.type = 'button';
+        detailToggle.className = 'detailToggle';
+        detailToggle.dataset.act = 'toggleDetails';
+        detailToggle.title = n.detailsOpen ? 'Collapse details' : 'Expand details';
+        detailToggle.textContent = n.detailsOpen ? '−' : '+';
+
+        const childPill = depth ? `<span class="pill" style="margin-right:6px; padding:4px 8px; font-size:11px">Child row</span>` : '';
+        const titleInput = document.createElement('input');
+        titleInput.className = 'titleInput';
+        titleInput.dataset.act = 'title';
+        titleInput.type = 'text';
+        titleInput.placeholder = 'Heading';
+        titleInput.value = n.title || '';
+
+        const controlsWrap = document.createElement('div');
+        controlsWrap.className = 'rowControlsWrap';
+        controlsWrap.innerHTML = `<button type="button" class="rowControlsBtn">Controls</button><div class="rowControlsMenu">          <button type="button" class="rowControlItem" data-row-control="sibling">+ Sibling</button>          <button type="button" class="rowControlItem" data-row-control="child">+ Child</button>          <button type="button" class="rowControlItem" data-row-control="indent">Indent</button>          <button type="button" class="rowControlItem" data-row-control="outdent">Outdent</button>          <button type="button" class="rowControlItem" data-row-control="up">Move up</button>          <button type="button" class="rowControlItem" data-row-control="down">Move down</button>          <button type="button" class="rowControlItem" data-row-control="delete">Delete</button>        </div>`;
+
+        if(!ui.outlineCompact) titleRow.append(detailToggle);
+        titleRow.append(dragHandle);
+        if(childPill){ const pillWrap = document.createElement('div'); pillWrap.innerHTML = childPill; titleRow.append(...pillWrap.childNodes); }
+        titleRow.append(titleInput, controlsWrap);
+
+        const leftSub = document.createElement('div');
+        leftSub.className = 'leftSub' + ((n.detailsOpen && !ui.outlineCompact) ? ' open' : '');
+        leftSub.innerHTML = `<div><div class="label">Date</div><input data-act="rowDate" type="date" value="${safeDateInputValue(n.rowDate)}" /><div class="label" style="margin-top:8px">Description</div><textarea data-act="desc" placeholder="Details / notes">${escapeHtml(n.description||'')}</textarea></div><div><div class="label">Tags</div><div data-act="rowTags"></div><div data-act="rowTagPicker"></div><div class="label" style="margin-top:8px">Add witness</div><select data-act="addWitness"></select><div class="label" style="margin-top:8px">Witnesses on this row</div><div class="witnessList" data-act="witnessList"></div><div class="witnessEmpty" data-act="witnessEmpty" style="display:none">No witnesses attached yet.</div><div class="label" style="margin-top:8px">Exhibits on this row</div><div class="witnessList" data-act="exhibitList"></div><div class="witnessEmpty" data-act="exhibitEmpty" style="display:none">No exhibits attached yet.</div></div>`;
+        titleBox.append(titleRow, leftSub);
+        if(depth) titleBox.style.marginLeft = (ui.outlineCompact ? 18 : 22) + 'px';
+
+        left.append(indent, guide, branch, caret, titleBox);
+
+        const cells = document.createElement('div');
+        cells.className = 'mCells';
+        const c = document.createElement('div');
+        c.className = 'cell' + (n.detailsOpen ? '' : ' compact');
+
+        if(!activeWitness){
+          c.innerHTML = n.detailsOpen ? `<div class="hint">No witness column yet. Use “Add witness” on a row, then click that witness name in the row details.</div>` : `<div class="cellSummary">No active witness column</div>`;
+          c.addEventListener('click', (e)=>{ e.stopPropagation(); ui.selectedNodeId = n.id; ui.selectedWitnessId = null; syncSelectionHints(); if(!n.detailsOpen) toggleDetails(n.id); else renderOutline(); });
+          cells.appendChild(c);
+        } else {
+          const witnessAttached = (n.witnessIds || []).includes(activeWitness.id);
+          const wd = (n.witnessData && n.witnessData[activeWitness.id]) ? n.witnessData[activeWitness.id] : { exhibits: [], testimonyHtml: '' };
+          const exCount = (wd.exhibits || []).length;
+          const testimonyText = String((wd.testimonyHtml || wd.testimony || '')).replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+          const testimonySummary = testimonyText ? 'Testimony added' : 'No testimony';
+          if(!n.detailsOpen){
+            c.innerHTML = witnessAttached ? `<div class="cellSummary">${exCount ? exCount + ' exhibit' + (exCount===1 ? '' : 's') : 'No exhibits'} • ${testimonySummary}</div>` : `<div class="cellSummary">${escapeHtml(activeWitness.name)} not attached to this row</div>`;
+            c.addEventListener('click', (e)=>{ e.stopPropagation(); ui.selectedNodeId = n.id; ui.selectedWitnessId = activeWitness.id; syncSelectionHints(); toggleDetails(n.id); });
+            cells.appendChild(c);
+          } else if(!witnessAttached){
+            c.innerHTML = `<div class="hint">${escapeHtml(activeWitness.name)} is not attached to this row yet. Use the witness list in row details to switch columns, or add this witness to the row.</div>`;
+            c.addEventListener('click', (e)=>{ e.stopPropagation(); ui.selectedNodeId = n.id; ui.selectedWitnessId = activeWitness.id; syncSelectionHints(); renderOutline(); });
+            cells.appendChild(c);
+          } else {
+            c.innerHTML = `<div class="label">Exhibits</div><select class="exPick" data-act="exPick" data-wid="${activeWitness.id}"><option value="">+ Add exhibit…</option></select><div class="chiprow" data-act="exList" data-wid="${activeWitness.id}"></div><div class="label" style="margin-top:10px">Testimony</div><div class="rtbar" data-act="rtbar" data-wid="${activeWitness.id}"><button type="button" class="rtbtn" data-cmd="bold"><b>B</b></button><button type="button" class="rtbtn" data-cmd="italic"><i>I</i></button><button type="button" class="rtbtn" data-cmd="underline"><u>U</u></button><button type="button" class="rtbtn" data-cmd="insertUnorderedList">• List</button><button type="button" class="rtbtn" data-cmd="insertOrderedList">1. List</button></div><div class="rte" contenteditable="true" data-act="testimony" data-wid="${activeWitness.id}" placeholder="Key testimony to elicit through this witness"></div>`;
+            c.addEventListener('click', ()=>{ ui.selectedNodeId = n.id; ui.selectedWitnessId = activeWitness.id; syncSelectionHints(); renderOutline(); });
+            const chipRow = c.querySelector('[data-act="exList"]');
+            chipRow.innerHTML = '';
+            for(const did of (wd.exhibits||[])){
+              const doc = state.documents.find(x=>x.id===did);
+              getOrCreateExhibitForDoc(did, false);
+              const chip = document.createElement('span');
+              chip.className = 'chip';
+              chip.innerHTML = `${escapeHtml(doc ? doc.name : 'Document')} <button title="Remove">×</button>`;
+              chip.querySelector('button').addEventListener('click', (ev)=>{ ev.stopPropagation(); removeExhibitFromCell(n.id, activeWitness.id, did); });
+              chipRow.appendChild(chip);
+            }
+            const pick = c.querySelector('[data-act="exPick"]');
+            pick.innerHTML = '<option value="">+ Add exhibit…</option>';
+            const docsSorted = state.documents.slice().sort((a,b)=> (a.name||'').localeCompare(b.name||''));
+            for(const doc of docsSorted){ const opt = document.createElement('option'); opt.value = doc.id; opt.textContent = doc.name; pick.appendChild(opt); }
+            pick.addEventListener('click', (ev)=>{ ev.stopPropagation(); });
+            pick.addEventListener('change', (ev)=>{ ev.stopPropagation(); const docId = pick.value; if(!docId) return; addExhibitToCell(n.id, activeWitness.id, docId); pick.value = ''; });
+            const rte = c.querySelector('[data-act="testimony"][contenteditable="true"]');
+            const rteKey = testimonyCellKey(n.id, activeWitness.id);
+            rte.innerHTML = wd.testimonyHtml || wd.testimony || '';
+            rte.addEventListener('focus', ()=>{ activeTestimonyEditKey = rteKey; });
+            rte.addEventListener('click', (ev)=>{ ev.stopPropagation(); });
+            rte.addEventListener('input', ()=>{ activeTestimonyEditKey = rteKey; updateLocalTestimonyState(n.id, activeWitness.id, rte.innerHTML); scheduleTestimonySave(n.id, activeWitness.id, rte.innerHTML); });
+            rte.addEventListener('blur', async ()=>{ await flushTestimonySave(n.id, activeWitness.id, rte.innerHTML); if(activeTestimonyEditKey === rteKey) activeTestimonyEditKey = null; });
+            const bar = c.querySelector('[data-act="rtbar"]');
+            bar.querySelectorAll('[data-cmd]').forEach(btn=>{ btn.addEventListener('click', (ev)=>{ ev.preventDefault(); ev.stopPropagation(); activeTestimonyEditKey = rteKey; rte.focus(); const cmd = btn.getAttribute('data-cmd'); document.execCommand(cmd, false, null); updateLocalTestimonyState(n.id, activeWitness.id, rte.innerHTML); scheduleTestimonySave(n.id, activeWitness.id, rte.innerHTML); }); });
+            cells.appendChild(c);
+          }
+        }
+
+        row.append(left, cells);
+        matrix.appendChild(row);
+
+        const descArea = leftSub.querySelector('textarea[data-act="desc"]');
+        const rowDateInput = leftSub.querySelector('input[data-act="rowDate"]');
+        const rowTags = leftSub.querySelector('[data-act="rowTags"]');
+        const rowTagPicker = leftSub.querySelector('[data-act="rowTagPicker"]');
+        const addWitSel = leftSub.querySelector('select[data-act="addWitness"]');
+        const witnessList = leftSub.querySelector('[data-act="witnessList"]');
+        const witnessEmpty = leftSub.querySelector('[data-act="witnessEmpty"]');
+        const exhibitList = leftSub.querySelector('[data-act="exhibitList"]');
+        const exhibitEmpty = leftSub.querySelector('[data-act="exhibitEmpty"]');
+        const attachedWitnesses = (n.witnessIds || []).map(id => state.people.find(p=>p.id===id)).filter(Boolean);
+
         if(rowTags) rowTags.innerHTML = renderAssignedTagPills(n.tags || [], 'row', n.id);
         if(rowTagPicker) rowTagPicker.innerHTML = renderTagPicker('row', n.id, n.tags || []);
-        addWitSel.innerHTML = ''; const opt0 = document.createElement('option'); opt0.value = ''; opt0.textContent = state.people.length ? 'Select person…' : 'Add people first'; addWitSel.appendChild(opt0); for(const p of state.people.slice().sort((a,b)=> (a.name||'').localeCompare(b.name||'')) ){ const opt = document.createElement('option'); opt.value = p.id; opt.textContent = p.name; addWitSel.appendChild(opt); }
-        witnessList.innerHTML = ''; if(attachedWitnesses.length){ for(const p of attachedWitnesses){ const btn = document.createElement('button'); btn.type = 'button'; btn.className = 'witnessBtn' + (activeWitness && activeWitness.id === p.id ? ' active' : ''); btn.textContent = p.name; btn.title = 'Show this witness column'; btn.addEventListener('click', (e)=>{ e.stopPropagation(); ui.selectedNodeId = n.id; ui.selectedWitnessId = p.id; ui.activeWitnessColumnId = p.id; if(!n.detailsOpen) n.detailsOpen = true; safeSave(); renderOutline(); }); witnessList.appendChild(btn); } witnessEmpty.style.display = 'none'; } else { witnessEmpty.style.display = ''; }
-        exhibitList.innerHTML = ''; const exhibitDocIds = []; const exhibitSeen = new Set(); const witnessDataMap = n.witnessData || {}; for(const wid of Object.keys(witnessDataMap)){ for(const did of (witnessDataMap[wid].exhibits || [])){ if(exhibitSeen.has(did)) continue; exhibitSeen.add(did); exhibitDocIds.push(did); } } if(exhibitDocIds.length){ for(const did of exhibitDocIds){ const doc = state.documents.find(x=>x.id===did); const exBtn = document.createElement('button'); exBtn.type = 'button'; exBtn.className = 'witnessBtn'; exBtn.textContent = doc ? doc.name : 'Document'; exBtn.title = 'This exhibit is attached on this row'; exBtn.addEventListener('click', (e)=>{ e.stopPropagation(); ui.selectedNodeId = n.id; syncSelectionHints(); if(!n.detailsOpen) n.detailsOpen = true; renderOutline(); }); exhibitList.appendChild(exBtn); } exhibitEmpty.style.display = 'none'; } else { exhibitEmpty.style.display = ''; }
-        if(detailToggle) detailToggle.addEventListener('click', (e)=>{ e.stopPropagation(); ui.selectedNodeId = n.id; ui.selectedWitnessId = null; syncSelectionHints(); toggleDetails(n.id); });
+        addWitSel.innerHTML = '';
+        const opt0 = document.createElement('option');
+        opt0.value = '';
+        opt0.textContent = state.people.length ? 'Select person…' : 'Add people first';
+        addWitSel.appendChild(opt0);
+        for(const p of state.people.slice().sort((a,b)=> (a.name||'').localeCompare(b.name||''))){ const opt = document.createElement('option'); opt.value = p.id; opt.textContent = p.name; addWitSel.appendChild(opt); }
+
+        witnessList.innerHTML = '';
+        if(attachedWitnesses.length){
+          for(const p of attachedWitnesses){
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'witnessBtn' + (activeWitness && activeWitness.id === p.id ? ' active' : '');
+            btn.textContent = p.name;
+            btn.title = 'Show this witness column';
+            btn.addEventListener('click', (e)=>{ e.stopPropagation(); ui.selectedNodeId = n.id; ui.selectedWitnessId = p.id; ui.activeWitnessColumnId = p.id; if(!n.detailsOpen) n.detailsOpen = true; safeSave(); renderOutline(); });
+            witnessList.appendChild(btn);
+          }
+          witnessEmpty.style.display = 'none';
+        } else witnessEmpty.style.display = '';
+
+        exhibitList.innerHTML = '';
+        const exhibitDocIds = [];
+        const exhibitSeen = new Set();
+        const witnessDataMap = n.witnessData || {};
+        for(const wid of Object.keys(witnessDataMap)) for(const did of (witnessDataMap[wid].exhibits || [])){ if(!exhibitSeen.has(did)){ exhibitSeen.add(did); exhibitDocIds.push(did); } }
+        if(exhibitDocIds.length){
+          for(const did of exhibitDocIds){
+            const doc = state.documents.find(x=>x.id===did);
+            const exBtn = document.createElement('button');
+            exBtn.type = 'button';
+            exBtn.className = 'witnessBtn';
+            exBtn.textContent = doc ? doc.name : 'Document';
+            exBtn.title = 'This exhibit is attached on this row';
+            exBtn.addEventListener('click', (e)=>{ e.stopPropagation(); ui.selectedNodeId = n.id; syncSelectionHints(); if(!n.detailsOpen) n.detailsOpen = true; renderOutline(); });
+            exhibitList.appendChild(exBtn);
+          }
+          exhibitEmpty.style.display = 'none';
+        } else exhibitEmpty.style.display = '';
+
+        detailToggle?.addEventListener('click', (e)=>{ e.stopPropagation(); ui.selectedNodeId = n.id; ui.selectedWitnessId = null; syncSelectionHints(); toggleDetails(n.id); });
         titleInput.addEventListener('click', (e)=>{ e.stopPropagation(); ui.selectedNodeId = n.id; ui.selectedWitnessId = null; syncSelectionHints(); if(!ui.outlineCompact && !n.detailsOpen){ n.detailsOpen = true; safeSave(); renderOutline(); focusTitle(n.id); } });
         titleInput.addEventListener('focus', ()=>{ activeOutlineEdit = { nodeId: n.id, field: 'title' }; window.isOutlineEditing = true; ui.selectedNodeId = n.id; ui.selectedWitnessId = null; syncSelectionHints(); });
-        descArea.addEventListener('focus', ()=>{ activeOutlineEdit = { nodeId: n.id, field: 'description' }; window.isOutlineEditing = true; ui.selectedNodeId = n.id; ui.selectedWitnessId = null; syncSelectionHints(); }); if(rowDateInput) rowDateInput.addEventListener('focus', ()=>{ activeOutlineEdit = { nodeId: n.id, field: 'rowDate' }; window.isOutlineEditing = true; ui.selectedNodeId = n.id; ui.selectedWitnessId = null; syncSelectionHints(); });
+        descArea.addEventListener('focus', ()=>{ activeOutlineEdit = { nodeId: n.id, field: 'description' }; window.isOutlineEditing = true; ui.selectedNodeId = n.id; ui.selectedWitnessId = null; syncSelectionHints(); });
+        rowDateInput?.addEventListener('focus', ()=>{ activeOutlineEdit = { nodeId: n.id, field: 'rowDate' }; window.isOutlineEditing = true; ui.selectedNodeId = n.id; ui.selectedWitnessId = null; syncSelectionHints(); });
         titleInput.addEventListener('input', ()=>{ activeOutlineEdit = { nodeId: n.id, field: 'title' }; updateLocalOutlineField(n.id, 'title', titleInput.value); scheduleOutlineFieldSave(n.id, 'title', titleInput.value); });
-        descArea.addEventListener('input', ()=>{ activeOutlineEdit = { nodeId: n.id, field: 'description' }; updateLocalOutlineField(n.id, 'description', descArea.value); scheduleOutlineFieldSave(n.id, 'description', descArea.value); }); if(rowDateInput) rowDateInput.addEventListener('input', ()=>{ activeOutlineEdit = { nodeId: n.id, field: 'rowDate' }; updateLocalOutlineField(n.id, 'rowDate', rowDateInput.value); scheduleOutlineFieldSave(n.id, 'rowDate', rowDateInput.value, 250); });
+        descArea.addEventListener('input', ()=>{ activeOutlineEdit = { nodeId: n.id, field: 'description' }; updateLocalOutlineField(n.id, 'description', descArea.value); scheduleOutlineFieldSave(n.id, 'description', descArea.value); });
+        rowDateInput?.addEventListener('input', ()=>{ activeOutlineEdit = { nodeId: n.id, field: 'rowDate' }; updateLocalOutlineField(n.id, 'rowDate', rowDateInput.value); scheduleOutlineFieldSave(n.id, 'rowDate', rowDateInput.value, 250); });
         titleInput.addEventListener('blur', async ()=>{ await flushOutlineFieldSave(n.id, 'title', titleInput.value); if(activeOutlineEdit && activeOutlineEdit.nodeId === n.id && activeOutlineEdit.field === 'title') activeOutlineEdit = null; window.isOutlineEditing = !!activeOutlineEdit; if(window.pendingOutlineRefresh && !window.isOutlineEditing){ window.pendingOutlineRefresh = false; await window.loadOutlineRows(); } });
-        descArea.addEventListener('blur', async ()=>{ await flushOutlineFieldSave(n.id, 'description', descArea.value); if(activeOutlineEdit && activeOutlineEdit.nodeId === n.id && activeOutlineEdit.field === 'description') activeOutlineEdit = null; window.isOutlineEditing = !!activeOutlineEdit; if(window.pendingOutlineRefresh && !window.isOutlineEditing){ window.pendingOutlineRefresh = false; await window.loadOutlineRows(); } }); if(rowDateInput) rowDateInput.addEventListener('blur', async ()=>{ await flushOutlineFieldSave(n.id, 'rowDate', rowDateInput.value); if(activeOutlineEdit && activeOutlineEdit.nodeId === n.id && activeOutlineEdit.field === 'rowDate') activeOutlineEdit = null; window.isOutlineEditing = !!activeOutlineEdit; if(window.pendingOutlineRefresh && !window.isOutlineEditing){ window.pendingOutlineRefresh = false; await window.loadOutlineRows(); } });
-        if(rowTagPicker){ const sel = rowTagPicker.querySelector('.tagPicker'); if(sel){ sel.addEventListener('change', async ()=>{ await handleTagPickerChange(sel); }); }}
-        if(rowTags){ rowTags.querySelectorAll('.tagRemoveBtn').forEach(btn=>{ btn.addEventListener('click', async (ev)=>{ ev.stopPropagation(); const tagId = btn.getAttribute('data-tag-id'); const ok = await window.removeRowTag(n.id, tagId); if(ok) await window.loadRowTags(); }); }); }
+        descArea.addEventListener('blur', async ()=>{ await flushOutlineFieldSave(n.id, 'description', descArea.value); if(activeOutlineEdit && activeOutlineEdit.nodeId === n.id && activeOutlineEdit.field === 'description') activeOutlineEdit = null; window.isOutlineEditing = !!activeOutlineEdit; if(window.pendingOutlineRefresh && !window.isOutlineEditing){ window.pendingOutlineRefresh = false; await window.loadOutlineRows(); } });
+        rowDateInput?.addEventListener('blur', async ()=>{ await flushOutlineFieldSave(n.id, 'rowDate', rowDateInput.value); if(activeOutlineEdit && activeOutlineEdit.nodeId === n.id && activeOutlineEdit.field === 'rowDate') activeOutlineEdit = null; window.isOutlineEditing = !!activeOutlineEdit; if(window.pendingOutlineRefresh && !window.isOutlineEditing){ window.pendingOutlineRefresh = false; await window.loadOutlineRows(); } });
+        rowTagPicker?.querySelector('.tagPicker')?.addEventListener('change', async (ev)=>{ await handleTagPickerChange(ev.currentTarget); });
+        rowTags?.querySelectorAll('.tagRemoveBtn').forEach(btn=> btn.addEventListener('click', async (ev)=>{ ev.stopPropagation(); const tagId = btn.getAttribute('data-tag-id'); const ok = await window.removeRowTag(n.id, tagId); if(ok) await window.loadRowTags(); }));
         addWitSel.addEventListener('change', ()=>{ const pid = addWitSel.value; addWitSel.value = ''; addWitnessToNode(n.id, pid); });
-        titleInput.addEventListener('keydown', (e)=>{ if(e.key === 'Tab'){ e.preventDefault(); if(e.shiftKey) outdentNode(n.id); else indentNode(n.id); return; } if(e.key === 'Enter'){ e.preventDefault(); const newId = addNode({ parentId: n.parentId, afterId: n.id }); ui.selectedNodeId = newId; ui.selectedWitnessId = null; syncSelectionHints(); focusTitle(newId); return; } if(e.key === 'ArrowUp'){ e.preventDefault(); focusRelativeRow(n.id, -1); return; } if(e.key === 'ArrowDown'){ e.preventDefault(); focusRelativeRow(n.id, 1); return; } if(e.key === 'ArrowRight'){ e.preventDefault(); const hasKids = state.outline.some(x=>x.parentId===n.id); if(hasKids && n.collapsed) setCollapsed(n.id, false); else if(!n.detailsOpen) setDetailsOpen(n.id, true); else focusRelativeRow(n.id, 1); return; } if(e.key === 'ArrowLeft'){ e.preventDefault(); const hasKids = state.outline.some(x=>x.parentId===n.id); if(n.detailsOpen) setDetailsOpen(n.id, false); else if(hasKids && !n.collapsed) setCollapsed(n.id, true); else if(n.parentId){ ui.selectedNodeId = n.parentId; ui.selectedWitnessId = null; syncSelectionHints(); renderOutline(); focusTitle(n.parentId); } return; } if(e.key === 'Escape' && n.detailsOpen){ e.preventDefault(); setDetailsOpen(n.id, false); } });
-      } }
+        controlsWrap.querySelectorAll('[data-row-control]').forEach(btn=> btn.addEventListener('click', async (ev)=>{ ev.preventDefault(); ev.stopPropagation(); await runRowControl(btn.getAttribute('data-row-control'), n.id); }));
+        titleInput.addEventListener('keydown', (e)=>{
+          if(e.key === 'Tab'){ e.preventDefault(); if(e.shiftKey) outdentNode(n.id); else indentNode(n.id); return; }
+          if(e.key === 'Enter'){ e.preventDefault(); const newId = addNode({ parentId: n.parentId, afterId: n.id }); ui.selectedNodeId = newId; ui.selectedWitnessId = null; syncSelectionHints(); focusTitle(newId); return; }
+          if(e.key === 'ArrowUp'){ e.preventDefault(); focusRelativeRow(n.id, -1); return; }
+          if(e.key === 'ArrowDown'){ e.preventDefault(); focusRelativeRow(n.id, 1); return; }
+          if(e.key === 'ArrowRight'){ e.preventDefault(); if(hasKids && n.collapsed) setCollapsed(n.id, false); else if(!n.detailsOpen) setDetailsOpen(n.id, true); else focusRelativeRow(n.id, 1); return; }
+          if(e.key === 'ArrowLeft'){ e.preventDefault(); if(n.detailsOpen) setDetailsOpen(n.id, false); else if(hasKids && !n.collapsed) setCollapsed(n.id, true); else if(n.parentId){ ui.selectedNodeId = n.parentId; ui.selectedWitnessId = null; syncSelectionHints(); renderOutline(); focusTitle(n.parentId); } return; }
+          if(e.key === 'Escape' && n.detailsOpen){ e.preventDefault(); setDetailsOpen(n.id, false); }
+        });
+      }
+    }
     window.renderOutline = renderOutline;
     function collapseAll(){
       let changed = false;
@@ -1647,7 +2003,7 @@ ${headingNames.length ? 'Headings: ' + headingNames.join(' | ') : 'Heading not f
     function getSelectedNode(){ return state.outline.find(n=>n.id===ui.selectedNodeId); }
     function runOnSelected(fn){ const nid = ui.selectedNodeId; if(!nid){ alert('Select an outline row first.'); return; } fn(nid); }
     function syncSelectionHints(){ const sel = $('selHint'); const ex = $('exHint'); const n = getSelectedNode(); if(sel) sel.textContent = ui.selectedNodeId ? ('Selected row: ' + ((n && n.title) ? n.title : '(untitled)')) : 'Select a row, then use these controls'; const active = state.people.find(p=>p.id===ui.activeWitnessColumnId); if(ex) ex.textContent = active ? ('Active witness column: ' + active.name) : 'Open a row, click a witness name, then add exhibits/testimony'; }
-    function bindOutlineActionButtons(){ const map = [['actSibling', async (nid)=>{ const n = state.outline.find(x=>x.id===nid); if (!n) return; const parentId = n.parentId || null; const sortOrder = getNextSortOrder(parentId); await window.createOutlineRow({ parentRowId: parentId, heading: 'New heading', description: '', sortOrder }); }],['actChild', async (nid)=>{ const sortOrder = getNextSortOrder(nid); await window.createOutlineRow({ parentRowId: nid, heading: 'New heading', description: '', sortOrder }); }],['actIndent', (nid)=> indentNode(nid)],['actOutdent', (nid)=> outdentNode(nid)],['actUp', (nid)=> moveNode(nid, -1)],['actDown', (nid)=> moveNode(nid, 1)],['actDelete', async (nid)=>{ const n = state.outline.find(x=>x.id===nid); if(!n) return; if(!confirm(`Delete "${n.title || 'this row'}"?`)) return; if (window.deleteOutlineRow) { const ok = await window.deleteOutlineRow(nid); if (!ok) return; } state.outline = state.outline.filter(x => x.id !== nid); if (ui.selectedNodeId === nid) ui.selectedNodeId = null; if (ui.selectedWitnessId) ui.selectedWitnessId = null; safeSave(); renderOutline(); }]]; for(const [id, fn] of map){ const b = $(id); if(!b) continue; b.addEventListener('click', ()=> runOnSelected(fn)); } const addEx = $('actAddExhibit'); if(addEx) addEx.addEventListener('click', addExhibitToSelected); }
+    function bindOutlineActionButtons(){ const map = [['actSibling', (nid)=> runRowControl('sibling', nid)],['actChild', (nid)=> runRowControl('child', nid)],['actIndent', (nid)=> runRowControl('indent', nid)],['actOutdent', (nid)=> runRowControl('outdent', nid)],['actUp', (nid)=> runRowControl('up', nid)],['actDown', (nid)=> runRowControl('down', nid)],['actDelete', (nid)=> runRowControl('delete', nid)]]; for(const [id, fn] of map){ const b = $(id); if(!b) continue; b.addEventListener('click', ()=> runOnSelected(fn)); } const addEx = $('actAddExhibit'); if(addEx) addEx.addEventListener('click', addExhibitToSelected); }
     bindOutlineActionButtons();
     $('addTop').addEventListener('click', async () => { const nextSortOrder = (window.loadedRows && window.loadedRows.length) ? Math.max(...window.loadedRows.map(r => Number(r.sort_order) || 0)) + 1 : 1; await window.createOutlineRow({ parentRowId: null, heading: 'New heading', description: '', sortOrder: nextSortOrder }); });
     $('collapseAll').addEventListener('click', collapseAll); $('expandAll').addEventListener('click', expandAll); $('outlineCompactToggle').addEventListener('click', ()=>{ ui.outlineCompact = !ui.outlineCompact; $('outlineCompactToggle').textContent = ui.outlineCompact ? 'Full view' : 'Name-only view'; renderOutline(); });
