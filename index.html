@@ -62,7 +62,6 @@
         }
 
         window.loadedRows = data
-        console.log("Loaded rows:", data)
 
         if (window.syncOutlineFromSupabase) {
           window.syncOutlineFromSupabase();
@@ -801,6 +800,7 @@
     const STORAGE_KEY = 'murski_case_planner_v1';
     let state = { caseName: '', tags: [], people: [], documents: [], outline: [], timelineEvents: [] };
     const ui = { selectedNodeId: null, selectedWitnessId: null, selectedDocId: null, selectedPersonId: null, activeWitnessColumnId: null, expandedDocIds: {}, showDocDownloadList: false, showDocTagIndex: false, docTagFilterIds: [], docTagIndexExpandedIds: {}, docTagIndexShowUsedOnly: false, docTagNoTagsOnly: false, docTagHasTagsOnly: false, docExhibitFilter: 'all', outlineIndexFilterIds: [], outlineIndexExpandedIds: {}, outlineIndexShowUsedOnly: false, outlineIndexNoTagsOnly: false, outlineIndexHasTagsOnly: false, outlineIndexExhibitFilter: 'all', docSort: { field: 'file', dir: 'asc' }, outlineCompact: false, timelineSelectedId: null, timelineEditingId: null, currentView: INITIAL_VIEW };
+    const HEADING_EXHIBIT_KEY = '__heading__';
     const $ = (id) => document.getElementById(id);
     function uid(){ return Math.random().toString(16).slice(2) + Date.now().toString(16); }
     function toast(msg){ const el = $('toast'); el.textContent = msg; el.classList.add('show'); clearTimeout(toast._t); toast._t = setTimeout(()=> el.classList.remove('show'), 2200); }
@@ -847,7 +847,7 @@
       safeSave();
     }
     window.syncTagAssignmentsFromSupabase = syncTagAssignmentsFromSupabase;
-    function syncWitnessCellsFromSupabase(){ if (!Array.isArray(window.loadedWitnessCells)) return; const cellsByRow = new Map(); for (const cell of window.loadedWitnessCells) { if (!cell || !cell.row_id || !cell.person_id) continue; if (!cellsByRow.has(cell.row_id)) cellsByRow.set(cell.row_id, []); cellsByRow.get(cell.row_id).push(cell); } state.outline = (state.outline || []).map((node) => { const rowCells = cellsByRow.get(node.id) || []; const nextWitnessData = {}; const nextWitnessIds = []; for (const cell of rowCells) { nextWitnessIds.push(cell.person_id); const cellKey = testimonyCellKey(cell.row_id, cell.person_id); const localCell = node.witnessData && node.witnessData[cell.person_id] ? node.witnessData[cell.person_id] : null; const testimonyHtml = activeTestimonyEditKey === cellKey && localCell ? (localCell.testimonyHtml || '') : (cell.testimony_html || ''); nextWitnessData[cell.person_id] = { exhibits: Array.isArray(cell.exhibits) ? cell.exhibits : [], testimonyHtml, testimony: testimonyHtml.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim() }; } return { ...node, witnessIds: Array.from(new Set(nextWitnessIds)), witnessData: nextWitnessData }; }); safeSave(); }
+    function syncWitnessCellsFromSupabase(){ if (!Array.isArray(window.loadedWitnessCells)) return; const cellsByRow = new Map(); for (const cell of window.loadedWitnessCells) { if (!cell || !cell.row_id || !cell.person_id) continue; if (!cellsByRow.has(cell.row_id)) cellsByRow.set(cell.row_id, []); cellsByRow.get(cell.row_id).push(cell); } state.outline = (state.outline || []).map((node) => { const rowCells = cellsByRow.get(node.id) || []; const nextWitnessData = {}; const nextWitnessIds = []; for (const cell of rowCells) { nextWitnessIds.push(cell.person_id); const cellKey = testimonyCellKey(cell.row_id, cell.person_id); const localCell = node.witnessData && node.witnessData[cell.person_id] ? node.witnessData[cell.person_id] : null; const testimonyHtml = activeTestimonyEditKey === cellKey && localCell ? (localCell.testimonyHtml || '') : (cell.testimony_html || ''); nextWitnessData[cell.person_id] = { exhibits: Array.isArray(cell.exhibits) ? cell.exhibits : [], testimonyHtml, testimony: testimonyHtml.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim() }; } const localHeadingCell = node.witnessData && node.witnessData[HEADING_EXHIBIT_KEY] ? node.witnessData[HEADING_EXHIBIT_KEY] : null; if(localHeadingCell){ nextWitnessData[HEADING_EXHIBIT_KEY] = { exhibits: Array.isArray(localHeadingCell.exhibits) ? Array.from(new Set(localHeadingCell.exhibits)) : [], testimonyHtml: '', testimony: '' }; } return { ...node, witnessIds: Array.from(new Set(nextWitnessIds)), witnessData: nextWitnessData }; }); safeSave(); }
     window.syncWitnessCellsFromSupabase = syncWitnessCellsFromSupabase;
     window.addEventListener('storage', async (event) => { if (event.key !== window.LOCAL_SYNC_KEY || !event.newValue) return; let payload = null; try { payload = JSON.parse(event.newValue); } catch (e) { console.warn('Bad sync payload:', e); } console.log('Local sync event received:', payload); if (!payload || !payload.type) return; if (payload.type === 'witness_cells_changed') { await window.loadWitnessCells(); return; } if (payload.type === 'rows_changed') { await window.loadOutlineRows(); await window.loadWitnessCells(); return; } if (payload.type === 'people_changed') { await window.loadPeople(); await window.loadWitnessCells(); return; } if (payload.type === 'documents_changed') { await window.loadDocuments(); await window.loadWitnessCells(); return; } if (payload.type === 'tags_changed') { await window.loadTags(); return; } if (payload.type === 'row_tags_changed') { await window.loadRowTags(); return; } if (payload.type === 'document_tags_changed') { await window.loadDocumentTags(); return; } if (payload.type === 'person_tags_changed') { await window.loadPersonTags(); return; } });
     const views = { outline: { tab: 'tabOutline', view:'viewOutline' }, documents: { tab: 'tabDocuments', view:'viewDocuments' }, tagindex: { tab: 'tabTagIndex', view:'viewTagIndex' }, outlineindex: { tab: 'tabOutlineIndex', view:'viewOutlineIndex' }, exhibits: { tab: 'tabExhibits', view:'viewExhibits' }, people: { tab: 'tabPeople', view:'viewPeople' }, timeline: { tab: 'tabTimeline', view:'viewTimeline' }, settings: { tab: 'tabSettings', view:'viewSettings' } };
@@ -1022,8 +1022,25 @@ function renderTags(){ const list = $('tagList'); list.innerHTML = ''; $('tagEmp
       rows.forEach((tr, idx)=>{ const doc = docs[idx]; const canDownload = !!(doc.filePath || doc.dataUrl || doc.hasFile); tr.style.cursor = canDownload ? 'pointer' : 'default'; if(canDownload){ tr.addEventListener('click', ()=> downloadDocument(doc.id)); } });
     }
    function getRowTitlePath(rowId){ const parts = []; let cur = state.outline.find(n=>n.id===rowId); const seen = new Set(); while(cur && !seen.has(cur.id)){ seen.add(cur.id); parts.unshift((cur.title || 'Untitled heading').trim()); cur = cur.parentId ? state.outline.find(n=>n.id===cur.parentId) : null; } return parts.filter(Boolean).join(' > ') || 'Untitled heading'; }
-    function getDocumentExhibitMeta(docId){ rebuildExhibitsFromOutline(); syncExhibitOrderWithUsage(); const exhibit = (state.exhibits || []).find(ex => ex && ex.docId === docId) || null; const assignments = []; for(const n of state.outline || []){ if(!n || !n.witnessData) continue; for(const wid of Object.keys(n.witnessData)){ const wd = n.witnessData[wid] || {}; if(!(wd.exhibits || []).includes(docId)) continue; const person = (state.people || []).find(p=>p.id===wid); assignments.push({ rowId: n.id, rowTitle: n.title || 'Untitled heading', rowPath: getRowTitlePath(n.id), witnessId: wid, witnessName: person?.name || '' }); } } const headingNames = Array.from(new Set(assignments.map(a=>a.rowPath).filter(Boolean))); const tooltip = exhibit ? `Added as ${exhibit.label || 'an exhibit'}
+    function getDocumentExhibitMeta(docId){ rebuildExhibitsFromOutline(); syncExhibitOrderWithUsage(); const exhibit = (state.exhibits || []).find(ex => ex && ex.docId === docId) || null; const assignments = []; for(const n of state.outline || []){ if(!n || !n.witnessData) continue; for(const wid of Object.keys(n.witnessData)){ const wd = n.witnessData[wid] || {}; if(!(wd.exhibits || []).includes(docId)) continue; const isHeadingOnly = wid === HEADING_EXHIBIT_KEY; const person = isHeadingOnly ? null : (state.people || []).find(p=>p.id===wid); assignments.push({ rowId: n.id, rowTitle: n.title || 'Untitled heading', rowPath: getRowTitlePath(n.id), witnessId: wid, witnessName: person?.name || '', isHeadingOnly }); } } const headingNames = Array.from(new Set(assignments.map(a=>a.rowPath).filter(Boolean))); const tooltip = exhibit ? `Added as ${exhibit.label || 'an exhibit'}
 ${headingNames.length ? 'Headings: ' + headingNames.join(' | ') : 'Heading not found'}` : 'Not added as an exhibit'; return { isExhibit: !!exhibit, label: exhibit?.label || '', assignments, headingNames, tooltip }; }
+    function getAvailableHeadingOptions(){
+      return (state.outline || []).slice().sort((a,b)=> getRowTitlePath(a.id).localeCompare(getRowTitlePath(b.id))).map(row => ({ id: row.id, label: getRowTitlePath(row.id) }));
+    }
+    function addDocumentToHeading(docId, rowId){
+      if(!docId || !rowId) return false;
+      const node = (state.outline || []).find(n=>n.id===rowId);
+      if(!node) return false;
+      if(!node.witnessData) node.witnessData = {};
+      if(!node.witnessData[HEADING_EXHIBIT_KEY]) node.witnessData[HEADING_EXHIBIT_KEY] = { exhibits: [], testimonyHtml: '', testimony: '' };
+      const exhibits = node.witnessData[HEADING_EXHIBIT_KEY].exhibits || [];
+      if(exhibits.includes(docId)) return false;
+      exhibits.push(docId);
+      node.witnessData[HEADING_EXHIBIT_KEY].exhibits = exhibits;
+      getOrCreateExhibitForDoc(docId, true);
+      safeSave();
+      return true;
+    }
 
     function getOutlineColumnData(){
       const byId = new Map((state.outline || []).map(n => [n.id, n]));
@@ -1156,7 +1173,7 @@ ${headingNames.length ? 'Headings: ' + headingNames.join(' | ') : 'Heading not f
           const detailTr = document.createElement('tr');
           detailTr.className = 'docDetailRow';
           const docUrl = d.filePath && window.getDocumentPublicUrl ? window.getDocumentPublicUrl(d.filePath) : '';
-          detailTr.innerHTML = `<td colspan="${3 + Math.max(visibleColumns.length,1)}"><div class="docExpandedPanel"><div style="display:grid; gap:12px"><div><div class="label">Document details</div><div style="font-weight:700; font-size:16px">${escapeHtml(d.name)}</div><div class="docHeadingNote">${escapeHtml(d.date || 'No date')} • ${d.originalFileName || d.filename ? escapeHtml(d.originalFileName || d.filename) : 'No file attached'}</div>${docUrl ? `<div style="margin-top:8px"><a class="btnGhost docOpenLink" href="${docUrl}" target="_blank" rel="noopener">Open file in new tab</a></div>` : ''}</div><div><div class="label">Assigned tags</div>${renderAssignedTagPills(d.tags || [], 'document', d.id)}${renderTagPicker('document', d.id, d.tags || [])}</div><div><div class="label">Outline locations</div>${meta.isExhibit ? `<ul class="docHeadingList">${meta.assignments.map(a=>`<li><b>${escapeHtml(meta.label || 'Exhibit')}</b> • ${escapeHtml(a.rowPath)}${a.witnessName ? ` <span class="docHeadingNote">(${escapeHtml(a.witnessName)})</span>` : ''}</li>`).join('')}</ul>` : '<div class="hint">This document has not been added as an exhibit yet.</div>'}</div><div><div class="label">Description</div><div class="hint">${escapeHtml(d.description || 'No description')}</div></div></div></div></td>`;
+          detailTr.innerHTML = `<td colspan="${3 + Math.max(visibleColumns.length,1)}"><div class="docExpandedPanel"><div style="display:grid; gap:12px"><div><div class="label">Document details</div><div style="font-weight:700; font-size:16px">${escapeHtml(d.name)}</div><div class="docHeadingNote">${escapeHtml(d.date || 'No date')} • ${d.originalFileName || d.filename ? escapeHtml(d.originalFileName || d.filename) : 'No file attached'}</div>${docUrl ? `<div style="margin-top:8px"><a class="btnGhost docOpenLink" href="${docUrl}" target="_blank" rel="noopener">Open file in new tab</a></div>` : ''}</div><div><div class="label">Assigned tags</div>${renderAssignedTagPills(d.tags || [], 'document', d.id)}${renderTagPicker('document', d.id, d.tags || [])}</div><div><div class="label">Add to heading</div><div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-top:8px"><select class="outlineHeadingPicker" data-doc-id="${d.id}"><option value="">Select heading…</option>${getAvailableHeadingOptions().map(opt=>`<option value="${opt.id}">${escapeHtml(opt.label)}</option>`).join('')}</select></div><div class="hint" style="margin-top:6px">Selecting a heading adds this document as an exhibit to that heading and fills its square in the Outline Index.</div></div><div><div class="label">Outline locations</div>${meta.isExhibit ? `<ul class="docHeadingList">${meta.assignments.map(a=>`<li><b>${escapeHtml(meta.label || 'Exhibit')}</b> • ${escapeHtml(a.rowPath)}${a.isHeadingOnly ? ` <span class="docHeadingNote">(heading only)</span>` : (a.witnessName ? ` <span class="docHeadingNote">(${escapeHtml(a.witnessName)})</span>` : '')}</li>`).join('')}</ul>` : '<div class="hint">This document has not been added as an exhibit yet.</div>'}</div><div><div class="label">Description</div><div class="hint">${escapeHtml(d.description || 'No description')}</div></div></div></div></td>`;
           tbody.appendChild(detailTr);
         }
       }
@@ -1171,6 +1188,7 @@ ${headingNames.length ? 'Headings: ' + headingNames.join(' | ') : 'Heading not f
         renderOutlineIndex();
       }));
       tableWrap.querySelectorAll('.tagPicker').forEach(sel=>sel.addEventListener('change', async ()=>{ await handleTagPickerChange(sel); }));
+      tableWrap.querySelectorAll('.outlineHeadingPicker').forEach(sel=>sel.addEventListener('change', ()=>{ const docId = sel.getAttribute('data-doc-id'); const rowId = sel.value; if(!docId || !rowId) return; const added = addDocumentToHeading(docId, rowId); sel.value = ''; if(added){ renderOutlineIndex(); renderExhibits(); toast('Document added to heading'); } else { toast('Document already in that heading'); } }));
       tableWrap.querySelectorAll('.tagRemoveBtn').forEach(btn=>btn.addEventListener('click', async (ev)=>{
         ev.stopPropagation();
         const itemId = btn.getAttribute('data-item-id');
@@ -1611,9 +1629,9 @@ ${headingNames.length ? 'Headings: ' + headingNames.join(' | ') : 'Heading not f
         await window.updateOutlineRow(id, { parent_row_id: node.parentId || null, sort_order: Number(node.order) || 0 });
       }));
     }
-    async function moveNode(id, dir){ const node = state.outline.find(n=>n.id===id); if(!node) return; const sibs = childrenOf(node.parentId); const idx = sibs.findIndex(x=>x.id===id); const swapWith = idx + dir; if(swapWith < 0 || swapWith >= sibs.length) return; const other = sibs[swapWith]; const tmp = node.order; node.order = other.order; other.order = tmp; normalizeOrders(node.parentId); safeSave(); renderOutline(); await persistOutlineStructure([node.id, other.id, ...childrenOf(node.parentId).map(x=>x.id)]); focusTitle(id); }
-    async function indentNode(id){ const node = state.outline.find(n=>n.id===id); if(!node) return; const oldParent = node.parentId; const sibs = childrenOf(node.parentId); const idx = sibs.findIndex(x=>x.id===id); if(idx<=0) return; const newParent = sibs[idx-1]; node.parentId = newParent.id; node.order = childrenOf(newParent.id).length; normalizeOrders(newParent.id); normalizeOrders(oldParent); safeSave(); renderOutline(); await persistOutlineStructure([node.id, ...childrenOf(newParent.id).map(x=>x.id), ...childrenOf(oldParent).map(x=>x.id)]); focusTitle(id); }
-    async function outdentNode(id){ const node = state.outline.find(n=>n.id===id); if(!node || !node.parentId) return; const oldParentId = node.parentId; const parent = state.outline.find(n=>n.id===node.parentId); if(!parent) return; const grand = parent.parentId; const sibs = childrenOf(grand); for(const s of sibs){ if(s.order > parent.order) s.order++; } node.parentId = grand; node.order = parent.order + 1; normalizeOrders(grand); normalizeOrders(oldParentId); safeSave(); renderOutline(); await persistOutlineStructure([node.id, ...childrenOf(grand).map(x=>x.id), ...childrenOf(oldParentId).map(x=>x.id)]); focusTitle(id); }
+    async function moveNode(id, dir){ const node = state.outline.find(n=>n.id===id); if(!node) return; const sibs = childrenOf(node.parentId); const idx = sibs.findIndex(x=>x.id===id); const swapWith = idx + dir; if(swapWith < 0 || swapWith >= sibs.length) return; const other = sibs[swapWith]; const tmp = node.order; node.order = other.order; other.order = tmp; normalizeOrders(node.parentId); safeSave(); suppressOutlineRealtime(4000); renderOutline(); await persistOutlineStructure([node.id, other.id, ...childrenOf(node.parentId).map(x=>x.id)]); focusTitle(id); }
+    async function indentNode(id){ const node = state.outline.find(n=>n.id===id); if(!node) return; const oldParent = node.parentId; const sibs = childrenOf(node.parentId); const idx = sibs.findIndex(x=>x.id===id); if(idx<=0) return; const newParent = sibs[idx-1]; node.parentId = newParent.id; node.order = childrenOf(newParent.id).length; normalizeOrders(newParent.id); normalizeOrders(oldParent); safeSave(); suppressOutlineRealtime(4000); renderOutline(); await persistOutlineStructure([node.id, ...childrenOf(newParent.id).map(x=>x.id), ...childrenOf(oldParent).map(x=>x.id)]); focusTitle(id); }
+    async function outdentNode(id){ const node = state.outline.find(n=>n.id===id); if(!node || !node.parentId) return; const oldParentId = node.parentId; const parent = state.outline.find(n=>n.id===node.parentId); if(!parent) return; const grand = parent.parentId; const sibs = childrenOf(grand); for(const s of sibs){ if(s.order > parent.order) s.order++; } node.parentId = grand; node.order = parent.order + 1; normalizeOrders(grand); normalizeOrders(oldParentId); safeSave(); suppressOutlineRealtime(4000); renderOutline(); await persistOutlineStructure([node.id, ...childrenOf(grand).map(x=>x.id), ...childrenOf(oldParentId).map(x=>x.id)]); focusTitle(id); }
     function focusTitle(id){ setTimeout(()=>{ const el = document.querySelector(`.mLeft[data-id="${id}"] input[data-act="title"]`); if(el){ el.focus(); el.select?.(); } }, 30); }
     function safeDateInputValue(value){
       const v = String(value || '').trim();
@@ -1651,6 +1669,32 @@ ${headingNames.length ? 'Headings: ' + headingNames.join(' | ') : 'Heading not f
     function renderExhibits(){ const body = $('exhibitTableBody'); const table = $('exhibitTable'); const empty = $('exhibitEmpty'); if(!body || !table || !empty) return; rebuildExhibitsFromOutline(); syncExhibitOrderWithUsage(); body.innerHTML = ''; const rows = []; for(const ex of (state.exhibits || [])){ if(!ex) continue; const doc = state.documents.find(d => d.id === ex.docId); rows.push({ docId: ex.docId, label: ex.label || '', docName: doc && doc.name ? doc.name : '(missing document)' }); } if(!rows.length){ empty.style.display = ''; table.style.display = 'none'; return; } empty.style.display = 'none'; table.style.display = 'table'; rows.forEach((rowData, idx) => { const tr = document.createElement('tr'); tr.innerHTML = `<td style="padding:10px; border-bottom:1px solid var(--line); font-weight:700; white-space:nowrap">${escapeHtml(rowData.label)}</td><td style="padding:10px; border-bottom:1px solid var(--line)">${escapeHtml(rowData.docName)}</td><td style="padding:10px; border-bottom:1px solid var(--line); white-space:nowrap; text-align:right"><button class="btnSmall" ${idx===0 ? 'disabled' : ''} data-move="up">Up</button><button class="btnSmall" ${idx===rows.length-1 ? 'disabled' : ''} data-move="down">Down</button></td>`; tr.querySelector('[data-move="up"]').addEventListener('click', ()=> moveExhibit(rowData.docId, -1)); tr.querySelector('[data-move="down"]').addEventListener('click', ()=> moveExhibit(rowData.docId, 1)); body.appendChild(tr); }); }
     function flattenVisible(){ const out=[]; function walk(parentId){ const kids = childrenOf(parentId); for(const k of kids){ out.push(k); if(!k.collapsed) walk(k.id); } } walk(null); return out; }
     let outlineDragState = { draggedId: null, overId: null, position: null };
+    function clearOutlineDragMarkers(){
+      document.querySelectorAll('.mLeft.drop-before, .mLeft.drop-after, .mLeft.isDragSource').forEach(el => {
+        el.classList.remove('drop-before', 'drop-after', 'isDragSource');
+      });
+    }
+    function applyOutlineDragMarkers(){
+      clearOutlineDragMarkers();
+      if(outlineDragState.draggedId){
+        const dragEl = document.querySelector(`.mLeft[data-id="${outlineDragState.draggedId}"]`);
+        if(dragEl) dragEl.classList.add('isDragSource');
+      }
+      if(outlineDragState.overId && outlineDragState.position){
+        const overEl = document.querySelector(`.mLeft[data-id="${outlineDragState.overId}"]`);
+        if(overEl) overEl.classList.add(outlineDragState.position === 'before' ? 'drop-before' : 'drop-after');
+      }
+    }
+    function setOutlineDropTarget(overId, position){
+      if(outlineDragState.overId === overId && outlineDragState.position === position) return;
+      outlineDragState.overId = overId;
+      outlineDragState.position = position;
+      applyOutlineDragMarkers();
+    }
+    function resetOutlineDragState(){
+      outlineDragState = { draggedId: null, overId: null, position: null };
+      clearOutlineDragMarkers();
+    }
     function siblingRowsFor(nodeId){ const node = state.outline.find(n=>n.id===nodeId); return node ? childrenOf(node.parentId) : []; }
     async function reorderNodeRelative(draggedId, targetId, position = 'after'){
       if(!draggedId || !targetId || draggedId === targetId) return;
@@ -1665,6 +1709,7 @@ ${headingNames.length ? 'Headings: ' + headingNames.join(' | ') : 'Heading not f
       siblings.splice(insertIndex, 0, dragged);
       siblings.forEach((node, idx)=>{ node.order = idx; });
       safeSave();
+      suppressOutlineRealtime(4000);
       renderOutline();
       await persistOutlineStructure(siblings.map(n=>n.id));
       focusTitle(draggedId);
@@ -1685,10 +1730,10 @@ ${headingNames.length ? 'Headings: ' + headingNames.join(' | ') : 'Heading not f
         await window.createOutlineRow({ parentRowId: nodeId, heading: 'New heading', description: '', sortOrder });
         return;
       }
-      if(action === 'indent') return indentNode(nodeId);
-      if(action === 'outdent') return outdentNode(nodeId);
-      if(action === 'up') return moveNode(nodeId, -1);
-      if(action === 'down') return moveNode(nodeId, 1);
+      if(action === 'indent'){ suppressOutlineRealtime(4000); return indentNode(nodeId); }
+      if(action === 'outdent'){ suppressOutlineRealtime(4000); return outdentNode(nodeId); }
+      if(action === 'up'){ suppressOutlineRealtime(4000); return moveNode(nodeId, -1); }
+      if(action === 'down'){ suppressOutlineRealtime(4000); return moveNode(nodeId, 1); }
       if(action === 'delete'){
         const n = state.outline.find(x=>x.id===nodeId); if(!n) return;
         if(!confirm(`Delete "${n.title || 'this row'}"?`)) return;
@@ -1739,13 +1784,6 @@ ${headingNames.length ? 'Headings: ' + headingNames.join(' | ') : 'Heading not f
           left.style.background = 'linear-gradient(to right, rgba(37,99,235,.08), rgba(37,99,235,0) 120px)';
           left.style.boxShadow = 'inset 4px 0 0 rgba(37,99,235,.18)';
         }
-        if(outlineDragState.overId === n.id && outlineDragState.position){
-          left.classList.add(outlineDragState.position === 'before' ? 'drop-before' : 'drop-after');
-        }
-        if(outlineDragState.draggedId === n.id){
-          left.classList.add('isDragSource');
-        }
-
         left.addEventListener('click', (e)=>{
           const t = e.target;
           if(t && t.closest && t.closest('input, textarea, select, button, .rte, .rtbar, .chip, .exPick, .rowControlsMenu, .outlineDragHandle')) return;
@@ -1760,18 +1798,18 @@ ${headingNames.length ? 'Headings: ' + headingNames.join(' | ') : 'Heading not f
           if(!dragged || (dragged.parentId || null) !== (n.parentId || null)) return;
           e.preventDefault();
           const rect = left.getBoundingClientRect();
-          outlineDragState.overId = n.id;
-          outlineDragState.position = (e.clientY - rect.top) < rect.height / 2 ? 'before' : 'after';
-          renderOutline();
+          const nextPosition = (e.clientY - rect.top) < rect.height / 2 ? 'before' : 'after';
+          setOutlineDropTarget(n.id, nextPosition);
         });
-        left.addEventListener('dragleave', ()=>{
-          if(outlineDragState.overId === n.id){ outlineDragState.overId = null; outlineDragState.position = null; renderOutline(); }
+        left.addEventListener('dragleave', (e)=>{
+          if(left.contains(e.relatedTarget)) return;
+          if(outlineDragState.overId === n.id){ setOutlineDropTarget(null, null); }
         });
         left.addEventListener('drop', async (e)=>{
           e.preventDefault();
           const draggedId = outlineDragState.draggedId;
           const position = outlineDragState.position || 'after';
-          outlineDragState = { draggedId: null, overId: null, position: null };
+          resetOutlineDragState();
           await reorderNodeRelative(draggedId, n.id, position);
         });
 
@@ -1803,12 +1841,16 @@ ${headingNames.length ? 'Headings: ' + headingNames.join(' | ') : 'Heading not f
         dragHandle.title = depth ? 'Drag within this parent only' : 'Drag to reorder top-level headings';
         dragHandle.textContent = '⋮⋮';
         dragHandle.draggable = true;
+        dragHandle.addEventListener('mousedown', (e)=>{ e.stopPropagation(); });
+        dragHandle.addEventListener('click', (e)=>{ e.preventDefault(); e.stopPropagation(); });
         dragHandle.addEventListener('dragstart', (e)=>{
+          suppressOutlineRealtime(5000);
           outlineDragState = { draggedId: n.id, overId: null, position: null };
           e.dataTransfer.effectAllowed = 'move';
           try { e.dataTransfer.setData('text/plain', n.id); } catch {}
+          requestAnimationFrame(applyOutlineDragMarkers);
         });
-        dragHandle.addEventListener('dragend', ()=>{ outlineDragState = { draggedId: null, overId: null, position: null }; renderOutline(); });
+        dragHandle.addEventListener('dragend', ()=>{ resetOutlineDragState(); });
 
         const detailToggle = document.createElement('button');
         detailToggle.type = 'button';
