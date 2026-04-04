@@ -781,6 +781,24 @@
     .timelineMeta{display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:10px; margin-bottom:12px;}
     .timelineSection{margin-top:12px;}
     .timelineWitnessBlock{border:1px solid var(--line); border-radius:10px; padding:10px; margin-top:8px; background:#fff;}
+    .structuredControls{display:flex; gap:12px; align-items:flex-start; flex-wrap:wrap; margin-bottom:12px;}
+    .structuredHeadingFilter{min-width:280px; max-width:420px; position:relative;}
+    .structuredHeadingSummary{border:1px solid var(--border); border-radius:12px; background:#fff; padding:10px 12px; cursor:pointer; font-weight:700; min-height:44px; display:flex; align-items:center; justify-content:space-between; gap:10px;}
+    .structuredHeadingPanel{display:none; position:absolute; top:100%; left:0; z-index:20; margin-top:6px; width:min(520px, 85vw); max-height:340px; overflow:auto; border:1px solid var(--border); border-radius:14px; background:#fff; box-shadow: var(--shadow2); padding:10px;}
+    .structuredHeadingPanel.open{display:block;}
+    .structuredHeadingToolbar{display:flex; gap:8px; flex-wrap:wrap; margin-bottom:10px;}
+    .structuredHeadingList{display:flex; flex-direction:column; gap:6px;}
+    .structuredHeadingItem{display:flex; align-items:center; gap:8px; padding:6px 8px; border-radius:10px;}
+    .structuredHeadingItem.level1{padding-left:8px;}
+    .structuredHeadingItem.level2{padding-left:26px;}
+    .structuredHeadingItem.level3{padding-left:44px;}
+    .structuredHeadingItem.level4{padding-left:62px;}
+    .structuredHeaderCell{position:relative;}
+    .structuredColResize{position:absolute; top:0; right:-4px; width:8px; height:100%; cursor:col-resize; z-index:6;}
+    .structuredTable{table-layout:fixed;}
+    .structuredTable td,.structuredTable th{vertical-align:top;}
+    .structuredExhibitCell{display:flex; flex-wrap:wrap; align-content:flex-start; gap:6px; min-height:44px;}
+
     .pageCard{padding:16px;}
     .tagIndexPageCard{padding:16px; width:calc(100vw - 32px); margin-left:calc(50% - 50vw + 16px);}
     .docTagIndexScrollTop{position:sticky; top:0; z-index:6; overflow-x:auto; overflow-y:hidden; height:18px; margin:12px 0 0 0; border:1px solid var(--border); border-radius:12px 12px 0 0; background:#fff;}
@@ -1538,6 +1556,116 @@ ${headingNames.length ? 'Headings: ' + headingNames.join(' | ') : 'Heading not f
         el.addEventListener('click', ()=> openStructuredDocEditor(el.getAttribute('data-structured-doc')));
       });
     }
+
+    function getStructuredRows(){
+      const flat = flattenVisible();
+      return flat.filter(n => n && n.id);
+    }
+    function initStructuredHeadingFilter(){
+      const rows = getStructuredRows();
+      const ids = rows.map(r=>r.id);
+      if(!structuredUi.visibleHeadingIds.length){
+        structuredUi.visibleHeadingIds = ids.slice();
+      } else {
+        structuredUi.visibleHeadingIds = structuredUi.visibleHeadingIds.filter(id => ids.includes(id));
+        for(const id of ids){ if(!structuredUi.visibleHeadingIds.includes(id)) structuredUi.visibleHeadingIds.push(id); }
+      }
+    }
+    function getStructuredVisibleRows(){
+      initStructuredHeadingFilter();
+      const allowed = new Set(structuredUi.visibleHeadingIds);
+      return getStructuredRows().filter(r => allowed.has(r.id));
+    }
+    function getStructuredHeadingFilterSummary(total, shown){
+      if(shown === total) return `Showing all ${total} headings`;
+      if(shown === 0) return 'Showing 0 headings';
+      return `Showing ${shown} of ${total} headings`;
+    }
+    function renderStructuredHeadingFilter(){
+      const host = document.getElementById('structuredHeadingFilterHost');
+      if(!host) return;
+      const rows = getStructuredRows();
+      initStructuredHeadingFilter();
+      const shown = structuredUi.visibleHeadingIds.length;
+      host.innerHTML = `
+        <div class="structuredHeadingFilter">
+          <div class="structuredHeadingSummary" id="structuredHeadingSummary">
+            <span>${escapeHtml(getStructuredHeadingFilterSummary(rows.length, shown))}</span>
+            <span>${structuredUi.headingFilterOpen ? '▲' : '▼'}</span>
+          </div>
+          <div class="structuredHeadingPanel ${structuredUi.headingFilterOpen ? 'open' : ''}" id="structuredHeadingPanel">
+            <div class="structuredHeadingToolbar">
+              <button type="button" class="mini" id="structuredHeadingSelectAll">Select all</button>
+              <button type="button" class="mini" id="structuredHeadingSelectNone">Select none</button>
+            </div>
+            <div class="structuredHeadingList">
+              ${rows.map(r=>{
+                const level = Math.min(depthOf(r.id)+1, 4);
+                return `<label class="structuredHeadingItem level${level}"><input type="checkbox" value="${r.id}" ${structuredUi.visibleHeadingIds.includes(r.id) ? 'checked' : ''}> <span>${escapeHtml(r.title || 'Untitled heading')}</span></label>`;
+              }).join('')}
+            </div>
+          </div>
+        </div>
+      `;
+      const summary = document.getElementById('structuredHeadingSummary');
+      const panel = document.getElementById('structuredHeadingPanel');
+      summary?.addEventListener('click', (ev)=>{
+        ev.stopPropagation();
+        structuredUi.headingFilterOpen = !structuredUi.headingFilterOpen;
+        renderStructuredHeadingFilter();
+      });
+      panel?.querySelectorAll('input[type="checkbox"]').forEach(cb=>{
+        cb.addEventListener('change', ()=>{
+          structuredUi.visibleHeadingIds = Array.from(panel.querySelectorAll('input[type="checkbox"]:checked')).map(x=>x.value);
+          renderStructuredOutline();
+        });
+      });
+      document.getElementById('structuredHeadingSelectAll')?.addEventListener('click', ()=>{
+        structuredUi.visibleHeadingIds = rows.map(r=>r.id);
+        renderStructuredOutline();
+      });
+      document.getElementById('structuredHeadingSelectNone')?.addEventListener('click', ()=>{
+        structuredUi.visibleHeadingIds = [];
+        renderStructuredOutline();
+      });
+    }
+    document.addEventListener('click', (ev)=>{
+      const wrap = document.querySelector('.structuredHeadingFilter');
+      if(!wrap) return;
+      if(!wrap.contains(ev.target)){
+        if(structuredUi.headingFilterOpen){
+          structuredUi.headingFilterOpen = false;
+          renderStructuredHeadingFilter();
+        }
+      }
+    });
+    function getStructuredWitnessColWidth(id){
+      return structuredUi.witnessColWidths[id] || 240;
+    }
+    function startStructuredWitnessResize(ev, witnessId){
+      ev.preventDefault();
+      ev.stopPropagation();
+      structuredUi.resizingWitnessId = witnessId;
+      structuredUi.resizeStartX = ev.clientX;
+      structuredUi.resizeStartWidth = getStructuredWitnessColWidth(witnessId);
+      document.body.style.cursor = 'col-resize';
+      document.body.style.userSelect = 'none';
+    }
+    function handleStructuredWitnessResize(ev){
+      if(!structuredUi.resizingWitnessId) return;
+      const dx = ev.clientX - structuredUi.resizeStartX;
+      const next = Math.max(160, structuredUi.resizeStartWidth + dx);
+      structuredUi.witnessColWidths[structuredUi.resizingWitnessId] = next;
+      renderStructuredOutline();
+    }
+    function stopStructuredWitnessResize(){
+      if(!structuredUi.resizingWitnessId) return;
+      structuredUi.resizingWitnessId = null;
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+    }
+    window.addEventListener('mousemove', handleStructuredWitnessResize);
+    window.addEventListener('mouseup', stopStructuredWitnessResize);
     function renderStructuredOutline(){
       structuredEnsureWitnessFilterDefaults();
       const view = $('viewStructuredOutline'); if(!view || ui.currentView !== 'structuredoutline') return;
@@ -2005,7 +2133,7 @@ ${headingNames.length ? 'Headings: ' + headingNames.join(' | ') : 'Heading not f
       matrix.appendChild(head);
       applyOutlinePaneWidth();
 
-      const rows = flattenVisible();
+      const rows = getStructuredVisibleRows();
       for(const n of rows){
         const row = document.createElement('div');
         row.className = 'mRow';
