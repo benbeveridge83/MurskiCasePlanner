@@ -780,7 +780,7 @@
   <div class="tabs"><a id="tabOutline" class="tab active" data-view-link="outline" href="?view=outline">Case Outline</a><a id="tabDocuments" class="tab" data-view-link="documents" href="?view=documents">Documents</a><a id="tabTagIndex" class="tab" data-view-link="tagindex" href="?view=tagindex">Tag Index</a><a id="tabOutlineIndex" class="tab" data-view-link="outlineindex" href="?view=outlineindex">Outline Index</a><a id="tabExhibits" class="tab" data-view-link="exhibits" href="?view=exhibits">Exhibits</a><a id="tabPeople" class="tab" data-view-link="people" href="?view=people">People</a><a id="tabTimeline" class="tab" data-view-link="timeline" href="?view=timeline">Timeline</a><a id="tabSettings" class="tab" data-view-link="settings" href="?view=settings">Add Tag</a></div>
   <div class="container">
     <div id="viewOutline" class="card"><h2>Case Outline</h2><div class="hint">Build a structured outline and then tie it to witnesses, exhibits, and testimony. Add witnesses to a row to create witness columns. In each witness column cell, select exhibits (from Documents) and add testimony.</div>
-      <div class="toolbar" style="align-items:flex-start"><div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center"><button id="addTop" class="btnPrimary">+ Add top-level heading</button><button id="collapseAll" class="btnGhost">Collapse all</button><button id="expandAll" class="btnGhost">Expand all</button><button id="outlineCompactToggle" class="btnGhost">Name-only view</button></div><div style="height:1px; flex-basis:100%"></div><div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center"><span class="pill" id="selHint">Select a row, then use these controls</span><button id="actSibling" class="btnGhost">+ Sibling</button><button id="actChild" class="btnGhost">+ Child</button><button id="actIndent" class="btnGhost">↳ Indent</button><button id="actOutdent" class="btnGhost">↰ Outdent</button><button id="actUp" class="btnGhost">↑</button><button id="actDown" class="btnGhost">↓</button><button id="actDelete" class="btnDanger">Delete</button><span style="width:12px"></span><button id="actAddExhibit" class="btnPrimary">+ Add exhibit</button><span class="pill" id="exHint">Click a witness cell, select a document, then Add exhibit</span></div></div>
+      <div class="toolbar" style="align-items:flex-start"><div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center"><button id="addTop" class="btnPrimary">+ Add top-level heading</button><button id="collapseAll" class="btnGhost">Collapse all</button><button id="expandAll" class="btnGhost">Expand all</button><button id="structureViewToggle" class="btnGhost">Structure view</button><button id="outlineCompactToggle" class="btnGhost">Name-only view</button></div><div style="height:1px; flex-basis:100%"></div><div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center"><span class="pill" id="selHint">Select a row, then use these controls</span><button id="actSibling" class="btnGhost">+ Sibling</button><button id="actChild" class="btnGhost">+ Child</button><button id="actIndent" class="btnGhost">↳ Indent</button><button id="actOutdent" class="btnGhost">↰ Outdent</button><button id="actUp" class="btnGhost">↑</button><button id="actDown" class="btnGhost">↓</button><button id="actDelete" class="btnDanger">Delete</button><span style="width:12px"></span><button id="actAddExhibit" class="btnPrimary">+ Add exhibit</button><span class="pill" id="exHint">Click a witness cell, select a document, then Add exhibit</span></div></div>
       <div id="outlineEmpty" class="empty" style="display:none; margin-top:12px">No outline items yet. Click “Add top-level heading”.</div>
       <div id="matrixWrap" class="matrixWrap" style="display:none"><div id="matrix" class="matrix"></div></div>
     </div>
@@ -799,7 +799,7 @@
     const getCaseId = () => String(window.CASE_ID || CASE_ID || new URLSearchParams(window.location.search).get('case') || '');
     const STORAGE_KEY = 'murski_case_planner_v1';
     let state = { caseName: '', tags: [], people: [], documents: [], outline: [], timelineEvents: [] };
-    const ui = { selectedNodeId: null, selectedWitnessId: null, selectedDocId: null, selectedPersonId: null, activeWitnessColumnId: null, expandedDocIds: {}, showDocDownloadList: false, showDocTagIndex: false, docTagFilterIds: [], docTagIndexExpandedIds: {}, docTagIndexShowUsedOnly: false, docTagNoTagsOnly: false, docTagHasTagsOnly: false, docExhibitFilter: 'all', outlineIndexFilterIds: [], outlineIndexExpandedIds: {}, outlineIndexShowUsedOnly: false, outlineIndexNoTagsOnly: false, outlineIndexHasTagsOnly: false, outlineIndexExhibitFilter: 'all', docSort: { field: 'file', dir: 'asc' }, outlineCompact: false, timelineSelectedId: null, timelineEditingId: null, currentView: INITIAL_VIEW };
+    const ui = { selectedNodeId: null, selectedWitnessId: null, selectedDocId: null, selectedPersonId: null, activeWitnessColumnId: null, expandedDocIds: {}, showDocDownloadList: false, showDocTagIndex: false, docTagFilterIds: [], docTagIndexExpandedIds: {}, docTagIndexShowUsedOnly: false, docTagNoTagsOnly: false, docTagHasTagsOnly: false, docExhibitFilter: 'all', outlineIndexFilterIds: [], outlineIndexExpandedIds: {}, outlineIndexShowUsedOnly: false, outlineIndexNoTagsOnly: false, outlineIndexHasTagsOnly: false, outlineIndexExhibitFilter: 'all', docSort: { field: 'file', dir: 'asc' }, outlineCompact: false, outlineStructureView: false, timelineSelectedId: null, timelineEditingId: null, currentView: INITIAL_VIEW };
     const HEADING_EXHIBIT_KEY = '__heading__';
     const $ = (id) => document.getElementById(id);
     function uid(){ return Math.random().toString(16).slice(2) + Date.now().toString(16); }
@@ -1050,14 +1050,14 @@ ${headingNames.length ? 'Headings: ' + headingNames.join(' | ') : 'Heading not f
         return { id: wid, label: person?.name || 'Unknown witness' };
       }).filter(opt => opt.id);
     }
-    async function addDocumentToHeading(docId, rowId, witnessId){
+    function addDocumentToHeading(docId, rowId, witnessId){
       if(!docId || !rowId) return false;
       const node = (state.outline || []).find(n=>n.id===rowId);
       if(!node) return false;
       const targetWitnessId = witnessId || HEADING_EXHIBIT_KEY;
       if(!node.witnessData) node.witnessData = {};
       if(!node.witnessData[targetWitnessId]) node.witnessData[targetWitnessId] = { exhibits: [], testimonyHtml: '', testimony: '' };
-      const exhibits = Array.isArray(node.witnessData[targetWitnessId].exhibits) ? node.witnessData[targetWitnessId].exhibits.slice() : [];
+      const exhibits = node.witnessData[targetWitnessId].exhibits || [];
       if(exhibits.includes(docId)) return false;
       exhibits.push(docId);
       node.witnessData[targetWitnessId].exhibits = exhibits;
@@ -1066,10 +1066,6 @@ ${headingNames.length ? 'Headings: ' + headingNames.join(' | ') : 'Heading not f
       }
       getOrCreateExhibitForDoc(docId, true);
       safeSave();
-      if(targetWitnessId !== HEADING_EXHIBIT_KEY && window.upsertWitnessCell){
-        const saved = await window.upsertWitnessCell({ rowId, personId: targetWitnessId, exhibits, testimonyHtml: node.witnessData[targetWitnessId].testimonyHtml || '' });
-        if(saved && window.loadWitnessCells) await window.loadWitnessCells();
-      }
       return true;
     }
 
@@ -1227,7 +1223,7 @@ ${headingNames.length ? 'Headings: ' + headingNames.join(' | ') : 'Heading not f
       }));
       tableWrap.querySelectorAll('.tagPicker').forEach(sel=>sel.addEventListener('change', async ()=>{ await handleTagPickerChange(sel); }));
       tableWrap.querySelectorAll('.outlineHeadingPicker').forEach(sel=>sel.addEventListener('change', ()=>{ const docId = sel.getAttribute('data-doc-id'); const rowId = sel.value || ''; const witnessSel = tableWrap.querySelector(`.outlineWitnessPicker[data-doc-id="${docId}"]`); const addBtn = tableWrap.querySelector(`.outlineAddHeadingBtn[data-doc-id="${docId}"]`); if(witnessSel){ if(!rowId){ witnessSel.innerHTML = '<option value="">Select witness…</option>'; witnessSel.disabled = true; } else { const options = getWitnessOptionsForRow(rowId); witnessSel.innerHTML = `<option value="${HEADING_EXHIBIT_KEY}">Heading only</option>${options.map(opt=>`<option value="${opt.id}">${escapeHtml(opt.label)}</option>`).join('')}`; witnessSel.disabled = false; witnessSel.value = options.length ? options[0].id : HEADING_EXHIBIT_KEY; } } if(addBtn) addBtn.disabled = !rowId; }));
-      tableWrap.querySelectorAll('.outlineAddHeadingBtn').forEach(btn=>btn.addEventListener('click', async ()=>{ const docId = btn.getAttribute('data-doc-id'); const headingSel = tableWrap.querySelector(`.outlineHeadingPicker[data-doc-id="${docId}"]`); const witnessSel = tableWrap.querySelector(`.outlineWitnessPicker[data-doc-id="${docId}"]`); const rowId = headingSel?.value || ''; const witnessId = witnessSel?.value || HEADING_EXHIBIT_KEY; if(!docId || !rowId) return; btn.disabled = true; const added = await addDocumentToHeading(docId, rowId, witnessId); if(headingSel) headingSel.value = ''; if(witnessSel){ witnessSel.innerHTML = '<option value="">Select witness…</option>'; witnessSel.disabled = true; } if(added){ renderOutlineIndex(); renderExhibits(); renderOutline(); toast(witnessId === HEADING_EXHIBIT_KEY ? 'Document added to heading' : 'Document added to heading for selected witness'); } else { toast('Document already in that heading/witness'); btn.disabled = false; } }));
+      tableWrap.querySelectorAll('.outlineAddHeadingBtn').forEach(btn=>btn.addEventListener('click', ()=>{ const docId = btn.getAttribute('data-doc-id'); const headingSel = tableWrap.querySelector(`.outlineHeadingPicker[data-doc-id="${docId}"]`); const witnessSel = tableWrap.querySelector(`.outlineWitnessPicker[data-doc-id="${docId}"]`); const rowId = headingSel?.value || ''; const witnessId = witnessSel?.value || HEADING_EXHIBIT_KEY; if(!docId || !rowId) return; const added = addDocumentToHeading(docId, rowId, witnessId); if(headingSel) headingSel.value = ''; if(witnessSel){ witnessSel.innerHTML = '<option value="">Select witness…</option>'; witnessSel.disabled = true; } btn.disabled = true; if(added){ renderOutlineIndex(); renderExhibits(); toast(witnessId === HEADING_EXHIBIT_KEY ? 'Document added to heading' : 'Document added to heading for selected witness'); } else { toast('Document already in that heading/witness'); } }));
       tableWrap.querySelectorAll('.outlineIndexViewBtn').forEach(btn=>btn.addEventListener('click', async (ev)=>{ ev.stopPropagation(); const docId = btn.getAttribute('data-doc-id'); const doc = state.documents.find(x=>x.id===docId); const holder = tableWrap.querySelector(`[data-outline-doc-viewer="${docId}"]`); if(!doc || !holder) return; const url = await getDocumentPreviewUrl(doc); if(!url){ holder.innerHTML = '<div class="hint">No file stored for this document.</div>'; return; } holder.innerHTML = `<div class="label">Document viewer</div><iframe class="docViewerFrame" src="${url}"></iframe>`; }));
       tableWrap.querySelectorAll('.outlineIndexDownloadBtn').forEach(btn=>btn.addEventListener('click', (ev)=>{ ev.stopPropagation(); const docId = btn.getAttribute('data-doc-id'); if(docId) downloadDocument(docId); }));
       tableWrap.querySelectorAll('.tagRemoveBtn').forEach(btn=>btn.addEventListener('click', async (ev)=>{
@@ -2095,6 +2091,9 @@ ${headingNames.length ? 'Headings: ' + headingNames.join(' | ') : 'Heading not f
     }
     window.renderOutline = renderOutline;
     function collapseAll(){
+      ui.outlineStructureView = false;
+      const structureBtn = $('structureViewToggle');
+      if(structureBtn) structureBtn.textContent = 'Structure view';
       let changed = false;
       for(const n of state.outline){
         const hasKids = state.outline.some(x=>x.parentId===n.id);
@@ -2105,6 +2104,9 @@ ${headingNames.length ? 'Headings: ' + headingNames.join(' | ') : 'Heading not f
       else { renderOutline(); }
     }
     function expandAll(){
+      ui.outlineStructureView = false;
+      const structureBtn = $('structureViewToggle');
+      if(structureBtn) structureBtn.textContent = 'Structure view';
       let changed = false;
       for(const n of state.outline){
         if(n.collapsed){ n.collapsed = false; changed = true; }
@@ -2113,13 +2115,25 @@ ${headingNames.length ? 'Headings: ' + headingNames.join(' | ') : 'Heading not f
       if(changed){ safeSave(); renderOutline(); }
       else { renderOutline(); }
     }
+    function toggleStructureView(){
+      ui.outlineStructureView = !ui.outlineStructureView;
+      const btn = $('structureViewToggle');
+      if(btn) btn.textContent = ui.outlineStructureView ? 'Exit structure view' : 'Structure view';
+      let changed = false;
+      for(const n of state.outline){
+        if(n.collapsed){ n.collapsed = false; changed = true; }
+        if(n.detailsOpen){ n.detailsOpen = false; changed = true; }
+      }
+      if(changed) safeSave();
+      renderOutline();
+    }
     function getSelectedNode(){ return state.outline.find(n=>n.id===ui.selectedNodeId); }
     function runOnSelected(fn){ const nid = ui.selectedNodeId; if(!nid){ alert('Select an outline row first.'); return; } fn(nid); }
     function syncSelectionHints(){ const sel = $('selHint'); const ex = $('exHint'); const n = getSelectedNode(); if(sel) sel.textContent = ui.selectedNodeId ? ('Selected row: ' + ((n && n.title) ? n.title : '(untitled)')) : 'Select a row, then use these controls'; const active = state.people.find(p=>p.id===ui.activeWitnessColumnId); if(ex) ex.textContent = active ? ('Active witness column: ' + active.name) : 'Open a row, click a witness name, then add exhibits/testimony'; }
     function bindOutlineActionButtons(){ const map = [['actSibling', (nid)=> runRowControl('sibling', nid)],['actChild', (nid)=> runRowControl('child', nid)],['actIndent', (nid)=> runRowControl('indent', nid)],['actOutdent', (nid)=> runRowControl('outdent', nid)],['actUp', (nid)=> runRowControl('up', nid)],['actDown', (nid)=> runRowControl('down', nid)],['actDelete', (nid)=> runRowControl('delete', nid)]]; for(const [id, fn] of map){ const b = $(id); if(!b) continue; b.addEventListener('click', ()=> runOnSelected(fn)); } const addEx = $('actAddExhibit'); if(addEx) addEx.addEventListener('click', addExhibitToSelected); }
     bindOutlineActionButtons();
     $('addTop').addEventListener('click', async () => { const nextSortOrder = (window.loadedRows && window.loadedRows.length) ? Math.max(...window.loadedRows.map(r => Number(r.sort_order) || 0)) + 1 : 1; await window.createOutlineRow({ parentRowId: null, heading: 'New heading', description: '', sortOrder: nextSortOrder }); });
-    $('collapseAll').addEventListener('click', collapseAll); $('expandAll').addEventListener('click', expandAll); $('outlineCompactToggle').addEventListener('click', ()=>{ ui.outlineCompact = !ui.outlineCompact; $('outlineCompactToggle').textContent = ui.outlineCompact ? 'Full view' : 'Name-only view'; renderOutline(); });
+    $('collapseAll').addEventListener('click', collapseAll); $('expandAll').addEventListener('click', expandAll); $('structureViewToggle').addEventListener('click', toggleStructureView); $('outlineCompactToggle').addEventListener('click', ()=>{ ui.outlineCompact = !ui.outlineCompact; $('outlineCompactToggle').textContent = ui.outlineCompact ? 'Full view' : 'Name-only view'; renderOutline(); });
     $('caseName').addEventListener('input', ()=>{ state.caseName = $('caseName').value; safeSave(); });
     $('exportBtn').addEventListener('click', ()=>{ const blob = new Blob([JSON.stringify(state, null, 2)], {type:'application/json'}); const a = document.createElement('a'); const name = (state.caseName || 'murski_case').replace(/[^a-z0-9\-_ ]/gi,'').trim().replace(/\s+/g,'_'); a.href = URL.createObjectURL(blob); a.download = name + '.json'; document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(a.href); toast('Exported JSON'); });
     $('importBtn').addEventListener('click', ()=> $('importFile').click());
