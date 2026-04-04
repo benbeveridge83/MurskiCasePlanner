@@ -706,11 +706,28 @@
     body.outline-screen-wide #viewOutline{padding-left:12px;padding-right:12px;}
     .card{background: var(--surface);border: 1px solid var(--border);border-radius: var(--radius);box-shadow: var(--shadow);padding: 16px;} .card h2{margin:0 0 10px; font-size:18px; letter-spacing:-.02em} .hint{color:var(--muted); font-size:13px; line-height:1.35}
     .toolbar{display:flex; gap:10px; align-items:center; flex-wrap:wrap;padding:10px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);margin-top:12px;}
-    .matrixWrap{margin-top:12px; overflow:auto; border:1px solid var(--border); border-radius: var(--radius); background:#fff} .matrix{min-width: 920px;display:grid;grid-auto-rows: auto;} .mRow{display:grid;grid-template-columns: 520px 1fr;align-items:stretch;border-top:1px solid var(--border);} .mRow:first-child{border-top:none}
-    .mHead{position:sticky; top:0; z-index:5; background: #fff; box-shadow: 0 6px 12px rgba(2,6,23,.05)} .mHead .leftHead{padding:10px 10px; font-weight:900; border-right:1px solid var(--border)} .mHead .wHead{display:flex} .wColHead{min-width: 420px; max-width: 560px; border-left:1px solid var(--border); padding:10px; font-weight:900} .wColHead small{display:block; color:var(--muted); font-weight:700; margin-top:4px}
-    .mLeft{border-right:1px solid var(--border);padding:6px 8px;display:flex;gap:8px;align-items:flex-start;transition:padding-left .15s ease;} .mIndent{width:0; height:1px; flex:0 0 auto} .treeGuide{flex:0 0 auto; align-self:stretch; border-left:2px solid rgba(37,99,235,.18); margin-right:8px} .treeBranch{flex:0 0 auto; color:#2563eb; font-weight:800; min-width:24px; text-align:center; opacity:.9}
-    .caret{width:24px; height:24px;border-radius:999px;background: var(--surface2);border:1px solid var(--border);display:flex; align-items:center; justify-content:center;font-weight:900;cursor:pointer;flex: 0 0 auto;margin-top:1px;font-size:12px;line-height:1;}
-    .titleBox{flex:1; min-width: 260px} .titleRow{min-height:24px;display:flex;align-items:center;gap:8px;padding:1px 0;} .titleInput{border:none !important;background:transparent !important;box-shadow:none !important;padding:0 !important;border-radius:0 !important;font-size:14px;font-weight:800;line-height:1.25;cursor:pointer;} .titleInput:focus{border:none !important;box-shadow:none !important;outline:none;cursor:text;} .detailHint{font-size:11px;color:var(--muted);white-space:nowrap;} .leftSub{margin-top:6px;display:none;grid-template-columns: 1fr 240px;gap:10px;width:100%;padding-top:6px;border-top:1px dashed var(--border);} .leftSub.open{display:grid}
+    .matrixWrap{margin-top:12px; overflow:auto; border:1px solid var(--border); border-radius: var(--radius); background:#fff}
+    .matrix{min-width: 920px;display:grid;grid-auto-rows: auto;--outline-left-width:720px;}
+    .mRow{display:grid;grid-template-columns: minmax(360px,var(--outline-left-width)) 12px minmax(420px,1fr);align-items:stretch;border-top:1px solid var(--border);}
+    .mRow:first-child{border-top:none}
+    .mHead{position:sticky; top:0; z-index:5; background: #fff; box-shadow: 0 6px 12px rgba(2,6,23,.05)}
+    .mHead .leftHead{padding:10px 10px; font-weight:900;}
+    .mHead .wHead{display:flex}
+    .wColHead{min-width: 420px; max-width: 560px; padding:10px; font-weight:900}
+    .wColHead small{display:block; color:var(--muted); font-weight:700; margin-top:4px}
+    .mSplit{position:relative; background:#f8fafc; border-left:1px solid var(--border); border-right:1px solid var(--border);}
+    .mSplit::after{content:''; position:absolute; top:0; bottom:0; left:50%; width:2px; transform:translateX(-50%); background:rgba(37,99,235,.14);}
+    .mHead .mSplit{cursor:col-resize; background:#eef3ff;}
+    .mHead .mSplit:hover{background:#e7efff;}
+    body.outline-resizing{cursor:col-resize; user-select:none;}
+    body.outline-resizing *{cursor:col-resize !important; user-select:none !important;}
+    .mLeft{padding:6px 8px 6px 2px;display:flex;gap:4px;align-items:flex-start;transition:padding-left .15s ease;}
+    .mIndent{display:none;}
+    .treeGuide{flex:0 0 auto; align-self:stretch; border-left:2px solid rgba(37,99,235,.18); margin-right:4px}
+    .treeBranch{display:none !important;}
+    .caret{width:20px; height:20px;border-radius:999px;background: var(--surface2);border:1px solid var(--border);display:flex; align-items:center; justify-content:center;font-weight:900;cursor:pointer;flex: 0 0 auto;margin-top:2px;font-size:10px;line-height:1;}
+    .titleBox{flex:1; min-width: 260px}
+    .titleRow{min-height:24px;display:flex;align-items:center;gap:6px;padding:1px 0;} .titleInput{border:none !important;background:transparent !important;box-shadow:none !important;padding:0 !important;border-radius:0 !important;font-size:14px;font-weight:800;line-height:1.25;cursor:pointer;} .titleInput:focus{border:none !important;box-shadow:none !important;outline:none;cursor:text;} .detailHint{font-size:11px;color:var(--muted);white-space:nowrap;} .leftSub{margin-top:6px;display:none;grid-template-columns: 1fr 240px;gap:10px;width:100%;padding-top:6px;border-top:1px dashed var(--border);} .leftSub.open{display:grid}
     .leftBtns{display:none} .mini{padding:6px 10px; font-size:13px; background: var(--surface2); box-shadow:none}
     .mLeft.selected{outline:2px solid rgba(37,99,235,.35); border-radius:12px} .cell.selected{outline:2px solid rgba(16,185,129,.35); border-radius:14px}
     .wColHeadTop{display:flex; align-items:flex-start; justify-content:space-between; gap:10px} .wToggle{padding:4px 8px; font-size:12px; border-radius:999px; background:var(--surface2); border:1px solid var(--border); cursor:pointer; font-weight:800}
@@ -737,7 +754,7 @@
     .outlineCompact .titleRow{padding:2px 0;}
     .outlineCompact .mLeft{gap:6px;}
     .outlineCompact .mIndent{flex:0 0 auto;}
-    .outlineCompact .treeGuide{border-left-color: rgba(37,99,235,.35); margin-right:8px;} .outlineCompact .treeBranch{min-width:24px; font-size:18px;}
+    .outlineCompact .treeGuide{border-left-color: rgba(37,99,235,.35); margin-right:6px;} .outlineCompact .treeBranch{display:none !important;}
     .outlineCompact .titleInput{font-weight:700;}
     .outlineCompact .caret{margin-top:1px;}
 
@@ -803,11 +820,51 @@
     const getCaseId = () => String(window.CASE_ID || CASE_ID || new URLSearchParams(window.location.search).get('case') || '');
     const STORAGE_KEY = 'murski_case_planner_v1';
     let state = { caseName: '', tags: [], people: [], documents: [], outline: [], timelineEvents: [] };
-    const ui = { selectedNodeId: null, selectedWitnessId: null, selectedDocId: null, selectedPersonId: null, activeWitnessColumnId: null, expandedDocIds: {}, showDocDownloadList: false, showDocTagIndex: false, docTagFilterIds: [], docTagIndexExpandedIds: {}, docTagIndexShowUsedOnly: false, docTagNoTagsOnly: false, docTagHasTagsOnly: false, docExhibitFilter: 'all', outlineIndexFilterIds: [], outlineIndexExpandedIds: {}, outlineIndexShowUsedOnly: false, outlineIndexNoTagsOnly: false, outlineIndexHasTagsOnly: false, outlineIndexExhibitFilter: 'all', docSort: { field: 'file', dir: 'asc' }, outlineCompact: false, outlineStructureView: false, timelineSelectedId: null, timelineEditingId: null, currentView: INITIAL_VIEW };
+    const ui = { selectedNodeId: null, selectedWitnessId: null, selectedDocId: null, selectedPersonId: null, activeWitnessColumnId: null, expandedDocIds: {}, showDocDownloadList: false, showDocTagIndex: false, docTagFilterIds: [], docTagIndexExpandedIds: {}, docTagIndexShowUsedOnly: false, docTagNoTagsOnly: false, docTagHasTagsOnly: false, docExhibitFilter: 'all', outlineIndexFilterIds: [], outlineIndexExpandedIds: {}, outlineIndexShowUsedOnly: false, outlineIndexNoTagsOnly: false, outlineIndexHasTagsOnly: false, outlineIndexExhibitFilter: 'all', docSort: { field: 'file', dir: 'asc' }, outlineCompact: false, outlineStructureView: false, outlinePaneWidth: 720, timelineSelectedId: null, timelineEditingId: null, currentView: INITIAL_VIEW };
     const HEADING_EXHIBIT_KEY = '__heading__';
     const $ = (id) => document.getElementById(id);
     function uid(){ return Math.random().toString(16).slice(2) + Date.now().toString(16); }
     function toast(msg){ const el = $('toast'); el.textContent = msg; el.classList.add('show'); clearTimeout(toast._t); toast._t = setTimeout(()=> el.classList.remove('show'), 2200); }
+    function applyOutlinePaneWidth(){
+      const matrix = $('matrix');
+      if(matrix){
+        matrix.style.setProperty('--outline-left-width', Math.max(360, Number(ui.outlinePaneWidth) || 720) + 'px');
+      }
+    }
+    function persistOutlinePaneWidth(){
+      try{ localStorage.setItem('murski_outline_pane_width', String(Math.max(360, Number(ui.outlinePaneWidth) || 720))); }catch(e){}
+    }
+    function loadOutlinePaneWidth(){
+      try{
+        const raw = localStorage.getItem('murski_outline_pane_width');
+        const n = Number(raw);
+        if(Number.isFinite(n) && n >= 360) ui.outlinePaneWidth = n;
+      }catch(e){}
+    }
+    let outlineResizeState = null;
+    function beginOutlineResize(e){
+      e.preventDefault();
+      const startX = e.clientX;
+      const startWidth = Math.max(360, Number(ui.outlinePaneWidth) || 720);
+      outlineResizeState = { startX, startWidth };
+      document.body.classList.add('outline-resizing');
+      const onMove = (ev)=>{
+        if(!outlineResizeState) return;
+        const next = Math.max(360, Math.min(window.innerWidth - 320, outlineResizeState.startWidth + (ev.clientX - outlineResizeState.startX)));
+        ui.outlinePaneWidth = next;
+        applyOutlinePaneWidth();
+      };
+      const onUp = ()=>{
+        document.removeEventListener('mousemove', onMove);
+        document.removeEventListener('mouseup', onUp);
+        document.body.classList.remove('outline-resizing');
+        outlineResizeState = null;
+        persistOutlinePaneWidth();
+        renderOutline();
+      };
+      document.addEventListener('mousemove', onMove);
+      document.addEventListener('mouseup', onUp);
+    }
     function safeSave(){ try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); return true; } catch (e){ console.error(e); alert('Save failed (browser storage full).\n\nTip: Export JSON as a backup, then Reset (local) to clear space.\n\nDetails: ' + (e && e.name ? e.name : e)); return false; } }
     const DB_NAME = 'murski_case_planner_db'; const DB_VER = 1; const STORE_FILES = 'docFiles';
     function openDb(){ return new Promise((resolve,reject)=>{ if(!('indexedDB' in window)) return reject(new Error('IndexedDB not supported in this browser')); const req = indexedDB.open(DB_NAME, DB_VER); req.onupgradeneeded = () => { const db = req.result; if(!db.objectStoreNames.contains(STORE_FILES)) db.createObjectStore(STORE_FILES); }; req.onsuccess = () => resolve(req.result); req.onerror = () => reject(req.error || new Error('Failed to open IndexedDB')); }); }
@@ -1804,8 +1861,19 @@ ${headingNames.length ? 'Headings: ' + headingNames.join(' | ') : 'Heading not f
       matrix.innerHTML = '';
       const head = document.createElement('div');
       head.className = 'mRow mHead';
-      head.innerHTML = `<div class="leftHead">${ui.outlineCompact ? 'Outline' : 'Heading / Notes'}</div><div class="wHead"><div class="wColHead">${!activeWitness ? 'Witness column<small>Add a witness to any row</small>' : `<div>${escapeHtml(activeWitness.name)}<small>Active witness • Exhibits + testimony</small></div>`}</div></div>`;
+      const headLeft = document.createElement('div');
+      headLeft.className = 'leftHead';
+      headLeft.textContent = ui.outlineCompact ? 'Outline' : 'Heading / Notes';
+      const headSplit = document.createElement('div');
+      headSplit.className = 'mSplit';
+      headSplit.title = 'Drag to resize structure and witness columns';
+      headSplit.addEventListener('mousedown', beginOutlineResize);
+      const headRight = document.createElement('div');
+      headRight.className = 'wHead';
+      headRight.innerHTML = `<div class="wColHead">${!activeWitness ? 'Witness column<small>Add a witness to any row</small>' : `<div>${escapeHtml(activeWitness.name)}<small>Active witness • Exhibits + testimony</small></div>`}</div>`;
+      head.append(headLeft, headSplit, headRight);
       matrix.appendChild(head);
+      applyOutlinePaneWidth();
 
       const rows = flattenVisible();
       for(const n of rows){
@@ -1817,8 +1885,8 @@ ${headingNames.length ? 'Headings: ' + headingNames.join(' | ') : 'Heading not f
         left.dataset.id = n.id;
 
         const depth = depthOf(n.id);
-        const depthPad = depth ? ((ui.outlineCompact ? 52 : 46) * depth) : 0;
-        left.style.paddingLeft = (8 + depthPad) + 'px';
+        const depthPad = depth ? ((ui.outlineCompact ? 64 : 58) * depth) : 2;
+        left.style.paddingLeft = depthPad + 'px';
         left.dataset.depth = String(depth);
         left.title = depth ? ('Level ' + (depth + 1)) : 'Top level';
         if(depth){
@@ -1854,22 +1922,19 @@ ${headingNames.length ? 'Headings: ' + headingNames.join(' | ') : 'Heading not f
           await reorderNodeRelative(draggedId, n.id, position);
         });
 
-        const indent = document.createElement('div');
-        indent.className = 'mIndent';
-        indent.style.width = depthPad + 'px';
         const guide = document.createElement('div');
         guide.className = 'treeGuide';
-        guide.style.width = depth ? '16px' : '0px';
+        guide.style.width = depth ? '12px' : '0px';
         guide.style.visibility = depth ? 'visible' : 'hidden';
-        const branch = document.createElement('div');
-        branch.className = 'treeBranch';
-        branch.textContent = depth ? '↳' : '';
-        const caret = document.createElement('div');
-        caret.className = 'caret';
         const hasKids = state.outline.some(x=>x.parentId===n.id);
-        caret.textContent = hasKids ? (n.collapsed ? '▶' : '▼') : '•';
-        caret.title = hasKids ? (n.collapsed ? 'Expand' : 'Collapse') : '';
-        caret.addEventListener('click', ()=>{ if(hasKids) setCollapsed(n.id, !n.collapsed); });
+        let caret = null;
+        if(hasKids){
+          caret = document.createElement('div');
+          caret.className = 'caret';
+          caret.textContent = n.collapsed ? '▶' : '▼';
+          caret.title = n.collapsed ? 'Expand' : 'Collapse';
+          caret.addEventListener('click', ()=>{ setCollapsed(n.id, !n.collapsed); });
+        }
 
         const titleBox = document.createElement('div');
         titleBox.className = 'titleBox';
@@ -1921,9 +1986,13 @@ ${headingNames.length ? 'Headings: ' + headingNames.join(' | ') : 'Heading not f
         leftSub.className = 'leftSub' + ((n.detailsOpen && !ui.outlineCompact) ? ' open' : '');
         leftSub.innerHTML = `<div><div class="label">Date</div><input data-act="rowDate" type="date" value="${safeDateInputValue(n.rowDate)}" /><div class="label" style="margin-top:8px">Description</div><textarea data-act="desc" placeholder="Details / notes">${escapeHtml(n.description||'')}</textarea></div><div><div class="label">Tags</div><div data-act="rowTags"></div><div data-act="rowTagPicker"></div><div class="label" style="margin-top:8px">Add witness</div><select data-act="addWitness"></select><div class="label" style="margin-top:8px">Witnesses on this row</div><div class="witnessList" data-act="witnessList"></div><div class="witnessEmpty" data-act="witnessEmpty" style="display:none">No witnesses attached yet.</div><div class="label" style="margin-top:8px">Exhibits on this row</div><div class="witnessList" data-act="exhibitList"></div><div class="witnessEmpty" data-act="exhibitEmpty" style="display:none">No exhibits attached yet.</div><div class="label" style="margin-top:8px">Selected document</div><div class="hint" data-act="selectedDocName">No document selected.</div><div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:6px"><button type="button" class="mini" data-act="viewSelectedDoc">View file</button><button type="button" class="mini" data-act="downloadSelectedDoc">Download file</button></div><div data-act="selectedDocViewer" style="margin-top:10px"></div></div>`;
         titleBox.append(titleRow, leftSub);
-        if(depth) titleBox.style.marginLeft = (ui.outlineCompact ? 28 : 34) + 'px';
 
-        left.append(indent, guide, branch, caret, titleBox);
+        const rowSplit = document.createElement('div');
+        rowSplit.className = 'mSplit';
+
+        if(depth){ left.append(guide); }
+        if(caret){ left.append(caret); }
+        left.append(titleBox);
 
         const cells = document.createElement('div');
         cells.className = 'mCells';
@@ -1981,7 +2050,7 @@ ${headingNames.length ? 'Headings: ' + headingNames.join(' | ') : 'Heading not f
           }
         }
 
-        row.append(left, cells);
+        row.append(left, rowSplit, cells);
         matrix.appendChild(row);
 
         const descArea = leftSub.querySelector('textarea[data-act="desc"]');
@@ -2143,6 +2212,7 @@ ${headingNames.length ? 'Headings: ' + headingNames.join(' | ') : 'Heading not f
     $('importBtn').addEventListener('click', ()=> $('importFile').click());
     $('importFile').addEventListener('change', async ()=>{ const file = $('importFile').files && $('importFile').files[0]; $('importFile').value = ''; if(!file) return; try{ const text = await file.text(); const parsed = JSON.parse(text); if(!parsed || typeof parsed !== 'object') throw new Error('Invalid JSON'); state = Object.assign({caseName:'',tags:[],people:[],documents:[],exhibits:[],outline:[],timelineEvents:[]}, parsed); safeSave(); $('caseName').value = state.caseName || ''; renderTags(); toast('Imported JSON'); } catch(e){ console.error(e); alert('Import failed: ' + (e && e.message ? e.message : e)); } });
     $('resetBtn').addEventListener('click', ()=>{ if(!confirm('Reset local data for this case planner? This cannot be undone (unless you exported JSON).')) return; localStorage.removeItem(STORAGE_KEY); state = { caseName:'', tags:[], people:[], documents:[], exhibits:[], outline:[], timelineEvents:[] }; $('caseName').value=''; renderTags(); toast('Reset complete'); setTab('outline'); renderExhibits(); });
+    loadOutlinePaneWidth();
     load(); syncOutlineFromSupabase(); syncDocumentsFromSupabase(); syncPeopleFromSupabase(); syncWitnessCellsFromSupabase(); syncTagsFromSupabase(); syncTagAssignmentsFromSupabase(); renderTags(); renderDocuments(); renderPeople(); renderOutline(); renderExhibits(); setTab(getInitialViewFromUrl(), { pushState:false });
   </script>
 </body>
