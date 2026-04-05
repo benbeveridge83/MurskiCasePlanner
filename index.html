@@ -1193,6 +1193,7 @@ ${headingNames.length ? 'Headings: ' + headingNames.join(' | ') : 'Heading not f
 
 
     const NO_WITNESS_FILTER_VALUE = '__NO_WITNESS__';
+    const NO_TAG_FILTER_VALUE = '__NO_TAG__';
     const filterSelectionInitialized = {};
     function getUsedWitnessPeople(){
       const ids = allWitnessIds();
@@ -1221,6 +1222,7 @@ ${headingNames.length ? 'Headings: ' + headingNames.join(' | ') : 'Heading not f
       if(!allIds.length) return true;
       if((selectedIds || []).length === allIds.length) return true;
       const rowTags = row && Array.isArray(row.tags) ? row.tags.filter(Boolean) : [];
+      if(!rowTags.length) return (selectedIds || []).includes(NO_TAG_FILTER_VALUE);
       return rowTags.some(tagId => (selectedIds || []).includes(tagId));
     }
     function rowMatchesWitnessFilter(row, selectedIds, allWitnessOptions){
@@ -1298,19 +1300,19 @@ ${headingNames.length ? 'Headings: ' + headingNames.join(' | ') : 'Heading not f
       if(changed){ renderOutline(); renderOutlineIndex(); renderStructuredOutline(); }
     });
     function renderOutlineFilterControls(){
-      const tagOptions = getHeadingTagOptions().map(t => ({ id: t.id, name: t.name || 'Untitled tag' }));
+      const tagOptions = [{ id: NO_TAG_FILTER_VALUE, name: 'No tag' }].concat(getHeadingTagOptions().map(t => ({ id: t.id, name: t.name || 'Untitled tag' })));
       const witnessOptions = [{ id: NO_WITNESS_FILTER_VALUE, name: 'No witness' }].concat(getHeadingWitnessOptions());
       renderCheckboxDropdown('outlineTagFilterHost', { key:'outlineTag', label:'Tags', noun:'Tag', openKey:'outlineFilterTagOpen', selectedKey:'outlineFilterTagIds', options:tagOptions, onChange:()=>renderOutline() });
       renderCheckboxDropdown('outlineWitnessFilterHost', { key:'outlineWitness', label:'Heading witnesses', noun:'Witness', openKey:'outlineFilterWitnessOpen', selectedKey:'outlineFilterWitnessIds', options:witnessOptions, onChange:()=>renderOutline() });
     }
     function renderOutlineIndexFilterControls(){
-      const tagOptions = getHeadingTagOptions().map(t => ({ id: t.id, name: t.name || 'Untitled tag' }));
+      const tagOptions = [{ id: NO_TAG_FILTER_VALUE, name: 'No tag' }].concat(getHeadingTagOptions().map(t => ({ id: t.id, name: t.name || 'Untitled tag' })));
       const witnessOptions = [{ id: NO_WITNESS_FILTER_VALUE, name: 'No witness' }].concat(getHeadingWitnessOptions());
       renderCheckboxDropdown('outlineIndexTagFilterHost', { key:'outlineIndexTag', label:'Heading tags', noun:'Tag', openKey:'outlineIndexTagOpen', selectedKey:'outlineIndexTagIds', options:tagOptions, onChange:()=>renderOutlineIndex() });
       renderCheckboxDropdown('outlineIndexWitnessFilterHost', { key:'outlineIndexWitness', label:'Heading witnesses', noun:'Witness', openKey:'outlineIndexWitnessOpen', selectedKey:'outlineIndexWitnessIds', options:witnessOptions, onChange:()=>renderOutlineIndex() });
     }
     function renderStructuredHeadingExtraFilters(){
-      const tagOptions = getHeadingTagOptions().map(t => ({ id: t.id, name: t.name || 'Untitled tag' }));
+      const tagOptions = [{ id: NO_TAG_FILTER_VALUE, name: 'No tag' }].concat(getHeadingTagOptions().map(t => ({ id: t.id, name: t.name || 'Untitled tag' })));
       const witnessOptions = [{ id: NO_WITNESS_FILTER_VALUE, name: 'No witness' }].concat(getHeadingWitnessOptions());
       renderCheckboxDropdown('structuredHeadingTagFilterHost', { key:'structuredHeadingTag', label:'Heading tags', noun:'Tag', openKey:'structuredHeadingTagOpen', selectedKey:'structuredHeadingTagIds', options:tagOptions, onChange:()=>renderStructuredOutline() });
       renderCheckboxDropdown('structuredHeadingWitnessFilterHost', { key:'structuredHeadingWitness', label:'Heading witnesses', noun:'Witness', openKey:'structuredHeadingWitnessOpen', selectedKey:'structuredHeadingWitnessIds', options:witnessOptions, onChange:()=>renderStructuredOutline() });
