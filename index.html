@@ -1691,7 +1691,7 @@ function openStructuredDocEditor(docId){
           if(!payload || !payload.docId) return;
           await moveStructuredDocument(payload.docId, zone.getAttribute('data-target-row'), zone.getAttribute('data-target-witness'), payload.sourceRowId, payload.sourceWitnessId, !!payload.fromTray);
         });
-      }));
+      });
 
       table.querySelectorAll('.structuredExChip[data-structured-doc]').forEach(el=>{
         el.addEventListener('dragstart', ev=>{
