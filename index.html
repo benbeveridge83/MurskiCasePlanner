@@ -817,7 +817,7 @@
     .structuredOutlineTop{display:grid;gap:10px;margin-top:10px;}
     .structuredWitnessFilters{display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
     .structuredWitnessFilterList{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
-    .structuredShell{margin-top:12px;border:1px solid var(--border);border-radius:var(--radius);overflow:auto;background:#fff;position:relative;}
+    .structuredShell{margin-top:12px;border:1px solid var(--border);border-radius:var(--radius);overflow:auto;background:#fff;}
     .structuredTable{min-width:100%;width:max-content;}
     .structuredHeader,.structuredRow{display:grid;align-items:stretch;grid-template-columns:var(--structured-left,720px) 8px repeat(var(--structured-cols,1), minmax(220px, 260px));}
     .structuredHeader{position:sticky;top:0;background:#fff;z-index:8;box-shadow:0 6px 12px rgba(2,6,23,.05);}
@@ -859,7 +859,7 @@
     <div id="viewDocuments" class="card" style="display:none"><h2>Documents</h2><div class="hint">Upload documents for this case. These can be selected as exhibits in the Case Outline witness columns.</div><div class="grid2"><div class="card" style="box-shadow:none"><h2 style="margin-bottom:8px">Add document</h2><div class="hint" style="margin-bottom:10px">Only <b>Name</b> is required. Date/tags/description are optional.</div><div class="label">Document name <span style="color:var(--danger)">*</span></div><input id="docName" type="text" placeholder="e.g., Leah Bankruptcy" /><div class="label" style="margin-top:10px">Document date (optional)</div><input id="docDate" type="date" /><div class="label" style="margin-top:10px">Description (optional)</div><textarea id="docDesc" placeholder="What is this document? What does it prove?"></textarea><div class="hint" style="margin-top:10px">Use the Tag + exhibit index to assign tags and filter the document list.</div><div class="label" style="margin-top:10px">File (optional)</div><input id="docFile" type="file" /><div class="hint" style="margin-top:6px">If you attach a file, it uploads to Supabase Storage so it can be viewed and downloaded from other tabs and computers.</div><div style="margin-top:10px; display:flex; gap:10px; flex-wrap:wrap; align-items:center"><button id="addDoc" class="btnPrimary">Save document</button></div></div><div class="card" style="box-shadow:none"><div style="display:flex; justify-content:space-between; gap:10px; align-items:center; flex-wrap:wrap"><h2 style="margin-bottom:8px">Document repository</h2><div style="display:flex; gap:8px; flex-wrap:wrap"><button id="collapseAllDocs" class="btnGhost">Collapse all</button><button id="toggleDownloadList" class="btnGhost">Download list</button><a id="toggleDocTagIndex" class="btnGhost docOpenLink" data-view-link="tagindex" href="?view=tagindex">Open Tag Index page</a></div></div><div class="hint" style="margin-bottom:10px">Tags are hidden here so this list stays cleaner. Use the Tag Index page for the document-by-tag table, exhibit filters, and heading details.</div><div id="docDownloadListWrap" style="display:none; margin:10px 0 14px 0"></div><div id="docList" style="display:flex; flex-direction:column; gap:10px"></div><div id="docEmpty" class="empty" style="display:none">No documents yet.</div></div></div></div>
     <div id="viewTagIndex" class="card tagIndexPageCard" style="display:none"><div style="display:flex; justify-content:space-between; gap:10px; align-items:center; flex-wrap:wrap"><div><h2 style="margin-bottom:8px">Tag Index</h2><div class="hint">Rows are documents. Columns are tags. Filter the visible tag columns, filter exhibit status, filter untagged documents, and expand any document row for more detail.</div></div><div style="display:flex; gap:8px; flex-wrap:wrap"><a class="btnGhost docOpenLink" data-view-link="documents" href="?view=documents">Back to Documents</a></div></div><div class="docIndexFilters" style="margin-top:12px"><div style="min-width:260px"><div class="label">Show only these tags</div><div id="docTagFilterBoxes" class="tagFilterBoxWrap"></div><div class="hint" style="margin-top:6px">Leave all unchecked to show every tag column. Check any combination to show only those tag columns.</div></div><div><div class="label">Filter by exhibit status</div><select id="docExhibitFilter"><option value="all">All documents</option><option value="exhibit">Exhibits only</option><option value="not_exhibit">Not added as exhibits</option></select></div></div><div style="display:flex; align-items:end"><label class="checkItem" style="margin:0"><input id="docTagShowUsedOnly" type="checkbox" /> <span>Only show tag columns used by at least one document</span></label></div><div style="display:flex; align-items:end"><label class="checkItem" style="margin:0"><input id="docTagNoTagsOnly" type="checkbox" /> <span>Only show documents with no tags</span></label></div><div style="display:flex; align-items:end"><label class="checkItem" style="margin:0"><input id="docTagHasTagsOnly" type="checkbox" /> <span>Only show documents that have a tag</span></label></div></div><div id="docTagIndexTableShell" class="docTagIndexTableShell"><div id="docTagIndexScrollTop" class="docTagIndexScrollTop" style="display:none"><div id="docTagIndexScrollTopInner" class="docTagIndexScrollTopInner"></div></div><div id="docTagIndexTableWrap" class="docTagIndexTableWrap"></div></div><div id="docTagIndexEmpty" class="empty" style="display:none">No documents match the current filters.</div></div>
     <div id="viewOutlineIndex" class="card tagIndexPageCard" style="display:none"><div style="display:flex; justify-content:space-between; gap:10px; align-items:center; flex-wrap:wrap"><div><h2 style="margin-bottom:8px">Outline Index</h2><div class="hint">Rows are documents. Columns are outline headings grouped by main heading. Filter the visible heading columns, filter exhibit status, filter documents by whether they have headings, and expand any document row for more detail.</div></div><div style="display:flex; gap:8px; flex-wrap:wrap"><a class="btnGhost docOpenLink" data-view-link="documents" href="?view=documents">Back to Documents</a></div></div><div class="docIndexFilters" style="margin-top:12px"><div style="min-width:260px"><div class="label">Show only these headings</div><div style="display:flex; gap:8px; flex-wrap:wrap; margin:6px 0 8px 0"><button id="outlineIndexSelectAll" type="button" class="btnGhost">Select all headings</button><button id="outlineIndexDeselectAll" type="button" class="btnGhost">Deselect all headings</button></div><div id="outlineIndexFilterBoxes" class="tagFilterBoxWrap"></div><div class="hint" style="margin-top:6px">Leave all unchecked to show every outline heading column. Check any combination to show only those heading columns.</div></div><div><div class="label">Filter by exhibit status</div><select id="outlineIndexExhibitFilter"><option value="all">All documents</option><option value="exhibit">Exhibits only</option><option value="not_exhibit">Not added as exhibits</option></select></div></div><div style="display:flex; align-items:end"><label class="checkItem" style="margin:0"><input id="outlineIndexShowUsedOnly" type="checkbox" /> <span>Only show heading columns used by at least one document</span></label></div><div style="display:flex; align-items:end"><label class="checkItem" style="margin:0"><input id="outlineIndexNoTagsOnly" type="checkbox" /> <span>Only show documents with no heading</span></label></div><div style="display:flex; align-items:end"><label class="checkItem" style="margin:0"><input id="outlineIndexHasTagsOnly" type="checkbox" /> <span>Only show documents with a heading</span></label></div></div><div id="outlineIndexDocCount" class="hint" style="margin:10px 0 4px 0; font-size:14px"></div><div id="outlineIndexTableShell" class="docTagIndexTableShell"><div id="outlineIndexScrollTop" class="docTagIndexScrollTop" style="display:none"><div id="outlineIndexScrollTopInner" class="docTagIndexScrollTopInner"></div></div><div id="outlineIndexTableWrap" class="docTagIndexTableWrap"></div></div><div id="outlineIndexEmpty" class="empty" style="display:none">No documents match the current filters.</div></div>
-    <div id="viewStructuredOutline" class="card structuredOutlinePage" style="display:none"><div style="display:flex; justify-content:space-between; gap:10px; align-items:center; flex-wrap:wrap"><div><h2 style="margin-bottom:8px">Structured Outline</h2><div class="hint">View the outline with separate exhibit columns for No witness and any selected witnesses. Drag exhibits between cells to change heading/witness assignment, or drag a document from the tray into any row.</div></div></div><div class="structuredOutlineTop"><div class="structuredWitnessFilters"><span class="label">Witness columns</span><button type="button" id="structuredWitnessSelectAll" class="btnGhost">All</button><button type="button" id="structuredWitnessSelectNone" class="btnGhost">None</button><div id="structuredWitnessFilterList" class="structuredWitnessFilterList"></div></div><div class="structuredWitnessFilters"><span class="label">Show headings</span><div id="structuredHeadingFilterHost"></div></div><div class="structuredTray"><div class="structuredTrayTop"><div class="label">Document tray</div><input id="structuredTraySearch" type="text" placeholder="Search documents to drag…" style="max-width:320px" /></div><div class="structuredTrayFilters"><div class="structuredTrayFilterBlock"><div class="label">Assignment</div><select id="structuredTrayAssignmentFilter"><option value="all">All documents</option><option value="assigned">Assigned to a heading</option><option value="unassigned">Not assigned to a heading</option></select></div><div class="structuredTrayFilterBlock"><div class="label">Person</div><select id="structuredTrayPersonFilter"></select></div><div class="structuredTrayFilterBlock" style="min-width:220px"><div class="label">Tags</div><select id="structuredTrayTagFilter" multiple></select></div></div><div id="structuredTrayList" class="structuredTrayList"></div><div class="hint">Drag a document pill into a row/witness cell to add or move it there. Click a pill to edit that document.</div></div><div id="structuredOutlineShell" class="structuredShell"><div id="structuredOutlineTable" class="structuredTable"></div></div><div id="structuredScrollDock" class="structuredScrollDock"><div id="structuredScrollDockInner" class="structuredScrollDockInner"></div></div></div></div>
+    <div id="viewStructuredOutline" class="card structuredOutlinePage" style="display:none"><div style="display:flex; justify-content:space-between; gap:10px; align-items:center; flex-wrap:wrap"><div><h2 style="margin-bottom:8px">Structured Outline</h2><div class="hint">View the outline with separate exhibit columns for No witness and any selected witnesses. Drag exhibits between cells to change heading/witness assignment, or drag a document from the tray into any row.</div></div></div><div class="structuredOutlineTop"><div class="structuredWitnessFilters"><span class="label">Witness columns</span><button type="button" id="structuredWitnessSelectAll" class="btnGhost">All</button><button type="button" id="structuredWitnessSelectNone" class="btnGhost">None</button><div id="structuredWitnessFilterList" class="structuredWitnessFilterList"></div></div><div class="structuredWitnessFilters"><span class="label">Show headings</span><div id="structuredHeadingFilterHost"></div></div><div class="structuredTray"><div class="structuredTrayTop"><div class="label">Document tray</div><input id="structuredTraySearch" type="text" placeholder="Search documents to drag…" style="max-width:320px" /></div><div class="structuredTrayFilters"><div class="structuredTrayFilterBlock"><div class="label">Assignment</div><select id="structuredTrayAssignmentFilter"><option value="all">All documents</option><option value="assigned">Assigned to a heading</option><option value="unassigned">Not assigned to a heading</option></select></div><div class="structuredTrayFilterBlock"><div class="label">Person</div><select id="structuredTrayPersonFilter"></select></div><div class="structuredTrayFilterBlock" style="min-width:220px"><div class="label">Tags</div><select id="structuredTrayTagFilter" multiple></select></div></div><div id="structuredTrayList" class="structuredTrayList"></div><div class="hint">Drag a document pill into a row/witness cell to add or move it there. Click a pill to edit that document.</div></div><div id="structuredOutlineShell" class="structuredShell"><div id="structuredOutlineTable" class="structuredTable"></div></div></div></div>
     <div id="structuredDocModal" class="structuredModal"><div class="structuredModalCard"><div style="display:flex; justify-content:space-between; gap:10px; align-items:center"><h3 style="margin:0">Edit document</h3><button type="button" id="structuredDocModalClose" class="btnGhost">Close</button></div><div><div class="label">Document name</div><input id="structuredDocName" type="text" /></div><div><div class="label">Description</div><textarea id="structuredDocDesc" placeholder="Document description"></textarea></div><div><div class="label">Tags</div><div id="structuredDocTags" class="structuredTagChecklist"></div></div><div style="display:flex; gap:8px; flex-wrap:wrap"><button type="button" id="structuredDocSave" class="btnPrimary">Save</button><button type="button" id="structuredDocView" class="btnGhost">View file</button><button type="button" id="structuredDocDownload" class="btnGhost">Download file</button></div><div id="structuredDocViewer"></div></div></div>
     <div id="viewExhibits" class="card" style="display:none"><h2>Exhibits</h2><div class="hint">Documents you have used as exhibits appear here.</div><div class="card" style="box-shadow:none"><h2 style="margin-bottom:8px">Exhibit table</h2><div id="exhibitEmpty" class="empty" style="display:none">No exhibits yet. Add an exhibit from a row/witness intersection.</div><div style="overflow:auto"><table id="exhibitTable" style="width:100%; border-collapse:collapse; display:none"><thead><tr><th style="text-align:left; padding:10px; border-bottom:1px solid var(--line); width:140px">Exhibit</th><th style="text-align:left; padding:10px; border-bottom:1px solid var(--line)">Document name</th></tr></thead><tbody id="exhibitTableBody"></tbody></table></div></div></div>
     <div id="viewPeople" class="card" style="display:none"><h2>People</h2><div class="hint">Add people (including witnesses). Witnesses can then be attached to outline rows.</div><div class="grid2"><div class="card" style="box-shadow:none"><h2 style="margin-bottom:8px">Add person</h2><div class="label">Name <span style="color:var(--danger)">*</span></div><input id="personName" type="text" placeholder="e.g., Leah Murski" /><div class="label" style="margin-top:10px">Notes / Role (optional)</div><textarea id="personDesc" placeholder="e.g., Mother, Father, Therapist, Teacher, etc."></textarea><div class="hint" style="margin-top:10px">Assign tags after saving from the people list.</div><div style="margin-top:10px; display:flex; gap:10px; flex-wrap:wrap; align-items:center"><button id="addPerson" class="btnPrimary">Save person</button></div></div><div class="card" style="box-shadow:none"><h2 style="margin-bottom:8px">People list</h2><div id="peopleList" style="display:flex; flex-direction:column; gap:10px"></div><div id="peopleEmpty" class="empty" style="display:none">No people yet.</div></div></div></div>
@@ -1683,47 +1683,6 @@ function openStructuredDocEditor(docId){
       });
     }
 
-    
-    function bindStructuredScrollDock(){
-      const shell = $('structuredOutlineShell');
-      const dock = $('structuredScrollDock');
-      const inner = $('structuredScrollDockInner');
-      if(!shell || !dock || !inner) return;
-      inner.style.width = Math.max(shell.scrollWidth, shell.clientWidth) + 'px';
-      if(dock.dataset.bound !== '1'){
-        dock.dataset.bound = '1';
-        let syncing = false;
-        shell.addEventListener('scroll', ()=>{
-          if(syncing) return;
-          syncing = true;
-          dock.scrollLeft = shell.scrollLeft;
-          syncing = false;
-        });
-        dock.addEventListener('scroll', ()=>{
-          if(syncing) return;
-          syncing = true;
-          shell.scrollLeft = dock.scrollLeft;
-          syncing = false;
-        });
-        window.addEventListener('resize', ()=>{ inner.style.width = Math.max(shell.scrollWidth, shell.clientWidth) + 'px'; });
-      }
-      dock.scrollLeft = shell.scrollLeft;
-    }
-    function getStructuredRowControls(nodeId){
-      return `<div class="rowControlsWrap">
-        <button type="button" class="rowControlsBtn">Controls</button>
-        <div class="rowControlsMenu">
-          <button type="button" class="rowControlItem" data-structured-act="sibling" data-node-id="${nodeId}">+ Sibling</button>
-          <button type="button" class="rowControlItem" data-structured-act="child" data-node-id="${nodeId}">+ Child</button>
-          <button type="button" class="rowControlItem" data-structured-act="indent" data-node-id="${nodeId}">↳ Indent</button>
-          <button type="button" class="rowControlItem" data-structured-act="outdent" data-node-id="${nodeId}">↰ Outdent</button>
-          <button type="button" class="rowControlItem" data-structured-act="up" data-node-id="${nodeId}">↑ Up</button>
-          <button type="button" class="rowControlItem" data-structured-act="down" data-node-id="${nodeId}">↓ Down</button>
-          <button type="button" class="rowControlItem" data-structured-act="delete" data-node-id="${nodeId}">Delete</button>
-        </div>
-      </div>`;
-    }
-
     function renderStructuredOutline(){
       structuredEnsureWitnessFilterDefaults();
       structuredEnsureHeadingFilterDefaults();
@@ -1754,33 +1713,15 @@ function openStructuredDocEditor(docId){
 
       const rows = getStructuredVisibleRows();
       const gridTemplate = structuredGridTemplate(cols);
-      const header = `<div class="structuredHeader" style="grid-template-columns:${gridTemplate}">
-        <div class="structuredOutlineCell">Heading / Structure</div>
-        <div class="structuredDivider" id="structuredOutlineDivider"></div>
-        ${cols.map(col=>`<div class="structuredHeadCell structuredHeaderCell" style="position:relative;${structuredUi.witnessColWidths[col.id] ? `min-width:${getStructuredWitnessWidth(col.id)}px;max-width:${getStructuredWitnessWidth(col.id)}px` : ''}">${escapeHtml(col.label)}<div class="structuredColResize" data-structured-resize="${col.id}"></div></div>`).join('')}
-      </div>`;
+      const header = `<div class="structuredHeader" style="grid-template-columns:${gridTemplate}"><div class="structuredOutlineCell">Heading / Structure</div><div class="structuredDivider" id="structuredOutlineDivider"></div>${cols.map(col=>`<div class="structuredHeadCell structuredHeaderCell" style="position:relative;${structuredUi.witnessColWidths[col.id] ? `min-width:${getStructuredWitnessWidth(col.id)}px;max-width:${getStructuredWitnessWidth(col.id)}px` : ''}">${escapeHtml(col.label)}<div class="structuredColResize" data-structured-resize="${col.id}"></div></div>`).join('')}</div>`;
 
       const body = rows.map(n=>{
         const depth = depthOf(n.id);
         const hasKids = (state.outline || []).some(x=>x.parentId===n.id);
-        const childBadge = depth ? '<span class="structuredOutlineBadge">Child row</span>' : '';
-        const left = `<div class="structuredOutlineCell">
-          <div class="structuredOutlineTitleRow" style="padding-left:${Math.max(2, depth * 52)}px">
-            ${hasKids ? `<span class="structuredCaret" data-structured-caret="${n.id}">${n.collapsed ? '&#9656;' : '&#9662;'}</span>` : '<span style="display:inline-block;width:20px"></span>'}
-            <button type="button" class="detailToggle" data-structured-open-outline="${n.id}" title="Open this row in Case Outline">+</button>
-            <button type="button" class="outlineDragHandle" draggable="true" data-structured-drag="${n.id}" title="${depth ? 'Drag within this parent only' : 'Drag to reorder top-level headings'}">⋮⋮</button>
-            ${childBadge}
-            <span class="structuredOutlineTitleText" title="${escapeHtml(n.title || 'Untitled heading')}">${escapeHtml(n.title || 'Untitled heading')}</span>
-            ${getStructuredRowControls(n.id)}
-          </div>
-        </div>`;
+        const left = `<div class="structuredOutlineCell"><div class="structuredTitle" style="padding-left:${Math.max(4, depth*36)}px"><span class="structuredCaret" data-structured-caret="${n.id}">${hasKids ? (n.collapsed ? '&#9656;' : '&#9662;') : ''}</span>${depth ? '<span class="structuredLevelBadge">Child</span>' : ''}<span class="structuredTitleText" title="${escapeHtml(n.title || 'Untitled heading')}">${escapeHtml(n.title || 'Untitled heading')}</span></div></div>`;
         const cells = cols.map(col=>{
           const docs = getCellExhibits(n.id, col.id);
-          return `<div class="structuredCell" style="${structuredUi.witnessColWidths[col.id] ? `min-width:${getStructuredWitnessWidth(col.id)}px;max-width:${getStructuredWitnessWidth(col.id)}px` : ''}">
-            <div class="structuredDropzone structuredExhibitCell" data-target-row="${n.id}" data-target-witness="${col.id}">
-              ${docs.length ? docs.map(docId=>{ const d = (state.documents || []).find(x=>x.id===docId); return `<span class="structuredExChip" draggable="true" data-structured-doc="${docId}" data-source-row="${n.id}" data-source-witness="${col.id}"><span class="labelText">${escapeHtml(d?.name || 'Document')}</span></span>`; }).join('') : '<span class="structuredEmpty">Drop exhibit here</span>'}
-            </div>
-          </div>`;
+          return `<div class="structuredCell" style="${structuredUi.witnessColWidths[col.id] ? `min-width:${getStructuredWitnessWidth(col.id)}px;max-width:${getStructuredWitnessWidth(col.id)}px` : ''}"><div class="structuredDropzone structuredExhibitCell" data-target-row="${n.id}" data-target-witness="${col.id}">${docs.length ? docs.map(docId=>{ const d = (state.documents || []).find(x=>x.id===docId); return `<span class="structuredExChip" draggable="true" data-structured-doc="${docId}" data-source-row="${n.id}" data-source-witness="${col.id}"><span class="labelText">${escapeHtml(d?.name || 'Document')}</span></span>`; }).join('') : '<span class="structuredEmpty">Drop exhibit here</span>'}</div></div>`;
         }).join('');
         return `<div class="structuredRow" style="grid-template-columns:${gridTemplate}">${left}<div class="structuredDivider"></div>${cells}</div>`;
       }).join('');
@@ -1793,62 +1734,6 @@ function openStructuredDocEditor(docId){
         if(node){ node.collapsed = !node.collapsed; safeSave(); renderStructuredOutline(); }
       }));
 
-      table.querySelectorAll('[data-structured-open-outline]').forEach(btn=>btn.addEventListener('click', ()=>{
-        const id = btn.getAttribute('data-structured-open-outline');
-        const node = (state.outline || []).find(x=>x.id===id);
-        if(node){
-          ui.selectedNodeId = id;
-          node.detailsOpen = true;
-          ui.currentView = 'outline';
-          setTab('outline');
-          renderOutline();
-        }
-      }));
-
-      table.querySelectorAll('[data-structured-act]').forEach(btn=>btn.addEventListener('click', async ()=>{
-        const act = btn.getAttribute('data-structured-act');
-        const nid = btn.getAttribute('data-node-id');
-        await runRowControl(act, nid);
-        renderStructuredOutline();
-      }));
-
-      table.querySelectorAll('[data-structured-drag]').forEach(handle=>{
-        handle.addEventListener('dragstart', (e)=>{
-          const nId = handle.getAttribute('data-structured-drag');
-          const n = (state.outline || []).find(x=>x.id===nId);
-          suppressOutlineRealtime(5000);
-          outlineDragState = { draggedId: nId, overId: null, position: null };
-          e.dataTransfer.effectAllowed = 'move';
-          try { e.dataTransfer.setData('text/plain', nId); } catch {}
-        });
-        handle.addEventListener('dragend', ()=>{ resetOutlineDragState(); });
-      });
-      table.querySelectorAll('.structuredOutlineCell').forEach(cell=>{
-        const row = cell.closest('.structuredRow');
-        if(!row) return;
-        const dragBtn = row.querySelector('[data-structured-drag]');
-        const targetId = dragBtn ? dragBtn.getAttribute('data-structured-drag') : null;
-        cell.addEventListener('dragover', (e)=>{
-          if(!outlineDragState.draggedId || !targetId || outlineDragState.draggedId === targetId) return;
-          const dragged = (state.outline || []).find(x=>x.id===outlineDragState.draggedId);
-          const target = (state.outline || []).find(x=>x.id===targetId);
-          if(!dragged || !target || (dragged.parentId || null) !== (target.parentId || null)) return;
-          e.preventDefault();
-          const rect = cell.getBoundingClientRect();
-          const nextPosition = (e.clientY - rect.top) < rect.height / 2 ? 'before' : 'after';
-          setOutlineDropTarget(targetId, nextPosition);
-        });
-        cell.addEventListener('drop', async (e)=>{
-          if(!outlineDragState.draggedId || !targetId) return;
-          e.preventDefault();
-          const draggedId = outlineDragState.draggedId;
-          const position = outlineDragState.position || 'after';
-          resetOutlineDragState();
-          await reorderNodeRelative(draggedId, targetId, position);
-          renderStructuredOutline();
-        });
-      });
-
       table.querySelectorAll('.structuredDropzone').forEach(zone=>{
         zone.addEventListener('dragover', ev=>{ ev.preventDefault(); zone.classList.add('dragOver'); });
         zone.addEventListener('dragleave', ()=> zone.classList.remove('dragOver'));
@@ -1860,7 +1745,7 @@ function openStructuredDocEditor(docId){
           if(!payload || !payload.docId) return;
           await moveStructuredDocument(payload.docId, zone.getAttribute('data-target-row'), zone.getAttribute('data-target-witness'), payload.sourceRowId, payload.sourceWitnessId, !!payload.fromTray);
         });
-      }));
+      });
 
       table.querySelectorAll('.structuredExChip[data-structured-doc]').forEach(el=>{
         el.addEventListener('dragstart', ev=>{
@@ -1874,7 +1759,7 @@ function openStructuredDocEditor(docId){
           ui.structuredDragging = null;
         });
         el.addEventListener('click', ()=> openStructuredDocEditor(el.getAttribute('data-structured-doc')));
-      }));
+      });
 
       table.querySelectorAll('[data-structured-resize]').forEach(handle=>{
         handle.addEventListener('mousedown', ev=> startStructuredWitnessResize(ev, handle.getAttribute('data-structured-resize')));
@@ -1882,10 +1767,9 @@ function openStructuredDocEditor(docId){
 
       syncStructuredDivider();
       renderStructuredTray();
-      bindStructuredScrollDock();
     }
-
-    function syncStructuredDivider(){ const handle = $('structuredOutlineDivider'); if(!handle || handle.dataset.bound === '1') return; handle.dataset.bound = '1'; handle.addEventListener('mousedown', (ev)=>{ ev.preventDefault(); const startX = ev.clientX; const startWidth = ui.outlinePaneWidth || 720; const onMove = (e)=>{ ui.outlinePaneWidth = Math.max(380, Math.min(window.innerWidth - 320, startWidth + (e.clientX - startX))); safeSave(); const table = $('structuredOutlineTable'); if(table) table.style.setProperty('--structured-left', (ui.outlinePaneWidth || 720) + 'px'); const matrix = $('matrix'); if(matrix) matrix.style.setProperty('--outline-left-width', (ui.outlinePaneWidth || 720) + 'px'); bindStructuredScrollDock(); }; const onUp = ()=>{ window.removeEventListener('mousemove', onMove); window.removeEventListener('mouseup', onUp); renderStructuredOutline(); renderOutline(); }; window.addEventListener('mousemove', onMove); window.addEventListener('mouseup', onUp); }); }
+    
+    function syncStructuredDivider(){ const handle = $('structuredOutlineDivider'); if(!handle || handle.dataset.bound === '1') return; handle.dataset.bound = '1'; handle.addEventListener('mousedown', (ev)=>{ ev.preventDefault(); const startX = ev.clientX; const startWidth = ui.outlinePaneWidth || 720; const onMove = (e)=>{ ui.outlinePaneWidth = Math.max(380, Math.min(window.innerWidth - 320, startWidth + (e.clientX - startX))); safeSave(); const table = $('structuredOutlineTable'); if(table) table.style.setProperty('--structured-left', (ui.outlinePaneWidth || 720) + 'px'); const matrix = $('matrix'); if(matrix) matrix.style.setProperty('--outline-left-width', (ui.outlinePaneWidth || 720) + 'px'); }; const onUp = ()=>{ window.removeEventListener('mousemove', onMove); window.removeEventListener('mouseup', onUp); renderStructuredOutline(); renderOutline(); }; window.addEventListener('mousemove', onMove); window.addEventListener('mouseup', onUp); }); }
 
     function renderDocuments(){
   const tagIndexView = $('viewTagIndex');
