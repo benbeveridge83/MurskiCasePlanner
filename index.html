@@ -794,7 +794,7 @@
     .structuredHeadingItem.level3{padding-left:44px;}
     .structuredHeadingItem.level4{padding-left:62px;}
     .structuredHeaderCell{position:relative;}
-    .structuredColResize{position:absolute; top:0; right:-4px; width:8px; height:100%; cursor:col-resize; z-index:6;}
+    .structuredColResize{position:absolute; top:0; right:-6px; width:12px; height:100%; cursor:col-resize; z-index:20;}
     .structuredTable{table-layout:fixed;}
     .structuredTable td,.structuredTable th{vertical-align:top;}
     .structuredExhibitCell{display:flex; flex-wrap:wrap; align-content:flex-start; gap:6px; min-height:44px;}
@@ -874,7 +874,7 @@
     const STORAGE_KEY = 'murski_case_planner_v1';
     let state = { caseName: '', tags: [], people: [], documents: [], outline: [], timelineEvents: [] };
     const ui = { selectedNodeId: null, selectedWitnessId: null, selectedDocId: null, selectedPersonId: null, activeWitnessColumnId: null, expandedDocIds: {}, showDocDownloadList: false, showDocTagIndex: false, docTagFilterIds: [], docTagIndexExpandedIds: {}, docTagIndexShowUsedOnly: false, docTagNoTagsOnly: false, docTagHasTagsOnly: false, docExhibitFilter: 'all', outlineIndexFilterIds: [], outlineIndexExpandedIds: {}, outlineIndexShowUsedOnly: false, outlineIndexNoTagsOnly: false, outlineIndexHasTagsOnly: false, outlineIndexExhibitFilter: 'all', docSort: { field: 'file', dir: 'asc' }, outlineCompact: false, outlineStructureView: false, outlinePaneWidth: 720, timelineSelectedId: null, timelineEditingId: null, currentView: INITIAL_VIEW, structuredOutlineWitnessFilterIds: [], structuredTraySearch: '', structuredDocEditorId: null, structuredDragging: null };
-    const structuredUi = { headingFilterOpen: false, visibleHeadingIds: [], witnessColWidths: {}, resizingWitnessId: null, resizeStartX: 0, resizeStartWidth: 220 };
+    const structuredUi = { headingFilterOpen: false, visibleHeadingIds: [], headingFilterInitialized: false, witnessColWidths: {}, resizingWitnessId: null, resizeStartX: 0, resizeStartWidth: 220 };
     const HEADING_EXHIBIT_KEY = '__heading__';
     const $ = (id) => document.getElementById(id);
     function uid(){ return Math.random().toString(16).slice(2) + Date.now().toString(16); }
@@ -996,7 +996,7 @@
         el.setAttribute('href', buildViewHref(viewName));
       });
     }
-    function setTab(which, opts={}){ const target = views[which] ? which : 'outline'; ui.currentView = target; document.body.classList.toggle('tagindex-active', target === 'tagindex'); document.body.classList.toggle('outlineindex-active', target === 'outlineindex'); document.body.classList.toggle('outline-screen-wide', target === 'outline'); for(const k of Object.keys(views)){ const on = k === target; const tabEl = $(views[k].tab); const viewEl = $(views[k].view); if(tabEl) tabEl.classList.toggle('active', on); if(viewEl) viewEl.style.display = on ? 'block' : 'none'; } updateViewLinks(target); if(opts.pushState !== false){ const params = new URLSearchParams(window.location.search); const caseId = getCaseId(); if(caseId) params.set('case', caseId); else params.delete('case'); params.set('view', target); history.replaceState(null, '', '?' + params.toString()); } if(target==='documents') renderDocuments(); if(target==='exhibits') renderExhibits(); if(target==='timeline') renderTimeline(); if(target==='tagindex') renderDocumentTagIndex(); if(target==='outlineindex') renderOutlineIndex(); }
+    function setTab(which, opts={}){ const target = views[which] ? which : 'outline'; ui.currentView = target; document.body.classList.toggle('tagindex-active', target === 'tagindex'); document.body.classList.toggle('outlineindex-active', target === 'outlineindex'); document.body.classList.toggle('outline-screen-wide', target === 'outline'); for(const k of Object.keys(views)){ const on = k === target; const tabEl = $(views[k].tab); const viewEl = $(views[k].view); if(tabEl) tabEl.classList.toggle('active', on); if(viewEl) viewEl.style.display = on ? 'block' : 'none'; } $('viewOutlineIndex') && ( $('viewOutlineIndex').style.display = target === 'outlineindex' ? 'block' : 'none'); $('viewStructuredOutline') && ( $('viewStructuredOutline').style.display = target === 'structuredoutline' ? 'block' : 'none'); updateViewLinks(target); if(opts.pushState !== false){ const params = new URLSearchParams(window.location.search); const caseId = getCaseId(); if(caseId) params.set('case', caseId); else params.delete('case'); params.set('view', target); history.replaceState(null, '', '?' + params.toString()); } if(target==='documents') renderDocuments(); if(target==='exhibits') renderExhibits(); if(target==='timeline') renderTimeline(); if(target==='tagindex') renderDocumentTagIndex(); if(target==='outlineindex') renderOutlineIndex(); if(target==='structuredoutline') renderStructuredOutline(); }
     $('tabOutline').addEventListener('click', (e)=>{ e.preventDefault(); setTab('outline'); }); $('tabDocuments').addEventListener('click', (e)=>{ e.preventDefault(); setTab('documents'); }); $('tabTagIndex').addEventListener('click', (e)=>{ e.preventDefault(); setTab('tagindex'); }); $('tabOutlineIndex').addEventListener('click', (e)=>{ e.preventDefault(); setTab('outlineindex'); }); $('tabStructuredOutline').addEventListener('click', (e)=>{ e.preventDefault(); setTab('structuredoutline'); }); $('tabExhibits').addEventListener('click', (e)=>{ e.preventDefault(); setTab('exhibits'); }); $('tabPeople').addEventListener('click', (e)=>{ e.preventDefault(); setTab('people'); }); $('tabTimeline').addEventListener('click', (e)=>{ e.preventDefault(); setTab('timeline'); }); $('tabSettings').addEventListener('click', (e)=>{ e.preventDefault(); setTab('settings'); }); $('timelineAddTagBtn')?.addEventListener('click', ()=> setTab('settings'));
     function escapeHtml(str){ return (str||'').replace(/[&<>\"']/g, (c)=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c])); }
     function sortByName(a,b){ return (a.name||'').localeCompare(b.name||''); }
@@ -1509,11 +1509,12 @@ function getStructuredOutlineRows(){ return flattenVisible(); }
     function structuredEnsureHeadingFilterDefaults(){
       const rows = getStructuredHeadingRows();
       const ids = rows.map(r=>r.id);
-      if(!Array.isArray(structuredUi.visibleHeadingIds) || !structuredUi.visibleHeadingIds.length){
+      if(!Array.isArray(structuredUi.visibleHeadingIds)) structuredUi.visibleHeadingIds = [];
+      if(!structuredUi.headingFilterInitialized){
         structuredUi.visibleHeadingIds = ids.slice();
+        structuredUi.headingFilterInitialized = true;
       } else {
         structuredUi.visibleHeadingIds = structuredUi.visibleHeadingIds.filter(id => ids.includes(id));
-        for(const id of ids){ if(!structuredUi.visibleHeadingIds.includes(id)) structuredUi.visibleHeadingIds.push(id); }
       }
     }
     function getStructuredVisibleRows(){
@@ -1551,8 +1552,8 @@ function getStructuredOutlineRows(){ return flattenVisible(); }
         </div>
       </div>`;
       $('structuredHeadingSummary')?.addEventListener('click', (ev)=>{ ev.stopPropagation(); structuredUi.headingFilterOpen = !structuredUi.headingFilterOpen; renderStructuredHeadingFilter(); });
-      $('structuredHeadingSelectAll')?.addEventListener('click', ()=>{ structuredUi.visibleHeadingIds = rows.map(r=>r.id); renderStructuredOutline(); });
-      $('structuredHeadingSelectNone')?.addEventListener('click', ()=>{ structuredUi.visibleHeadingIds = []; renderStructuredOutline(); });
+      $('structuredHeadingSelectAll')?.addEventListener('click', (ev)=>{ ev.preventDefault(); ev.stopPropagation(); structuredUi.visibleHeadingIds = rows.map(r=>r.id); structuredUi.headingFilterInitialized = true; renderStructuredOutline(); structuredUi.headingFilterOpen = true; });
+      $('structuredHeadingSelectNone')?.addEventListener('click', (ev)=>{ ev.preventDefault(); ev.stopPropagation(); structuredUi.visibleHeadingIds = []; structuredUi.headingFilterInitialized = true; renderStructuredOutline(); structuredUi.headingFilterOpen = true; });
       host.querySelectorAll('#structuredHeadingPanel input[type="checkbox"]').forEach(cb=>{
         cb.addEventListener('change', ()=>{
           structuredUi.visibleHeadingIds = Array.from(host.querySelectorAll('#structuredHeadingPanel input[type="checkbox"]:checked')).map(x=>x.value);
@@ -1577,7 +1578,8 @@ function getStructuredOutlineRows(){ return flattenVisible(); }
       if(!structuredUi.resizingWitnessId) return;
       const dx = ev.clientX - structuredUi.resizeStartX;
       structuredUi.witnessColWidths[structuredUi.resizingWitnessId] = Math.max(160, structuredUi.resizeStartWidth + dx);
-      renderStructuredOutline();
+      const table = $('structuredOutlineTable');
+      if(table){ renderStructuredOutline(); }
     }
     function stopStructuredWitnessResize(){
       if(!structuredUi.resizingWitnessId) return;
