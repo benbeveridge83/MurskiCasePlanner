@@ -1705,7 +1705,7 @@ function openStructuredDocEditor(docId){
           ui.structuredDragging = null;
         });
         el.addEventListener('click', ()=> openStructuredDocEditor(el.getAttribute('data-structured-doc')));
-      }));
+      });
 
       table.querySelectorAll('[data-structured-resize]').forEach(handle=>{
         handle.addEventListener('mousedown', ev=> startStructuredWitnessResize(ev, handle.getAttribute('data-structured-resize')));
