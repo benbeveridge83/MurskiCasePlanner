@@ -1589,10 +1589,52 @@ function getStructuredOutlineRows(){ return flattenVisible(); }
     window.addEventListener('mouseup', stopStructuredWitnessResize);
 
     
-function renderStructuredOutline(){
+function openStructuredDocEditor(docId){
+      const doc = (state.documents || []).find(d=>d.id===docId); if(!doc) return;
+      ui.structuredDocEditorId = docId;
+      $('structuredDocName').value = doc.name || '';
+      $('structuredDocDesc').value = doc.description || '';
+      $('structuredDocTags').innerHTML = (state.tags || []).slice().sort(sortByName).map(t=>`<label><input type="checkbox" value="${t.id}" ${(doc.tags || []).includes(t.id) ? 'checked' : ''} /> <span>${escapeHtml(t.name)}</span></label>`).join('') || '<div class="hint">No tags yet.</div>';
+      $('structuredDocViewer').innerHTML = '';
+      $('structuredDocModal').classList.add('open');
+    }
+    function closeStructuredDocEditor(){ ui.structuredDocEditorId = null; $('structuredDocModal')?.classList.remove('open'); }
+    async function saveStructuredDocEditor(){
+      const docId = ui.structuredDocEditorId; const doc = (state.documents || []).find(d=>d.id===docId); if(!doc) return;
+      const newName = ($('structuredDocName').value || '').trim(); if(!newName){ alert('Document name is required.'); return; }
+      const newDesc = ($('structuredDocDesc').value || '').trim();
+      const selectedTagIds = Array.from(document.querySelectorAll('#structuredDocTags input[type="checkbox"]:checked')).map(x=>x.value);
+      const oldTagIds = Array.from(new Set(doc.tags || []));
+      const toAdd = selectedTagIds.filter(id=>!oldTagIds.includes(id));
+      const toRemove = oldTagIds.filter(id=>!selectedTagIds.includes(id));
+      const updated = await window.updateDocumentRow(docId, { name: newName, description: newDesc, doc_date: doc.date || null });
+      if(!updated){ alert('Failed to save document.'); return; }
+      for(const tagId of toAdd) await window.assignDocumentTag(docId, tagId);
+      for(const tagId of toRemove) await window.removeDocumentTag(docId, tagId);
+      await window.loadDocuments(); await window.loadDocumentTags();
+      renderStructuredOutline(); renderOutlineIndex(); renderDocuments();
+      toast('Document updated');
+      closeStructuredDocEditor();
+    }
+    async function viewStructuredDocEditorFile(){ const doc = (state.documents || []).find(d=>d.id===ui.structuredDocEditorId); const holder = $('structuredDocViewer'); if(!doc || !holder) return; const url = await getDocumentPreviewUrl(doc); if(!url){ holder.innerHTML = '<div class="hint">No file stored for this document.</div>'; return; } holder.innerHTML = `<div class="label">Document viewer</div><iframe class="docViewerFrame" src="${url}"></iframe>`; }
+    function downloadStructuredDocEditorFile(){ if(ui.structuredDocEditorId) downloadDocument(ui.structuredDocEditorId); }
+    function renderStructuredTray(){
+      const wrap = $('structuredTrayList'); if(!wrap) return;
+      const q = (ui.structuredTraySearch || '').trim().toLowerCase();
+      const docs = (state.documents || []).slice().sort(sortByName).filter(d=>!q || (d.name || '').toLowerCase().includes(q) || (d.description || '').toLowerCase().includes(q));
+      wrap.innerHTML = docs.map(d=>`<span class="structuredExChip" draggable="true" data-structured-doc="${d.id}" data-source-row="" data-source-witness=""><span class="labelText">${escapeHtml(d.name || 'Document')}</span></span>`).join('') || '<div class="hint">No documents match that search.</div>';
+      wrap.querySelectorAll('[data-structured-doc]').forEach(el=>{
+        el.addEventListener('dragstart', ev=>{ ui.structuredDragging = { docId: el.getAttribute('data-structured-doc'), sourceRowId: '', sourceWitnessId: '', fromTray: true }; ev.dataTransfer.setData('text/plain', JSON.stringify(ui.structuredDragging)); el.classList.add('dragging'); });
+        el.addEventListener('dragend', ()=>{ el.classList.remove('dragging'); ui.structuredDragging = null; });
+        el.addEventListener('click', ()=> openStructuredDocEditor(el.getAttribute('data-structured-doc')));
+      });
+    }
+    function renderStructuredOutline(){
       structuredEnsureWitnessFilterDefaults();
       structuredEnsureHeadingFilterDefaults();
-      const view = $('viewStructuredOutline'); if(!view || ui.currentView !== 'structuredoutline') return;
+      const view = $('viewStructuredOutline');
+      if(!view || ui.currentView !== 'structuredoutline') return;
+
       const witnesses = getStructuredOutlineWitnesses();
       const filterWrap = $('structuredWitnessFilterList');
       if(filterWrap){
@@ -1603,50 +1645,76 @@ function renderStructuredOutline(){
         }));
       }
       renderStructuredHeadingFilter();
-      const cols = [{ id: HEADING_EXHIBIT_KEY, label: 'No witness' }].concat(witnesses.filter(p=>ui.structuredOutlineWitnessFilterIds.includes(p.id)).map(p=>({ id: p.id, label: p.name })));
-      const table = $('structuredOutlineTable'); if(!table) return;
+
+      const cols = [{ id: HEADING_EXHIBIT_KEY, label: 'No witness' }].concat(
+        witnesses
+          .filter(p=>ui.structuredOutlineWitnessFilterIds.includes(p.id))
+          .map(p=>({ id: p.id, label: p.name }))
+      );
+
+      const table = $('structuredOutlineTable');
+      if(!table) return;
       table.style.setProperty('--structured-left', (ui.outlinePaneWidth || 720) + 'px');
       table.style.setProperty('--structured-cols', String(Math.max(cols.length,1)));
-      table.style.gridTemplateColumns = structuredGridTemplate(cols);
+
       const rows = getStructuredVisibleRows();
-      const header = `<div class="structuredHeader" style="grid-template-columns:${structuredGridTemplate(cols)}"><div class="structuredOutlineCell">Heading / Structure</div><div class="structuredDivider" id="structuredOutlineDivider"></div>${cols.map(col=>`<div class="structuredHeadCell structuredHeaderCell" style="position:relative;min-width:${getStructuredWitnessWidth(col.id)}px;max-width:${getStructuredWitnessWidth(col.id)}px">${escapeHtml(col.label)}<div class="structuredColResize" data-structured-resize="${col.id}"></div></div>`).join('')}</div>`;
+      const gridTemplate = structuredGridTemplate(cols);
+      const header = `<div class="structuredHeader" style="grid-template-columns:${gridTemplate}"><div class="structuredOutlineCell">Heading / Structure</div><div class="structuredDivider" id="structuredOutlineDivider"></div>${cols.map(col=>`<div class="structuredHeadCell structuredHeaderCell" style="position:relative;min-width:${getStructuredWitnessWidth(col.id)}px;max-width:${getStructuredWitnessWidth(col.id)}px">${escapeHtml(col.label)}<div class="structuredColResize" data-structured-resize="${col.id}"></div></div>`).join('')}</div>`;
+
       const body = rows.map(n=>{
-        const depth = depthOf(n.id); const hasKids = (state.outline || []).some(x=>x.parentId===n.id);
+        const depth = depthOf(n.id);
+        const hasKids = (state.outline || []).some(x=>x.parentId===n.id);
         const left = `<div class="structuredOutlineCell"><div class="structuredTitle" style="padding-left:${Math.max(4, depth*36)}px"><span class="structuredCaret" data-structured-caret="${n.id}">${hasKids ? (n.collapsed ? '&#9656;' : '&#9662;') : ''}</span>${depth ? '<span class="structuredLevelBadge">Child</span>' : ''}<span class="structuredTitleText" title="${escapeHtml(n.title || 'Untitled heading')}">${escapeHtml(n.title || 'Untitled heading')}</span></div></div>`;
-        const cells = cols.map(col=>{ const docs = getCellExhibits(n.id, col.id); return `<div class="structuredCell" style="min-width:${getStructuredWitnessWidth(col.id)}px;max-width:${getStructuredWitnessWidth(col.id)}px"><div class="structuredDropzone structuredExhibitCell" data-target-row="${n.id}" data-target-witness="${col.id}">${docs.length ? docs.map(docId=>{ const d = (state.documents || []).find(x=>x.id===docId); return `<span class="structuredExChip" draggable="true" data-structured-doc="${docId}" data-source-row="${n.id}" data-source-witness="${col.id}"><span class="labelText">${escapeHtml(d?.name || 'Document')}</span></span>`; }).join('') : '<span class="structuredEmpty">Drop exhibit here</span>'}</div></div>`; }).join('');
-        return `<div class="structuredRow" style="grid-template-columns:${structuredGridTemplate(cols)}">${left}<div class="structuredDivider"></div>${cells}</div>`;
+        const cells = cols.map(col=>{
+          const docs = getCellExhibits(n.id, col.id);
+          return `<div class="structuredCell" style="min-width:${getStructuredWitnessWidth(col.id)}px;max-width:${getStructuredWitnessWidth(col.id)}px"><div class="structuredDropzone structuredExhibitCell" data-target-row="${n.id}" data-target-witness="${col.id}">${docs.length ? docs.map(docId=>{ const d = (state.documents || []).find(x=>x.id===docId); return `<span class="structuredExChip" draggable="true" data-structured-doc="${docId}" data-source-row="${n.id}" data-source-witness="${col.id}"><span class="labelText">${escapeHtml(d?.name || 'Document')}</span></span>`; }).join('') : '<span class="structuredEmpty">Drop exhibit here</span>'}</div></div>`;
+        }).join('');
+        return `<div class="structuredRow" style="grid-template-columns:${gridTemplate}">${left}<div class="structuredDivider"></div>${cells}</div>`;
       }).join('');
+
       table.innerHTML = header + body;
+
       table.querySelectorAll('[data-structured-caret]').forEach(btn=>btn.addEventListener('click', ()=>{
-        const id = btn.getAttribute('data-structured-caret'); const node = (state.outline || []).find(x=>x.id===id);
+        const id = btn.getAttribute('data-structured-caret');
+        const node = (state.outline || []).find(x=>x.id===id);
         if(node){ node.collapsed = !node.collapsed; safeSave(); renderStructuredOutline(); }
       }));
+
       table.querySelectorAll('.structuredDropzone').forEach(zone=>{
         zone.addEventListener('dragover', ev=>{ ev.preventDefault(); zone.classList.add('dragOver'); });
         zone.addEventListener('dragleave', ()=> zone.classList.remove('dragOver'));
         zone.addEventListener('drop', async ev=>{
-          ev.preventDefault(); zone.classList.remove('dragOver');
+          ev.preventDefault();
+          zone.classList.remove('dragOver');
           let payload = ui.structuredDragging;
           try{ payload = JSON.parse(ev.dataTransfer.getData('text/plain') || 'null') || payload; }catch(_e){}
           if(!payload || !payload.docId) return;
           await moveStructuredDocument(payload.docId, zone.getAttribute('data-target-row'), zone.getAttribute('data-target-witness'), payload.sourceRowId, payload.sourceWitnessId, !!payload.fromTray);
         });
-      });
+      }));
+
       table.querySelectorAll('.structuredExChip[data-structured-doc]').forEach(el=>{
         el.addEventListener('dragstart', ev=>{
           const payload = { docId: el.getAttribute('data-structured-doc'), sourceRowId: el.getAttribute('data-source-row'), sourceWitnessId: el.getAttribute('data-source-witness'), fromTray: !el.getAttribute('data-source-row') };
-          ui.structuredDragging = payload; ev.dataTransfer.setData('text/plain', JSON.stringify(payload)); el.classList.add('dragging');
+          ui.structuredDragging = payload;
+          ev.dataTransfer.setData('text/plain', JSON.stringify(payload));
+          el.classList.add('dragging');
         });
-        el.addEventListener('dragend', ()=>{ el.classList.remove('dragging'); ui.structuredDragging = null; });
+        el.addEventListener('dragend', ()=>{
+          el.classList.remove('dragging');
+          ui.structuredDragging = null;
+        });
         el.addEventListener('click', ()=> openStructuredDocEditor(el.getAttribute('data-structured-doc')));
-      });
+      }));
+
       table.querySelectorAll('[data-structured-resize]').forEach(handle=>{
         handle.addEventListener('mousedown', ev=> startStructuredWitnessResize(ev, handle.getAttribute('data-structured-resize')));
       });
+
       syncStructuredDivider();
       renderStructuredTray();
     }
-
+    
     function syncStructuredDivider(){ const handle = $('structuredOutlineDivider'); if(!handle || handle.dataset.bound === '1') return; handle.dataset.bound = '1'; handle.addEventListener('mousedown', (ev)=>{ ev.preventDefault(); const startX = ev.clientX; const startWidth = ui.outlinePaneWidth || 720; const onMove = (e)=>{ ui.outlinePaneWidth = Math.max(380, Math.min(window.innerWidth - 320, startWidth + (e.clientX - startX))); safeSave(); const table = $('structuredOutlineTable'); if(table) table.style.setProperty('--structured-left', (ui.outlinePaneWidth || 720) + 'px'); const matrix = $('matrix'); if(matrix) matrix.style.setProperty('--outline-left-width', (ui.outlinePaneWidth || 720) + 'px'); }; const onUp = ()=>{ window.removeEventListener('mousemove', onMove); window.removeEventListener('mouseup', onUp); renderStructuredOutline(); renderOutline(); }; window.addEventListener('mousemove', onMove); window.addEventListener('mouseup', onUp); }); }
 
     function renderDocuments(){
