@@ -870,7 +870,7 @@
     <div id="structuredDocModal" class="structuredModal"><div class="structuredModalCard"><div style="display:flex; justify-content:space-between; gap:10px; align-items:center"><h3 style="margin:0">Edit document</h3><button type="button" id="structuredDocModalClose" class="btnGhost">Close</button></div><div><div class="label">Document name</div><input id="structuredDocName" type="text" /></div><div><div class="label">Description</div><textarea id="structuredDocDesc" placeholder="Document description"></textarea></div><div><div class="label">Tags</div><div id="structuredDocTags" class="structuredTagChecklist"></div></div><div style="display:flex; gap:8px; flex-wrap:wrap"><button type="button" id="structuredDocSave" class="btnPrimary">Save</button><button type="button" id="structuredDocView" class="btnGhost">View file</button><button type="button" id="structuredDocDownload" class="btnGhost">Download file</button></div><div id="structuredDocViewer"></div></div></div>
     <div id="viewExhibits" class="card" style="display:none"><h2>Exhibits</h2><div class="hint">Documents you have used as exhibits appear here.</div><div class="card" style="box-shadow:none"><h2 style="margin-bottom:8px">Exhibit table</h2><div id="exhibitEmpty" class="empty" style="display:none">No exhibits yet. Add an exhibit from a row/witness intersection.</div><div style="overflow:auto"><table id="exhibitTable" style="width:100%; border-collapse:collapse; display:none"><thead><tr><th style="text-align:left; padding:10px; border-bottom:1px solid var(--line); width:140px">Exhibit</th><th style="text-align:left; padding:10px; border-bottom:1px solid var(--line)">Document name</th></tr></thead><tbody id="exhibitTableBody"></tbody></table></div></div></div>
     <div id="viewPeople" class="card" style="display:none"><h2>People</h2><div class="hint">Add people (including witnesses). Witnesses can then be attached to outline rows.</div><div class="grid2"><div class="card" style="box-shadow:none"><h2 style="margin-bottom:8px">Add person</h2><div class="label">Name <span style="color:var(--danger)">*</span></div><input id="personName" type="text" placeholder="e.g., Leah Murski" /><div class="label" style="margin-top:10px">Notes / Role (optional)</div><textarea id="personDesc" placeholder="e.g., Mother, Father, Therapist, Teacher, etc."></textarea><div class="hint" style="margin-top:10px">Assign tags after saving from the people list.</div><div style="margin-top:10px; display:flex; gap:10px; flex-wrap:wrap; align-items:center"><button id="addPerson" class="btnPrimary">Save person</button></div></div><div class="card" style="box-shadow:none"><h2 style="margin-bottom:8px">People list</h2><div id="peopleList" style="display:flex; flex-direction:column; gap:10px"></div><div id="peopleEmpty" class="empty" style="display:none">No people yet.</div></div></div></div>
-    <div id="viewTimeline" class="card" style="display:none"><h2>Timeline</h2><div class="hint">Add events and map them by date and tag. Click an event name in the grid to open all event details.</div><div class="grid2"><div class="card" style="box-shadow:none"><div style="display:flex; justify-content:space-between; gap:10px; align-items:center; flex-wrap:wrap"><h2 style="margin-bottom:8px">Events</h2><div style="display:flex; gap:8px; flex-wrap:wrap"><button id="timelineAddTagBtn" class="btnGhost">Add tag</button><button id="timelineAddEventBtn" class="btnPrimary">+ Add event</button></div></div><div id="timelineEventForm" style="display:none; margin-top:8px; border:1px solid var(--line); border-radius:14px; padding:14px; background:#fafcff"><div class="label">Event name <span style="color:var(--danger)">*</span></div><input id="timelineName" type="text" placeholder="e.g., Temporary orders hearing" /><div class="label" style="margin-top:10px">Event date</div><input id="timelineDate" type="date" /><div class="label" style="margin-top:10px">Description</div><textarea id="timelineDesc" placeholder="What happened? Why does it matter?"></textarea><div class="label" style="margin-top:10px">Location</div><input id="timelineLocation" type="text" placeholder="e.g., DuPage County Courthouse" /><div class="label" style="margin-top:10px">Tags</div><div id="timelineTagChoices" class="checkGrid"></div><div class="label" style="margin-top:10px">Documents</div><div id="timelineDocChoices" class="checkGrid"></div><div class="label" style="margin-top:10px">Witnesses</div><div id="timelineWitnessChoices" class="checkGrid"></div><div id="timelineWitnessTestimonyWrap" style="margin-top:10px"></div><div style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap"><button id="timelineSaveEvent" class="btnPrimary">Save event</button><button id="timelineCancelEvent" class="btnGhost">Cancel</button></div></div><div id="timelineEmpty" class="empty" style="display:none; margin-top:12px">No events yet. Click “Add event”.</div><div id="timelineMatrixWrap" style="overflow:auto; margin-top:12px"></div></div><div class="card" style="box-shadow:none"><h2 style="margin-bottom:8px">Event details</h2><div id="timelineDetail" class="empty">Click an event name in the timeline to see full details.</div></div></div></div>
+    <div id="viewTimeline" class="card" style="display:none"><h2>Timeline</h2><div class="hint">Add events and map them by date and tag. Dated documents and dated outline headings also appear here. Click an event name to open full event details.</div><div class="grid2"><div class="card" style="box-shadow:none"><div style="display:flex; justify-content:space-between; gap:10px; align-items:center; flex-wrap:wrap"><h2 style="margin-bottom:8px">Events</h2><div style="display:flex; gap:8px; flex-wrap:wrap"><button id="timelineAddTagBtn" class="btnGhost">Add tag</button><button id="timelineAddEventBtn" class="btnPrimary">+ Add event</button></div></div><div class="toolbar" style="margin-top:10px"><span class="pill">Show columns</span><label class="checkItem" style="margin:0"><input id="timelineShowEventColumn" type="checkbox" checked /> <span>Event</span></label><label class="checkItem" style="margin:0"><input id="timelineShowDocumentColumn" type="checkbox" checked /> <span>Document</span></label><label class="checkItem" style="margin:0"><input id="timelineShowHeadlineColumn" type="checkbox" checked /> <span>Headline</span></label></div><div id="timelineEventForm" style="display:none; margin-top:8px; border:1px solid var(--line); border-radius:14px; padding:14px; background:#fafcff"><div class="label">Event name <span style="color:var(--danger)">*</span></div><input id="timelineName" type="text" placeholder="e.g., Temporary orders hearing" /><div class="label" style="margin-top:10px">Event date</div><input id="timelineDate" type="date" /><div class="label" style="margin-top:10px">Description</div><textarea id="timelineDesc" placeholder="What happened? Why does it matter?"></textarea><div class="label" style="margin-top:10px">Location</div><input id="timelineLocation" type="text" placeholder="e.g., DuPage County Courthouse" /><div class="label" style="margin-top:10px">Tags</div><div id="timelineTagChoices" class="checkGrid"></div><div class="label" style="margin-top:10px">Documents</div><div id="timelineDocChoices" class="checkGrid"></div><div class="label" style="margin-top:10px">Witnesses</div><div id="timelineWitnessChoices" class="checkGrid"></div><div id="timelineWitnessTestimonyWrap" style="margin-top:10px"></div><div style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap"><button id="timelineSaveEvent" class="btnPrimary">Save event</button><button id="timelineCancelEvent" class="btnGhost">Cancel</button></div></div><div id="timelineEmpty" class="empty" style="display:none; margin-top:12px">No dated events, documents, or headings yet.</div><div id="timelineMatrixWrap" style="overflow:auto; margin-top:12px"></div></div><div class="card" style="box-shadow:none"><h2 style="margin-bottom:8px">Event details</h2><div id="timelineDetail" class="empty">Click an event name in the timeline to see full details.</div></div></div></div>
     <div id="viewSettings" class="card" style="display:none"><h2>Add Tag</h2><div class="hint">Create tags here. Tags can then be assigned to outline rows, documents, people, and timeline events.</div><div class="grid2"><div class="card" style="box-shadow:none"><h2 style="margin-bottom:8px">Create tag</h2><div class="label">Tag name</div><input id="tagName" type="text" placeholder="e.g., Financial, Parenting time, Credibility" /><div style="margin-top:10px; display:flex; gap:10px; align-items:center; flex-wrap:wrap"><button id="addTag" class="btnPrimary">Add tag</button><span class="pill">Names must be unique</span></div></div><div class="card" style="box-shadow:none"><h2 style="margin-bottom:8px">Tag library</h2><div id="tagList" style="display:flex; flex-direction:column; gap:10px"></div><div id="tagEmpty" class="empty" style="display:none">No tags yet.</div></div></div></div>
   </div>
   <div id="toast" class="toast"></div>
@@ -880,7 +880,7 @@
     const getCaseId = () => String(window.CASE_ID || CASE_ID || new URLSearchParams(window.location.search).get('case') || '');
     const STORAGE_KEY = 'murski_case_planner_v1';
     let state = { caseName: '', tags: [], people: [], documents: [], outline: [], timelineEvents: [] };
-    const ui = { selectedNodeId: null, selectedWitnessId: null, selectedDocId: null, selectedPersonId: null, activeWitnessColumnId: null, expandedDocIds: {}, showDocDownloadList: false, showDocTagIndex: false, docTagFilterIds: [], docTagIndexExpandedIds: {}, docTagIndexShowUsedOnly: false, docTagNoTagsOnly: false, docTagHasTagsOnly: false, docExhibitFilter: 'all', outlineIndexFilterIds: [], outlineIndexExpandedIds: {}, outlineIndexShowUsedOnly: false, outlineIndexNoTagsOnly: false, outlineIndexHasTagsOnly: false, outlineIndexExhibitFilter: 'all', docSort: { field: 'file', dir: 'asc' }, outlineCompact: false, outlineStructureView: false, outlinePaneWidth: 720, timelineSelectedId: null, timelineEditingId: null, currentView: INITIAL_VIEW, outlineFilterTagIds: [], outlineFilterWitnessIds: [], outlineFilterTagOpen: false, outlineFilterWitnessOpen: false, outlineIndexTagIds: [], outlineIndexWitnessIds: [], outlineIndexTagOpen: false, outlineIndexWitnessOpen: false, structuredOutlineWitnessFilterIds: [], structuredHeadingTagIds: [], structuredHeadingWitnessIds: [], structuredHeadingTagOpen: false, structuredHeadingWitnessOpen: false, structuredTraySearch: '', structuredTrayAssignmentFilter: 'all', structuredTrayPersonFilterId: 'any', structuredTrayTagFilterIds: [], structuredDocEditorId: null, structuredDragging: null };
+    const ui = { selectedNodeId: null, selectedWitnessId: null, selectedDocId: null, selectedPersonId: null, activeWitnessColumnId: null, expandedDocIds: {}, showDocDownloadList: false, showDocTagIndex: false, docTagFilterIds: [], docTagIndexExpandedIds: {}, docTagIndexShowUsedOnly: false, docTagNoTagsOnly: false, docTagHasTagsOnly: false, docExhibitFilter: 'all', outlineIndexFilterIds: [], outlineIndexExpandedIds: {}, outlineIndexShowUsedOnly: false, outlineIndexNoTagsOnly: false, outlineIndexHasTagsOnly: false, outlineIndexExhibitFilter: 'all', docSort: { field: 'file', dir: 'asc' }, outlineCompact: false, outlineStructureView: false, outlinePaneWidth: 720, timelineSelectedId: null, timelineEditingId: null, timelineShowEventColumn: true, timelineShowDocumentColumn: true, timelineShowHeadlineColumn: true, currentView: INITIAL_VIEW, outlineFilterTagIds: [], outlineFilterWitnessIds: [], outlineFilterTagOpen: false, outlineFilterWitnessOpen: false, outlineIndexTagIds: [], outlineIndexWitnessIds: [], outlineIndexTagOpen: false, outlineIndexWitnessOpen: false, structuredOutlineWitnessFilterIds: [], structuredHeadingTagIds: [], structuredHeadingWitnessIds: [], structuredHeadingTagOpen: false, structuredHeadingWitnessOpen: false, structuredTraySearch: '', structuredTrayAssignmentFilter: 'all', structuredTrayPersonFilterId: 'any', structuredTrayTagFilterIds: [], structuredDocEditorId: null, structuredDragging: null };
     const structuredUi = { headingFilterOpen: false, visibleHeadingIds: [], headingFilterInitialized: false, witnessColWidths: {}, resizingWitnessId: null, resizeStartX: 0, resizeStartWidth: 220 };
     const HEADING_EXHIBIT_KEY = '__heading__';
     const $ = (id) => document.getElementById(id);
@@ -1016,42 +1016,81 @@
     function saveTimelineEvent(){ const payload = collectTimelineForm(); if(!payload) return; if(ui.timelineEditingId){ const i = state.timelineEvents.findIndex(x=>x.id===ui.timelineEditingId); if(i>=0) state.timelineEvents[i] = { ...state.timelineEvents[i], ...payload }; ui.timelineSelectedId = ui.timelineEditingId; toast('Event updated'); } else { const ev = { id: uid(), ...payload }; state.timelineEvents.push(ev); ui.timelineSelectedId = ev.id; toast('Event added'); } safeSave(); closeTimelineForm(); renderTimeline(); renderStructuredOutline(); }
     function deleteTimelineEvent(id){ const ev = state.timelineEvents.find(x=>x.id===id); if(!ev) return; if(!confirm(`Delete event “${ev.name}”?`)) return; state.timelineEvents = state.timelineEvents.filter(x=>x.id!==id); if(ui.timelineSelectedId===id) ui.timelineSelectedId = null; safeSave(); renderTimeline(); renderStructuredOutline(); }
     function renderTimelineDetail(){ const box = $('timelineDetail'); if(!box) return; const ev = state.timelineEvents.find(x=>x.id===ui.timelineSelectedId); if(!ev){ box.className='empty'; box.innerHTML='Click an event name in the timeline to see full details.'; return; } box.className=''; const docs = (ev.documents||[]).map(id=>state.documents.find(d=>d.id===id)).filter(Boolean); const witnesses = (ev.witnesses||[]).map(w=>({ person: state.people.find(p=>p.id===w.personId), testimony: w.testimony||'' })).filter(x=>x.person); box.innerHTML = `<div class="timelineDetailCard"><div style="display:flex; justify-content:space-between; gap:10px; align-items:flex-start; flex-wrap:wrap"><div><h3 style="margin-bottom:4px">${escapeHtml(ev.name)}</h3><div class="hint">${timelineTagNames(ev.tags).map(escapeHtml).join(' • ') || 'No tags'}</div></div><div style="display:flex; gap:8px; flex-wrap:wrap"><button class="mini" id="timelineEditBtn">Edit</button><button class="mini" id="timelineDeleteBtn" style="border-color: rgba(239,68,68,.35); color:#991b1b">Delete</button></div></div><div class="timelineMeta"><div><b>Date:</b><div>${escapeHtml(ev.date || 'No date')}</div></div><div><b>Location:</b><div>${escapeHtml(ev.location || 'No location')}</div></div></div><div class="timelineSection"><b>Description</b><div style="margin-top:6px">${escapeHtml(ev.description || 'No description')}</div></div><div class="timelineSection"><b>Documents</b><div style="margin-top:6px">${docs.length ? docs.map(d=>`<div>${escapeHtml(d.name)}</div>`).join('') : '<span class="hint">No documents attached.</span>'}</div></div><div class="timelineSection"><b>Witnesses</b><div style="margin-top:6px">${witnesses.length ? witnesses.map(w=>`<div class="timelineWitnessBlock"><div><b>${escapeHtml(w.person.name)}</b></div><div style="margin-top:6px">${escapeHtml(w.testimony || 'No testimony added.')}</div></div>`).join('') : '<span class="hint">No witnesses attached.</span>'}</div></div></div>`; $('timelineEditBtn').onclick = ()=>openTimelineForm(ev.id); $('timelineDeleteBtn').onclick = ()=>deleteTimelineEvent(ev.id); }
-   function renderTimeline(){
-  const events = state.timelineEvents.slice().sort((a,b)=>
+   function getTimelineDatedDocuments(){
+  return (state.documents || [])
+    .filter(d => d && d.date)
+    .slice()
+    .sort((a,b)=>(a.date||'').localeCompare(b.date||'') || (a.name||'').localeCompare(b.name||''));
+}
+function getTimelineDatedHeadlines(){
+  return (state.outline || [])
+    .filter(n => n && n.rowDate)
+    .slice()
+    .sort((a,b)=>(a.rowDate||'').localeCompare(b.rowDate||'') || (a.title||'').localeCompare(b.title||''));
+}
+function renderTimeline(){
+  const eventToggle = $('timelineShowEventColumn');
+  const docToggle = $('timelineShowDocumentColumn');
+  const headlineToggle = $('timelineShowHeadlineColumn');
+  if(eventToggle) eventToggle.checked = !!ui.timelineShowEventColumn;
+  if(docToggle) docToggle.checked = !!ui.timelineShowDocumentColumn;
+  if(headlineToggle) headlineToggle.checked = !!ui.timelineShowHeadlineColumn;
+
+  const events = state.timelineEvents.slice().filter(e => e && e.date).sort((a,b)=>
     (a.date||'9999-99-99').localeCompare(b.date||'9999-99-99') ||
     (a.name||'').localeCompare(b.name||'')
   );
-
-  $('timelineEmpty').style.display = events.length ? 'none' : '';
+  const datedDocs = getTimelineDatedDocuments();
+  const datedHeadlines = getTimelineDatedHeadlines();
   const wrap = $('timelineMatrixWrap');
+  const empty = $('timelineEmpty');
   const usedTagIds = Array.from(new Set(events.flatMap(e=>e.tags||[]).filter(Boolean)));
-  const cols = state.tags.filter(t=>usedTagIds.includes(t.id)).slice().sort(sortByName);
+  const tagCols = state.tags.filter(t=>usedTagIds.includes(t.id)).slice().sort(sortByName);
+  const dates = Array.from(new Set([
+    ...events.map(e=>e.date).filter(Boolean),
+    ...datedDocs.map(d=>d.date).filter(Boolean),
+    ...datedHeadlines.map(h=>h.rowDate).filter(Boolean)
+  ])).sort();
 
-  if(!events.length){
+  empty.style.display = dates.length ? 'none' : '';
+  if(!dates.length){
     wrap.innerHTML='';
     renderTimelineDetail();
     return;
   }
+
+  const rows = dates.map(date => ({
+    date,
+    events: events.filter(ev => ev.date === date),
+    documents: datedDocs.filter(doc => doc.date === date),
+    headlines: datedHeadlines.filter(row => row.rowDate === date)
+  }));
+
+  const leadingCols = [
+    ui.timelineShowEventColumn ? '<th style="min-width:240px">Event</th>' : '',
+    ui.timelineShowDocumentColumn ? '<th style="min-width:240px">Document</th>' : '',
+    ui.timelineShowHeadlineColumn ? '<th style="min-width:240px">Headline</th>' : ''
+  ].join('');
 
   wrap.innerHTML = `
     <table class="timelineTable">
       <thead>
         <tr>
           <th style="min-width:140px">Date</th>
-          ${cols.map(t=>`<th style="min-width:180px">${escapeHtml(t.name)}</th>`).join('')}
+          ${leadingCols}
+          ${tagCols.map(t=>`<th style="min-width:180px">${escapeHtml(t.name)}</th>`).join('')}
         </tr>
       </thead>
       <tbody>
-        ${events.map(ev=>`
+        ${rows.map(row=>`
           <tr>
-            <td>${escapeHtml(ev.date || 'No date')}</td>
-            ${cols.map(t=>{
-              const hit = (ev.tags||[]).includes(t.id);
-              return `<td class="timelineEventCell">${
-                hit
-                  ? `<a href="#" data-timeline-open="${ev.id}" title="${escapeHtml(ev.description || '')}">${escapeHtml(ev.name)}</a>`
-                  : '<span class="timelineEmptyCell">—</span>'
-              }</td>`;
+            <td>${escapeHtml(row.date || 'No date')}</td>
+            ${ui.timelineShowEventColumn ? `<td class="timelineEventCell">${row.events.length ? row.events.map(ev=>`<div><a href="#" data-timeline-open="${ev.id}" title="${escapeHtml(ev.description || '')}">${escapeHtml(ev.name)}</a></div>`).join('') : '<span class="timelineEmptyCell">—</span>'}</td>` : ''}
+            ${ui.timelineShowDocumentColumn ? `<td class="timelineEventCell">${row.documents.length ? row.documents.map(doc=>`<div>${escapeHtml(doc.name || 'Document')}</div>`).join('') : '<span class="timelineEmptyCell">—</span>'}</td>` : ''}
+            ${ui.timelineShowHeadlineColumn ? `<td class="timelineEventCell">${row.headlines.length ? row.headlines.map(item=>`<div title="${escapeHtml(getRowTitlePath(item.id))}">${escapeHtml(item.title || 'Untitled heading')}</div>`).join('') : '<span class="timelineEmptyCell">—</span>'}</td>` : ''}
+            ${tagCols.map(t=>{
+              const matches = row.events.filter(ev => (ev.tags||[]).includes(t.id));
+              return `<td class="timelineEventCell">${matches.length ? matches.map(ev=>`<div><a href="#" data-timeline-open="${ev.id}" title="${escapeHtml(ev.description || '')}">${escapeHtml(ev.name)}</a></div>`).join('') : '<span class="timelineEmptyCell">—</span>'}</td>`;
             }).join('')}
           </tr>
         `).join('')}
@@ -1066,6 +1105,19 @@
       renderTimelineDetail();
     })
   );
+
+  if(eventToggle && !eventToggle.dataset.bound){
+    eventToggle.dataset.bound = '1';
+    eventToggle.addEventListener('change', ()=>{ ui.timelineShowEventColumn = !!eventToggle.checked; renderTimeline(); });
+  }
+  if(docToggle && !docToggle.dataset.bound){
+    docToggle.dataset.bound = '1';
+    docToggle.addEventListener('change', ()=>{ ui.timelineShowDocumentColumn = !!docToggle.checked; renderTimeline(); });
+  }
+  if(headlineToggle && !headlineToggle.dataset.bound){
+    headlineToggle.dataset.bound = '1';
+    headlineToggle.addEventListener('change', ()=>{ ui.timelineShowHeadlineColumn = !!headlineToggle.checked; renderTimeline(); });
+  }
 
   renderTimelineDetail();
 }
