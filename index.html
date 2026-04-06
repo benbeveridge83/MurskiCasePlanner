@@ -880,7 +880,7 @@
     const getCaseId = () => String(window.CASE_ID || CASE_ID || new URLSearchParams(window.location.search).get('case') || '');
     const STORAGE_KEY = 'murski_case_planner_v1';
     let state = { caseName: '', tags: [], people: [], documents: [], outline: [], timelineEvents: [] };
-    const ui = { selectedNodeId: null, selectedWitnessId: null, selectedDocId: null, selectedPersonId: null, activeWitnessColumnId: null, expandedDocIds: {}, showDocDownloadList: false, showDocTagIndex: false, docTagFilterIds: [], docTagIndexExpandedIds: {}, docTagIndexShowUsedOnly: false, docTagNoTagsOnly: false, docTagHasTagsOnly: false, docExhibitFilter: 'all', outlineIndexFilterIds: [], outlineIndexExpandedIds: {}, outlineIndexShowUsedOnly: false, outlineIndexNoTagsOnly: false, outlineIndexHasTagsOnly: false, outlineIndexExhibitFilter: 'all', docSort: { field: 'file', dir: 'asc' }, docRepoSort: { field: 'date', dir: 'desc' }, docDownloadSelections: {}, outlineCompact: false, outlineStructureView: false, outlinePaneWidth: 720, timelineSelectedId: null, timelineEditingId: null, timelineShowEventColumn: true, timelineShowDocumentColumn: true, timelineShowHeadlineColumn: true, currentView: INITIAL_VIEW, outlineFilterTagIds: [], outlineFilterWitnessIds: [], outlineFilterTagOpen: false, outlineFilterWitnessOpen: false, outlineIndexTagIds: [], outlineIndexWitnessIds: [], outlineIndexTagOpen: false, outlineIndexWitnessOpen: false, structuredOutlineWitnessFilterIds: [], structuredHeadingTagIds: [], structuredHeadingWitnessIds: [], structuredHeadingTagOpen: false, structuredHeadingWitnessOpen: false, structuredTraySearch: '', structuredTrayAssignmentFilter: 'all', structuredTrayPersonFilterId: 'any', structuredTrayTagFilterIds: [], structuredDocEditorId: null, structuredDragging: null };
+    const ui = { selectedNodeId: null, selectedWitnessId: null, selectedDocId: null, selectedPersonId: null, activeWitnessColumnId: null, expandedDocIds: {}, showDocDownloadList: false, showDocTagIndex: false, docTagFilterIds: [], docTagIndexExpandedIds: {}, docTagIndexShowUsedOnly: false, docTagNoTagsOnly: false, docTagHasTagsOnly: false, docExhibitFilter: 'all', outlineIndexFilterIds: [], outlineIndexExpandedIds: {}, outlineIndexShowUsedOnly: false, outlineIndexNoTagsOnly: false, outlineIndexHasTagsOnly: false, outlineIndexExhibitFilter: 'all', docSort: { field: 'file', dir: 'asc' }, docRepoSort: { field: 'date', dir: 'desc' }, docDownloadSelections: {}, docDownloadEligibilityFilter: 'all', outlineCompact: false, outlineStructureView: false, outlinePaneWidth: 720, timelineSelectedId: null, timelineEditingId: null, timelineShowEventColumn: true, timelineShowDocumentColumn: true, timelineShowHeadlineColumn: true, currentView: INITIAL_VIEW, outlineFilterTagIds: [], outlineFilterWitnessIds: [], outlineFilterTagOpen: false, outlineFilterWitnessOpen: false, outlineIndexTagIds: [], outlineIndexWitnessIds: [], outlineIndexTagOpen: false, outlineIndexWitnessOpen: false, structuredOutlineWitnessFilterIds: [], structuredHeadingTagIds: [], structuredHeadingWitnessIds: [], structuredHeadingTagOpen: false, structuredHeadingWitnessOpen: false, structuredTraySearch: '', structuredTrayAssignmentFilter: 'all', structuredTrayPersonFilterId: 'any', structuredTrayTagFilterIds: [], structuredDocEditorId: null, structuredDragging: null };
     const structuredUi = { headingFilterOpen: false, visibleHeadingIds: [], headingFilterInitialized: false, witnessColWidths: {}, resizingWitnessId: null, resizeStartX: 0, resizeStartWidth: 220 };
     const HEADING_EXHIBIT_KEY = '__heading__';
     const $ = (id) => document.getElementById(id);
@@ -1245,16 +1245,24 @@ function renderTags(){ const list = $('tagList'); list.innerHTML = ''; $('tagEmp
       const wrap = $('docDownloadListWrap'); if(!wrap) return;
       if(!ui.showDocDownloadList){ wrap.style.display = 'none'; wrap.innerHTML=''; return; }
       wrap.style.display = '';
-      const docs = sortDocumentsForRepository(state.documents || []).filter(d => !!(d.filePath || d.dataUrl || d.hasFile));
+      const allDocs = sortDocumentsForRepository(state.documents || []).filter(d => !!(d.filePath || d.dataUrl || d.hasFile));
+      const eligibilityFilter = ui.docDownloadEligibilityFilter || 'all';
+      const docs = allDocs.filter(d => {
+        if(eligibilityFilter === 'possible') return canDocumentBeExhibit(d);
+        if(eligibilityFilter === 'not') return !canDocumentBeExhibit(d);
+        return true;
+      });
       const selections = ui.docDownloadSelections || {};
       docs.forEach(d=>{ if(typeof selections[d.id] !== 'boolean') selections[d.id] = true; });
       const selectedCount = docs.filter(d => selections[d.id] !== false).length;
-      wrap.innerHTML = `<div class="card" style="box-shadow:none; padding:0"><div style="padding:12px 14px 0 14px; display:flex; gap:8px; flex-wrap:wrap; align-items:center; justify-content:space-between"><div><div class="hint">Choose which files to download, then click Download selected.</div><div class="hint" style="margin-top:4px">${selectedCount} of ${docs.length} selected</div></div><div style="display:flex; gap:8px; flex-wrap:wrap"><button type="button" class="mini" id="docDownloadSelectAll">Select all</button><button type="button" class="mini" id="docDownloadSelectNone">Select none</button><button type="button" class="btnPrimary" id="downloadSelectedDocs" ${selectedCount ? '' : 'disabled'}>Download selected</button></div></div><div style="overflow:auto"><table class="docDownloadTable" style="width:100%; border-collapse:collapse"><thead><tr><th style="width:48px"></th><th><button type="button" data-doc-repo-sort="file">File name ${(ui.docRepoSort||{}).field==='file' ? ((ui.docRepoSort||{}).dir==='asc' ? '↑' : '↓') : ''}</button></th><th><button type="button" data-doc-repo-sort="name">Document name ${(ui.docRepoSort||{}).field==='name' ? ((ui.docRepoSort||{}).dir==='asc' ? '↑' : '↓') : ''}</button></th><th><button type="button" data-doc-repo-sort="uploadDate">Upload date ${(ui.docRepoSort||{}).field==='uploadDate' ? ((ui.docRepoSort||{}).dir==='asc' ? '↑' : '↓') : ''}</button></th></tr></thead><tbody>${docs.map(d=>`<tr><td><input type="checkbox" data-doc-download-check="${d.id}" ${selections[d.id] !== false ? 'checked' : ''}></td><td>${escapeHtml(getDocumentFileName(d) || '') || '<span class="hint">No file</span>'}</td><td>${escapeHtml(d.name||'')}</td><td>${escapeHtml(formatDateForDisplay(getDocumentUploadDate(d)) || '')}</td></tr>`).join('')}</tbody></table></div></div>`;
+      wrap.innerHTML = `<div class="card" style="box-shadow:none; padding:0"><div style="padding:12px 14px 0 14px; display:flex; gap:8px; flex-wrap:wrap; align-items:flex-end; justify-content:space-between"><div><div class="hint">Choose which files to download, then click Download selected.</div><div class="hint" style="margin-top:4px">${selectedCount} of ${docs.length} selected${eligibilityFilter !== 'all' ? ` • filtered by ${escapeHtml(docExhibitEligibilityLabel(eligibilityFilter === 'not' ? 'not' : 'possible'))}` : ''}</div></div><div style="display:flex; gap:8px; flex-wrap:wrap; align-items:flex-end"><div><div class="label">Exhibit category</div><select id="docDownloadEligibilityFilter"><option value="all">All documents</option><option value="possible" ${eligibilityFilter === 'possible' ? 'selected' : ''}>For possible use as exhibit</option><option value="not" ${eligibilityFilter === 'not' ? 'selected' : ''}>Not for use as exhibit</option></select></div><button type="button" class="mini" id="docDownloadSelectAll">Select all</button><button type="button" class="mini" id="docDownloadSelectNone">Select none</button><button type="button" class="btnPrimary" id="downloadSelectedDocs" ${selectedCount ? '' : 'disabled'}>Download selected</button><button type="button" class="btnGhost" id="saveSelectedDocsToFolder" ${selectedCount ? '' : 'disabled'}>Choose folder and save selected</button></div></div><div class="hint" style="padding:8px 14px 0 14px">“Choose folder and save selected” works in Chrome/Edge browsers that support the File System Access API.</div><div style="overflow:auto"><table class="docDownloadTable" style="width:100%; border-collapse:collapse"><thead><tr><th style="width:48px"></th><th><button type="button" data-doc-repo-sort="file">File name ${(ui.docRepoSort||{}).field==='file' ? ((ui.docRepoSort||{}).dir==='asc' ? '↑' : '↓') : ''}</button></th><th><button type="button" data-doc-repo-sort="name">Document name ${(ui.docRepoSort||{}).field==='name' ? ((ui.docRepoSort||{}).dir==='asc' ? '↑' : '↓') : ''}</button></th><th>Exhibit category</th><th><button type="button" data-doc-repo-sort="uploadDate">Upload date ${(ui.docRepoSort||{}).field==='uploadDate' ? ((ui.docRepoSort||{}).dir==='asc' ? '↑' : '↓') : ''}</button></th></tr></thead><tbody>${docs.map(d=>`<tr><td><input type="checkbox" data-doc-download-check="${d.id}" ${selections[d.id] !== false ? 'checked' : ''}></td><td>${escapeHtml(getDocumentFileName(d) || '') || '<span class="hint">No file</span>'}</td><td>${escapeHtml(d.name||'')}</td><td>${escapeHtml(docExhibitEligibilityLabel(d.exhibitEligibility))}</td><td>${escapeHtml(formatDateForDisplay(getDocumentUploadDate(d)) || '')}</td></tr>`).join('')}</tbody></table></div></div>`;
       wrap.querySelectorAll('[data-doc-repo-sort]').forEach(btn=>btn.addEventListener('click', ()=> toggleDocRepoSort(btn.getAttribute('data-doc-repo-sort'))));
+      wrap.querySelector('#docDownloadEligibilityFilter')?.addEventListener('change', (ev)=>{ ui.docDownloadEligibilityFilter = ev.target.value || 'all'; renderDocumentDownloadList(); });
       wrap.querySelectorAll('[data-doc-download-check]').forEach(cb=>cb.addEventListener('change', ()=>{ ui.docDownloadSelections[cb.getAttribute('data-doc-download-check')] = cb.checked; renderDocumentDownloadList(); }));
-      $('docDownloadSelectAll')?.addEventListener('click', ()=>{ docs.forEach(d=> ui.docDownloadSelections[d.id] = true); renderDocumentDownloadList(); });
-      $('docDownloadSelectNone')?.addEventListener('click', ()=>{ docs.forEach(d=> ui.docDownloadSelections[d.id] = false); renderDocumentDownloadList(); });
+      $('docDownloadSelectAll')?.addEventListener('click', ()=>{ docs.forEach(d=>{ ui.docDownloadSelections[d.id] = true; }); renderDocumentDownloadList(); });
+      $('docDownloadSelectNone')?.addEventListener('click', ()=>{ docs.forEach(d=>{ ui.docDownloadSelections[d.id] = false; }); renderDocumentDownloadList(); });
       $('downloadSelectedDocs')?.addEventListener('click', async ()=>{ const chosen = docs.filter(d => ui.docDownloadSelections[d.id] !== false); for(const d of chosen) await downloadDocument(d.id); });
+      $('saveSelectedDocsToFolder')?.addEventListener('click', async ()=>{ const chosen = docs.filter(d => ui.docDownloadSelections[d.id] !== false); await saveDocumentsToChosenFolder(chosen); });
     }
    function getRowTitlePath(rowId){ const parts = []; let cur = state.outline.find(n=>n.id===rowId); const seen = new Set(); while(cur && !seen.has(cur.id)){ seen.add(cur.id); parts.unshift((cur.title || 'Untitled heading').trim()); cur = cur.parentId ? state.outline.find(n=>n.id===cur.parentId) : null; } return parts.filter(Boolean).join(' > ') || 'Untitled heading'; }
     function getDocumentExhibitMeta(docId){ rebuildExhibitsFromOutline(); syncExhibitOrderWithUsage(); const exhibit = (state.exhibits || []).find(ex => ex && ex.docId === docId) || null; const assignments = []; for(const n of state.outline || []){ if(!n || !n.witnessData) continue; for(const wid of Object.keys(n.witnessData)){ const wd = n.witnessData[wid] || {}; if(!(wd.exhibits || []).includes(docId)) continue; const isHeadingOnly = wid === HEADING_EXHIBIT_KEY; const person = isHeadingOnly ? null : (state.people || []).find(p=>p.id===wid); assignments.push({ rowId: n.id, rowTitle: n.title || 'Untitled heading', rowPath: getRowTitlePath(n.id), witnessId: wid, witnessName: person?.name || '', isHeadingOnly }); } } const headingNames = Array.from(new Set(assignments.map(a=>a.rowPath).filter(Boolean))); const tooltip = exhibit ? `Added as ${exhibit.label || 'an exhibit'}
@@ -2417,26 +2425,95 @@ function openStructuredDocEditor(docId){
       toast(file ? 'Document and file saved' : 'Document saved');
     }
     async function deleteDocument(id){ const doc = state.documents.find(d=>d.id===id); if(!doc) return; if(!confirm(`Delete document “${doc.name}”?`)) return; if(doc.filePath){ await window.deleteDocumentFile(doc.filePath); } const ok = await window.deleteDocumentRow(id); if (!ok) return; try{ await idbDeleteFile(id); }catch(err){ console.warn('Local file delete failed:', err); } state.documents = state.documents.filter(d=>d.id!==id); for(const n of state.outline){ if(!n.witnessData) continue; for(const wid of Object.keys(n.witnessData)){ n.witnessData[wid].exhibits = (n.witnessData[wid].exhibits||[]).filter(eid=>eid!==id); } } safeSave(); renderDocuments(); renderOutline(); toast('Document deleted'); }
+    async function getDocumentBlob(doc){
+      if(!doc) return null;
+      try{
+        if(doc.hasFile){
+          const localBlob = await idbGetFile(doc.id);
+          if(localBlob) return localBlob;
+        }
+      }catch(err){
+        console.warn('IndexedDB fetch failed, trying other sources', err);
+      }
+      if(doc.filePath && window.getDocumentPublicUrl){
+        const publicUrl = window.getDocumentPublicUrl(doc.filePath);
+        if(publicUrl){
+          try{
+            const resp = await fetch(publicUrl, { mode: 'cors' });
+            if(resp.ok) return await resp.blob();
+          }catch(err){
+            console.warn('Remote fetch failed', err);
+          }
+        }
+      }
+      if(doc.dataUrl){
+        try{
+          const resp = await fetch(doc.dataUrl);
+          if(resp.ok) return await resp.blob();
+        }catch(err){
+          console.warn('Data URL fetch failed', err);
+        }
+      }
+      return null;
+    }
+    function triggerBlobDownload(blob, filename){
+      if(!blob) return;
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename || 'download.bin';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(()=>URL.revokeObjectURL(url), 800);
+    }
     async function downloadDocument(id){
       const d = state.documents.find(x=>x.id===id);
       if(!d) return;
-      if(d.filePath && window.getDocumentPublicUrl){
-        const publicUrl = window.getDocumentPublicUrl(d.filePath);
-        if(publicUrl){
-          const a = document.createElement('a');
-          a.href = publicUrl;
-          a.target = '_blank';
-          a.rel = 'noopener';
-          a.download = d.originalFileName || d.filename || (d.name + '.bin');
-          document.body.appendChild(a);
-          a.click();
-          document.body.removeChild(a);
-          return;
+      const blob = await getDocumentBlob(d);
+      if(blob){
+        triggerBlobDownload(blob, d.originalFileName || d.filename || (d.name + '.bin'));
+        return;
+      }
+      alert('No file is stored for this document yet. Re-upload the file in this version if this is an older local-only document.');
+    }
+    async function saveDocumentsToChosenFolder(docs){
+      const chosenDocs = (docs || []).filter(Boolean);
+      if(!chosenDocs.length){
+        toast('No documents selected');
+        return;
+      }
+      if(!(window.showDirectoryPicker && window.FileSystemFileHandle)){
+        alert('This browser does not support choosing a download folder from the page. Use Chrome or Edge for that option.');
+        return;
+      }
+      let dirHandle;
+      try{
+        dirHandle = await window.showDirectoryPicker({ mode: 'readwrite' });
+      }catch(err){
+        if(err && err.name !== 'AbortError') console.warn('Directory picker cancelled or failed', err);
+        return;
+      }
+      let savedCount = 0;
+      for(const doc of chosenDocs){
+        const blob = await getDocumentBlob(doc);
+        if(!blob) continue;
+        const fileName = sanitizeFileName(doc.originalFileName || doc.filename || (doc.name + '.bin'));
+        try{
+          const fileHandle = await dirHandle.getFileHandle(fileName, { create: true });
+          const writable = await fileHandle.createWritable();
+          await writable.write(blob);
+          await writable.close();
+          savedCount += 1;
+        }catch(err){
+          console.warn('Failed to save file into chosen folder', fileName, err);
         }
       }
-      try{ if(d.hasFile){ const blob = await idbGetFile(d.id); if(blob){ const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = d.originalFileName || d.filename || (d.name + '.bin'); document.body.appendChild(a); a.click(); document.body.removeChild(a); setTimeout(()=>URL.revokeObjectURL(url), 500); return; } } }catch(err){ console.warn('IndexedDB download failed, falling back if possible', err); }
-      if(d.dataUrl){ const a = document.createElement('a'); a.href = d.dataUrl; a.download = d.originalFileName || d.filename || (d.name + '.bin'); document.body.appendChild(a); a.click(); document.body.removeChild(a); }
-      else{ alert('No file is stored for this document yet. Re-upload the file in this version if this is an older local-only document.'); }
+      if(savedCount){
+        toast(savedCount + ' document' + (savedCount === 1 ? '' : 's') + ' saved to selected folder');
+      } else {
+        alert('No files could be saved to the selected folder.');
+      }
     }
     $('addDoc').addEventListener('click', addDocument);
     $('collapseAllDocs')?.addEventListener('click', ()=>{ ui.expandedDocIds = {}; renderDocuments(); });
