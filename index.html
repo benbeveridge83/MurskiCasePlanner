@@ -690,6 +690,7 @@
     window.deleteDocumentRow = deleteDocumentRow
   </script>
 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Murski – Case Planner</title>
@@ -2476,6 +2477,39 @@ function openStructuredDocEditor(docId){
         return;
       }
       alert('No file is stored for this document yet. Re-upload the file in this version if this is an older local-only document.');
+    }
+    async function downloadDocumentsAsZip(docs){
+      const chosenDocs = (docs || []).filter(Boolean);
+      if(!chosenDocs.length){
+        toast('No documents selected');
+        return;
+      }
+      if(typeof window.JSZip === 'undefined'){
+        alert('ZIP download library did not load. Refresh the page and try again.');
+        return;
+      }
+      const zip = new window.JSZip();
+      let addedCount = 0;
+      for(const doc of chosenDocs){
+        const blob = await getDocumentBlob(doc);
+        if(!blob) continue;
+        const fileName = sanitizeFileName(doc.originalFileName || doc.filename || (doc.name + '.bin'));
+        zip.file(fileName, blob);
+        addedCount += 1;
+      }
+      if(!addedCount){
+        alert('None of the selected documents had downloadable files.');
+        return;
+      }
+      try{
+        const zipBlob = await zip.generateAsync({ type: 'blob' });
+        const stamp = new Date().toISOString().slice(0,19).replace(/[T:]/g, '-');
+        triggerBlobDownload(zipBlob, 'documents-' + stamp + '.zip');
+        toast('ZIP download started');
+      }catch(err){
+        console.error('ZIP creation failed', err);
+        alert('Could not create ZIP file.');
+      }
     }
     async function saveDocumentsToChosenFolder(docs){
       const chosenDocs = (docs || []).filter(Boolean);
