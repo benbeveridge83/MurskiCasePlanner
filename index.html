@@ -2478,6 +2478,13 @@ function openStructuredDocEditor(docId){
       }
       alert('No file is stored for this document yet. Re-upload the file in this version if this is an older local-only document.');
     }
+    function sanitizeDownloadFileName(name){
+      return String(name || 'file')
+        .replace(/[^a-zA-Z0-9._-]+/g, '_')
+        .replace(/_+/g, '_')
+        .replace(/^_+|_+$/g, '') || 'file';
+    }
+
     async function downloadDocumentsAsZip(docs){
       const chosenDocs = (docs || []).filter(Boolean);
       if(!chosenDocs.length){
@@ -2493,7 +2500,7 @@ function openStructuredDocEditor(docId){
       for(const doc of chosenDocs){
         const blob = await getDocumentBlob(doc);
         if(!blob) continue;
-        const fileName = sanitizeFileName(doc.originalFileName || doc.filename || (doc.name + '.bin'));
+        const fileName = sanitizeDownloadFileName(doc.originalFileName || doc.filename || (doc.name + '.bin'));
         zip.file(fileName, blob);
         addedCount += 1;
       }
@@ -2532,7 +2539,7 @@ function openStructuredDocEditor(docId){
       for(const doc of chosenDocs){
         const blob = await getDocumentBlob(doc);
         if(!blob) continue;
-        const fileName = sanitizeFileName(doc.originalFileName || doc.filename || (doc.name + '.bin'));
+        const fileName = sanitizeDownloadFileName(doc.originalFileName || doc.filename || (doc.name + '.bin'));
         try{
           const fileHandle = await dirHandle.getFileHandle(fileName, { create: true });
           const writable = await fileHandle.createWritable();
