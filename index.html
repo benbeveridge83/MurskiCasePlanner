@@ -2484,6 +2484,9 @@ function openStructuredDocEditor(docId){
         .replace(/_+/g, '_')
         .replace(/^_+|_+$/g, '') || 'file';
     }
+    const sanitizeFileName = sanitizeDownloadFileName;
+    window.sanitizeFileName = sanitizeDownloadFileName;
+    window.sanitizeDownloadFileName = sanitizeDownloadFileName;
 
     async function downloadDocumentsAsZip(docs){
       const chosenDocs = (docs || []).filter(Boolean);
