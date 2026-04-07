@@ -691,6 +691,7 @@
   </script>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Murski – Case Planner</title>
@@ -863,6 +864,12 @@
     .rowMiniChip .rowMiniLabel{max-width:220px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:inline-block;}
     .rowMiniChip button{border:none;background:transparent;padding:0;cursor:pointer;font-weight:900;line-height:1;color:#991b1b;box-shadow:none;}
 
+
+    .timelineUndatedHandle{cursor:grab;}
+    .timelineUndatedHandle:active{cursor:grabbing;}
+    .timelineEventModalMeta{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;}
+    .timelineImportBox{border:1px solid var(--border);border-radius:14px;background:#fff;padding:10px;display:none;gap:10px;}
+    .timelineImportBox.open{display:grid;}
   </style>
 </head>
 <body>
@@ -881,8 +888,8 @@
     <div id="structuredDocModal" class="structuredModal"><div class="structuredModalCard"><div style="display:flex; justify-content:space-between; gap:10px; align-items:center"><h3 style="margin:0">Edit document</h3><button type="button" id="structuredDocModalClose" class="btnGhost">Close</button></div><div><div class="label">Document name</div><input id="structuredDocName" type="text" /></div><div><div class="label">Description</div><textarea id="structuredDocDesc" placeholder="Document description"></textarea></div><div><div class="label">Tags</div><div id="structuredDocTags" class="structuredTagChecklist"></div></div><div style="display:flex; gap:8px; flex-wrap:wrap"><button type="button" id="structuredDocSave" class="btnPrimary">Save</button><button type="button" id="structuredDocView" class="btnGhost">View file</button><button type="button" id="structuredDocDownload" class="btnGhost">Download file</button></div><div id="structuredDocViewer"></div></div></div>
     <div id="documentEditModal" class="structuredModal"><div class="structuredModalCard"><div style="display:flex; justify-content:space-between; gap:10px; align-items:center"><h3 style="margin:0">Edit document</h3><button type="button" id="documentEditModalClose" class="btnGhost">Close</button></div><div><div class="label">Document name</div><input id="documentEditName" type="text" /></div><div><div class="label">Document date</div><input id="documentEditDate" type="date" /></div><div><div class="label">Upload date</div><div id="documentEditUploadDate" class="hint"></div></div><div><div class="label">Description</div><textarea id="documentEditDesc" placeholder="What is this document? What does it prove?"></textarea></div><div><div class="label">Replace / add file</div><input id="documentEditFile" type="file" /><div id="documentEditCurrentFile" class="hint" style="margin-top:6px"></div></div><div><div class="label">Exhibit status</div><div id="documentEditExhibitStatus" class="hint"></div></div><div style="display:flex; gap:8px; flex-wrap:wrap"><button type="button" id="documentEditSave" class="btnPrimary">Save changes</button><button type="button" id="documentEditPreview" class="btnGhost">Preview file</button><button type="button" id="documentEditDownload" class="btnGhost">Download file</button><button type="button" id="documentEditDelete" class="btnDanger">Delete</button></div><div id="documentEditViewer"></div></div></div>
     <div id="viewExhibits" class="card" style="display:none"><h2>Exhibits</h2><div class="hint">Documents you have used as exhibits appear here.</div><div class="card" style="box-shadow:none"><h2 style="margin-bottom:8px">Exhibit table</h2><div id="exhibitEmpty" class="empty" style="display:none">No exhibits yet. Add an exhibit from a row/witness intersection.</div><div style="overflow:auto"><table id="exhibitTable" style="width:100%; border-collapse:collapse; display:none"><thead><tr><th style="text-align:left; padding:10px; border-bottom:1px solid var(--line); width:140px">Exhibit</th><th style="text-align:left; padding:10px; border-bottom:1px solid var(--line)">Document name</th></tr></thead><tbody id="exhibitTableBody"></tbody></table></div></div></div>
-    <div id="viewPeople" class="card" style="display:none"><h2>People</h2><div class="hint">Add people (including witnesses). Witnesses can then be attached to outline rows.</div><div class="grid2"><div class="card" style="box-shadow:none"><h2 style="margin-bottom:8px">Add person</h2><div class="label">Name <span style="color:var(--danger)">*</span></div><input id="personName" type="text" placeholder="e.g., Leah Murski" /><div class="label" style="margin-top:10px">Notes / Role (optional)</div><textarea id="personDesc" placeholder="e.g., Mother, Father, Therapist, Teacher, etc."></textarea><div class="hint" style="margin-top:10px">Assign tags after saving from the people list.</div><div style="margin-top:10px; display:flex; gap:10px; flex-wrap:wrap; align-items:center"><button id="addPerson" class="btnPrimary">Save person</button></div></div><div class="card" style="box-shadow:none"><h2 style="margin-bottom:8px">People list</h2><div id="peopleList" style="display:flex; flex-direction:column; gap:10px"></div><div id="peopleEmpty" class="empty" style="display:none">No people yet.</div></div></div></div>
-    <div id="viewTimeline" class="card" style="display:none"><h2>Timeline</h2><div class="hint">Add events and map them by date and tag. Dated documents and dated outline headings also appear here. Click an event name to open full event details.</div><div class="timelineTopActionBar"><div class="timelineAddEventWrap" id="timelineAddEventWrap"><div class="timelineAddEventHover"><button id="timelineAddEventBtn" class="btnPrimary">+ Add event</button><button id="timelineAddTagBtn" class="btnGhost">Add tag</button></div><div id="timelineEventForm" class="timelineAddEventPanel"><div class="timelineInlineHeader"><h2 style="margin:0">Add timeline event</h2><div class="hint">Hover over Add event to open. After you save, this panel closes again.</div></div><div class="label">Event name <span style="color:var(--danger)">*</span></div><input id="timelineName" type="text" placeholder="e.g., Temporary orders hearing" /><div class="label" style="margin-top:10px">Event date</div><input id="timelineDate" type="date" /><div class="label" style="margin-top:10px">Description</div><textarea id="timelineDesc" placeholder="What happened? Why does it matter?"></textarea><div class="label" style="margin-top:10px">Location</div><input id="timelineLocation" type="text" placeholder="e.g., DuPage County Courthouse" /><div style="display:flex; justify-content:space-between; gap:10px; align-items:center; flex-wrap:wrap; margin-top:10px"><div class="label" style="margin:0">Tags</div><button id="timelineInlineAddTagBtn" type="button" class="btnGhost">+ New tag</button></div><div id="timelineTagChoices" class="checkGrid"></div><div style="display:flex; justify-content:space-between; gap:10px; align-items:center; flex-wrap:wrap; margin-top:10px"><div class="label" style="margin:0">Documents</div><button id="timelineToggleDocsBtn" type="button" class="btnGhost">Choose documents</button></div><div id="timelineDocChoicesWrap" style="display:none"><div id="timelineDocChoices" class="checkGrid"></div></div><div class="label" style="margin-top:10px">Witnesses</div><div id="timelineWitnessChoices" class="checkGrid"></div><div id="timelineWitnessTestimonyWrap" style="margin-top:10px"></div><div style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap"><button id="timelineSaveEvent" class="btnPrimary">Save event</button><button id="timelineCancelEvent" class="btnGhost">Cancel</button></div></div></div><div class="hint" style="flex:1; min-width:280px">Undated events stay at the top of the timeline. You can drag them to reorder them until you add a date.</div></div><div class="card" style="box-shadow:none; margin-top:12px"><div style="display:flex; justify-content:space-between; gap:10px; align-items:center; flex-wrap:wrap"><h2 style="margin-bottom:8px">Timeline view</h2><div class="toolbar" style="margin:0"><span class="pill">Show columns</span><label class="checkItem" style="margin:0"><input id="timelineShowEventColumn" type="checkbox" checked /> <span>Event</span></label><label class="checkItem" style="margin:0"><input id="timelineShowDocumentColumn" type="checkbox" checked /> <span>Document</span></label><label class="checkItem" style="margin:0"><input id="timelineShowHeadlineColumn" type="checkbox" checked /> <span>Headline</span></label></div></div><div id="timelineEmpty" class="empty" style="display:none; margin-top:12px">No dated events, documents, or headings yet.</div><div id="timelineMatrixWrap" style="overflow:auto; margin-top:12px"></div></div><div class="grid2"><div class="card" style="box-shadow:none"><h2 style="margin-bottom:8px">Saved events</h2><div id="timelineSavedEvents" style="margin-top:12px"></div></div><div class="card" style="box-shadow:none"><h2 style="margin-bottom:8px">Event details</h2><div id="timelineDetail" class="empty">Click an event name in the timeline to see full details.</div></div></div></div>
+    <div id="viewPeople" class="card" style="display:none"><h2>People</h2><div class="hint">Add people (including witnesses). Witnesses can then be attached to outline rows.</div><div class="grid2"><div class="card" style="box-shadow:none"><h2 style="margin-bottom:8px">Add person</h2><div class="label">Name <span style="color:var(--danger)">*</span></div><input id="personName" type="text" placeholder="e.g., Leah Murski" /><div class="label" style="margin-top:10px">Notes / Role (optional)</div><textarea id="personDesc" placeholder="e.g., Mother, Father, Therapist, Teacher, etc."></textarea><div class="hint" style="margin-top:10px">Assign tags after saving from the people list.</div><div style="margin-top:10px; display:flex; gap:10px; flex-wrap:wrap; align-items:center"><button id="addPerson" class="btnPrimary">Save person</button></div></div><div class="card" style="box-shadow:none"><h2 style="margin-bottom:8px">People list</h2><div id="peopleList" style="display:flex; flex-direction:column; gap:10px"></div><div id="peopleEmpty" class="empty" style="display:none">No people yet.</div></div></div></div>    <div id="viewTimeline" class="card" style="display:none"><h2>Timeline</h2><div class="hint">Add events and map them by date and tag. Dated documents and dated outline headings also appear here. Events without dates stay at the top of the timeline and can be dragged up and down.</div><div class="timelineTopActionBar"><div class="timelineAddEventWrap" id="timelineAddEventWrap"><div class="timelineAddEventHover"><button id="timelineAddEventBtn" class="btnPrimary">+ Add event</button><button id="timelineAddTagBtn" class="btnGhost">Add tag</button><button id="timelineImportBtn" class="btnGhost">Import Excel</button></div><div id="timelineEventForm" class="timelineAddEventPanel"><div class="timelineInlineHeader"><h2 style="margin:0">Add timeline event</h2><div class="hint">Hover over Add event to open. After you save, this panel closes again.</div></div><div class="label">Event name <span style="color:var(--danger)">*</span></div><input id="timelineName" type="text" placeholder="e.g., Temporary orders hearing" /><div class="label">Event date</div><input id="timelineDate" type="date" /><div class="label" style="margin-top:10px">Description</div><textarea id="timelineDesc" placeholder="What happened? Why does it matter?"></textarea><div class="label" style="margin-top:10px">Location</div><input id="timelineLocation" type="text" placeholder="e.g., DuPage County Courthouse" /><div class="label" style="margin-top:10px">Source</div><input id="timelineSource" type="text" placeholder="e.g., Trial notes, Excel import, Email from clerk" /><div style="display:flex; justify-content:space-between; gap:10px; align-items:center; flex-wrap:wrap; margin-top:10px"><div class="label" style="margin:0">Tags</div><button id="timelineInlineAddTagBtn" type="button" class="btnGhost">+ New tag</button></div><div id="timelineTagChoices" class="checkGrid"></div><div style="display:flex; justify-content:space-between; gap:10px; align-items:center; flex-wrap:wrap; margin-top:10px"><div class="label" style="margin:0">Documents</div><button id="timelineToggleDocsBtn" type="button" class="btnGhost">Choose documents</button></div><div id="timelineDocChoicesWrap" style="display:none"><div id="timelineDocChoices" class="checkGrid"></div></div><div class="label" style="margin-top:10px">Witnesses</div><div id="timelineWitnessChoices" class="checkGrid"></div><div id="timelineWitnessTestimonyWrap" style="margin-top:10px"></div><div style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap"><button id="timelineSaveEvent" class="btnPrimary">Save event</button><button id="timelineCancelEvent" class="btnGhost">Cancel</button></div></div></div><div id="timelineImportBox" class="timelineImportBox"><div><div class="label">Import timeline events from Excel</div><div class="hint">Use the first five columns in this order: date, event title, description, location, source. A header row is allowed.</div></div><div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center"><input id="timelineImportFile" type="file" accept=".xlsx,.xls,.csv" /><button id="timelineImportRunBtn" type="button" class="btnPrimary">Import file</button></div></div><div class="hint" style="flex:1; min-width:280px">Undated events stay at the top of the timeline. You can drag them to reorder them until you add a date.</div></div><div class="card" style="box-shadow:none; margin-top:12px"><div style="display:flex; justify-content:space-between; gap:10px; align-items:center; flex-wrap:wrap"><h2 style="margin-bottom:8px">Timeline view</h2><div class="toolbar" style="margin:0"><span class="pill">Show columns</span><label class="checkItem" style="margin:0"><input id="timelineShowEventColumn" type="checkbox" checked /> <span>Event</span></label><label class="checkItem" style="margin:0"><input id="timelineShowDocumentColumn" type="checkbox" checked /> <span>Document</span></label><label class="checkItem" style="margin:0"><input id="timelineShowHeadlineColumn" type="checkbox" checked /> <span>Headline</span></label></div></div><div id="timelineEmpty" class="empty" style="display:none; margin-top:12px">No events, documents, or headings yet.</div><div id="timelineMatrixWrap" style="overflow:auto; margin-top:12px"></div></div></div>
+    <div id="timelineEventModal" class="structuredModal"><div class="structuredModalCard"><div style="display:flex; justify-content:space-between; gap:10px; align-items:center"><h3 id="timelineEventModalTitle" style="margin:0">Timeline event</h3><button type="button" id="timelineEventModalClose" class="btnGhost">Close</button></div><div class="timelineEventModalMeta"><div><div class="label">Date</div><div id="timelineEventModalDate" class="hint"></div></div><div><div class="label">Location</div><div id="timelineEventModalLocation" class="hint"></div></div><div><div class="label">Source</div><div id="timelineEventModalSource" class="hint"></div></div></div><div><div class="label">Tags</div><div id="timelineEventModalTags" class="hint"></div></div><div><div class="label">Description</div><div id="timelineEventModalDesc" class="hint"></div></div><div><div class="label">Documents</div><div id="timelineEventModalDocs" class="hint"></div></div><div><div class="label">Witnesses</div><div id="timelineEventModalWitnesses" class="hint"></div></div><div style="display:flex; gap:8px; flex-wrap:wrap"><button type="button" id="timelineEventModalEdit" class="btnPrimary">Edit</button><button type="button" id="timelineEventModalDelete" class="btnDanger">Delete</button></div></div></div>
     <div id="viewSettings" class="card" style="display:none"><h2>Add Tag</h2><div class="hint">Create tags here. Tags can then be assigned to outline rows, documents, people, and timeline events.</div><div class="grid2"><div class="card" style="box-shadow:none"><h2 style="margin-bottom:8px">Create tag</h2><div class="label">Tag name</div><input id="tagName" type="text" placeholder="e.g., Financial, Parenting time, Credibility" /><div style="margin-top:10px; display:flex; gap:10px; align-items:center; flex-wrap:wrap"><button id="addTag" class="btnPrimary">Add tag</button><span class="pill">Names must be unique</span></div></div><div class="card" style="box-shadow:none"><h2 style="margin-bottom:8px">Tag library</h2><div id="tagList" style="display:flex; flex-direction:column; gap:10px"></div><div id="tagEmpty" class="empty" style="display:none">No tags yet.</div></div></div></div>
   </div>
   <div id="toast" class="toast"></div>
@@ -945,7 +952,7 @@
     async function idbPutFile(key, value){ const db = await openDb(); return new Promise((resolve,reject)=>{ const tx = db.transaction(STORE_FILES, 'readwrite'); const req = tx.objectStore(STORE_FILES).put(value, key); req.onsuccess = ()=>{ db.close(); resolve(true); }; req.onerror = ()=>{ db.close(); reject(req.error || new Error('IndexedDB write failed')); }; }); }
     async function idbDeleteFile(key){ const db = await openDb(); return new Promise((resolve,reject)=>{ const tx = db.transaction(STORE_FILES, 'readwrite'); const req = tx.objectStore(STORE_FILES).delete(key); req.onsuccess = ()=>{ db.close(); resolve(true); }; req.onerror = ()=>{ db.close(); reject(req.error || new Error('IndexedDB delete failed')); }; }); }
     function fileToDataUrl(file){ return new Promise((resolve,reject)=>{ const fr = new FileReader(); fr.onload = ()=> resolve(fr.result || ''); fr.onerror = ()=> reject(fr.error || new Error('File read failed')); fr.readAsDataURL(file); }); }
-    function normalizeState(){ state.tags = Array.isArray(state.tags) ? state.tags.filter(t => t && (t.name||'').trim()).map(t => ({ id: t.id || uid(), name: String(t.name||'').trim(), description: String(t.description||'').trim() })) : []; state.people = Array.isArray(state.people) ? state.people.filter(p => p && (p.name||'').trim()).map(p => ({ id: p.id || uid(), name: String(p.name||'').trim(), description: String(p.description||'').trim(), tags: Array.isArray(p.tags) ? p.tags.filter(Boolean) : [] })) : []; state.documents = Array.isArray(state.documents) ? state.documents.filter(d => d && (d.name||'').trim()).map(d => ({ id: d.id || uid(), name: String(d.name||'').trim(), date: d.date || '', description: String(d.description||'').trim(), tags: Array.isArray(d.tags) ? d.tags.filter(Boolean) : [], filename: d.filename || d.originalFileName || '', originalFileName: d.originalFileName || d.filename || '', filePath: d.filePath || '', mimeType: d.mimeType || '', fileSize: Number(d.fileSize || 0) || 0, hasFile: !!(d.hasFile || d.filePath), dataUrl: d.dataUrl || '', exhibitLabel: d.exhibitLabel || '', createdAt: d.createdAt || d.created_at || '', exhibitEligibility: d.exhibitEligibility === 'not' ? 'not' : 'possible' })) : []; state.outline = Array.isArray(state.outline) ? state.outline.filter(n => n && n.id).map(n => ({ ...n, title: typeof n.title === 'string' ? n.title : '', description: typeof n.description === 'string' ? n.description : '', tags: Array.isArray(n.tags) ? n.tags.filter(Boolean) : [], witnessIds: Array.isArray(n.witnessIds) ? n.witnessIds.filter(Boolean) : [], witnessData: n.witnessData && typeof n.witnessData === 'object' ? n.witnessData : {}, rowDate: n.rowDate || '', collapsed: !!n.collapsed, detailsOpen: !!n.detailsOpen })) : []; state.timelineEvents = Array.isArray(state.timelineEvents) ? state.timelineEvents.filter(e => e && e.id).map((e, idx) => ({ id: e.id || uid(), name: String(e.name||'').trim(), date: e.date || '', description: String(e.description||'').trim(), location: String(e.location||'').trim(), tags: Array.isArray(e.tags) ? e.tags.filter(Boolean) : [], documents: Array.isArray(e.documents) ? e.documents.filter(Boolean) : [], witnesses: Array.isArray(e.witnesses) ? e.witnesses.map(w => ({ personId: w.personId || w.id || '', testimony: String(w.testimony||'') })).filter(w => w.personId) : [], timelineOrder: Number.isFinite(Number(e.timelineOrder)) ? Number(e.timelineOrder) : idx })) : []; }
+    function normalizeState(){ state.tags = Array.isArray(state.tags) ? state.tags.filter(t => t && (t.name||'').trim()).map(t => ({ id: t.id || uid(), name: String(t.name||'').trim(), description: String(t.description||'').trim() })) : []; state.people = Array.isArray(state.people) ? state.people.filter(p => p && (p.name||'').trim()).map(p => ({ id: p.id || uid(), name: String(p.name||'').trim(), description: String(p.description||'').trim(), tags: Array.isArray(p.tags) ? p.tags.filter(Boolean) : [] })) : []; state.documents = Array.isArray(state.documents) ? state.documents.filter(d => d && (d.name||'').trim()).map(d => ({ id: d.id || uid(), name: String(d.name||'').trim(), date: d.date || '', description: String(d.description||'').trim(), tags: Array.isArray(d.tags) ? d.tags.filter(Boolean) : [], filename: d.filename || d.originalFileName || '', originalFileName: d.originalFileName || d.filename || '', filePath: d.filePath || '', mimeType: d.mimeType || '', fileSize: Number(d.fileSize || 0) || 0, hasFile: !!(d.hasFile || d.filePath), dataUrl: d.dataUrl || '', exhibitLabel: d.exhibitLabel || '', createdAt: d.createdAt || d.created_at || '', exhibitEligibility: d.exhibitEligibility === 'not' ? 'not' : 'possible' })) : []; state.outline = Array.isArray(state.outline) ? state.outline.filter(n => n && n.id).map(n => ({ ...n, title: typeof n.title === 'string' ? n.title : '', description: typeof n.description === 'string' ? n.description : '', tags: Array.isArray(n.tags) ? n.tags.filter(Boolean) : [], witnessIds: Array.isArray(n.witnessIds) ? n.witnessIds.filter(Boolean) : [], witnessData: n.witnessData && typeof n.witnessData === 'object' ? n.witnessData : {}, rowDate: n.rowDate || '', collapsed: !!n.collapsed, detailsOpen: !!n.detailsOpen })) : []; state.timelineEvents = Array.isArray(state.timelineEvents) ? state.timelineEvents.filter(e => e && e.id).map((e, idx) => ({ id: e.id || uid(), name: String(e.name||'').trim(), date: e.date || '', description: String(e.description||'').trim(), location: String(e.location||'').trim(), tags: Array.isArray(e.tags) ? e.tags.filter(Boolean) : [], documents: Array.isArray(e.documents) ? e.documents.filter(Boolean) : [], witnesses: Array.isArray(e.witnesses) ? e.witnesses.map(w => ({ personId: w.personId || w.id || '', testimony: String(w.testimony||'') })).filter(w => w.personId) : [], timelineOrder: Number.isFinite(Number(e.timelineOrder)) ? Number(e.timelineOrder) : idx, source: String(e.source||'').trim() })) : []; }
     function load(){ const raw = localStorage.getItem(STORAGE_KEY); if(raw){ try{ const parsed = JSON.parse(raw); if(parsed && typeof parsed === 'object') state = Object.assign(state, parsed); } catch(e){ console.warn('Failed to parse saved data', e); } } normalizeState(); $('caseName').value = state.caseName || ''; }
     function syncPeopleFromSupabase(){ if (!Array.isArray(window.loadedPeople)) return; const previousById = new Map((state.people || []).map(p => [p.id, p])); state.people = window.loadedPeople.map((p) => { const prev = previousById.get(p.id); return { id: p.id, name: p.name || '', description: p.description || '', tags: prev?.tags || [] }; }); safeSave(); }
     window.syncPeopleFromSupabase = syncPeopleFromSupabase;
@@ -1071,16 +1078,17 @@
     }
     function allWitnessIds(){ const set = new Set(); for(const n of state.outline){ (n.witnessIds||[]).forEach(id=> set.add(id)); } return Array.from(set); }
         function timelineTagNames(ids){ return (ids||[]).map(id => state.tags.find(t=>t.id===id)?.name).filter(Boolean); }
-    function openTimelineForm(eventId=null){ ui.timelineEditingId = eventId; ui.timelineDocPickerOpen = false; const wrap = $('timelineAddEventWrap'); const ev = eventId ? state.timelineEvents.find(x=>x.id===eventId) : null; if(wrap) wrap.classList.add('open'); $('timelineName').value = ev?.name || ''; $('timelineDate').value = ev?.date || ''; $('timelineDesc').value = ev?.description || ''; $('timelineLocation').value = ev?.location || ''; renderTimelineFormChoices(ev); setTimeout(()=> $('timelineName')?.focus(), 0); }
+    function openTimelineForm(eventId=null){ ui.timelineEditingId = eventId; ui.timelineDocPickerOpen = false; const wrap = $('timelineAddEventWrap'); const ev = eventId ? state.timelineEvents.find(x=>x.id===eventId) : null; if(wrap) wrap.classList.add('open'); $('timelineName').value = ev?.name || ''; $('timelineDate').value = ev?.date || ''; $('timelineDesc').value = ev?.description || ''; $('timelineLocation').value = ev?.location || ''; $('timelineSource').value = ev?.source || ''; renderTimelineFormChoices(ev); setTimeout(()=> $('timelineName')?.focus(), 0); }
     function closeTimelineForm(){ ui.timelineEditingId = null; const wrap = $('timelineAddEventWrap'); if(wrap) wrap.classList.remove('open'); }
     function renderTimelineFormChoices(ev=null){ const selectedTags = new Set(ev?.tags || []); const selectedDocs = new Set(ev?.documents || []); const selectedWitnesses = new Set((ev?.witnesses || []).map(w=>w.personId)); $('timelineTagChoices').innerHTML = state.tags.length ? state.tags.slice().sort(sortByName).map(t=>`<label class="checkItem"><input type="checkbox" value="${t.id}" ${selectedTags.has(t.id)?'checked':''} data-kind="tag" /> <span>${escapeHtml(t.name)}</span></label>`).join('') : '<div class="hint">No tags yet. Use Add tag.</div>'; const docWrap = $('timelineDocChoicesWrap'); const docBtn = $('timelineToggleDocsBtn'); if(docBtn){ docBtn.textContent = ui.timelineDocPickerOpen ? 'Hide documents' : 'Choose documents'; } if(docWrap){ docWrap.style.display = ui.timelineDocPickerOpen ? '' : 'none'; } $('timelineDocChoices').innerHTML = state.documents.length ? state.documents.slice().sort(sortByName).map(d=>`<label class="checkItem"><input type="checkbox" value="${d.id}" ${selectedDocs.has(d.id)?'checked':''} data-kind="doc" /> <span>${escapeHtml(d.name)}</span></label>`).join('') : '<div class="hint">No documents yet.</div>'; $('timelineWitnessChoices').innerHTML = state.people.length ? state.people.slice().sort(sortByName).map(p=>`<label class="checkItem"><input type="checkbox" value="${p.id}" ${selectedWitnesses.has(p.id)?'checked':''} data-kind="witness" /> <span>${escapeHtml(p.name)}</span></label>`).join('') : '<div class="hint">No people yet.</div>'; const wrap = $('timelineWitnessTestimonyWrap'); const testimonyById = new Map((ev?.witnesses || []).map(w=>[w.personId,w.testimony||''])); function drawWitnessTestimony(){ const chosen = Array.from(document.querySelectorAll('#timelineWitnessChoices input[type="checkbox"]:checked')).map(x=>x.value); wrap.innerHTML = chosen.length ? chosen.map(pid=>{ const person = state.people.find(p=>p.id===pid); return `<div class="timelineWitnessBlock"><div><b>${escapeHtml(person?.name||'Witness')}</b></div><div class="label" style="margin-top:8px">Testimony</div><textarea data-timeline-testimony="${pid}" placeholder="Key testimony for this event">${escapeHtml(testimonyById.get(pid)||'')}</textarea></div>`; }).join('') : '<div class="hint">Select a witness to add testimony.</div>'; } drawWitnessTestimony(); document.querySelectorAll('#timelineWitnessChoices input[type="checkbox"]').forEach(cb=>cb.addEventListener('change', drawWitnessTestimony)); $('timelineToggleDocsBtn')?.addEventListener('click', ()=>{ ui.timelineDocPickerOpen = !ui.timelineDocPickerOpen; renderTimelineFormChoices(ev); }); }
-    function collectTimelineForm(){ const name = ($('timelineName').value||'').trim(); if(!name){ alert('Event name is required.'); return null; } const date = $('timelineDate').value || ''; const description = ($('timelineDesc').value||'').trim(); const location = ($('timelineLocation').value||'').trim(); const tags = Array.from(document.querySelectorAll('#timelineTagChoices input[type="checkbox"]:checked')).map(x=>x.value); const documents = Array.from(document.querySelectorAll('#timelineDocChoices input[type="checkbox"]:checked')).map(x=>x.value); const witnesses = Array.from(document.querySelectorAll('#timelineWitnessChoices input[type="checkbox"]:checked')).map(x=>({ personId: x.value, testimony: (document.querySelector(`[data-timeline-testimony="${x.value}"]`)?.value || '').trim() })); return { name, date, description, location, tags, documents, witnesses }; }
+    function collectTimelineForm(){ const name = ($('timelineName').value||'').trim(); if(!name){ alert('Event name is required.'); return null; } const date = $('timelineDate').value || ''; const description = ($('timelineDesc').value||'').trim(); const location = ($('timelineLocation').value||'').trim(); const source = ($('timelineSource').value||'').trim(); const tags = Array.from(document.querySelectorAll('#timelineTagChoices input[type="checkbox"]:checked')).map(x=>x.value); const documents = Array.from(document.querySelectorAll('#timelineDocChoices input[type="checkbox"]:checked')).map(x=>x.value); const witnesses = Array.from(document.querySelectorAll('#timelineWitnessChoices input[type="checkbox"]:checked')).map(x=>({ personId: x.value, testimony: (document.querySelector(`[data-timeline-testimony="${x.value}"]`)?.value || '').trim() })); return { name, date, description, location, source, tags, documents, witnesses }; }
     function getNextTimelineOrder(){ return (state.timelineEvents || []).reduce((max, ev, idx)=> Math.max(max, Number.isFinite(Number(ev?.timelineOrder)) ? Number(ev.timelineOrder) : idx), -1) + 1; }
     function sortUndatedTimelineEvents(events){ return (events || []).slice().sort((a,b)=>{ const ao = Number.isFinite(Number(a?.timelineOrder)) ? Number(a.timelineOrder) : 0; const bo = Number.isFinite(Number(b?.timelineOrder)) ? Number(b.timelineOrder) : 0; return ao - bo || (a.name||'').localeCompare(b.name||''); }); }
     function moveUndatedTimelineEvent(draggedId, targetId){ if(!draggedId || !targetId || draggedId === targetId) return; const undated = sortUndatedTimelineEvents((state.timelineEvents || []).filter(ev => ev && !ev.date)); const from = undated.findIndex(ev => ev.id === draggedId); const to = undated.findIndex(ev => ev.id === targetId); if(from < 0 || to < 0) return; const [moved] = undated.splice(from, 1); undated.splice(to, 0, moved); undated.forEach((ev, idx)=>{ ev.timelineOrder = idx; }); safeSave(); renderTimeline(); }
     function saveTimelineEvent(){ const payload = collectTimelineForm(); if(!payload) return; if(ui.timelineEditingId){ const i = state.timelineEvents.findIndex(x=>x.id===ui.timelineEditingId); if(i>=0) state.timelineEvents[i] = { ...state.timelineEvents[i], ...payload }; ui.timelineSelectedId = ui.timelineEditingId; toast('Event updated'); } else { const ev = { id: uid(), timelineOrder: getNextTimelineOrder(), ...payload }; state.timelineEvents.push(ev); ui.timelineSelectedId = ev.id; toast('Event added'); } safeSave(); closeTimelineForm(); renderTimeline(); renderStructuredOutline(); }
-    function deleteTimelineEvent(id){ const ev = state.timelineEvents.find(x=>x.id===id); if(!ev) return; if(!confirm(`Delete event “${ev.name}”?`)) return; state.timelineEvents = state.timelineEvents.filter(x=>x.id!==id); if(ui.timelineSelectedId===id) ui.timelineSelectedId = null; safeSave(); renderTimeline(); renderStructuredOutline(); }
-    function renderTimelineDetail(){ const box = $('timelineDetail'); if(!box) return; const ev = state.timelineEvents.find(x=>x.id===ui.timelineSelectedId); if(!ev){ box.className='empty'; box.innerHTML='Click an event name in the timeline to see full details.'; return; } box.className=''; const docs = (ev.documents||[]).map(id=>state.documents.find(d=>d.id===id)).filter(Boolean); const witnesses = (ev.witnesses||[]).map(w=>({ person: state.people.find(p=>p.id===w.personId), testimony: w.testimony||'' })).filter(x=>x.person); box.innerHTML = `<div class="timelineDetailCard"><div style="display:flex; justify-content:space-between; gap:10px; align-items:flex-start; flex-wrap:wrap"><div><h3 style="margin-bottom:4px">${escapeHtml(ev.name)}</h3><div class="hint">${timelineTagNames(ev.tags).map(escapeHtml).join(' • ') || 'No tags'}</div></div><div style="display:flex; gap:8px; flex-wrap:wrap"><button class="mini" id="timelineEditBtn">Edit</button><button class="mini" id="timelineDeleteBtn" style="border-color: rgba(239,68,68,.35); color:#991b1b">Delete</button></div></div><div class="timelineMeta"><div><b>Date:</b><div>${escapeHtml(ev.date || 'No date')}</div></div><div><b>Location:</b><div>${escapeHtml(ev.location || 'No location')}</div></div></div><div class="timelineSection"><b>Description</b><div style="margin-top:6px">${escapeHtml(ev.description || 'No description')}</div></div><div class="timelineSection"><b>Documents</b><div style="margin-top:6px">${docs.length ? docs.map(d=>`<div>${escapeHtml(d.name)}</div>`).join('') : '<span class="hint">No documents attached.</span>'}</div></div><div class="timelineSection"><b>Witnesses</b><div style="margin-top:6px">${witnesses.length ? witnesses.map(w=>`<div class="timelineWitnessBlock"><div><b>${escapeHtml(w.person.name)}</b></div><div style="margin-top:6px">${escapeHtml(w.testimony || 'No testimony added.')}</div></div>`).join('') : '<span class="hint">No witnesses attached.</span>'}</div></div></div>`; $('timelineEditBtn').onclick = ()=>openTimelineForm(ev.id); $('timelineDeleteBtn').onclick = ()=>deleteTimelineEvent(ev.id); }
+    function deleteTimelineEvent(id){ const ev = state.timelineEvents.find(x=>x.id===id); if(!ev) return; if(!confirm(`Delete event “${ev.name}”?`)) return; state.timelineEvents = state.timelineEvents.filter(x=>x.id!==id); if(ui.timelineSelectedId===id) ui.timelineSelectedId = null; safeSave(); closeTimelineEventModal(); renderTimeline(); renderStructuredOutline(); }
+    function closeTimelineEventModal(){ $('timelineEventModal')?.classList.remove('open'); }
+    function openTimelineEventModal(id){ const ev = state.timelineEvents.find(x=>x.id===id); if(!ev) return; ui.timelineSelectedId = id; const docs = (ev.documents||[]).map(docId=>state.documents.find(d=>d.id===docId)).filter(Boolean); const witnesses = (ev.witnesses||[]).map(w=>({ person: state.people.find(p=>p.id===w.personId), testimony: w.testimony||'' })).filter(x=>x.person); $('timelineEventModalTitle').textContent = ev.name || 'Timeline event'; $('timelineEventModalDate').textContent = ev.date || 'No date'; $('timelineEventModalLocation').textContent = ev.location || 'No location'; $('timelineEventModalSource').textContent = ev.source || 'No source'; $('timelineEventModalTags').textContent = timelineTagNames(ev.tags).join(' • ') || 'No tags'; $('timelineEventModalDesc').textContent = ev.description || 'No description'; $('timelineEventModalDocs').innerHTML = docs.length ? docs.map(d=>`<div><a href="#" data-timeline-modal-doc="${d.id}">${escapeHtml(d.name)}</a></div>`).join('') : '<span class="hint">No documents attached.</span>'; $('timelineEventModalWitnesses').innerHTML = witnesses.length ? witnesses.map(w=>`<div class="timelineWitnessBlock"><div><b>${escapeHtml(w.person.name)}</b></div><div style="margin-top:6px">${escapeHtml(w.testimony || 'No testimony added.')}</div></div>`).join('') : '<span class="hint">No witnesses attached.</span>'; $('timelineEventModal').classList.add('open'); $('timelineEventModalEdit').onclick = ()=>{ closeTimelineEventModal(); openTimelineForm(id); }; $('timelineEventModalDelete').onclick = ()=> deleteTimelineEvent(id); document.querySelectorAll('[data-timeline-modal-doc]').forEach(a=>a.addEventListener('click', (e)=>{ e.preventDefault(); openDocumentEditModal(a.getAttribute('data-timeline-modal-doc')); })); }
    function getTimelineDatedDocuments(){
   return (state.documents || [])
     .filter(d => d && d.date)
@@ -1110,8 +1118,7 @@ function renderTimeline(){
   const datedHeadlines = ui.timelineShowHeadlineColumn ? getTimelineDatedHeadlines() : [];
   const wrap = $('timelineMatrixWrap');
   const empty = $('timelineEmpty');
-  const savedWrap = $('timelineSavedEvents');
-  const usedTagIds = Array.from(new Set(events.flatMap(e=>e.tags||[]).filter(Boolean)));
+  const usedTagIds = Array.from(new Set(state.timelineEvents.flatMap(e=>e.tags||[]).filter(Boolean)));
   const tagCols = state.tags.filter(t=>usedTagIds.includes(t.id)).slice().sort(sortByName);
   const dates = Array.from(new Set([
     ...(ui.timelineShowEventColumn ? events.map(e=>e.date).filter(Boolean) : []),
@@ -1119,37 +1126,17 @@ function renderTimeline(){
     ...datedHeadlines.map(h=>h.rowDate).filter(Boolean)
   ])).sort();
 
-  if(savedWrap){
-    savedWrap.innerHTML = undatedEvents.length
-      ? `<div class="card" style="box-shadow:none"><div class="label">Undated events</div><div class="hint" style="margin:6px 0 10px 0">These stay at the top. Drag them to reorder, or add a date to place them in the dated timeline below.</div><div style="display:grid; gap:8px">${undatedEvents.map(ev=>`<div class="itemRow selectable" draggable="true" data-undated-event-row="${ev.id}"><div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap"><span class="outlineDragHandle" style="cursor:grab" title="Drag to reorder">⋮⋮</span><button type="button" class="mini" data-undated-event="${ev.id}">${escapeHtml(ev.name || 'Untitled event')}</button></div><div class="hint">${escapeHtml((ev.description || '').trim() || 'No description')}</div></div>`).join('')}</div></div>`
-      : '<div class="hint">Undated events will appear here at the top. Dated events will appear in the timeline view above.</div>';
-    savedWrap.querySelectorAll('[data-undated-event]').forEach(btn=>btn.addEventListener('click', ()=>{
-      const id = btn.getAttribute('data-undated-event');
-      ui.timelineSelectedId = id;
-      openTimelineForm(id);
-      renderTimelineDetail();
-    }));
-    savedWrap.querySelectorAll('[data-undated-event-row]').forEach(row=>{
-      row.addEventListener('dragstart', (ev)=>{
-        row.classList.add('isDragSource');
-        ev.dataTransfer.effectAllowed = 'move';
-        ev.dataTransfer.setData('text/plain', row.getAttribute('data-undated-event-row') || '');
-      });
-      row.addEventListener('dragend', ()=>{ row.classList.remove('isDragSource'); savedWrap.querySelectorAll('[data-undated-event-row]').forEach(el=>el.classList.remove('drop-before')); });
-      row.addEventListener('dragover', (ev)=>{ ev.preventDefault(); savedWrap.querySelectorAll('[data-undated-event-row]').forEach(el=>{ if(el !== row) el.classList.remove('drop-before'); }); row.classList.add('drop-before'); });
-      row.addEventListener('dragleave', ()=> row.classList.remove('drop-before'));
-      row.addEventListener('drop', (ev)=>{ ev.preventDefault(); const draggedId = ev.dataTransfer.getData('text/plain') || ''; const targetId = row.getAttribute('data-undated-event-row') || ''; row.classList.remove('drop-before'); moveUndatedTimelineEvent(draggedId, targetId); });
-    });
-  }
-
-  empty.style.display = dates.length ? 'none' : '';
-  if(!dates.length){
+  const hasAnything = !!(undatedEvents.length || dates.length);
+  empty.style.display = hasAnything ? 'none' : '';
+  if(!hasAnything){
     wrap.innerHTML='';
-    renderTimelineDetail();
     return;
   }
 
-  const rows = dates.map(date => ({
+  const rows = [];
+  undatedEvents.forEach(ev => rows.push({ kind:'undated', event: ev }));
+  dates.forEach(date => rows.push({
+    kind:'dated',
     date,
     events: events.filter(ev => ev.date === date),
     documents: datedDocs.filter(doc => doc.date === date),
@@ -1172,7 +1159,15 @@ function renderTimeline(){
         </tr>
       </thead>
       <tbody>
-        ${rows.map(row=>`
+        ${rows.map(row => row.kind === 'undated' ? `
+          <tr class="timelineUndatedRow" draggable="true" data-undated-event-row="${row.event.id}">
+            <td>No date</td>
+            ${ui.timelineShowEventColumn ? `<td class="timelineEventCell"><div style="display:flex; gap:8px; align-items:center"><span class="outlineDragHandle timelineUndatedHandle" title="Drag to reorder">⋮⋮</span><a href="#" data-timeline-open="${row.event.id}" title="${escapeHtml(row.event.description || '')}">${escapeHtml(row.event.name || 'Untitled event')}</a></div></td>` : ''}
+            ${ui.timelineShowDocumentColumn ? '<td class="timelineEmptyCell">—</td>' : ''}
+            ${ui.timelineShowHeadlineColumn ? '<td class="timelineEmptyCell">—</td>' : ''}
+            ${tagCols.map(t=>`<td class="timelineEventCell">${(row.event.tags||[]).includes(t.id) ? `<a href="#" data-timeline-open="${row.event.id}">${escapeHtml(row.event.name || 'Untitled event')}</a>` : '<span class="timelineEmptyCell">—</span>'}</td>`).join('')}
+          </tr>
+        ` : `
           <tr>
             <td>${escapeHtml(row.date || 'No date')}</td>
             ${ui.timelineShowEventColumn ? `<td class="timelineEventCell">${row.events.length ? row.events.map(ev=>`<div><a href="#" data-timeline-open="${ev.id}" title="${escapeHtml(ev.description || '')}">${escapeHtml(ev.name)}</a></div>`).join('') : '<span class="timelineEmptyCell">—</span>'}</td>` : ''}
@@ -1191,14 +1186,24 @@ function renderTimeline(){
   wrap.querySelectorAll('[data-timeline-open]').forEach(a =>
     a.addEventListener('click', (e)=>{
       e.preventDefault();
-      ui.timelineSelectedId = a.getAttribute('data-timeline-open');
-      renderTimelineDetail();
+      openTimelineEventModal(a.getAttribute('data-timeline-open'));
     })
   );
   wrap.querySelectorAll('[data-timeline-doc-open]').forEach(a => a.addEventListener('click', (e)=>{
     e.preventDefault();
     openDocumentEditModal(a.getAttribute('data-timeline-doc-open'));
   }));
+  wrap.querySelectorAll('[data-undated-event-row]').forEach(row=>{
+    row.addEventListener('dragstart', (ev)=>{
+      row.classList.add('isDragSource');
+      ev.dataTransfer.effectAllowed = 'move';
+      ev.dataTransfer.setData('text/plain', row.getAttribute('data-undated-event-row') || '');
+    });
+    row.addEventListener('dragend', ()=>{ row.classList.remove('isDragSource'); wrap.querySelectorAll('[data-undated-event-row]').forEach(el=>el.classList.remove('drop-before')); });
+    row.addEventListener('dragover', (ev)=>{ ev.preventDefault(); wrap.querySelectorAll('[data-undated-event-row]').forEach(el=>{ if(el !== row) el.classList.remove('drop-before'); }); row.classList.add('drop-before'); });
+    row.addEventListener('dragleave', ()=> row.classList.remove('drop-before'));
+    row.addEventListener('drop', (ev)=>{ ev.preventDefault(); const draggedId = ev.dataTransfer.getData('text/plain') || ''; const targetId = row.getAttribute('data-undated-event-row') || ''; row.classList.remove('drop-before'); moveUndatedTimelineEvent(draggedId, targetId); });
+  });
 
   if(eventToggle && !eventToggle.dataset.bound){
     eventToggle.dataset.bound = '1';
@@ -1212,14 +1217,86 @@ function renderTimeline(){
     headlineToggle.dataset.bound = '1';
     headlineToggle.addEventListener('change', ()=>{ ui.timelineShowHeadlineColumn = !!headlineToggle.checked; renderTimeline(); });
   }
-
-  renderTimelineDetail();
 }
-
     $('timelineAddEventBtn')?.addEventListener('click', (e)=>{ e.preventDefault(); openTimelineForm(); });
     $('timelineCancelEvent')?.addEventListener('click', ()=>closeTimelineForm());
     $('timelineSaveEvent')?.addEventListener('click', ()=>saveTimelineEvent());
     $('timelineInlineAddTagBtn')?.addEventListener('click', ()=> setTab('settings'));
+    $('timelineImportBtn')?.addEventListener('click', ()=> $('timelineImportBox')?.classList.toggle('open'));
+    $('timelineEventModalClose')?.addEventListener('click', closeTimelineEventModal);
+    $('timelineEventModal')?.addEventListener('click', (e)=>{ if(e.target?.id === 'timelineEventModal') closeTimelineEventModal(); });
+
+    function timelineImportCellToDate(value){
+      if(value == null || value === '') return '';
+      if(typeof value === 'number' && window.XLSX && XLSX.SSF){
+        const parsed = XLSX.SSF.parse_date_code(value);
+        if(parsed && parsed.y && parsed.m && parsed.d){
+          return `${String(parsed.y).padStart(4,'0')}-${String(parsed.m).padStart(2,'0')}-${String(parsed.d).padStart(2,'0')}`;
+        }
+      }
+      if(value instanceof Date && !isNaN(value)){
+        const y = value.getFullYear(), m = String(value.getMonth()+1).padStart(2,'0'), d = String(value.getDate()).padStart(2,'0');
+        return `${y}-${m}-${d}`;
+      }
+      const raw = String(value).trim();
+      if(!raw) return '';
+      if(/^\d{4}-\d{2}-\d{2}$/.test(raw)) return raw;
+      const parsed = new Date(raw);
+      if(!isNaN(parsed)){
+        const y = parsed.getFullYear(), m = String(parsed.getMonth()+1).padStart(2,'0'), d = String(parsed.getDate()).padStart(2,'0');
+        return `${y}-${m}-${d}`;
+      }
+      const mm = raw.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/);
+      if(mm){
+        let year = Number(mm[3]);
+        if(year < 100) year += 2000;
+        return `${String(year).padStart(4,'0')}-${String(Number(mm[1])).padStart(2,'0')}-${String(Number(mm[2])).padStart(2,'0')}`;
+      }
+      return '';
+    }
+    async function importTimelineExcel(){
+      const file = $('timelineImportFile')?.files?.[0];
+      if(!file){ alert('Choose an Excel file first.'); return; }
+      if(!(window.XLSX && XLSX.read)){ alert('Excel import library did not load. Refresh the page and try again.'); return; }
+      try{
+        const buffer = await file.arrayBuffer();
+        const wb = XLSX.read(buffer, { type:'array', cellDates:true });
+        const ws = wb.Sheets[wb.SheetNames[0]];
+        const rows = XLSX.utils.sheet_to_json(ws, { header:1, defval:'' });
+        if(!rows.length){ alert('That file looks empty.'); return; }
+        let imported = 0;
+        for(const [idx,row] of rows.entries()){
+          const dateVal = row[0], titleVal = row[1], descVal = row[2], locationVal = row[3], sourceVal = row[4];
+          const title = String(titleVal || '').trim();
+          const maybeHeader = idx === 0 && String(dateVal || '').trim().toLowerCase() === 'date' && /title|event/i.test(String(titleVal || '').trim().toLowerCase());
+          if(maybeHeader || !title) continue;
+          state.timelineEvents.push({
+            id: uid(),
+            name: title,
+            date: timelineImportCellToDate(dateVal),
+            description: String(descVal || '').trim(),
+            location: String(locationVal || '').trim(),
+            source: String(sourceVal || '').trim(),
+            tags: [],
+            documents: [],
+            witnesses: [],
+            timelineOrder: getNextTimelineOrder()
+          });
+          imported += 1;
+        }
+        if(!imported){ alert('No events were imported. Make sure the first five columns are date, title, description, location, and source.'); return; }
+        normalizeState();
+        safeSave();
+        renderTimeline();
+        toast(`${imported} timeline event${imported === 1 ? '' : 's'} imported`);
+        $('timelineImportFile').value = '';
+        $('timelineImportBox')?.classList.remove('open');
+      }catch(err){
+        console.error(err);
+        alert('Could not import that spreadsheet.');
+      }
+    }
+    $('timelineImportRunBtn')?.addEventListener('click', importTimelineExcel);
 function renderTags(){ const list = $('tagList'); list.innerHTML = ''; $('tagEmpty').style.display = state.tags.length ? 'none' : ''; for(const t of state.tags.slice().sort(sortByName)){ const row = document.createElement('div'); row.className = 'itemRow'; row.innerHTML = `<div><b>${escapeHtml(t.name)}</b></div><div style="display:flex; gap:8px; align-items:center"><button class="mini" data-act="edit" data-id="${t.id}">Edit</button><button class="mini" data-act="del" data-id="${t.id}" style="border-color: rgba(239,68,68,.35); color:#991b1b">Delete</button></div>`; list.appendChild(row); } list.querySelectorAll('button').forEach(btn=>{ btn.addEventListener('click', async ()=>{ const id = btn.getAttribute('data-id'); const act = btn.getAttribute('data-act'); if(act === 'del') await deleteTag(id); if(act === 'edit') await editTag(id); }); }); renderDocuments(); if(ui.currentView==='tagindex') renderDocumentTagIndex(); renderPeople(); renderOutline(); renderTimeline(); renderStructuredOutline(); }
     async function addTag(){ const name = ($('tagName').value || '').trim(); if(!name){ toast('Tag name required'); return; } const exists = state.tags.some(t => t.name.toLowerCase() === name.toLowerCase()); if(exists){ alert('That tag name already exists.'); return; } const created = await window.createTagRow({ name }); if(!created) return; await window.loadTags(); $('tagName').value = ''; toast('Tag added'); }
     async function deleteTag(id){ const tag = state.tags.find(t=>t.id===id); if(!tag) return; if(!confirm(`Delete tag “${tag.name}”? This will remove it everywhere.`)) return; const ok = await window.deleteTagRow(id); if(!ok) return; await window.loadTags(); await window.loadRowTags(); await window.loadDocumentTags(); await window.loadPersonTags(); toast('Tag deleted'); }
