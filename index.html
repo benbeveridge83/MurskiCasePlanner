@@ -1229,7 +1229,61 @@
     function bindTimelineImageInput(){ const input = $('timelineImage'); if(!input || input.dataset.boundImageInput) return; input.dataset.boundImageInput = '1'; input.addEventListener('change', async ()=>{ const file = input.files && input.files[0] ? input.files[0] : null; if(!file){ timelineImageDraft = { dataUrl:'', name:'' }; renderTimelineImagePreview(); return; } const dataUrl = await fileToDataUrl(file); timelineImageDraft = { dataUrl, name: file.name || 'image' }; renderTimelineImagePreview(); }); }
     function getTimelineFilterTagOptions(){ return [{ id:NO_TAG_FILTER_VALUE, name:'No tag' }].concat((state.tags || []).slice().sort(sortByName).map(t => ({ id:t.id, name:t.name || 'Untitled tag' }))); }
     function renderTimelineTagFilterControl(){ const options = getTimelineFilterTagOptions(); renderCheckboxDropdown('timelineTagFilterHost', { key:'timelineTag', label:'Timeline tags', noun:'Tag', openKey:'timelineFilterTagOpen', selectedKey:'timelineFilterTagIds', options, onChange:()=>renderTimeline() }); }
-    function getElementById(id){ return (state.elements || []).find(e => e.id === id) || null; }
+    function sortUndatedTimelineEvents(events){ return (events || []).slice().sort((a,b)=>{ const ao = Number.isFinite(Number(a?.timelineOrder)) ? Number(a.timelineOrder) : 0; const bo = Number.isFinite(Number(b?.timelineOrder)) ? Number(b.timelineOrder) : 0; return ao - bo || (a.name||'').localeCompare(b.name||''); }); }
+    function moveUndatedTimelineEvent(draggedId, insertIndex){
+      const timelineElements = getTimelineRenderableElements();
+      const datedRows = Array.from(new Set([
+        ...(state.timelineEvents || []).filter(ev => ev && ev.date).map(ev => ev.date),
+        ...timelineElements.filter(el => el && el.date).map(el => el.date),
+        ...getTimelineDatedDocuments().map(doc => doc.date),
+        ...getTimelineDatedHeadlines().map(row => row.rowDate)
+      ].filter(Boolean))).sort((a,b)=> getTimelineDateSortKey(a).localeCompare(getTimelineDateSortKey(b)) || String(a).localeCompare(String(b))).map(date => ({ kind:'dated', key:date }));
+      const undatedEventRows = sortUndatedTimelineEvents((state.timelineEvents || []).filter(ev => ev && !ev.date)).map(ev => ({ kind:'undated-event', id: ev.id, order: Number.isFinite(Number(ev.timelineOrder)) ? Number(ev.timelineOrder) : 999999 }));
+      const undatedElementRows = (timelineElements || []).filter(el => el && !el.date).map(el => ({ kind:'undated-element', id: el.id, order: Number.isFinite(Number(el.timelineOrder)) ? Number(el.timelineOrder) : 999999 })).sort((a,b)=> a.order - b.order || String(a.id).localeCompare(String(b.id)));
+      const combined = undatedEventRows.concat(undatedElementRows).sort((a,b)=> a.order - b.order || (a.kind||'').localeCompare(b.kind||'') || String(a.id).localeCompare(String(b.id)));
+      const rows = [];
+      let floating = 0;
+      const totalSlots = datedRows.length + combined.length;
+      for(let slot=0; slot<totalSlots; slot++){
+        while(floating < combined.length){
+          const target = Number.isFinite(Number(combined[floating].order)) ? Number(combined[floating].order) : rows.length;
+          if(target <= rows.length){ rows.push(combined[floating++]); } else break;
+        }
+        if(rows.length < slot + 1 && datedRows.length) rows.push(datedRows.shift());
+      }
+      while(floating < combined.length) rows.push(combined[floating++]);
+      while(datedRows.length) rows.push(datedRows.shift());
+      const tokenRows = rows.filter(r => r.kind === 'undated-event' || r.kind === 'undated-element');
+      const dragged = tokenRows.find(r => r.kind === 'undated-event' && r.id === draggedId);
+      if(!dragged) return;
+      const display = rows.filter(r => !(r.kind === 'undated-event' && r.id === draggedId));
+      let idx = Number(insertIndex);
+      if(!Number.isFinite(idx)) idx = display.length;
+      idx = Math.max(0, Math.min(idx, display.length));
+      display.splice(idx, 0, dragged);
+      display.forEach((row, order)=>{
+        if(row.kind === 'undated-event'){
+          const ev = (state.timelineEvents || []).find(x => x.id === row.id);
+          if(ev) ev.timelineOrder = order;
+        } else if(row.kind === 'undated-element'){
+          const el = getElementById(row.id);
+          if(el) el.timelineOrder = order;
+        }
+      });
+      safeSave(); renderTimeline(); }
+    function getTimelineDatedDocuments(){
+  return (state.documents || [])
+    .filter(d => d && d.date && d.includeInTimeline !== false)
+    .slice()
+    .sort((a,b)=>(a.date||'').localeCompare(b.date||'') || (a.name||'').localeCompare(b.name||''));
+}
+    function getTimelineDatedHeadlines(){
+  return (state.outline || [])
+    .filter(n => n && n.rowDate)
+    .slice()
+    .sort((a,b)=>(a.rowDate||'').localeCompare(b.rowDate||'') || (a.title||'').localeCompare(b.title||''));
+}
+        function getElementById(id){ return (state.elements || []).find(e => e.id === id) || null; }
     function getElementPrimarySourceRef(el){ return Array.isArray(el?.sourceRefs) && el.sourceRefs.length ? el.sourceRefs[0] : null; }
     function normalizeSourceSearchText(value){ return String(value || '').replace(/\s+/g, ' ').trim().toLowerCase(); }
     function escapeRegExp(value){ return Array.from(String(value || '')).map(ch => /[A-Za-z0-9]/.test(ch) ? ch : ('\\' + ch)).join(''); }
