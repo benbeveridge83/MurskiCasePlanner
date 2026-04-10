@@ -1060,6 +1060,7 @@
 
     function normalizeState(){ state.tags = Array.isArray(state.tags) ? state.tags.filter(t => t && (t.name||'').trim()).map(t => ({ id: t.id || uid(), name: String(t.name||'').trim(), description: String(t.description||'').trim() })) : []; state.people = Array.isArray(state.people) ? state.people.filter(p => p && (p.name||'').trim()).map(p => ({ id: p.id || uid(), name: String(p.name||'').trim(), description: String(p.description||'').trim(), tags: Array.isArray(p.tags) ? p.tags.filter(Boolean) : [] })) : []; state.documents = Array.isArray(state.documents) ? state.documents.filter(d => d && (d.name||'').trim()).map(d => ({ id: d.id || uid(), name: String(d.name||'').trim(), date: d.date || '', description: String(d.description||'').trim(), tags: Array.isArray(d.tags) ? d.tags.filter(Boolean) : [], filename: d.filename || d.originalFileName || '', originalFileName: d.originalFileName || d.filename || '', filePath: d.filePath || '', mimeType: d.mimeType || '', fileSize: Number(d.fileSize || 0) || 0, hasFile: !!(d.hasFile || d.filePath), dataUrl: d.dataUrl || '', exhibitLabel: d.exhibitLabel || '', createdAt: d.createdAt || d.created_at || '', exhibitEligibility: d.exhibitEligibility === 'not' ? 'not' : 'possible', includeInTimeline: d.includeInTimeline !== false })) : []; state.elements = Array.isArray(state.elements) ? state.elements.filter(e => e && (e.name||'').trim()).map((e, idx) => ({ id: e.id || uid(), name: String(e.name||'').trim(), date: e.date || '', type: 'text', text: String(e.text||'').trim(), tags: Array.isArray(e.tags) ? e.tags.filter(Boolean) : [], tagLinks: Array.isArray(e.tagLinks) ? e.tagLinks.map(link => ({ tagId: link.tagId || '', subtagId: link.subtagId || '' })).filter(link => link.tagId) : (Array.isArray(e.tags) ? Array.from(new Set(e.tags.filter(Boolean))).map(tagId => ({ tagId, subtagId: '' })) : []), documentIds: Array.isArray(e.documentIds) ? e.documentIds.filter(Boolean) : [], personIds: Array.isArray(e.personIds) ? e.personIds.filter(Boolean) : [], includeInTimeline: !!e.includeInTimeline, timelineOrder: Number.isFinite(Number(e.timelineOrder)) ? Number(e.timelineOrder) : idx, sourceRefs: Array.isArray(e.sourceRefs) ? e.sourceRefs.map(ref => ({ documentId: ref.documentId || '', excerpt: String(ref.excerpt || ''), pageNumber: ref.pageNumber == null ? null : Number(ref.pageNumber), sourceType: String(ref.sourceType || ''), pageLabel: String(ref.pageLabel || ''), normalizedExcerpt: String(ref.normalizedExcerpt || '') })).filter(ref => ref.documentId && ref.excerpt) : [] })) : []; state.elements.forEach(el => { el.tags = Array.from(new Set((el.tagLinks || []).map(link => link.tagId).filter(Boolean))); }); state.outline = Array.isArray(state.outline) ? state.outline.filter(n => n && n.id).map(n => ({ ...n, title: typeof n.title === 'string' ? n.title : '', description: typeof n.description === 'string' ? n.description : '', tags: Array.isArray(n.tags) ? n.tags.filter(Boolean) : [], witnessIds: Array.isArray(n.witnessIds) ? n.witnessIds.filter(Boolean) : [], elementIds: Array.isArray(n.elementIds) ? n.elementIds.filter(Boolean) : [], witnessData: n.witnessData && typeof n.witnessData === 'object' ? n.witnessData : {}, rowDate: n.rowDate || '', collapsed: !!n.collapsed, detailsOpen: !!n.detailsOpen })) : []; state.subtags = Array.isArray(state.subtags) ? state.subtags.filter(s => s && (s.name||'').trim() && s.parentTagId).map(s => ({ id: s.id || uid(), parentTagId: s.parentTagId, parentSubtagId: s.parentSubtagId || '', name: String(s.name||'').trim(), iconId: s.iconId || '' })) : []; state.iconLibrary = Array.isArray(state.iconLibrary) ? state.iconLibrary.filter(i => i && (i.name||'').trim() && (i.dataUrl||'')).map(i => ({ id: i.id || uid(), name: String(i.name||'').trim(), dataUrl: i.dataUrl || '' })) : []; state.timelineEvents = Array.isArray(state.timelineEvents) ? state.timelineEvents.filter(e => e && e.id).map((e, idx) => ({ id: e.id || uid(), name: String(e.name||'').trim(), date: e.date || '', description: String(e.description||'').trim(), location: String(e.location||'').trim(), tags: Array.isArray(e.tags) ? e.tags.filter(Boolean) : [], tagLinks: Array.isArray(e.tagLinks) ? e.tagLinks.map(link => ({ tagId: link.tagId || '', subtagId: link.subtagId || '' })).filter(link => link.tagId) : (Array.isArray(e.tags) ? Array.from(new Set(e.tags.filter(Boolean))).map(tagId => ({ tagId, subtagId: '' })) : []), documents: Array.isArray(e.documents) ? e.documents.filter(Boolean) : [], witnesses: Array.isArray(e.witnesses) ? e.witnesses.map(w => ({ personId: w.personId || w.id || '', testimony: String(w.testimony||'') })).filter(w => w.personId) : [], timelineOrder: Number.isFinite(Number(e.timelineOrder)) ? Number(e.timelineOrder) : idx, source: String(e.source||'').trim(), imageDataUrl: String(e.imageDataUrl||'').trim(), imageName: String(e.imageName||'').trim() })) : []; state.timelineEvents.forEach(ev => { ev.tags = Array.from(new Set((ev.tagLinks || []).map(link => link.tagId).filter(Boolean))); }); }
     function load(){ const raw = localStorage.getItem(STORAGE_KEY); if(raw){ try{ const parsed = JSON.parse(raw); if(parsed && typeof parsed === 'object') state = Object.assign(state, parsed); } catch(e){ console.warn('Failed to parse saved data', e); } } normalizeState(); $('caseName').value = state.caseName || ''; }
+    var activeOutlineEdit = null;
     function syncPeopleFromSupabase(){ if (!Array.isArray(window.loadedPeople)) return; const previousById = new Map((state.people || []).map(p => [p.id, p])); state.people = window.loadedPeople.map((p) => { const prev = previousById.get(p.id); return { id: p.id, name: p.name || '', description: p.description || '', tags: prev?.tags || [] }; }); safeSave(); renderElements(); }
     window.syncPeopleFromSupabase = syncPeopleFromSupabase;
     function syncOutlineFromSupabase(){ if (!Array.isArray(window.loadedRows)) return; const previousById = new Map((state.outline || []).map(row => [row.id, row])); state.outline = window.loadedRows.map((r) => { const prev = previousById.get(r.id); const row = { id: r.id, parentId: r.parent_row_id, order: Number(r.sort_order) || 0, title: r.heading || '', description: r.description || '', rowDate: r.row_date || prev?.rowDate || '', tags: prev?.tags || [], collapsed: prev?.collapsed || false, detailsOpen: prev?.detailsOpen || false, witnessIds: prev?.witnessIds || [], elementIds: prev?.elementIds || [], witnessData: prev?.witnessData || {} }; if (activeOutlineEdit && activeOutlineEdit.nodeId === r.id && prev) { if (activeOutlineEdit.field === 'title') row.title = prev.title || ''; if (activeOutlineEdit.field === 'description') row.description = prev.description || ''; } return row; }); safeSave(); }
@@ -1899,6 +1900,44 @@ function renderTimeline(){
 }
     $('timelineAddEventBtn')?.addEventListener('click', (e)=>{ e.preventDefault(); openTimelineForm(); });
     $('timelineAddElementBtn')?.addEventListener('click', ()=>{ const box = $('timelineElementPicker'); if(box){ box.style.display = box.style.display === 'none' || !box.style.display ? '' : 'none'; renderTimelineElementPicker(); } });
+    
+    function closeTimelineEventModal(){ $('timelineEventModal')?.classList.remove('open'); }
+    function deleteTimelineEvent(id){
+      const ev = (state.timelineEvents || []).find(x => x.id === id);
+      if(!ev) return;
+      if(!confirm(`Delete event “${ev.name || 'Untitled event'}”?`)) return;
+      state.timelineEvents = (state.timelineEvents || []).filter(x => x.id !== id);
+      if(ui.timelineSelectedId === id) ui.timelineSelectedId = null;
+      safeSave();
+      closeTimelineEventModal();
+      renderTimeline();
+      renderStructuredOutline?.();
+    }
+    function openTimelineEventModal(id){
+      const ev = (state.timelineEvents || []).find(x => x.id === id);
+      if(!ev) return;
+      ui.timelineSelectedId = id;
+      const docs = (ev.documents||[]).map(docId => (state.documents||[]).find(d => d.id === docId)).filter(Boolean);
+      const witnesses = (ev.witnesses||[]).map(w => ({ person: (state.people||[]).find(p => p.id === w.personId), testimony: w.testimony || '' })).filter(x => x.person);
+      $('timelineEventModalTitle').textContent = ev.name || 'Timeline event';
+      $('timelineEventModalDate').textContent = formatTimelineDateDisplay(ev.date || '');
+      $('timelineEventModalLocation').textContent = ev.location || 'No location';
+      $('timelineEventModalSource').textContent = ev.source || 'No source';
+      $('timelineEventModalTags').textContent = getEventTagLinks(ev).map(link => {
+        const tagName = (state.tags||[]).find(t=>t.id===link.tagId)?.name || 'Tag';
+        const subName = getEventSubtagDisplay(link);
+        return `${tagName} > ${subName}`;
+      }).join(' • ') || 'No tags';
+      $('timelineEventModalDesc').textContent = ev.description || 'No description';
+      $('timelineEventModalImage').innerHTML = ev.imageDataUrl ? `<img src="${ev.imageDataUrl}" alt="${escapeHtml(ev.imageName || ev.name || 'Event image')}" />` : '<span class="hint">No image attached.</span>';
+      $('timelineEventModalDocs').innerHTML = docs.length ? docs.map(d=>`<div><a href="#" data-timeline-modal-doc="${d.id}">${escapeHtml(d.name || 'Document')}</a></div>`).join('') : '<span class="hint">No documents attached.</span>';
+      $('timelineEventModalWitnesses').innerHTML = witnesses.length ? witnesses.map(w=>`<div class="timelineWitnessBlock"><div><b>${escapeHtml(w.person.name)}</b></div><div style="margin-top:6px">${escapeHtml(w.testimony || 'No testimony added.')}</div></div>`).join('') : '<span class="hint">No witnesses attached.</span>';
+      $('timelineEventModal').classList.add('open');
+      $('timelineEventModalEdit').onclick = ()=>{ closeTimelineEventModal(); openTimelineForm(id); };
+      $('timelineEventModalDelete').onclick = ()=> deleteTimelineEvent(id);
+      document.querySelectorAll('[data-timeline-modal-doc]').forEach(a => a.addEventListener('click', (e)=>{ e.preventDefault(); openDocumentEditModal(a.getAttribute('data-timeline-modal-doc')); }));
+    }
+
     $('timelineCancelEvent')?.addEventListener('click', ()=>closeTimelineForm());
     $('timelineSaveEvent')?.addEventListener('click', ()=>saveTimelineEvent());
     $('timelineInlineAddTagBtn')?.addEventListener('click', ()=> setTab('settings'));
@@ -3415,7 +3454,7 @@ function openStructuredDocEditor(docId){
     const testimonySaveTimers = {};
     let activeTestimonyEditKey = null;
     const outlineRowSaveTimers = {};
-    let activeOutlineEdit = null;
+    activeOutlineEdit = null;
     window.isOutlineEditing = false;
     window.pendingOutlineRefresh = false;
     function testimonyCellKey(nodeId, personId){ return `${nodeId}::${personId}`; }
