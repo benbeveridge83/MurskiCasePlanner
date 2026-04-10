@@ -1442,8 +1442,8 @@
           for(let pageNum=1; pageNum<=pdf.numPages; pageNum++){
             const page = await pdf.getPage(pageNum);
             const baseViewport = page.getViewport({ scale: 1 });
-            const targetWidth = Math.max(520, shellWidth - 90);
-            const scale = Math.max(1.35, Math.min(2.4, targetWidth / baseViewport.width));
+            const targetWidth = Math.max(720, shellWidth - 32);
+            const scale = Math.max(1.6, Math.min(3.1, targetWidth / baseViewport.width));
             const viewport = page.getViewport({ scale });
             const pageWrap = document.createElement('div');
             pageWrap.className = 'sourceDocPage';
@@ -1466,7 +1466,7 @@
             textLayer.className = 'sourceTextLayer';
             textLayer.style.width = viewport.width + 'px';
             textLayer.style.height = viewport.height + 'px';
-            const textContent = await page.getTextContent();
+            const textContent = await page.getTextContent({ normalizeWhitespace: true, disableCombineTextItems: false });
             let renderedWithPdfJsLayer = false;
             try{
               if(typeof pdfjs.renderTextLayer === 'function'){
@@ -1477,6 +1477,7 @@
                   textDivs: []
                 });
                 if(textLayerTask?.promise) await textLayerTask.promise;
+                textLayer.querySelectorAll('span, div').forEach(el => { if(!el.classList.contains('markedContent')) el.classList.add('sourceTextSpan'); });
                 renderedWithPdfJsLayer = true;
               }
             }catch(layerErr){
@@ -1561,7 +1562,7 @@
     async function openSourceDocumentPickerDoc(docId){ const doc = (state.documents || []).find(d => d.id === docId); if(!doc) return; ui.sourceDocSelectedId = docId; ui.sourceDocSelection = null; $('sourceDocCreateElement').disabled = true; $('sourceDocSelectionInfo').textContent = 'Loading document…'; $('sourceDocModalTitle').textContent = 'Elements from Document'; $('sourceDocBackToPicker').style.display = ''; ui.sourceDocMaximized = true; $('sourceDocModalCard')?.classList.add('sourceDocModalMax'); if($('sourceDocModalMaxBtn')) $('sourceDocModalMaxBtn').textContent = 'Restore'; await renderDocumentInSourceViewer(doc, 'sourceDocViewerInner'); }
     function openSourceDocModal(){ ui.sourceDocContext = 'create'; ui.sourceDocOpenFromElementId = null; ui.sourceDocSelection = null; ui.sourceDocSelectedId = null; ui.sourceDocMaximized = false; $('sourceDocSearch').value = ''; $('sourceDocCreateElement').disabled = true; $('sourceDocSelectionInfo').textContent = 'Highlight text in the document, then click Create element from selection.'; $('sourceDocModal').classList.add('open'); $('sourceDocBackToPicker').style.display = 'none'; $('sourceDocViewerInner').innerHTML = '<div class="sourceDocEmpty">Choose a document to open it here.</div>'; $('sourceDocModalCard')?.classList.remove('sourceDocModalMax'); if($('sourceDocModalMaxBtn')) $('sourceDocModalMaxBtn').textContent = 'Maximize'; renderSourceDocPicker(); }
     function closeSourceDocModal(){ $('sourceDocModal').classList.remove('open'); ui.sourceDocMaximized = false; $('sourceDocModalCard')?.classList.remove('sourceDocModalMax'); if($('sourceDocModalMaxBtn')) $('sourceDocModalMaxBtn').textContent = 'Maximize'; }
-    function handleSourceSelectionChange(){ const ctx = getSelectionPageContext(); if(!ctx || !ui.sourceDocSelectedId){ $('sourceDocCreateElement').disabled = true; $('sourceDocSelectionInfo').textContent = 'Highlight text in the document, then click Create element from selection.'; return; } ui.sourceDocSelection = { documentId: ui.sourceDocSelectedId, excerpt: ctx.text, pageNumber: ctx.pageNumber, pageLabel: ctx.pageLabel || (ctx.pageNumber ? ('Page ' + ctx.pageNumber) : 'Document'), sourceType: 'document' }; $('sourceDocCreateElement').disabled = false; $('sourceDocSelectionInfo').textContent = `Selected ${ctx.pageLabel || (ctx.pageNumber ? ('Page ' + ctx.pageNumber) : 'text')}: “${ctx.text.slice(0,160)}${ctx.text.length>160?'…':''}”`; }
+    function handleSourceSelectionChange(){ const ctx = getSelectionPageContext(); if(!ctx || !ui.sourceDocSelectedId){ $('sourceDocCreateElement').disabled = true; $('sourceDocSelectionInfo').textContent = 'Highlight text in the document, then click Create element from selection.'; return; } const cleanedText = String(ctx.text || '').replace(/\s+/g, ' ').replace(/\s+([,.;:!?])/g, '$1').trim(); if(!cleanedText){ $('sourceDocCreateElement').disabled = true; $('sourceDocSelectionInfo').textContent = 'Highlight text in the document, then click Create element from selection.'; return; } ui.sourceDocSelection = { documentId: ui.sourceDocSelectedId, excerpt: cleanedText, pageNumber: ctx.pageNumber, pageLabel: ctx.pageLabel || (ctx.pageNumber ? ('Page ' + ctx.pageNumber) : 'Document'), sourceType: 'document' }; $('sourceDocCreateElement').disabled = false; $('sourceDocSelectionInfo').textContent = `Selected ${ctx.pageLabel || (ctx.pageNumber ? ('Page ' + ctx.pageNumber) : 'text')}: “${cleanedText.slice(0,160)}${cleanedText.length>160?'…':''}”`; }
     function createElementFromSourceSelection(){ const sel = ui.sourceDocSelection; if(!sel || !sel.documentId || !sel.excerpt){ alert('Highlight text in the document first.'); return; } const doc = (state.documents || []).find(d => d.id === sel.documentId); if(!doc){ alert('The selected source document could not be found.'); return; } const citation = `${doc.name}${sel.pageNumber ? ', p. ' + sel.pageNumber : ''}`; const quoted = `“${escapeHtml(sel.excerpt)}” <span class="hint">(${escapeHtml(citation)})</span>`; $('elementText').innerHTML = quoted; renderElementDocumentList([doc.id]); if($('elementDocumentsSearch')) $('elementDocumentsSearch').value = ''; $('elementIncludeInTimeline').checked = !!$('elementIncludeInTimeline').checked; ui.selectedElementId = null; ui.sourceDocSelection = { ...sel }; setTab('elements'); closeSourceDocModal(); setTimeout(()=> $('elementName')?.focus(), 0); }
     async function openElementSourceModal(elementId){ const el = getElementById(elementId); const ref = getElementPrimarySourceRef(el); if(!el || !ref) return; const doc = (state.documents || []).find(d => d.id === ref.documentId); if(!doc) return; $('elementSourceModalTitle').textContent = `${el.name || 'Element'} – source`; $('elementSourceMeta').textContent = `${doc.name || 'Document'}${ref.pageNumber ? ' • Page ' + ref.pageNumber : ''}`; $('elementSourceQuote').style.display = ''; $('elementSourceQuote').textContent = `“${ref.excerpt}”`; $('elementSourceModal').classList.add('open'); await renderDocumentInSourceViewer(doc, 'elementSourceViewerInner', { sourceRef: ref }); }
     function closeElementSourceModal(){ $('elementSourceModal').classList.remove('open'); }
