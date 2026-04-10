@@ -749,12 +749,12 @@
     .itemRow small{display:block; color:var(--muted); margin-top:4px} .titleRow{display:flex; align-items:center; gap:8px} .detailToggle{width:22px; height:22px; border:1px solid var(--border); border-radius:6px; background:#fff; font-weight:900; line-height:1; cursor:pointer; flex:0 0 auto} .detailToggle:hover{background:rgba(37,99,235,.06); border-color: rgba(37,99,235,.25)} .titleInput{border:none; background:transparent; padding:0; font-size:14px; font-weight:700; width:100%; min-width:0} .titleInput:focus{background:#fff; border:1px solid var(--border); border-radius:8px; padding:4px 6px}
     .toast{position:fixed;bottom:18px;left:18px;background:#111827;color:#fff;padding:10px 12px;border-radius:12px;box-shadow: 0 12px 28px rgba(0,0,0,.25);font-weight:800;opacity:0;transform: translateY(8px);transition: opacity .18s ease, transform .18s ease;pointer-events:none;max-width:min(520px, calc(100vw - 32px));white-space:pre-wrap;} .toast.show{opacity:1; transform:translateY(0)}
     .docViewerFrame{width:100%;height:420px;border:1px solid var(--line);border-radius:12px;background:#fff;}
-    .sourceDocModalCard{width:min(1200px, calc(100vw - 40px));height:min(88vh, calc(100vh - 40px));display:grid;grid-template-rows:auto auto 1fr auto;gap:10px;}
+    .sourceDocModalCard{width:min(96vw, 1600px);height:min(96vh, 1200px);max-height:min(96vh, 1200px);display:grid;grid-template-rows:auto auto 1fr auto;gap:10px;} .sourceDocModalCard.sourceDocModalMax{width:98vw;height:98vh;max-height:98vh;border-radius:14px;}
     .sourceDocToolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
     .sourceDocPickerList{max-height:220px;overflow:auto;display:flex;flex-direction:column;gap:8px;border:1px solid var(--border);border-radius:14px;padding:10px;background:#fff;}
     .sourceDocPickerItem{display:flex;justify-content:space-between;gap:10px;align-items:center;padding:10px 12px;border:1px solid var(--border);border-radius:12px;background:#fff;cursor:pointer;}
     .sourceDocPickerItem:hover,.sourceDocPickerItem.active{background:rgba(37,99,235,.06);border-color:rgba(37,99,235,.30);}
-    .sourceDocViewerShell{border:1px solid var(--border);border-radius:16px;background:#fff;overflow:auto;padding:14px;min-height:320px;}
+    .sourceDocViewerShell{border:1px solid var(--border);border-radius:16px;background:#fff;overflow:auto;padding:14px;min-height:58vh;height:100%;}
     .sourceDocViewerInner{display:grid;gap:16px;}
     .sourceDocPage{border:1px solid var(--border);border-radius:14px;background:#fff;padding:12px;box-shadow:0 2px 8px rgba(15,23,42,.04);margin:0 auto;}
     .sourceDocPage.activeSourcePage{box-shadow:0 0 0 3px rgba(37,99,235,.16);border-color:rgba(37,99,235,.40);}
@@ -1368,7 +1368,34 @@
     function deleteElement(id){ const el = getElementById(id); if(!el) return; if(!confirm(`Delete element “${el.name}”?`)) return; state.elements = (state.elements || []).filter(x => x.id !== id); (state.outline || []).forEach(n => { n.elementIds = (n.elementIds || []).filter(x => x !== id); if(n.witnessData && typeof n.witnessData === 'object'){ Object.values(n.witnessData).forEach(cell => { cell.elementIds = Array.isArray(cell.elementIds) ? cell.elementIds.filter(x => x !== id) : []; }); } }); if(ui.selectedElementId === id) ui.selectedElementId = null; safeSave(); closeElementModal(); renderElements(); renderTimeline(); renderOutline(); renderElements(); }
     function toggleElementInTimeline(id, shouldInclude){ const el = getElementById(id); if(!el) return; el.includeInTimeline = !!shouldInclude; if(el.includeInTimeline && !Number.isFinite(Number(el.timelineOrder))) el.timelineOrder = (state.elements || []).length; safeSave(); renderElements(); renderTimeline(); }
     function renderSourceDocPicker(){ const host = $('sourceDocPickerList'); if(!host) return; const search = String($('sourceDocSearch')?.value || '').trim().toLowerCase(); const docs = (state.documents || []).filter(d => d && d.name).filter(d => !search || [d.name, d.description, d.originalFileName, d.filename].join(' ').toLowerCase().includes(search)).sort((a,b)=> (a.name||'').localeCompare(b.name||'')); host.innerHTML = docs.length ? docs.map(doc => `<div class="sourceDocPickerItem ${ui.sourceDocSelectedId===doc.id ? 'active' : ''}" data-source-doc-pick="${doc.id}"><div><b>${escapeHtml(doc.name || '')}</b><div class="hint">${escapeHtml(doc.originalFileName || doc.filename || '')}</div></div><div class="hint">${escapeHtml(formatTimelineDateDisplay(doc.date || '') || 'No date')}</div></div>`).join('') : '<div class="sourceDocEmpty">No documents match that search.</div>'; host.querySelectorAll('[data-source-doc-pick]').forEach(row => row.addEventListener('click', ()=> openSourceDocumentPickerDoc(row.getAttribute('data-source-doc-pick')))); }
-    async function renderDocumentInSourceViewer(doc, targetId, opts={}){
+    
+    async function ensurePdfJsLib(){
+      if(window.pdfjsLib && typeof window.pdfjsLib.getDocument === 'function') return window.pdfjsLib;
+      const sources = [
+        'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.5.136/pdf.min.js',
+        'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js',
+        'https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.min.js'
+      ];
+      for(const src of sources){
+        try{
+          await new Promise((resolve, reject)=>{
+            const script = document.createElement('script');
+            script.src = src;
+            script.async = true;
+            script.onload = ()=> resolve();
+            script.onerror = ()=> reject(new Error('Failed to load ' + src));
+            document.head.appendChild(script);
+          });
+          if(window.pdfjsLib && typeof window.pdfjsLib.getDocument === 'function') return window.pdfjsLib;
+        }catch(err){
+          console.warn('PDF.js load failed from', src, err);
+        }
+      }
+      return window.pdfjsLib || null;
+    }
+
+
+async function renderDocumentInSourceViewer(doc, targetId, opts={}){
       const holder = $(targetId);
       if(!holder) return false;
       holder.innerHTML = '<div class="sourceDocEmpty">Loading document…</div>';
@@ -1384,8 +1411,9 @@
         holder.appendChild(inner);
         const sourceRef = opts.sourceRef || null;
         if((mime.includes('pdf')) || name.endsWith('.pdf')){
-          if(!window.pdfjsLib || !window.pdfjsLib.getDocument) throw new Error('PDF.js is not available');
-          if(window.pdfjsLib.GlobalWorkerOptions) window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.5.136/pdf.worker.min.js';
+          const pdfjs = await ensurePdfJsLib();
+          if(!pdfjs || !pdfjs.getDocument) throw new Error('PDF.js is not available');
+          if(pdfjs.GlobalWorkerOptions) pdfjs.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
           const pdfData = blob ? new Uint8Array(await blob.arrayBuffer()) : null;
           let pdf = null;
           let pdfError = null;
@@ -1394,7 +1422,7 @@
           if(url) pdfAttempts.push({ url, disableWorker: true, useWorkerFetch: false, isEvalSupported: false });
           for(const attempt of pdfAttempts){
             try{
-              pdf = await window.pdfjsLib.getDocument(attempt).promise;
+              pdf = await pdfjs.getDocument(attempt).promise;
               if(pdf) break;
             }catch(err){
               pdfError = err;
@@ -1475,92 +1503,41 @@
         return false;
       }
     }
+
     async function openSourceDocumentPickerDoc(docId){ const doc = (state.documents || []).find(d => d.id === docId); if(!doc) return; ui.sourceDocSelectedId = docId; ui.sourceDocSelection = null; $('sourceDocCreateElement').disabled = true; $('sourceDocSelectionInfo').textContent = 'Loading document…'; $('sourceDocModalTitle').textContent = 'Elements from Document'; $('sourceDocBackToPicker').style.display = ''; ui.sourceDocMaximized = true; $('sourceDocModalCard')?.classList.add('sourceDocModalMax'); if($('sourceDocModalMaxBtn')) $('sourceDocModalMaxBtn').textContent = 'Restore'; await renderDocumentInSourceViewer(doc, 'sourceDocViewerInner'); const shell = $('sourceDocViewerShell'); if(shell) shell.scrollTop = 0; }
-    function openSourceDocModal(){ ui.sourceDocContext = 'create'; ui.sourceDocOpenFromElementId = null; ui.sourceDocSelection = null; ui.sourceDocSelectedId = null; ui.sourceDocMaximized = false; $('sourceDocSearch').value = ''; $('sourceDocCreateElement').disabled = true; $('sourceDocSelectionInfo').textContent = 'Highlight text in the document, then click Create element from selection.'; $('sourceDocModal').classList.add('open'); $('sourceDocBackToPicker').style.display = 'none'; $('sourceDocViewerInner').innerHTML = '<div class="sourceDocEmpty">Choose a document to open it here.</div>'; $('sourceDocModalCard')?.classList.remove('sourceDocModalMax'); if($('sourceDocModalMaxBtn')) $('sourceDocModalMaxBtn').textContent = 'Maximize'; renderSourceDocPicker(); }
+    function openSourceDocModal(){ ui.sourceDocContext = 'create'; ui.sourceDocOpenFromElementId = null; ui.sourceDocSelection = null; ui.sourceDocSelectedId = null; ui.sourceDocMaximized = true; $('sourceDocSearch').value = ''; $('sourceDocCreateElement').disabled = true; $('sourceDocSelectionInfo').textContent = 'Highlight text in the document, then click Create element from selection.'; $('sourceDocModal').classList.add('open'); $('sourceDocBackToPicker').style.display = 'none'; $('sourceDocViewerInner').innerHTML = '<div class="sourceDocEmpty">Choose a document to open it here.</div>'; $('sourceDocModalCard')?.classList.add('sourceDocModalMax'); if($('sourceDocModalMaxBtn')) $('sourceDocModalMaxBtn').textContent = 'Restore'; renderSourceDocPicker(); }
     function closeSourceDocModal(){ $('sourceDocModal').classList.remove('open'); ui.sourceDocMaximized = false; $('sourceDocModalCard')?.classList.remove('sourceDocModalMax'); if($('sourceDocModalMaxBtn')) $('sourceDocModalMaxBtn').textContent = 'Maximize'; }
+    function toggleSourceDocModalMax(){ ui.sourceDocMaximized = !ui.sourceDocMaximized; $('sourceDocModalCard')?.classList.toggle('sourceDocModalMax', ui.sourceDocMaximized); if($('sourceDocModalMaxBtn')) $('sourceDocModalMaxBtn').textContent = ui.sourceDocMaximized ? 'Restore' : 'Maximize'; }
     function handleSourceSelectionChange(){ const ctx = getSelectionPageContext(); if(!ctx || !ui.sourceDocSelectedId){ $('sourceDocCreateElement').disabled = true; $('sourceDocSelectionInfo').textContent = 'Highlight text in the document, then click Create element from selection.'; return; } const excerpt = String(ctx.text || '').replace(/\s+/g, ' ').trim(); ui.sourceDocSelection = { documentId: ui.sourceDocSelectedId, excerpt, pageNumber: ctx.pageNumber, pageLabel: ctx.pageLabel || (ctx.pageNumber ? ('Page ' + ctx.pageNumber) : 'Document'), sourceType: 'document' }; $('sourceDocCreateElement').disabled = !excerpt; $('sourceDocSelectionInfo').textContent = excerpt ? `Selected ${ctx.pageLabel || (ctx.pageNumber ? ('Page ' + ctx.pageNumber) : 'text')}: “${excerpt.slice(0,160)}${excerpt.length>160?'…':''}”` : 'Highlight text in the document, then click Create element from selection.'; }
-    function createElementFromSourceSelection(){ const sel = ui.sourceDocSelection; if(!sel || !sel.documentId || !sel.excerpt) return; const doc = (state.documents || []).find(d => d.id === sel.documentId); if(!doc) return; const cleanExcerpt = String(sel.excerpt || '').replace(/\s+/g, ' ').trim(); const citation = `${doc.name}${sel.pageNumber ? ', p. ' + sel.pageNumber : ''}`; const quoted = `“${escapeHtml(cleanExcerpt)}” <span class="hint">(${escapeHtml(citation)})</span>`; ui.selectedElementId = null; ui.sourceDocSelection = { ...sel, excerpt: cleanExcerpt }; setTab('elements'); if($('elementText')) $('elementText').innerHTML = quoted; if($('elementDocumentsSearch')) $('elementDocumentsSearch').value = ''; renderElementDocumentList([doc.id]); const docCheckbox = document.querySelector(`#elementDocumentsList input[data-element-doc][value="${doc.id}"]`); if(docCheckbox) docCheckbox.checked = true; closeSourceDocModal(); toast('Selection moved into a new element. Add a name, any tags or people, then save.'); setTimeout(()=> $('elementName')?.focus(), 0); }
-    async function openElementSourceModal(elementId){ const el = getElementById(elementId); const ref = getElementPrimarySourceRef(el); if(!el || !ref) return; const doc = (state.documents || []).find(d => d.id === ref.documentId); if(!doc) return; $('elementSourceModalTitle').textContent = `${el.name || 'Element'} – source`; $('elementSourceMeta').textContent = `${doc.name || 'Document'}${ref.pageNumber ? ' • Page ' + ref.pageNumber : ''}`; $('elementSourceQuote').style.display = ''; $('elementSourceQuote').textContent = `“${ref.excerpt}”`; $('elementSourceModal').classList.add('open'); await renderDocumentInSourceViewer(doc, 'elementSourceViewerInner', { sourceRef: ref }); }
-    function closeElementSourceModal(){ $('elementSourceModal').classList.remove('open'); }
-    function addElementToOutlineRow(rowId, elementId){ const row = (state.outline || []).find(n => n.id === rowId); if(!row) return; row.elementIds = Array.isArray(row.elementIds) ? row.elementIds : []; if(!row.elementIds.includes(elementId)) row.elementIds.push(elementId); safeSave(); renderOutline(); renderElements(); }
-    function removeElementFromOutlineRow(rowId, elementId){ const row = (state.outline || []).find(n => n.id === rowId); if(!row) return; row.elementIds = Array.isArray(row.elementIds) ? row.elementIds.filter(x => x !== elementId) : []; safeSave(); renderOutline(); renderElements(); }
-    function addElementToWitnessCell(rowId, witnessId, elementId){ const row = (state.outline || []).find(n => n.id === rowId); if(!row) return; row.witnessData = row.witnessData && typeof row.witnessData === 'object' ? row.witnessData : {}; row.witnessData[witnessId] = row.witnessData[witnessId] || { exhibits: [], testimonyHtml: '', elementIds: [] }; row.witnessData[witnessId].elementIds = Array.isArray(row.witnessData[witnessId].elementIds) ? row.witnessData[witnessId].elementIds : []; if(!row.witnessData[witnessId].elementIds.includes(elementId)) row.witnessData[witnessId].elementIds.push(elementId); safeSave(); renderOutline(); renderElements(); }
-    function removeElementFromWitnessCell(rowId, witnessId, elementId){ const row = (state.outline || []).find(n => n.id === rowId); if(!row || !row.witnessData || !row.witnessData[witnessId]) return; row.witnessData[witnessId].elementIds = Array.isArray(row.witnessData[witnessId].elementIds) ? row.witnessData[witnessId].elementIds.filter(x => x !== elementId) : []; safeSave(); renderOutline(); renderElements(); }
-    function renderElements(){ const list = $('elementsList'); if(!list) return; bindElementRichTextToolbar(); const editing = ui.selectedElementId ? getElementById(ui.selectedElementId) : null; renderElementPeopleList(editing?.personIds || getElementFormSelectedPersonIds()); renderElementDocumentList(editing?.documentIds || getElementFormSelectedDocumentIds()); renderElementCreateTagChoices(editing ? getEventTagLinks(editing) : getElementFormSelectedTagLinks()); const search = String(ui.elementsSearch || '').trim().toLowerCase(); const mode = ui.elementsFilterMode || 'all'; const items = (state.elements || []).filter(el => { if(mode === 'timeline' && !el.includeInTimeline) return false; if(mode === 'not_timeline' && el.includeInTimeline) return false; if(!search) return true; const hay = [el.name, (el.text || '').replace(/<[^>]+>/g, ' '), ...(el.tags || []).map(tagId => state.tags.find(t=>t.id===tagId)?.name || ''), ...getElementLinkedPeople(el).map(p => p.name || ''), ...getElementLinkedDocuments(el).map(d => d.name || '')].join(' ').toLowerCase(); return hay.includes(search); }).sort((a,b)=> (a.name||'').localeCompare(b.name||'')); list.innerHTML = ''; $('elementsEmpty').style.display = items.length ? 'none' : ''; items.forEach(el => { const row = document.createElement('div'); row.className = 'itemRow selectable' + (ui.selectedElementId===el.id ? ' selectedDoc' : ''); const linkedDocs = getElementLinkedDocuments(el); const linkedPeople = getElementLinkedPeople(el); row.innerHTML = `<div style="flex:1" class="elementLibrarySummary"><div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap"><b>${escapeHtml(el.name)}</b>${el.includeInTimeline ? '<span class="pill">In timeline</span>' : ''}${el.date ? `<span class="pill">${escapeHtml(formatTimelineDateDisplay(el.date))}</span>` : ''}</div><div class="hint">${((el.text || '').replace(/<[^>]+>/g,' ').trim() || 'No details added.').slice(0,220)}</div><div style="margin-top:8px"><div class="label">Tags</div>${renderAssignedTagPills(el.tags || [], 'element', el.id)}${renderTagPicker('element', el.id, el.tags || [])}</div>${linkedPeople.length ? `<div style="margin-top:8px"><div class="label">People</div><div class="hint">${linkedPeople.map(p => escapeHtml(p.name || '')).join(' • ')}</div></div>` : ''}${linkedDocs.length ? `<div style="margin-top:8px"><div class="label">Documents</div><div class="hint">${linkedDocs.map(d => escapeHtml(d.name || '')).join(' • ')}</div></div>` : ''}</div><div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap"><button class="mini" data-element-act="edit" data-id="${el.id}">Edit</button><button class="mini" data-element-act="toggleTimeline" data-id="${el.id}">${el.includeInTimeline ? 'Remove from timeline' : 'Add to timeline'}</button><button class="mini" data-element-act="del" data-id="${el.id}" style="border-color: rgba(239,68,68,.35); color:#991b1b">Delete</button></div>`; row.addEventListener('click', (e)=>{ if(e.target && e.target.tagName==='BUTTON') return; ui.selectedElementId = el.id; openElementModal(el.id); }); list.appendChild(row); }); list.querySelectorAll('[data-element-act]').forEach(btn=>btn.addEventListener('click', (ev)=>{ ev.preventDefault(); ev.stopPropagation(); const id = btn.getAttribute('data-id'); const act = btn.getAttribute('data-element-act'); if(act === 'edit') editElement(id); if(act === 'toggleTimeline'){ const el = getElementById(id); if(el) toggleElementInTimeline(id, !el.includeInTimeline); } if(act === 'del') deleteElement(id); })); list.querySelectorAll('.tagPicker').forEach(sel=>sel.addEventListener('change', async ()=>{ await handleTagPickerChange(sel); renderElements(); renderTimeline(); renderOutline(); renderElements(); })); list.querySelectorAll('.tagRemoveBtn').forEach(btn=>btn.addEventListener('click', async (ev)=>{ ev.stopPropagation(); const itemId = btn.getAttribute('data-item-id'); const tagId = btn.getAttribute('data-tag-id'); const el = getElementById(itemId); if(!el) return; el.tags = (el.tags || []).filter(x => x !== tagId); el.tagLinks = getEventTagLinks(el).filter(link => link.tagId !== tagId); safeSave(); renderElements(); renderTimeline(); renderOutline(); renderElements(); })); }
-    function renderTimelineTagFilterControl(){ const options = getTimelineFilterTagOptions(); renderCheckboxDropdown('timelineTagFilterHost', { key:'timelineTag', label:'Timeline tags', noun:'Tag', openKey:'timelineFilterTagOpen', selectedKey:'timelineFilterTagIds', options, onChange:()=>renderTimeline() }); }
-    function itemMatchesTimelineTagFilter(tagIds){ const options = getTimelineFilterTagOptions(); const selected = Array.isArray(ui.timelineFilterTagIds) ? ui.timelineFilterTagIds : []; if(!options.length || !selected.length || selected.length === options.length) return true; const used = Array.isArray(tagIds) ? tagIds.filter(Boolean) : []; if(!used.length) return selected.includes(NO_TAG_FILTER_VALUE); return used.some(id => selected.includes(id)); }
-    function openTimelineForm(eventId=null){ ui.timelineEditingId = eventId; ui.timelineDocPickerOpen = false; const wrap = $('timelineAddEventWrap'); const ev = eventId ? state.timelineEvents.find(x=>x.id===eventId) : null; if(wrap) wrap.classList.add('open'); $('timelineName').value = ev?.name || ''; $('timelineDate').value = formatTimelineDateDisplay(ev?.date || ''); $('timelineDesc').value = ev?.description || ''; $('timelineLocation').value = ev?.location || ''; $('timelineSource').value = ev?.source || ''; const imageInput = $('timelineImage'); if(imageInput) imageInput.value = ''; timelineImageDraft = { dataUrl: ev?.imageDataUrl || '', name: ev?.imageName || '' }; bindTimelineImageInput(); renderTimelineImagePreview(); renderTimelineFormChoices(ev); setTimeout(()=> $('timelineName')?.focus(), 0); }
-    function closeTimelineForm(){ ui.timelineEditingId = null; const wrap = $('timelineAddEventWrap'); if(wrap) wrap.classList.remove('open'); }
-    function renderTimelineFormChoices(ev=null){ const selectedLinks = getEventTagLinks(ev); const selectedTagMap = new Map(selectedLinks.map(link => [link.tagId, link.subtagId || ''])); const selectedDocs = new Set(ev?.documents || []); const selectedWitnesses = new Set((ev?.witnesses || []).map(w=>w.personId)); $('timelineTagChoices').innerHTML = state.tags.length ? state.tags.slice().sort(sortByName).map(t=>{ const checked = selectedTagMap.has(t.id); const subtags = getSubtagOptionsForTag(t.id); return `<div class="timelineTagChooserBlock"><label class="checkItem"><input type="checkbox" value="${t.id}" ${checked?'checked':''} data-kind="tag" /> <span>${escapeHtml(t.name)}</span></label><div class="timelineSubtagChooser" data-subtag-wrap="${t.id}" style="display:${checked ? 'block':'none'}; margin:6px 0 0 28px"><select data-timeline-subtag="${t.id}"><option value="">No sub-tag</option>${subtags.map(st=>`<option value="${st.id}" ${selectedTagMap.get(t.id)===st.id ? 'selected' : ''}>${escapeHtml(st.label)}</option>`).join('')}</select></div></div>`; }).join('') : '<div class="hint">No tags yet. Use Add tag.</div>'; const docWrap = $('timelineDocChoicesWrap'); const docBtn = $('timelineToggleDocsBtn'); if(docBtn){ docBtn.textContent = ui.timelineDocPickerOpen ? 'Hide documents' : 'Choose documents'; } if(docWrap){ docWrap.style.display = ui.timelineDocPickerOpen ? '' : 'none'; } $('timelineDocChoices').innerHTML = state.documents.length ? state.documents.slice().sort(sortByName).map(d=>`<label class="checkItem"><input type="checkbox" value="${d.id}" ${selectedDocs.has(d.id)?'checked':''} data-kind="doc" /> <span>${escapeHtml(d.name)}</span></label>`).join('') : '<div class="hint">No documents yet.</div>'; $('timelineWitnessChoices').innerHTML = state.people.length ? state.people.slice().sort(sortByName).map(p=>`<label class="checkItem"><input type="checkbox" value="${p.id}" ${selectedWitnesses.has(p.id)?'checked':''} data-kind="witness" /> <span>${escapeHtml(p.name)}</span></label>`).join('') : '<div class="hint">No people yet.</div>'; const wrap = $('timelineWitnessTestimonyWrap'); const testimonyById = new Map((ev?.witnesses || []).map(w=>[w.personId,w.testimony||''])); function drawWitnessTestimony(){ const chosen = Array.from(document.querySelectorAll('#timelineWitnessChoices input[type="checkbox"]:checked')).map(x=>x.value); wrap.innerHTML = chosen.length ? chosen.map(pid=>{ const person = state.people.find(p=>p.id===pid); return `<div class="timelineWitnessBlock"><div><b>${escapeHtml(person?.name||'Witness')}</b></div><div class="label" style="margin-top:8px">Testimony</div><textarea data-timeline-testimony="${pid}" placeholder="Key testimony for this event">${escapeHtml(testimonyById.get(pid)||'')}</textarea></div>`; }).join('') : '<div class="hint">Select a witness to add testimony.</div>'; } drawWitnessTestimony(); document.querySelectorAll('#timelineWitnessChoices input[type="checkbox"]').forEach(cb=>cb.addEventListener('change', drawWitnessTestimony)); document.querySelectorAll('#timelineTagChoices input[data-kind="tag"]').forEach(cb=>cb.addEventListener('change', ()=>{ const holder = document.querySelector(`[data-subtag-wrap="${cb.value}"]`); if(holder) holder.style.display = cb.checked ? 'block' : 'none'; })); $('timelineToggleDocsBtn')?.addEventListener('click', ()=>{ ui.timelineDocPickerOpen = !ui.timelineDocPickerOpen; renderTimelineFormChoices(ev); }); }
-    function collectTimelineForm(){ const name = ($('timelineName').value||'').trim(); if(!name){ alert('Event name is required.'); return null; } const dateRaw = $('timelineDate').value || ''; const date = normalizeFlexibleDateInput(dateRaw); const description = ($('timelineDesc').value||'').trim(); const location = ($('timelineLocation').value||'').trim(); const source = ($('timelineSource').value||'').trim(); const tagLinks = Array.from(document.querySelectorAll('#timelineTagChoices input[type="checkbox"]:checked')).map(x=>({ tagId: x.value, subtagId: (document.querySelector(`[data-timeline-subtag="${x.value}"]`)?.value || '') })); const tags = tagLinks.map(link => link.tagId); const documents = Array.from(document.querySelectorAll('#timelineDocChoices input[type="checkbox"]:checked')).map(x=>x.value); const witnesses = Array.from(document.querySelectorAll('#timelineWitnessChoices input[type="checkbox"]:checked')).map(x=>({ personId: x.value, testimony: (document.querySelector(`[data-timeline-testimony="${x.value}"]`)?.value || '').trim() })); return { name, date, description, location, source, tags, tagLinks, documents, witnesses, imageDataUrl: timelineImageDraft.dataUrl || '', imageName: timelineImageDraft.name || '' }; }
-    function getNextTimelineOrder(){ return (state.timelineEvents || []).reduce((max, ev, idx)=> Math.max(max, Number.isFinite(Number(ev?.timelineOrder)) ? Number(ev.timelineOrder) : idx), -1) + 1; }
-    function sortUndatedTimelineEvents(events){ return (events || []).slice().sort((a,b)=>{ const ao = Number.isFinite(Number(a?.timelineOrder)) ? Number(a.timelineOrder) : 0; const bo = Number.isFinite(Number(b?.timelineOrder)) ? Number(b.timelineOrder) : 0; return ao - bo || (a.name||'').localeCompare(b.name||''); }); }
-    function moveUndatedTimelineEvent(draggedId, insertIndex){
-      const timelineElements = getTimelineRenderableElements();
-      const datedRows = Array.from(new Set([
-        ...(state.timelineEvents || []).filter(ev => ev && ev.date).map(ev => ev.date),
-        ...timelineElements.filter(el => el && el.date).map(el => el.date),
-        ...getTimelineDatedDocuments().map(doc => doc.date),
-        ...getTimelineDatedHeadlines().map(row => row.rowDate)
-      ].filter(Boolean))).sort((a,b)=> getTimelineDateSortKey(a).localeCompare(getTimelineDateSortKey(b)) || String(a).localeCompare(String(b))).map(date => ({ kind:'dated', key:date }));
-      const undatedEventRows = sortUndatedTimelineEvents((state.timelineEvents || []).filter(ev => ev && !ev.date)).map(ev => ({ kind:'undated-event', id: ev.id, order: Number.isFinite(Number(ev.timelineOrder)) ? Number(ev.timelineOrder) : 999999 }));
-      const undatedElementRows = (timelineElements || []).filter(el => el && !el.date).map(el => ({ kind:'undated-element', id: el.id, order: Number.isFinite(Number(el.timelineOrder)) ? Number(el.timelineOrder) : 999999 })).sort((a,b)=> a.order - b.order || String(a.id).localeCompare(String(b.id)));
-      const combined = undatedEventRows.concat(undatedElementRows).sort((a,b)=> a.order - b.order || (a.kind||'').localeCompare(b.kind||'') || String(a.id).localeCompare(String(b.id)));
-      const rows = [];
-      let floating = 0;
-      const totalSlots = datedRows.length + combined.length;
-      for(let slot=0; slot<totalSlots; slot++){
-        while(floating < combined.length){
-          const target = Number.isFinite(Number(combined[floating].order)) ? Number(combined[floating].order) : rows.length;
-          if(target <= rows.length){ rows.push(combined[floating++]); } else break;
-        }
-        if(rows.length < slot + 1 && datedRows.length) rows.push(datedRows.shift());
+    function createElementFromSourceSelection(){
+      const sel = ui.sourceDocSelection;
+      if(!sel || !sel.documentId || !sel.excerpt){
+        toast('Select text from the document first.');
+        return;
       }
-      while(floating < combined.length) rows.push(combined[floating++]);
-      while(datedRows.length) rows.push(datedRows.shift());
-      const tokenRows = rows.filter(r => r.kind === 'undated-event' || r.kind === 'undated-element');
-      const dragged = tokenRows.find(r => r.kind === 'undated-event' && r.id === draggedId);
-      if(!dragged) return;
-      const display = rows.filter(r => !(r.kind === 'undated-event' && r.id === draggedId));
-      let idx = Number(insertIndex);
-      if(!Number.isFinite(idx)) idx = display.length;
-      idx = Math.max(0, Math.min(idx, display.length));
-      display.splice(idx, 0, dragged);
-      display.forEach((row, order)=>{
-        if(row.kind === 'undated-event'){
-          const ev = (state.timelineEvents || []).find(x => x.id === row.id);
-          if(ev) ev.timelineOrder = order;
-        } else if(row.kind === 'undated-element'){
-          const el = getElementById(row.id);
-          if(el) el.timelineOrder = order;
-        }
-      });
-      safeSave(); renderTimeline(); }
-    async function saveTimelineEvent(){ const payload = collectTimelineForm(); if(!payload) return; if(ui.timelineEditingId){ const i = state.timelineEvents.findIndex(x=>x.id===ui.timelineEditingId); if(i>=0) state.timelineEvents[i] = { ...state.timelineEvents[i], ...payload }; ui.timelineSelectedId = ui.timelineEditingId; toast('Event updated'); } else { const ev = { id: uid(), timelineOrder: getNextTimelineOrder(), ...payload }; state.timelineEvents.push(ev); ui.timelineSelectedId = ev.id; toast('Event added'); } safeSave(); closeTimelineForm(); renderTimeline(); renderStructuredOutline(); }
-    function deleteTimelineEvent(id){ const ev = state.timelineEvents.find(x=>x.id===id); if(!ev) return; if(!confirm(`Delete event “${ev.name}”?`)) return; state.timelineEvents = state.timelineEvents.filter(x=>x.id!==id); if(ui.timelineSelectedId===id) ui.timelineSelectedId = null; safeSave(); closeTimelineEventModal(); renderTimeline(); renderStructuredOutline(); }
-    function closeTimelineEventModal(){ $('timelineEventModal')?.classList.remove('open'); }
-    function openTimelineEventModal(id){ const ev = state.timelineEvents.find(x=>x.id===id); if(!ev) return; ui.timelineSelectedId = id; const docs = (ev.documents||[]).map(docId=>state.documents.find(d=>d.id===docId)).filter(Boolean); const witnesses = (ev.witnesses||[]).map(w=>({ person: state.people.find(p=>p.id===w.personId), testimony: w.testimony||'' })).filter(x=>x.person); $('timelineEventModalTitle').textContent = ev.name || 'Timeline event'; $('timelineEventModalDate').textContent = formatTimelineDateDisplay(ev.date || ''); $('timelineEventModalLocation').textContent = ev.location || 'No location'; $('timelineEventModalSource').textContent = ev.source || 'No source'; $('timelineEventModalTags').textContent = getEventTagLinks(ev).map(link => { const tagName = state.tags.find(t=>t.id===link.tagId)?.name || 'Tag'; const subName = getEventSubtagDisplay(link); return `${tagName} > ${subName}`; }).join(' • ') || 'No tags'; $('timelineEventModalDesc').textContent = ev.description || 'No description'; $('timelineEventModalImage').innerHTML = ev.imageDataUrl ? `<img src="${ev.imageDataUrl}" alt="${escapeHtml(ev.imageName || ev.name || 'Event image')}" />` : '<span class="hint">No image attached.</span>'; $('timelineEventModalDocs').innerHTML = docs.length ? docs.map(d=>`<div><a href="#" data-timeline-modal-doc="${d.id}">${escapeHtml(d.name)}</a></div>`).join('') : '<span class="hint">No documents attached.</span>'; $('timelineEventModalWitnesses').innerHTML = witnesses.length ? witnesses.map(w=>`<div class="timelineWitnessBlock"><div><b>${escapeHtml(w.person.name)}</b></div><div style="margin-top:6px">${escapeHtml(w.testimony || 'No testimony added.')}</div></div>`).join('') : '<span class="hint">No witnesses attached.</span>'; $('timelineEventModal').classList.add('open'); $('timelineEventModalEdit').onclick = ()=>{ closeTimelineEventModal(); openTimelineForm(id); }; $('timelineEventModalDelete').onclick = ()=> deleteTimelineEvent(id); document.querySelectorAll('[data-timeline-modal-doc]').forEach(a=>a.addEventListener('click', (e)=>{ e.preventDefault(); openDocumentEditModal(a.getAttribute('data-timeline-modal-doc')); })); }
-   function getTimelineDatedDocuments(){
-  return (state.documents || [])
-    .filter(d => d && d.date && d.includeInTimeline !== false)
-    .slice()
-    .sort((a,b)=>(a.date||'').localeCompare(b.date||'') || (a.name||'').localeCompare(b.name||''));
-}
-function getTimelineDatedHeadlines(){
-  return (state.outline || [])
-    .filter(n => n && n.rowDate)
-    .slice()
-    .sort((a,b)=>(a.rowDate||'').localeCompare(b.rowDate||'') || (a.title||'').localeCompare(b.title||''));
-}
-function timelineSubcolumnKey(tagId, subtagId){ return `tag:${tagId}:${subtagId || ''}`; }
-function getTimelineColumns(eventColumnModel){
-  const cols = [{ id:'date', label:'Date', kind:'base' }];
-  if(ui.timelineShowEventColumn) cols.push({ id:'event', label:'Event', kind:'base' });
-  if(ui.timelineShowDocumentColumn) cols.push({ id:'document', label:'Document', kind:'base' });
-  if(ui.timelineShowHeadlineColumn) cols.push({ id:'headline', label:'Headline', kind:'base' });
-  for(const group of (eventColumnModel || [])){
-    for(const sub of (group.subcols || [])){
-      cols.push({ id: timelineSubcolumnKey(group.tag.id, sub.subtagId || ''), label: `${group.tag.name} • ${sub.label}`, kind:'tag', tagId: group.tag.id, subtagId: sub.subtagId || '' });
+      const doc = (state.documents || []).find(d => d.id === sel.documentId);
+      if(!doc){
+        toast('Source document was not found.');
+        return;
+      }
+      const citation = `${doc.name}${sel.pageNumber ? ', p. ' + sel.pageNumber : ''}`;
+      const quoted = `“${escapeHtml(sel.excerpt)}” <span class="hint">(${escapeHtml(citation)})</span>`;
+      ui.selectedElementId = null;
+      ui.sourceDocSelection = { ...sel };
+      if($('elementName')) $('elementName').value = '';
+      if($('elementText')) $('elementText').innerHTML = quoted;
+      if($('elementDocumentsSearch')) $('elementDocumentsSearch').value = '';
+      if($('elementPeopleSearch')) $('elementPeopleSearch').value = '';
+      renderElementDocumentList([doc.id]);
+      renderElementPeopleList([]);
+      renderElementCreateTagChoices([]);
+      setTab('elements');
+      closeSourceDocModal();
+      setTimeout(()=>{
+        const nameInput = $('elementName');
+        if(nameInput) nameInput.focus();
+      }, 50);
+      toast('Selection moved into a new element.');
     }
   }
   const existing = Array.isArray(ui.timelineColumnOrder) ? ui.timelineColumnOrder.slice() : [];
