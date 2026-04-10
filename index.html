@@ -938,9 +938,14 @@
     .elementsPaneSection{display:grid;gap:8px;min-height:0;}
     .elementsPaneSectionGrow{min-height:0;display:grid;gap:8px;align-content:start;}
     .elementsScrollList{border:1px solid var(--border);border-radius:14px;background:#fff;overflow:auto;min-height:220px;max-height:52vh;padding:8px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;align-content:start;}
-    .elementsTagTree{border:1px solid var(--border);border-radius:14px;background:#fff;overflow:auto;min-height:420px;max-height:62vh;padding:10px;display:grid;gap:8px;align-content:start;}
-    .elementTagNode{display:grid;gap:6px;}
-    .elementTagRow{display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:10px;}
+    .elementsTagTree{border:1px solid var(--border);border-radius:14px;background:#fff;overflow:auto;min-height:420px;max-height:62vh;padding:10px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;align-content:start;}
+    @media (max-width: 1100px){.elementsTagTree{grid-template-columns:1fr;}}
+    .elementTagNode{display:grid;gap:6px;min-width:0;}
+    .elementTagRoot{display:grid;gap:8px;border:1px solid var(--border);border-radius:12px;background:#fff;padding:8px 10px;min-width:0;}
+    .elementTagRow{display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:10px;min-width:0;}
+    .elementTagRow.level-main{background:rgba(37,99,235,.06);font-weight:800;}
+    .elementTagRow.level-sub{background:#f8fbff;}
+    .elementTagRow.level-subsub{background:#fcfdff;}
     .elementTagChildren{display:grid;gap:6px;margin-left:18px;padding-left:12px;border-left:2px solid rgba(37,99,235,.14);}
     .elementToolbar{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0 8px;}
     .elementDetailsEditor{min-height:160px;border:1px solid var(--border);border-radius:14px;padding:10px 12px;background:#fff;outline:none;overflow:auto;}
@@ -1357,9 +1362,24 @@
     function renderElementAssociationList(hostId, items, selectedIds, kind, searchValue=''){ const host = $(hostId); if(!host) return; const selected = new Set(selectedIds || []); const q = String(searchValue || '').trim().toLowerCase(); const filtered = (items || []).filter(item => { const hay = [item.name, item.description].join(' ').toLowerCase(); return !q || hay.includes(q); }).sort(sortByName); host.innerHTML = filtered.length ? filtered.map(item => `<label class="elementAssocCard" title="${escapeHtml(item.name || '')}"><input type="checkbox" value="${item.id}" ${selected.has(item.id) ? 'checked' : ''} ${kind === 'person' ? 'data-element-person' : 'data-element-doc'} /><span class="elementAssocName">${escapeHtml(item.name || '')}</span></label>`).join('') : '<div class="hint" style="grid-column:1 / -1">No matches.</div>'; }
     function renderElementPeopleList(selectedIds=[]){ renderElementAssociationList('elementPeopleList', state.people || [], selectedIds, 'person', $('elementPeopleSearch')?.value || ''); }
     function renderElementDocumentList(selectedIds=[]){ renderElementAssociationList('elementDocumentsList', state.documents || [], selectedIds, 'doc', $('elementDocumentsSearch')?.value || ''); }
-    function renderElementCreateTagChoices(selectedLinks=[]){ const host = $('elementCreateTagChoices'); if(!host) return; const checked = new Set((selectedLinks || []).map(link => `${link.tagId}::${link.subtagId || ''}`)); function renderChildren(parentTagId, parentSubtagId='', depth=0){ const kids = (state.subtags || []).filter(st => st.parentTagId === parentTagId && (st.parentSubtagId || '') === (parentSubtagId || '')).sort((a,b)=>(a.name||'').localeCompare(b.name||'')); if(!kids.length) return ''; return `<div class="elementTagChildren">${kids.map(st => { const key = `${parentTagId}::${st.id}`; return `<div class="elementTagNode"><label class="elementTagRow"><input type="checkbox" data-element-tag-link value="${key}" data-tag-id="${parentTagId}" data-subtag-id="${st.id}" ${checked.has(key) ? 'checked' : ''} /><span>${escapeHtml(st.name || '')}</span></label>${renderChildren(parentTagId, st.id, depth + 1)}</div>`; }).join('')}</div>`; }
-      host.innerHTML = (state.tags || []).length ? (state.tags || []).slice().sort(sortByName).map(t => { const key = `${t.id}::`; return `<div class="elementTagNode"><label class="elementTagRow"><input type="checkbox" data-element-tag-link value="${key}" data-tag-id="${t.id}" data-subtag-id="" ${checked.has(key) ? 'checked' : ''} /><span><b>${escapeHtml(t.name || '')}</b></span></label>${renderChildren(t.id)}</div>`; }).join('') : '<div class="hint">No tags yet. Add tags first.</div>';
+    function renderTagTreeMarkup(selectedLinks=[], config={}){
+      const checked = new Set((selectedLinks || []).map(link => `${link.tagId}::${link.subtagId || ''}`));
+      const inputAttr = config.inputAttr || 'data-hier-tag-link';
+      const rootClass = config.rootClass || 'elementTagRoot';
+      const emptyMessage = config.emptyMessage || 'No tags yet.';
+      function renderRow(tagId, subtagId, label, depth){
+        const key = `${tagId}::${subtagId || ''}`;
+        const levelClass = depth <= 0 ? 'level-main' : (depth === 1 ? 'level-sub' : 'level-subsub');
+        return `<label class="elementTagRow ${levelClass}"><input type="checkbox" ${inputAttr} value="${key}" data-tag-id="${tagId}" data-subtag-id="${subtagId || ''}" ${checked.has(key) ? 'checked' : ''} /><span>${label}</span></label>`;
+      }
+      function renderChildren(parentTagId, parentSubtagId='', depth=1){
+        const kids = (state.subtags || []).filter(st => st.parentTagId === parentTagId && (st.parentSubtagId || '') === (parentSubtagId || '')).sort((a,b)=>(a.name||'').localeCompare(b.name||''));
+        if(!kids.length) return '';
+        return `<div class="elementTagChildren">${kids.map(st => `<div class="elementTagNode">${renderRow(parentTagId, st.id, escapeHtml(st.name || ''), depth)}${renderChildren(parentTagId, st.id, depth + 1)}</div>`).join('')}</div>`;
+      }
+      return (state.tags || []).length ? (state.tags || []).slice().sort(sortByName).map(t => `<div class="elementTagNode ${rootClass}">${renderRow(t.id, '', `<b>${escapeHtml(t.name || '')}</b>`, 0)}${renderChildren(t.id)}</div>`).join('') : `<div class="hint">${emptyMessage}</div>`;
     }
+    function renderElementCreateTagChoices(selectedLinks=[]){ const host = $('elementCreateTagChoices'); if(!host) return; host.innerHTML = renderTagTreeMarkup(selectedLinks, { inputAttr:'data-element-tag-link', rootClass:'elementTagRoot', emptyMessage:'No tags yet. Add tags first.' }); }
 
     function getDocumentTagLinks(doc){
       if(!doc) return [];
@@ -1390,13 +1410,7 @@
     }
     function renderHierarchicalTagTree(hostId, selectedLinks=[], options={}){
       const host = $(hostId); if(!host) return;
-      const checked = new Set((selectedLinks || []).map(link => `${link.tagId}::${link.subtagId || ''}`));
-      function renderChildren(parentTagId, parentSubtagId=''){
-        const kids = (state.subtags || []).filter(st => st.parentTagId === parentTagId && (st.parentSubtagId || '') === (parentSubtagId || '')).sort((a,b)=>(a.name||'').localeCompare(b.name||''));
-        if(!kids.length) return '';
-        return `<div class="elementTagChildren">${kids.map(st => { const key = `${parentTagId}::${st.id}`; return `<div class="elementTagNode"><label class="elementTagRow"><input type="checkbox" data-hier-tag-link value="${key}" data-tag-id="${parentTagId}" data-subtag-id="${st.id}" ${checked.has(key) ? 'checked' : ''} /><span>${escapeHtml(st.name || '')}</span></label>${renderChildren(parentTagId, st.id)}</div>`; }).join('')}</div>`;
-      }
-      host.innerHTML = (state.tags || []).length ? (state.tags || []).slice().sort(sortByName).map(t => { const key = `${t.id}::`; return `<div class="elementTagNode"><label class="elementTagRow"><input type="checkbox" data-hier-tag-link value="${key}" data-tag-id="${t.id}" data-subtag-id="" ${checked.has(key) ? 'checked' : ''} /><span><b>${escapeHtml(t.name || '')}</b></span></label>${renderChildren(t.id)}</div>`; }).join('') : '<div class="hint">No tags yet.</div>';
+      host.innerHTML = renderTagTreeMarkup(selectedLinks, { inputAttr:'data-hier-tag-link', rootClass: options.rootClass || '', emptyMessage: options.emptyMessage || 'No tags yet.' });
     }
     function collectHierarchicalTagLinks(hostId){
       return Array.from(document.querySelectorAll(`#${hostId} input[data-hier-tag-link]:checked`)).map(x => ({ tagId: x.getAttribute('data-tag-id') || '', subtagId: x.getAttribute('data-subtag-id') || '' })).filter(link => link.tagId);
