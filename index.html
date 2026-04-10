@@ -4239,6 +4239,337 @@ function openStructuredDocEditor(docId){
     $('structuredDocModal')?.addEventListener('click', (ev)=>{ if(ev.target && ev.target.id === 'structuredDocModal') closeStructuredDocEditor(); });
 
     load(); syncOutlineFromSupabase(); syncDocumentsFromSupabase(); syncPeopleFromSupabase(); syncWitnessCellsFromSupabase(); syncTagsFromSupabase(); syncTagAssignmentsFromSupabase(); renderTags(); setDraftDocumentTagLinks(ui.newDocumentTagLinks || []); renderDocuments(); renderPeople(); renderOutline(); renderExhibits(); setTab(getInitialViewFromUrl(), { pushState:false });
-  </script>
+  
+
+// --- Supabase integration for remaining case data: elements, timeline events, icon library ---
+(function(){
+  const sb = ()=> window.supabase;
+  const cid = ()=> String(window.CASE_ID || '');
+  function cloneJson(value, fallback){ try{ return JSON.parse(JSON.stringify(value == null ? fallback : value)); }catch(e){ return fallback; } }
+
+  async function loadElementsFromSupabase(){
+    if(!sb() || !cid()) return;
+    const { data, error } = await sb().from('elements').select('*').eq('case_id', cid()).order('timeline_order', { ascending:true }).order('updated_at', { ascending:true });
+    if(error){ console.error('Load elements error:', error); return; }
+    state.elements = (data || []).map((row, idx) => ({
+      id: row.id,
+      name: row.name || '',
+      date: row.element_date || '',
+      type: row.element_type || 'text',
+      text: row.text_html || '',
+      tags: Array.from(new Set(((row.tag_links || []) || []).map(link => link && link.tagId).filter(Boolean))),
+      tagLinks: Array.isArray(row.tag_links) ? row.tag_links.filter(link => link && link.tagId).map(link => ({ tagId: link.tagId || '', subtagId: link.subtagId || '' })) : [],
+      documentIds: Array.isArray(row.document_ids) ? row.document_ids.filter(Boolean) : [],
+      witnessIds: Array.isArray(row.witness_ids) ? row.witness_ids.filter(Boolean) : [],
+      exhibitDocIds: Array.isArray(row.exhibit_doc_ids) ? row.exhibit_doc_ids.filter(Boolean) : [],
+      includeInTimeline: row.include_in_timeline !== false,
+      timelineOrder: Number.isFinite(Number(row.timeline_order)) ? Number(row.timeline_order) : idx,
+      sourceRefs: Array.isArray(row.source_refs) ? row.source_refs : []
+    }));
+    safeSave();
+    renderElements();
+    renderTimeline();
+    renderOutline();
+  }
+
+  async function upsertElementRow(payload){
+    if(!sb() || !cid()) return null;
+    const row = {
+      id: payload.id,
+      case_id: cid(),
+      name: payload.name || '',
+      element_date: payload.date || '',
+      element_type: payload.type || 'text',
+      text_html: payload.text || '',
+      tag_links: cloneJson(payload.tagLinks || [], []),
+      document_ids: cloneJson(payload.documentIds || [], []),
+      witness_ids: cloneJson(payload.witnessIds || [], []),
+      exhibit_doc_ids: cloneJson(payload.exhibitDocIds || [], []),
+      include_in_timeline: payload.includeInTimeline !== false,
+      timeline_order: Number.isFinite(Number(payload.timelineOrder)) ? Number(payload.timelineOrder) : 0,
+      source_refs: cloneJson(payload.sourceRefs || [], []),
+      updated_at: new Date().toISOString()
+    };
+    const { data, error } = await sb().from('elements').upsert(row, { onConflict:'id' }).select().single();
+    if(error){ console.error('Save element error:', error); alert('Could not save element to Supabase.'); return null; }
+    return data;
+  }
+
+  async function deleteElementRowSupabase(id){
+    if(!sb()) return false;
+    const { error } = await sb().from('elements').delete().eq('id', id);
+    if(error){ console.error('Delete element error:', error); alert('Could not delete element from Supabase.'); return false; }
+    return true;
+  }
+
+  async function loadTimelineEventsFromSupabase(){
+    if(!sb() || !cid()) return;
+    const { data, error } = await sb().from('timeline_events').select('*').eq('case_id', cid()).order('timeline_order', { ascending:true }).order('updated_at', { ascending:true });
+    if(error){ console.error('Load timeline events error:', error); return; }
+    state.timelineEvents = (data || []).map((row, idx) => ({
+      id: row.id,
+      name: row.name || '',
+      date: row.event_date || '',
+      description: row.description || '',
+      location: row.location || '',
+      source: row.source || '',
+      tags: Array.from(new Set(((row.tag_links || []) || []).map(link => link && link.tagId).filter(Boolean))),
+      tagLinks: Array.isArray(row.tag_links) ? row.tag_links.filter(link => link && link.tagId).map(link => ({ tagId: link.tagId || '', subtagId: link.subtagId || '' })) : [],
+      documents: Array.isArray(row.document_ids) ? row.document_ids.filter(Boolean) : [],
+      witnesses: Array.isArray(row.witnesses) ? row.witnesses.map(w => ({ personId: w.personId || w.id || '', testimony: w.testimony || '' })).filter(w => w.personId) : [],
+      timelineOrder: Number.isFinite(Number(row.timeline_order)) ? Number(row.timeline_order) : idx,
+      imageDataUrl: row.image_data_url || '',
+      imageName: row.image_name || ''
+    }));
+    safeSave();
+    renderTimeline();
+  }
+
+  async function upsertTimelineEventRow(payload){
+    if(!sb() || !cid()) return null;
+    const row = {
+      id: payload.id,
+      case_id: cid(),
+      name: payload.name || '',
+      event_date: payload.date || '',
+      description: payload.description || '',
+      location: payload.location || '',
+      source: payload.source || '',
+      tag_links: cloneJson(payload.tagLinks || [], []),
+      document_ids: cloneJson(payload.documents || [], []),
+      witnesses: cloneJson(payload.witnesses || [], []),
+      timeline_order: Number.isFinite(Number(payload.timelineOrder)) ? Number(payload.timelineOrder) : 0,
+      image_data_url: payload.imageDataUrl || '',
+      image_name: payload.imageName || '',
+      updated_at: new Date().toISOString()
+    };
+    const { data, error } = await sb().from('timeline_events').upsert(row, { onConflict:'id' }).select().single();
+    if(error){ console.error('Save timeline event error:', error); alert('Could not save timeline event to Supabase.'); return null; }
+    return data;
+  }
+
+  async function deleteTimelineEventRowSupabase(id){
+    if(!sb()) return false;
+    const { error } = await sb().from('timeline_events').delete().eq('id', id);
+    if(error){ console.error('Delete timeline event error:', error); alert('Could not delete timeline event from Supabase.'); return false; }
+    return true;
+  }
+
+  async function loadIconLibraryFromSupabase(){
+    if(!sb() || !cid()) return;
+    const { data, error } = await sb().from('case_icon_library').select('*').eq('case_id', cid()).order('name', { ascending:true });
+    if(error){ console.error('Load icon library error:', error); return; }
+    state.iconLibrary = (data || []).map(row => ({ id: row.id, name: row.name || '', dataUrl: row.data_url || '' }));
+    safeSave();
+    renderTags();
+  }
+
+  async function createIconRowSupabase(payload){
+    if(!sb() || !cid()) return null;
+    const row = { id: payload.id || undefined, case_id: cid(), name: payload.name || '', data_url: payload.dataUrl || '' };
+    const { data, error } = await sb().from('case_icon_library').upsert(row, { onConflict:'id' }).select().single();
+    if(error){ console.error('Save icon error:', error); alert('Could not save icon to Supabase.'); return null; }
+    return data;
+  }
+
+  saveElement = async function(){
+    const payload = collectElementForm();
+    if(!payload) return;
+    if(ui.sourceDocSelection?.documentId && !payload.documentIds.includes(ui.sourceDocSelection.documentId)) payload.documentIds = payload.documentIds.concat(ui.sourceDocSelection.documentId);
+    if(ui.sourceDocSelection?.documentId && ui.sourceDocSelection?.excerpt) payload.sourceRefs = [{ ...ui.sourceDocSelection }];
+    const existing = ui.selectedElementId ? getElementById(ui.selectedElementId) : null;
+    const record = existing ? Object.assign(existing, payload) : { id: uid(), timelineOrder: (state.elements || []).length, ...payload };
+    if(record.includeInTimeline && !Number.isFinite(Number(record.timelineOrder))) record.timelineOrder = (state.elements || []).length;
+    const saved = await upsertElementRow(record);
+    if(!saved) return;
+    if(!existing){ state.elements = state.elements || []; state.elements.push(record); }
+    safeSave();
+    resetElementForm();
+    await loadElementsFromSupabase();
+    toast(existing ? 'Element updated' : 'Element added');
+  };
+
+  deleteElement = async function(id){
+    const el = getElementById(id); if(!el) return;
+    if(!confirm(`Delete element “${el.name}”?`)) return;
+    const ok = await deleteElementRowSupabase(id); if(!ok) return;
+    state.elements = (state.elements || []).filter(x => x.id !== id);
+    (state.outline || []).forEach(n => { n.elementIds = (n.elementIds || []).filter(x => x !== id); if(n.witnessData && typeof n.witnessData === 'object'){ Object.values(n.witnessData).forEach(cell => { cell.elementIds = Array.isArray(cell.elementIds) ? cell.elementIds.filter(x => x !== id) : []; }); } });
+    if(ui.selectedElementId === id) ui.selectedElementId = null;
+    safeSave();
+    closeElementModal();
+    await loadElementsFromSupabase();
+    renderOutline();
+    toast('Element deleted');
+  };
+
+  toggleElementInTimeline = async function(id, shouldInclude){
+    const el = getElementById(id); if(!el) return;
+    el.includeInTimeline = !!shouldInclude;
+    if(el.includeInTimeline && !Number.isFinite(Number(el.timelineOrder))) el.timelineOrder = (state.elements || []).length;
+    const ok = await upsertElementRow(el); if(!ok) return;
+    safeSave();
+    await loadElementsFromSupabase();
+  };
+
+  window.closeTimelineForm = function(){
+    ui.timelineEditingId = null;
+    if($('timelineName')) $('timelineName').value = '';
+    if($('timelineDate')) $('timelineDate').value = '';
+    if($('timelineDesc')) $('timelineDesc').value = '';
+    if($('timelineLocation')) $('timelineLocation').value = '';
+    if($('timelineSource')) $('timelineSource').value = '';
+    if($('timelineImage')) $('timelineImage').value = '';
+    timelineImageDraft = { dataUrl:'', name:'' };
+    renderTimelineImagePreview();
+    renderTimelineTagChoices([]);
+    renderTimelineDocChoices([]);
+    renderTimelineWitnessChoices([]);
+    $('timelineDocChoicesWrap') && ($('timelineDocChoicesWrap').style.display = 'none');
+    $('timelineAddEventWrap')?.classList.remove('open');
+  };
+
+  function renderTimelineTagChoices(selectedLinks){
+    renderHierarchicalTagTree('timelineTagChoices', selectedLinks || []);
+  }
+  function renderTimelineDocChoices(selectedIds){
+    const host = $('timelineDocChoices'); if(!host) return;
+    const selected = new Set(selectedIds || []);
+    host.innerHTML = (state.documents || []).slice().sort(sortByName).map(d => `<label class="checkItem"><input type="checkbox" value="${d.id}" data-timeline-doc ${selected.has(d.id)?'checked':''} /> <span>${escapeHtml(d.name || '')}</span></label>`).join('') || '<div class="hint">No documents yet.</div>';
+  }
+  function renderTimelineWitnessChoices(witnesses){
+    const host = $('timelineWitnessChoices'); const wrap = $('timelineWitnessTestimonyWrap'); if(!host || !wrap) return;
+    const selectedMap = new Map((witnesses || []).map(w => [w.personId, w.testimony || '']));
+    const people = (state.people || []).slice().sort(sortByName);
+    host.innerHTML = people.map(p => `<label class="checkItem"><input type="checkbox" value="${p.id}" data-timeline-witness ${selectedMap.has(p.id)?'checked':''} /> <span>${escapeHtml(p.name || '')}</span></label>`).join('') || '<div class="hint">No people yet.</div>';
+    const renderTestimony = ()=>{
+      const ids = Array.from(host.querySelectorAll('[data-timeline-witness]:checked')).map(x => x.value).filter(Boolean);
+      wrap.innerHTML = ids.map(id => {
+        const person = (state.people || []).find(p => p.id === id);
+        return `<div style="margin-top:10px"><div class="label">${escapeHtml(person?.name || 'Witness')} testimony</div><textarea data-timeline-testimony="${id}" placeholder="Notes / testimony">${escapeHtml(selectedMap.get(id) || '')}</textarea></div>`;
+      }).join('');
+    };
+    host.querySelectorAll('[data-timeline-witness]').forEach(cb => cb.addEventListener('change', renderTestimony));
+    renderTestimony();
+  }
+
+  window.openTimelineForm = function(id){
+    const ev = id ? (state.timelineEvents || []).find(x => x.id === id) : null;
+    ui.timelineEditingId = ev?.id || null;
+    if($('timelineName')) $('timelineName').value = ev?.name || '';
+    if($('timelineDate')) $('timelineDate').value = ev?.date || '';
+    if($('timelineDesc')) $('timelineDesc').value = ev?.description || '';
+    if($('timelineLocation')) $('timelineLocation').value = ev?.location || '';
+    if($('timelineSource')) $('timelineSource').value = ev?.source || '';
+    timelineImageDraft = { dataUrl: ev?.imageDataUrl || '', name: ev?.imageName || '' };
+    renderTimelineImagePreview();
+    renderTimelineTagChoices(ev ? getEventTagLinks(ev) : []);
+    renderTimelineDocChoices(ev?.documents || []);
+    renderTimelineWitnessChoices(ev?.witnesses || []);
+    $('timelineAddEventWrap')?.classList.add('open');
+    $('timelineDocChoicesWrap') && ($('timelineDocChoicesWrap').style.display = 'none');
+  };
+
+  saveTimelineEvent = async function(){
+    const name = String($('timelineName')?.value || '').trim();
+    if(!name){ alert('Event name is required.'); return; }
+    const tagLinks = collectHierarchicalTagLinks('timelineTagChoices');
+    const documents = Array.from(document.querySelectorAll('#timelineDocChoices [data-timeline-doc]:checked')).map(x => x.value).filter(Boolean);
+    const witnessIds = Array.from(document.querySelectorAll('#timelineWitnessChoices [data-timeline-witness]:checked')).map(x => x.value).filter(Boolean);
+    const witnesses = witnessIds.map(id => ({ personId:id, testimony: String(document.querySelector(`[data-timeline-testimony="${id}"]`)?.value || '').trim() }));
+    const existing = ui.timelineEditingId ? (state.timelineEvents || []).find(x => x.id === ui.timelineEditingId) : null;
+    const record = existing || { id: uid(), timelineOrder: getNextTimelineOrder() };
+    Object.assign(record, {
+      name,
+      date: normalizeFlexibleDateInput($('timelineDate')?.value || ''),
+      description: String($('timelineDesc')?.value || '').trim(),
+      location: String($('timelineLocation')?.value || '').trim(),
+      source: String($('timelineSource')?.value || '').trim(),
+      tags: Array.from(new Set(tagLinks.map(link => link.tagId).filter(Boolean))),
+      tagLinks,
+      documents,
+      witnesses,
+      imageDataUrl: timelineImageDraft.dataUrl || '',
+      imageName: timelineImageDraft.name || ''
+    });
+    const saved = await upsertTimelineEventRow(record); if(!saved) return;
+    if(!existing){ state.timelineEvents.push(record); }
+    safeSave();
+    await loadTimelineEventsFromSupabase();
+    closeTimelineForm();
+    renderStructuredOutline?.();
+    toast(existing ? 'Event updated' : 'Event added');
+  };
+
+  deleteTimelineEvent = async function(id){
+    const ev = (state.timelineEvents || []).find(x => x.id === id); if(!ev) return;
+    if(!confirm(`Delete event “${ev.name || 'Untitled event'}”?`)) return;
+    const ok = await deleteTimelineEventRowSupabase(id); if(!ok) return;
+    state.timelineEvents = (state.timelineEvents || []).filter(x => x.id !== id);
+    if(ui.timelineSelectedId === id) ui.timelineSelectedId = null;
+    safeSave();
+    closeTimelineEventModal();
+    await loadTimelineEventsFromSupabase();
+    renderStructuredOutline?.();
+  };
+
+  confirmTimelineImportReview = async function(){
+    const cleaned = timelineImportDrafts.map(item => ({
+      id: uid(),
+      timelineOrder: getNextTimelineOrder(),
+      name: String(item.name || '').trim(),
+      date: normalizeFlexibleDateInput(item.date || ''),
+      description: String(item.description || '').trim(),
+      location: String(item.location || '').trim(),
+      source: String(item.source || '').trim(),
+      tags: Array.from(new Set((item.tags || []).filter(Boolean))),
+      tagLinks: Array.from(new Set((item.tags || []).filter(Boolean))).map(tagId => ({ tagId, subtagId:'' })),
+      documents: Array.from(new Set((item.documents || []).filter(Boolean))),
+      witnesses: Array.from(new Set((item.witnessIds || []).filter(Boolean))).map(personId => ({ personId, testimony:'' })),
+      imageDataUrl: '', imageName: ''
+    })).filter(item => item.name);
+    if(!cleaned.length){ alert('There are no valid events to import.'); return; }
+    for(const item of cleaned){ await upsertTimelineEventRow(item); }
+    closeTimelineImportReviewModal();
+    $('timelineImportBox')?.classList.remove('open');
+    if($('timelineImportFile')) $('timelineImportFile').value = '';
+    timelineImportDrafts = [];
+    await loadTimelineEventsFromSupabase();
+    toast(`${cleaned.length} timeline event${cleaned.length === 1 ? '' : 's'} imported`);
+  };
+
+  const addIconBtn = $('addIconToLibrary');
+  if(addIconBtn){
+    const replacement = addIconBtn.cloneNode(true); addIconBtn.parentNode.replaceChild(replacement, addIconBtn);
+    replacement.addEventListener('click', async ()=>{
+      const file = $('iconUploadFile')?.files?.[0];
+      const name = ($('iconUploadName')?.value || file?.name || '').trim();
+      if(!file || !name){ alert('Choose an image and give it a name.'); return; }
+      const dataUrl = await fileToDataUrl(file);
+      const saved = await createIconRowSupabase({ id: uid(), name, dataUrl });
+      if(!saved) return;
+      $('iconUploadFile').value=''; $('iconUploadName').value='';
+      await loadIconLibraryFromSupabase();
+      toast('Icon added');
+    });
+  }
+
+  const addElementBtn = $('addElement');
+  if(addElementBtn){ const clone = addElementBtn.cloneNode(true); addElementBtn.parentNode.replaceChild(clone, addElementBtn); clone.addEventListener('click', ()=> saveElement()); }
+  const saveEventBtn = $('timelineSaveEvent');
+  if(saveEventBtn){ const clone = saveEventBtn.cloneNode(true); saveEventBtn.parentNode.replaceChild(clone, saveEventBtn); clone.addEventListener('click', ()=> saveTimelineEvent()); }
+  const cancelEventBtn = $('timelineCancelEvent');
+  if(cancelEventBtn){ const clone = cancelEventBtn.cloneNode(true); cancelEventBtn.parentNode.replaceChild(clone, cancelEventBtn); clone.addEventListener('click', ()=> closeTimelineForm()); }
+  const importConfirmBtn = $('timelineImportReviewConfirm');
+  if(importConfirmBtn){ const clone = importConfirmBtn.cloneNode(true); importConfirmBtn.parentNode.replaceChild(clone, importConfirmBtn); clone.addEventListener('click', ()=> confirmTimelineImportReview()); }
+
+  setTimeout(async ()=>{
+    await loadIconLibraryFromSupabase();
+    await loadElementsFromSupabase();
+    await loadTimelineEventsFromSupabase();
+  }, 0);
+})();
+
+</script>
 </body>
 </html>
