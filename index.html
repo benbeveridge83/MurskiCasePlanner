@@ -1474,8 +1474,9 @@ async function renderDocumentInSourceViewer(doc, targetId, opts={}){
         holder.appendChild(inner);
         const sourceRef = opts.sourceRef || null;
         if((mime.includes('pdf')) || name.endsWith('.pdf')){
-          if(!window.pdfjsLib || !window.pdfjsLib.getDocument) throw new Error('PDF.js is not available');
-          if(window.pdfjsLib.GlobalWorkerOptions) window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.5.136/pdf.worker.min.js';
+          const pdfjs = await ensurePdfJsLib();
+          if(!pdfjs || !pdfjs.getDocument) throw new Error('PDF.js is not available');
+          if(pdfjs.GlobalWorkerOptions) pdfjs.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
           const pdfData = blob ? new Uint8Array(await blob.arrayBuffer()) : null;
           let pdf = null;
           let pdfError = null;
@@ -1484,7 +1485,7 @@ async function renderDocumentInSourceViewer(doc, targetId, opts={}){
           if(url) pdfAttempts.push({ url, disableWorker: true, useWorkerFetch: false, isEvalSupported: false });
           for(const attempt of pdfAttempts){
             try{
-              pdf = await window.pdfjsLib.getDocument(attempt).promise;
+              pdf = await pdfjs.getDocument(attempt).promise;
               if(pdf) break;
             }catch(err){
               pdfError = err;
