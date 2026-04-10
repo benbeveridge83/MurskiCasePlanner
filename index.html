@@ -863,7 +863,7 @@
     .structuredTrayList{display:flex;gap:8px;flex-wrap:wrap;max-height:140px;overflow:auto;}
     .structuredModal{position:fixed;inset:0;background:rgba(15,23,42,.35);display:none;align-items:center;justify-content:center;z-index:60;padding:20px;}
     .structuredModal.open{display:flex;}
-    .structuredModalCard{width:min(760px, calc(100vw - 40px));max-height:calc(100vh - 40px);overflow:auto;background:#fff;border:1px solid var(--border);border-radius:20px;box-shadow:var(--shadow);padding:18px;display:grid;gap:12px;} .sourceDocModalCard{width:min(96vw, 1600px);height:min(96vh, 1200px);max-height:min(96vh, 1200px);grid-template-rows:auto auto 1fr auto;} .sourceDocModalCard.sourceDocModalMax{width:98vw;height:98vh;max-height:98vh;border-radius:14px;} .sourceDocViewerShell{min-height:58vh;height:100%;} .sourceDocModalActions{display:flex;gap:8px;flex-wrap:wrap;align-items:center;} .sourceDocPickerList{max-height:22vh;overflow:auto;} .sourceDocHeaderActions{display:flex;gap:8px;flex-wrap:wrap;align-items:center;} .elementsHeaderBar{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap;margin-bottom:10px;} .elementsHeaderControls{display:flex;gap:8px;flex-wrap:wrap;align-items:center;} .elementsFilterPanel{max-height:280px;overflow:auto;border:1px solid var(--border);border-radius:12px;padding:10px;background:#fff;min-width:280px;} .docTagSummary{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;} .docTagPathPill{display:inline-flex;align-items:center;gap:6px;padding:5px 9px;border-radius:999px;border:1px solid rgba(37,99,235,.18);background:rgba(37,99,235,.07);font-size:12px;font-weight:700;} .docTagModalTree{max-height:46vh;overflow:auto;border:1px solid var(--border);border-radius:14px;padding:10px;background:#fbfdff;} .docTagModalSummary{display:flex;gap:6px;flex-wrap:wrap;}
+    .structuredModalCard{width:min(760px, calc(100vw - 40px));max-height:calc(100vh - 40px);overflow:auto;background:#fff;border:1px solid var(--border);border-radius:20px;box-shadow:var(--shadow);padding:18px;display:grid;gap:12px;} .sourceDocModalCard{width:min(96vw, 1600px);height:min(96vh, 1200px);max-height:min(96vh, 1200px);grid-template-rows:auto auto 1fr auto;} .sourceDocModalCard.sourceDocModalMax{width:99vw;height:99vh;max-height:99vh;border-radius:14px;} .sourceDocViewerShell{min-height:72vh;height:100%;} .sourceDocModalCard .sourceDocViewerShell{min-height:68vh;} .sourceDocModalActions{display:flex;gap:8px;flex-wrap:wrap;align-items:center;} .sourceDocPickerList{max-height:22vh;overflow:auto;} .sourceDocHeaderActions{display:flex;gap:8px;flex-wrap:wrap;align-items:center;} .elementsHeaderBar{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap;margin-bottom:10px;} .elementsHeaderControls{display:flex;gap:8px;flex-wrap:wrap;align-items:center;} .elementsFilterPanel{max-height:280px;overflow:auto;border:1px solid var(--border);border-radius:12px;padding:10px;background:#fff;min-width:280px;} .docTagSummary{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;} .docTagPathPill{display:inline-flex;align-items:center;gap:6px;padding:5px 9px;border-radius:999px;border:1px solid rgba(37,99,235,.18);background:rgba(37,99,235,.07);font-size:12px;font-weight:700;} .docTagModalTree{max-height:46vh;overflow:auto;border:1px solid var(--border);border-radius:14px;padding:10px;background:#fbfdff;} .docTagModalSummary{display:flex;gap:6px;flex-wrap:wrap;}
     .structuredTagChecklist{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:8px;}
     .structuredTagChecklist label{display:flex;align-items:center;gap:8px;border:1px solid var(--border);border-radius:10px;padding:8px 10px;background:#fff;}
     .filterDropdown{position:relative; min-width:240px;}
@@ -1368,6 +1368,37 @@
     function deleteElement(id){ const el = getElementById(id); if(!el) return; if(!confirm(`Delete element “${el.name}”?`)) return; state.elements = (state.elements || []).filter(x => x.id !== id); (state.outline || []).forEach(n => { n.elementIds = (n.elementIds || []).filter(x => x !== id); if(n.witnessData && typeof n.witnessData === 'object'){ Object.values(n.witnessData).forEach(cell => { cell.elementIds = Array.isArray(cell.elementIds) ? cell.elementIds.filter(x => x !== id) : []; }); } }); if(ui.selectedElementId === id) ui.selectedElementId = null; safeSave(); closeElementModal(); renderElements(); renderTimeline(); renderOutline(); renderElements(); }
     function toggleElementInTimeline(id, shouldInclude){ const el = getElementById(id); if(!el) return; el.includeInTimeline = !!shouldInclude; if(el.includeInTimeline && !Number.isFinite(Number(el.timelineOrder))) el.timelineOrder = (state.elements || []).length; safeSave(); renderElements(); renderTimeline(); }
     function renderSourceDocPicker(){ const host = $('sourceDocPickerList'); if(!host) return; const search = String($('sourceDocSearch')?.value || '').trim().toLowerCase(); const docs = (state.documents || []).filter(d => d && d.name).filter(d => !search || [d.name, d.description, d.originalFileName, d.filename].join(' ').toLowerCase().includes(search)).sort((a,b)=> (a.name||'').localeCompare(b.name||'')); host.innerHTML = docs.length ? docs.map(doc => `<div class="sourceDocPickerItem ${ui.sourceDocSelectedId===doc.id ? 'active' : ''}" data-source-doc-pick="${doc.id}"><div><b>${escapeHtml(doc.name || '')}</b><div class="hint">${escapeHtml(doc.originalFileName || doc.filename || '')}</div></div><div class="hint">${escapeHtml(formatTimelineDateDisplay(doc.date || '') || 'No date')}</div></div>`).join('') : '<div class="sourceDocEmpty">No documents match that search.</div>'; host.querySelectorAll('[data-source-doc-pick]').forEach(row => row.addEventListener('click', ()=> openSourceDocumentPickerDoc(row.getAttribute('data-source-doc-pick')))); }
+    async function ensurePdfJsLib(){
+      const existing = window.pdfjsLib || window["pdfjs-dist/build/pdf"] || window.pdfjsViewer || null;
+      if(existing && existing.getDocument) return existing;
+      const candidates = [
+        "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js",
+        "https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js",
+        "https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.min.js"
+      ];
+      for(const src of candidates){
+        try{
+          await new Promise((resolve, reject)=>{
+            const prior = Array.from(document.scripts || []).find(sc => sc.src === src);
+            if(prior){
+              setTimeout(resolve, 30);
+              return;
+            }
+            const script = document.createElement('script');
+            script.src = src;
+            script.async = true;
+            script.onload = ()=> resolve();
+            script.onerror = ()=> reject(new Error('Failed to load ' + src));
+            document.head.appendChild(script);
+          });
+          const lib = window.pdfjsLib || window["pdfjs-dist/build/pdf"] || window.pdfjsViewer || null;
+          if(lib && lib.getDocument) return lib;
+        }catch(err){
+          console.warn('Unable to load PDF.js candidate', src, err);
+        }
+      }
+      return null;
+    }
     async function renderDocumentInSourceViewer(doc, targetId, opts={}){
       const holder = $(targetId);
       if(!holder) return false;
@@ -1384,8 +1415,9 @@
         holder.appendChild(inner);
         const sourceRef = opts.sourceRef || null;
         if((mime.includes('pdf')) || name.endsWith('.pdf')){
-          if(!window.pdfjsLib || !window.pdfjsLib.getDocument) throw new Error('PDF.js is not available');
-          if(window.pdfjsLib.GlobalWorkerOptions) window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.5.136/pdf.worker.min.js';
+          const pdfjs = await ensurePdfJsLib();
+          if(!pdfjs || !pdfjs.getDocument) throw new Error('PDF.js is not available');
+          if(pdfjs.GlobalWorkerOptions) pdfjs.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
           const pdfData = blob ? new Uint8Array(await blob.arrayBuffer()) : null;
           let pdf = null;
           let pdfError = null;
@@ -1394,7 +1426,7 @@
           if(url) pdfAttempts.push({ url, disableWorker: true, useWorkerFetch: false, isEvalSupported: false });
           for(const attempt of pdfAttempts){
             try{
-              pdf = await window.pdfjsLib.getDocument(attempt).promise;
+              pdf = await pdfjs.getDocument(attempt).promise;
               if(pdf) break;
             }catch(err){
               pdfError = err;
@@ -1465,7 +1497,7 @@
         try{
           const fallbackUrl = await getDocumentFileUrl(doc);
           if(fallbackUrl){
-            holder.innerHTML = `<div class="label">Preview</div><iframe class="docViewerFrame" src="${fallbackUrl}"></iframe><div class="hint" style="margin-top:8px">This document could not be rendered in the in-app text selector, so it opened in preview mode instead.</div>`;
+            holder.innerHTML = `<div class="label">Preview</div><iframe class="docViewerFrame" src="${fallbackUrl}"></iframe><div class="hint" style="margin-top:8px">This document opened in preview mode instead of the in-app text selector. Text highlighting for Create element from selection will not work in preview mode.</div>`;
             return true;
           }
         }catch(fallbackErr){
@@ -1475,11 +1507,11 @@
         return false;
       }
     }
-    async function openSourceDocumentPickerDoc(docId){ const doc = (state.documents || []).find(d => d.id === docId); if(!doc) return; ui.sourceDocSelectedId = docId; ui.sourceDocSelection = null; $('sourceDocCreateElement').disabled = true; $('sourceDocSelectionInfo').textContent = 'Loading document…'; $('sourceDocModalTitle').textContent = 'Elements from Document'; $('sourceDocBackToPicker').style.display = ''; await renderDocumentInSourceViewer(doc, 'sourceDocViewerInner'); }
+    async function openSourceDocumentPickerDoc(docId){ const doc = (state.documents || []).find(d => d.id === docId); if(!doc) return; ui.sourceDocSelectedId = docId; ui.sourceDocSelection = null; $('sourceDocCreateElement').disabled = true; $('sourceDocSelectionInfo').textContent = 'Loading document…'; $('sourceDocModalTitle').textContent = 'Elements from Document'; $('sourceDocBackToPicker').style.display = ''; ui.sourceDocMaximized = true; $('sourceDocModalCard')?.classList.add('sourceDocModalMax'); if($('sourceDocModalMaxBtn')) $('sourceDocModalMaxBtn').textContent = 'Restore'; await renderDocumentInSourceViewer(doc, 'sourceDocViewerInner'); }
     function openSourceDocModal(){ ui.sourceDocContext = 'create'; ui.sourceDocOpenFromElementId = null; ui.sourceDocSelection = null; ui.sourceDocSelectedId = null; ui.sourceDocMaximized = false; $('sourceDocSearch').value = ''; $('sourceDocCreateElement').disabled = true; $('sourceDocSelectionInfo').textContent = 'Highlight text in the document, then click Create element from selection.'; $('sourceDocModal').classList.add('open'); $('sourceDocBackToPicker').style.display = 'none'; $('sourceDocViewerInner').innerHTML = '<div class="sourceDocEmpty">Choose a document to open it here.</div>'; $('sourceDocModalCard')?.classList.remove('sourceDocModalMax'); if($('sourceDocModalMaxBtn')) $('sourceDocModalMaxBtn').textContent = 'Maximize'; renderSourceDocPicker(); }
     function closeSourceDocModal(){ $('sourceDocModal').classList.remove('open'); ui.sourceDocMaximized = false; $('sourceDocModalCard')?.classList.remove('sourceDocModalMax'); if($('sourceDocModalMaxBtn')) $('sourceDocModalMaxBtn').textContent = 'Maximize'; }
     function handleSourceSelectionChange(){ const ctx = getSelectionPageContext(); if(!ctx || !ui.sourceDocSelectedId){ $('sourceDocCreateElement').disabled = true; $('sourceDocSelectionInfo').textContent = 'Highlight text in the document, then click Create element from selection.'; return; } ui.sourceDocSelection = { documentId: ui.sourceDocSelectedId, excerpt: ctx.text, pageNumber: ctx.pageNumber, pageLabel: ctx.pageLabel || (ctx.pageNumber ? ('Page ' + ctx.pageNumber) : 'Document'), sourceType: 'document' }; $('sourceDocCreateElement').disabled = false; $('sourceDocSelectionInfo').textContent = `Selected ${ctx.pageLabel || (ctx.pageNumber ? ('Page ' + ctx.pageNumber) : 'text')}: “${ctx.text.slice(0,160)}${ctx.text.length>160?'…':''}”`; }
-    function createElementFromSourceSelection(){ const sel = ui.sourceDocSelection; if(!sel || !sel.documentId || !sel.excerpt) return; const doc = (state.documents || []).find(d => d.id === sel.documentId); if(!doc) return; const citation = `${doc.name}${sel.pageNumber ? ', p. ' + sel.pageNumber : ''}`; const quoted = `“${escapeHtml(sel.excerpt)}” <span class="hint">(${escapeHtml(citation)})</span>`; $('elementText').innerHTML = quoted; renderElementDocumentList([doc.id]); if($('elementDocumentsSearch')) $('elementDocumentsSearch').value = ''; $('elementIncludeInTimeline').checked = !!$('elementIncludeInTimeline').checked; ui.selectedElementId = null; ui.sourceDocSelection = { ...sel }; setTab('elements'); closeSourceDocModal(); setTimeout(()=> $('elementName')?.focus(), 0); }
+    function createElementFromSourceSelection(){ const sel = ui.sourceDocSelection; if(!sel || !sel.documentId || !sel.excerpt){ alert('Highlight text in the document first.'); return; } const doc = (state.documents || []).find(d => d.id === sel.documentId); if(!doc){ alert('The selected source document could not be found.'); return; } const citation = `${doc.name}${sel.pageNumber ? ', p. ' + sel.pageNumber : ''}`; const quoted = `“${escapeHtml(sel.excerpt)}” <span class="hint">(${escapeHtml(citation)})</span>`; $('elementText').innerHTML = quoted; renderElementDocumentList([doc.id]); if($('elementDocumentsSearch')) $('elementDocumentsSearch').value = ''; $('elementIncludeInTimeline').checked = !!$('elementIncludeInTimeline').checked; ui.selectedElementId = null; ui.sourceDocSelection = { ...sel }; setTab('elements'); closeSourceDocModal(); setTimeout(()=> $('elementName')?.focus(), 0); }
     async function openElementSourceModal(elementId){ const el = getElementById(elementId); const ref = getElementPrimarySourceRef(el); if(!el || !ref) return; const doc = (state.documents || []).find(d => d.id === ref.documentId); if(!doc) return; $('elementSourceModalTitle').textContent = `${el.name || 'Element'} – source`; $('elementSourceMeta').textContent = `${doc.name || 'Document'}${ref.pageNumber ? ' • Page ' + ref.pageNumber : ''}`; $('elementSourceQuote').style.display = ''; $('elementSourceQuote').textContent = `“${ref.excerpt}”`; $('elementSourceModal').classList.add('open'); await renderDocumentInSourceViewer(doc, 'elementSourceViewerInner', { sourceRef: ref }); }
     function closeElementSourceModal(){ $('elementSourceModal').classList.remove('open'); }
     function addElementToOutlineRow(rowId, elementId){ const row = (state.outline || []).find(n => n.id === rowId); if(!row) return; row.elementIds = Array.isArray(row.elementIds) ? row.elementIds : []; if(!row.elementIds.includes(elementId)) row.elementIds.push(elementId); safeSave(); renderOutline(); renderElements(); }
