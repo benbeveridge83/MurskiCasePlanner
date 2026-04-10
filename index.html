@@ -759,10 +759,10 @@
     .sourceDocPage{border:1px solid var(--border);border-radius:14px;background:#fff;padding:12px;box-shadow:0 2px 8px rgba(15,23,42,.04);margin:0 auto;}
     .sourceDocPage.activeSourcePage{box-shadow:0 0 0 3px rgba(37,99,235,.16);border-color:rgba(37,99,235,.40);}
     .sourceDocPageHeader{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:10px;font-size:12px;color:var(--muted);font-weight:800;}
-    .sourcePdfStage{position:relative;display:block;margin:0 auto;max-width:100%;overflow:hidden;border:1px solid var(--border);border-radius:10px;background:#fff;}
-    .sourcePdfCanvas{max-width:100%;height:auto;background:#fff;display:block;position:relative;z-index:1;}
-    .sourceTextLayer{position:absolute;inset:0;margin:0;line-height:1;white-space:normal;user-select:text;z-index:2;color:transparent;overflow:hidden;cursor:text;}
-    .sourceTextLayer .sourceTextSpan{position:absolute;transform-origin:0 0;white-space:pre;user-select:text;color:transparent;cursor:text;}
+    .sourcePdfStage{position:relative;display:block;margin:0 auto;overflow:hidden;border:1px solid var(--border);border-radius:10px;background:#fff;}
+    .sourcePdfCanvas{height:auto;background:#fff;display:block;position:relative;z-index:1;}
+    .sourceTextLayer{position:absolute;left:0;top:0;right:auto;bottom:auto;margin:0;line-height:1;white-space:normal;user-select:text;z-index:2;color:transparent;overflow:hidden;cursor:text;transform-origin:0 0;}
+    .sourceTextLayer .sourceTextSpan{position:absolute;left:0;top:0;transform-origin:0 0;white-space:pre;user-select:text;color:transparent;cursor:text;}
     .sourceTextLayer .sourceTextSpan::selection{background:rgba(37,99,235,.28);color:transparent;}
     .sourceTextLayer::selection{background:rgba(37,99,235,.28);color:transparent;}
     .sourceHighlight{background:rgba(255,235,59,.55);border-radius:3px;box-shadow:0 0 0 1px rgba(255,193,7,.28) inset;}
@@ -1501,7 +1501,7 @@ async function renderDocumentInSourceViewer(doc, targetId, opts={}){
           for(let pageNum=1; pageNum<=pdf.numPages; pageNum++){
             const page = await pdf.getPage(pageNum);
             const baseViewport = page.getViewport({ scale: 1 });
-            const targetWidth = Math.max(720, shellWidth - 32);
+            const targetWidth = Math.max(720, shellWidth - 96);
             const scale = Math.max(1.6, Math.min(3.1, targetWidth / baseViewport.width));
             const viewport = page.getViewport({ scale });
             const pageWrap = document.createElement('div');
