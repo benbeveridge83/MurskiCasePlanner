@@ -1378,8 +1378,7 @@
       const tags = Array.from(new Set(tagLinks.map(link => link.tagId).filter(Boolean)));
       el.name = name;
       el.date = date;
-      el.text = escapeHtml(textPlain).replace(/
-/g,'<br>');
+      el.text = escapeHtml(textPlain).replace(/\n/g,'<br>');
       el.includeInTimeline = includeInTimeline;
       el.tagLinks = tagLinks;
       el.tags = tags;
