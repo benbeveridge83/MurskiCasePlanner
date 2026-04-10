@@ -762,7 +762,7 @@
     .sourcePdfStage{position:relative;display:block;margin:0 auto;max-width:100%;overflow:hidden;border:1px solid var(--border);border-radius:10px;background:#fff;}
     .sourcePdfCanvas{width:100%;height:auto;background:#fff;display:block;position:relative;z-index:1;pointer-events:none;}
     .sourceTextLayer{position:absolute;inset:0;margin:0;line-height:1;white-space:normal;user-select:text;-webkit-user-select:text;z-index:2;color:transparent;overflow:hidden;cursor:text;pointer-events:auto;}
-    .sourceTextLayer .sourceTextSpan{position:absolute;transform-origin:0 0;white-space:pre;user-select:text;-webkit-user-select:text;color:transparent;cursor:text;pointer-events:auto;}
+    .sourceTextLayer .sourceTextSpan{position:absolute;transform-origin:0 0;white-space:pre;user-select:text;-webkit-user-select:text;color:transparent;cursor:text;pointer-events:auto;line-height:1;}
     .sourceTextLayer .sourceTextSpan::selection{background:rgba(37,99,235,.28);color:transparent;}
     .sourceTextLayer .sourceTextSpan::-moz-selection{background:rgba(37,99,235,.28);color:transparent;}
     .sourceTextLayer::selection{background:rgba(37,99,235,.28);color:transparent;}
@@ -1535,48 +1535,45 @@ async function renderDocumentInSourceViewer(doc, targetId, opts={}){
             textLayer.style.width = viewport.width + 'px';
             textLayer.style.height = viewport.height + 'px';
             const textContent = await page.getTextContent({ normalizeWhitespace: true, disableCombineTextItems: false });
-            let renderedWithPdfJsLayer = false;
-            try{
-              if(typeof pdfjs.renderTextLayer === 'function'){
-                const textLayerTask = pdfjs.renderTextLayer({
-                  textContentSource: textContent,
-                  container: textLayer,
-                  viewport,
-                  textDivs: []
-                });
-                if(textLayerTask?.promise) await textLayerTask.promise;
-                textLayer.querySelectorAll('span, div').forEach(el => { if(!el.classList.contains('markedContent')) el.classList.add('sourceTextSpan'); });
-                renderedWithPdfJsLayer = true;
-              }
-            }catch(layerErr){
-              console.warn('PDF text layer renderer failed, falling back to manual positioning', layerErr);
-            }
-            if(!renderedWithPdfJsLayer){
-              const pdfUtil = (pdfjs && pdfjs.Util) ? pdfjs.Util : null;
-              (textContent.items || []).forEach(item => {
-                const str = String(item?.str || '');
-                if(!str.trim()) return;
-                const tx = pdfUtil ? pdfUtil.transform(viewport.transform, item.transform) : item.transform;
-                const angle = Math.atan2(tx[1], tx[0]);
-                const fontHeight = Math.max(8, Math.hypot(tx[2], tx[3]));
-                const span = document.createElement('span');
-                span.className = 'sourceTextSpan';
-                span.textContent = str;
-                span.style.left = tx[4] + 'px';
-                span.style.top = Math.max(0, tx[5] - fontHeight * 0.92) + 'px';
-                span.style.fontSize = fontHeight + 'px';
-                span.style.fontFamily = 'sans-serif';
-                span.style.lineHeight = '1';
-                const expectedWidth = Math.max(0, Number(item.width || 0) * viewport.scale);
-                if(expectedWidth > 0){
-                  span.style.width = expectedWidth + 'px';
+            const pdfUtil = (pdfjs && pdfjs.Util) ? pdfjs.Util : null;
+            const measureCanvas = document.createElement('canvas');
+            const measureCtx = measureCanvas.getContext('2d');
+            (textContent.items || []).forEach(item => {
+              const str = String(item?.str || '');
+              if(!str.trim()) return;
+              const tx = pdfUtil ? pdfUtil.transform(viewport.transform, item.transform) : item.transform;
+              const angle = Math.atan2(tx[1], tx[0]);
+              const style = (textContent.styles && item.fontName) ? (textContent.styles[item.fontName] || {}) : {};
+              const fontHeight = Math.max(8, Math.hypot(tx[2], tx[3]));
+              let fontAscent = fontHeight;
+              if(typeof style.ascent === 'number') fontAscent = style.ascent * fontHeight;
+              else if(typeof style.descent === 'number') fontAscent = (1 + style.descent) * fontHeight;
+              const fontFamily = style.fontFamily || 'sans-serif';
+              const span = document.createElement('span');
+              span.className = 'sourceTextSpan';
+              span.textContent = str;
+              span.style.left = tx[4] + 'px';
+              span.style.top = Math.max(0, tx[5] - fontAscent) + 'px';
+              span.style.fontSize = fontHeight + 'px';
+              span.style.fontFamily = fontFamily;
+              span.style.lineHeight = '1';
+              span.style.height = Math.max(fontHeight, 1) + 'px';
+              span.style.whiteSpace = 'pre';
+              let transform = angle ? `rotate(${angle}rad)` : '';
+              const expectedWidth = Math.max(0, Number(item.width || 0) * viewport.scale);
+              if(measureCtx){
+                measureCtx.font = `${fontHeight}px ${fontFamily}`;
+                const measuredWidth = Math.max(measureCtx.measureText(str).width, 0.01);
+                if(expectedWidth > 0 && measuredWidth > 0){
+                  const scaleX = expectedWidth / measuredWidth;
+                  if(Number.isFinite(scaleX) && scaleX > 0){
+                    transform = `${transform} scaleX(${scaleX})`.trim();
+                  }
                 }
-                span.style.height = Math.max(fontHeight, 1) + 'px';
-                span.style.minWidth = Math.max(expectedWidth, fontHeight * 0.35, 1) + 'px';
-                span.style.transform = `rotate(${angle}rad)`;
-                textLayer.appendChild(span);
-              });
-            }
+              }
+              if(transform) span.style.transform = transform;
+              textLayer.appendChild(span);
+            });
             stage.appendChild(textLayer);
             pageWrap.appendChild(stage);
             inner.appendChild(pageWrap);
@@ -1601,18 +1598,6 @@ async function renderDocumentInSourceViewer(doc, targetId, opts={}){
           holder.innerHTML = `<div class="label">Preview</div><iframe class="docViewerFrame" src="${url}"></iframe><div class="hint" style="margin-top:8px">Text selection is available for PDF and DOCX files. For other file types, use the standard document preview.</div>`;
           return true;
         }
-        requestAnimationFrame(() => {
-          holder.querySelectorAll('.sourcePdfStage').forEach(stage => {
-            const canvas = stage.querySelector('.sourcePdfCanvas');
-            const textLayer = stage.querySelector('.sourceTextLayer');
-            if(!canvas || !textLayer) return;
-            const rect = canvas.getBoundingClientRect();
-            stage.style.width = rect.width + 'px';
-            stage.style.height = rect.height + 'px';
-            textLayer.style.width = rect.width + 'px';
-            textLayer.style.height = rect.height + 'px';
-          });
-        });
         clearSourceHighlights(holder);
         if(sourceRef?.excerpt){
           let highlighted = false;
