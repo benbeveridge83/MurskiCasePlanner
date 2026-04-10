@@ -1539,6 +1539,15 @@ async function renderDocumentInSourceViewer(doc, targetId, opts={}){
       }, 50);
       toast('Selection moved into a new element.');
     }
+function getTimelineColumns(eventColumnModel){
+  const cols = [{ id:'date', label:'Date', kind:'base' }];
+  if(ui.timelineShowEventColumn) cols.push({ id:'event', label:'Event', kind:'base' });
+  if(ui.timelineShowDocumentColumn) cols.push({ id:'document', label:'Document', kind:'base' });
+  if(ui.timelineShowHeadlineColumn) cols.push({ id:'headline', label:'Headline', kind:'base' });
+  for(const group of (eventColumnModel || [])){
+    for(const sub of (group.subcols || [])){
+      cols.push({ id: timelineSubcolumnKey(group.tag.id, sub.subtagId || ''), label: `${group.tag.name} • ${sub.label}`, kind:'tag', tagId: group.tag.id, subtagId: sub.subtagId || '' });
+    }
   }
   const existing = Array.isArray(ui.timelineColumnOrder) ? ui.timelineColumnOrder.slice() : [];
   const desired = cols.map(c=>c.id);
