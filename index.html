@@ -1384,9 +1384,24 @@
         holder.appendChild(inner);
         const sourceRef = opts.sourceRef || null;
         if((mime.includes('pdf')) || name.endsWith('.pdf')){
-          if(window.pdfjsLib && window.pdfjsLib.GlobalWorkerOptions) window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.5.136/pdf.worker.min.js';
-          const pdfData = blob ? new Uint8Array(await blob.arrayBuffer()) : url;
-          const pdf = await window.pdfjsLib.getDocument(blob ? { data: pdfData } : url).promise;
+          if(!window.pdfjsLib || !window.pdfjsLib.getDocument) throw new Error('PDF.js is not available');
+          if(window.pdfjsLib.GlobalWorkerOptions) window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.5.136/pdf.worker.min.js';
+          const pdfData = blob ? new Uint8Array(await blob.arrayBuffer()) : null;
+          let pdf = null;
+          let pdfError = null;
+          const pdfAttempts = [];
+          if(pdfData) pdfAttempts.push({ data: pdfData, disableWorker: true, useWorkerFetch: false, isEvalSupported: false });
+          if(url) pdfAttempts.push({ url, disableWorker: true, useWorkerFetch: false, isEvalSupported: false });
+          for(const attempt of pdfAttempts){
+            try{
+              pdf = await window.pdfjsLib.getDocument(attempt).promise;
+              if(pdf) break;
+            }catch(err){
+              pdfError = err;
+              console.warn('PDF load attempt failed', err);
+            }
+          }
+          if(!pdf) throw (pdfError || new Error('Unable to open PDF'));
           for(let pageNum=1; pageNum<=pdf.numPages; pageNum++){
             const page = await pdf.getPage(pageNum);
             const viewport = page.getViewport({ scale: 1.15 });
@@ -1445,7 +1460,20 @@
           }
         }
         return true;
-      }catch(err){ console.error(err); holder.innerHTML = `<div class="sourceDocEmpty">Could not load this document here.</div>`; return false; }
+      }catch(err){
+        console.error(err);
+        try{
+          const fallbackUrl = await getDocumentFileUrl(doc);
+          if(fallbackUrl){
+            holder.innerHTML = `<div class="label">Preview</div><iframe class="docViewerFrame" src="${fallbackUrl}"></iframe><div class="hint" style="margin-top:8px">This document could not be rendered in the in-app text selector, so it opened in preview mode instead.</div>`;
+            return true;
+          }
+        }catch(fallbackErr){
+          console.warn('Fallback preview failed', fallbackErr);
+        }
+        holder.innerHTML = `<div class="sourceDocEmpty">Could not load this document here.</div>`;
+        return false;
+      }
     }
     async function openSourceDocumentPickerDoc(docId){ const doc = (state.documents || []).find(d => d.id === docId); if(!doc) return; ui.sourceDocSelectedId = docId; ui.sourceDocSelection = null; $('sourceDocCreateElement').disabled = true; $('sourceDocSelectionInfo').textContent = 'Loading document…'; $('sourceDocModalTitle').textContent = 'Elements from Document'; $('sourceDocBackToPicker').style.display = ''; await renderDocumentInSourceViewer(doc, 'sourceDocViewerInner'); }
     function openSourceDocModal(){ ui.sourceDocContext = 'create'; ui.sourceDocOpenFromElementId = null; ui.sourceDocSelection = null; ui.sourceDocSelectedId = null; ui.sourceDocMaximized = false; $('sourceDocSearch').value = ''; $('sourceDocCreateElement').disabled = true; $('sourceDocSelectionInfo').textContent = 'Highlight text in the document, then click Create element from selection.'; $('sourceDocModal').classList.add('open'); $('sourceDocBackToPicker').style.display = 'none'; $('sourceDocViewerInner').innerHTML = '<div class="sourceDocEmpty">Choose a document to open it here.</div>'; $('sourceDocModalCard')?.classList.remove('sourceDocModalMax'); if($('sourceDocModalMaxBtn')) $('sourceDocModalMaxBtn').textContent = 'Maximize'; renderSourceDocPicker(); }
