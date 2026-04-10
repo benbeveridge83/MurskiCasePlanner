@@ -960,11 +960,12 @@
     .elementsLibraryCard{grid-column:1 / 2;grid-row:1 / span 2;border:1px solid var(--border);border-radius:18px;background:#fff;padding:14px;box-shadow:var(--shadow2);display:grid;gap:10px;align-content:start;position:sticky;top:74px;}
     .elementsComposerWrap{grid-column:2 / 3;display:flex;justify-content:stretch;}
     .elementsComposer{width:100%;}
-    .elementsWorkspace{grid-column:2 / 3;display:grid;grid-template-columns:repeat(2,minmax(240px,1fr));gap:14px;align-items:start;}
-    .elementsHoverSection{position:relative;border:1px solid var(--border);border-radius:18px;background:#fff;box-shadow:var(--shadow2);padding:10px 12px;min-height:56px;overflow:visible;}
+    .elementsWorkspace{grid-column:2 / 3;display:grid;grid-template-columns:repeat(4,minmax(180px,1fr));gap:12px;align-items:start;overflow:visible;}
+    .elementsHoverSection{position:relative;border:1px solid var(--border);border-radius:18px;background:#fff;box-shadow:var(--shadow2);padding:10px 12px;min-height:56px;overflow:visible;z-index:1;}
+    .elementsHoverSection:hover,.elementsHoverSection:focus-within,.elementsHoverSection.open{z-index:50;}
     .elementsHoverHeader{display:flex;justify-content:space-between;gap:10px;align-items:center;font-weight:800;}
     .elementsHoverSummary{font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;}
-    .elementsHoverBody{display:none;position:absolute;left:0;right:0;top:calc(100% + 6px);z-index:45;border:1px solid var(--border);border-radius:16px;background:#fff;box-shadow:var(--shadow2);padding:12px;}
+    .elementsHoverBody{display:none;position:absolute;left:0;right:0;bottom:calc(100% + 6px);top:auto;z-index:55;border:1px solid var(--border);border-radius:16px;background:#fff;box-shadow:var(--shadow2);padding:12px;max-height:min(60vh,520px);overflow:auto;}
     .elementsHoverSection:hover .elementsHoverBody,.elementsHoverSection:focus-within .elementsHoverBody,.elementsHoverSection.open .elementsHoverBody{display:grid;gap:8px;}
     .elementsPaneSection{display:grid;gap:8px;min-height:0;}
     .elementsPaneSectionGrow{min-height:0;display:grid;gap:8px;align-content:start;}
@@ -974,11 +975,12 @@
     .elementLibraryRowCompact{border:1px solid var(--border);border-radius:12px;background:#fff;padding:8px 10px;cursor:pointer;position:relative;}
     .elementLibraryRowCompact:hover,.elementLibraryRowCompact:focus-within{border-color:rgba(37,99,235,.28);box-shadow:0 0 0 3px rgba(37,99,235,.08);}
     .elementLibraryRowName{font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-    .elementLibraryHoverPanel{display:none;position:absolute;left:0;right:0;top:calc(100% + 4px);z-index:40;border:1px solid var(--border);border-radius:14px;background:#fff;box-shadow:var(--shadow2);padding:10px;gap:8px;}
+    .elementLibraryHoverPanel{display:none;position:absolute;left:0;right:0;bottom:calc(100% + 4px);top:auto;z-index:40;border:1px solid var(--border);border-radius:14px;background:#fff;box-shadow:var(--shadow2);padding:10px;gap:8px;max-height:min(52vh,420px);overflow:auto;}
     .elementLibraryRowCompact:hover .elementLibraryHoverPanel,.elementLibraryRowCompact:focus-within .elementLibraryHoverPanel{display:grid;}
     .elementsTagToolbar{display:flex;gap:8px;flex-wrap:wrap;}
     .elementTagChildren.collapsed{display:none;}
-    @media (max-width: 1180px){.elementsPage{grid-template-columns:1fr;}.elementsLibraryCard,.elementsComposerWrap,.elementsWorkspace{grid-column:1 / -1;grid-row:auto;position:static;}.elementsWorkspace{grid-template-columns:1fr;}.elementsTagTree{grid-template-columns:1fr;}}
+    @media (max-width: 1400px){.elementsWorkspace{grid-template-columns:repeat(2,minmax(220px,1fr));}}
+    @media (max-width: 1180px){.elementsPage{grid-template-columns:1fr;}.elementsLibraryCard,.elementsComposerWrap,.elementsWorkspace{grid-column:1 / -1;grid-row:auto;position:static;}.elementsWorkspace{grid-template-columns:1fr;}.elementsTagTree{grid-template-columns:1fr;}.elementsHoverBody,.elementLibraryHoverPanel{position:static;bottom:auto;top:auto;max-height:none;}}
     .elementTagNode{display:grid;gap:6px;min-width:0;}
     .elementTagRoot{display:grid;gap:8px;border:1px solid var(--border);border-radius:12px;background:#fff;padding:8px 10px;min-width:0;}
     .elementTagRow{display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:10px;min-width:0;}
@@ -1506,6 +1508,7 @@
       const host = $(hostId); if(!host) return;
       host.innerHTML = renderTagTreeMarkup(selectedLinks, { inputAttr:'data-hier-tag-link', rootClass: options.rootClass || '', emptyMessage: options.emptyMessage || 'No tags yet.' });
     }
+    function renderElementCreateTagChoices(selectedLinks=[]){ const host = $('elementCreateTagChoices'); if(!host) return; host.innerHTML = renderTagTreeMarkup(selectedLinks, { inputAttr:'data-element-tag-link', rootClass:'elementTagRoot', emptyMessage:'No tags yet. Add tags first.' }); host.querySelectorAll('[data-element-tag-collapse]').forEach(btn => btn.addEventListener('click', (e)=>{ e.preventDefault(); e.stopPropagation(); const id = btn.getAttribute('data-element-tag-collapse'); ui.collapsedElementTagNodes[id] = !ui.collapsedElementTagNodes[id]; renderElementCreateTagChoices(getElementFormSelectedTagLinks()); })); host.querySelectorAll('input[data-element-tag-link]').forEach(cb => cb.addEventListener('change', ()=> updateElementHoverSummaries())); updateElementHoverSummaries(); }
     function collectHierarchicalTagLinks(hostId){
       return Array.from(document.querySelectorAll(`#${hostId} input[data-hier-tag-link]:checked`)).map(x => ({ tagId: x.getAttribute('data-tag-id') || '', subtagId: x.getAttribute('data-subtag-id') || '' })).filter(link => link.tagId);
     }
