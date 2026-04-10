@@ -760,11 +760,13 @@
     .sourceDocPage.activeSourcePage{box-shadow:0 0 0 3px rgba(37,99,235,.16);border-color:rgba(37,99,235,.40);}
     .sourceDocPageHeader{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:10px;font-size:12px;color:var(--muted);font-weight:800;}
     .sourcePdfStage{position:relative;display:block;margin:0 auto;max-width:100%;overflow:hidden;border:1px solid var(--border);border-radius:10px;background:#fff;}
-    .sourcePdfCanvas{max-width:100%;height:auto;background:#fff;display:block;position:relative;z-index:1;pointer-events:none;}
-    .sourceTextLayer{position:absolute;inset:0;margin:0;line-height:1;white-space:normal;user-select:text;z-index:2;color:transparent;overflow:hidden;cursor:text;pointer-events:auto;}
-    .sourceTextLayer .sourceTextSpan{position:absolute;transform-origin:0 0;white-space:pre;user-select:text;color:transparent;cursor:text;pointer-events:auto;}
+    .sourcePdfCanvas{width:100%;height:auto;background:#fff;display:block;position:relative;z-index:1;pointer-events:none;}
+    .sourceTextLayer{position:absolute;inset:0;margin:0;line-height:1;white-space:normal;user-select:text;-webkit-user-select:text;z-index:2;color:transparent;overflow:hidden;cursor:text;pointer-events:auto;}
+    .sourceTextLayer .sourceTextSpan{position:absolute;transform-origin:0 0;white-space:pre;user-select:text;-webkit-user-select:text;color:transparent;cursor:text;pointer-events:auto;}
     .sourceTextLayer .sourceTextSpan::selection{background:rgba(37,99,235,.28);color:transparent;}
+    .sourceTextLayer .sourceTextSpan::-moz-selection{background:rgba(37,99,235,.28);color:transparent;}
     .sourceTextLayer::selection{background:rgba(37,99,235,.28);color:transparent;}
+    .sourceTextLayer::-moz-selection{background:rgba(37,99,235,.28);color:transparent;}
     .sourceHighlight{background:rgba(255,235,59,.55);border-radius:3px;box-shadow:0 0 0 1px rgba(255,193,7,.28) inset;}
     .sourceQuotePreview{border-left:4px solid rgba(37,99,235,.35);padding:8px 12px;background:#f8fbff;border-radius:10px;font-size:13px;}
     .sourceDocEmpty{padding:24px;border:1px dashed var(--border);border-radius:14px;color:var(--muted);background:var(--surface2);}
@@ -1438,9 +1440,9 @@
     async function ensurePdfJsLib(){
       if(window.pdfjsLib && typeof window.pdfjsLib.getDocument === 'function') return window.pdfjsLib;
       const sources = [
-        'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.5.136/pdf.min.js',
         'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js',
-        'https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.min.js'
+        'https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.min.js',
+        'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.5.136/pdf.min.js'
       ];
       for(const src of sources){
         try{
@@ -1479,7 +1481,12 @@ async function renderDocumentInSourceViewer(doc, targetId, opts={}){
         if((mime.includes('pdf')) || name.endsWith('.pdf')){
           const pdfjs = await ensurePdfJsLib();
           if(!pdfjs || !pdfjs.getDocument) throw new Error('PDF.js is not available');
-          if(pdfjs.GlobalWorkerOptions) pdfjs.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+          if(pdfjs.GlobalWorkerOptions){
+            const version = String(pdfjs.version || '');
+            pdfjs.GlobalWorkerOptions.workerSrc = version.startsWith('4.')
+              ? 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.5.136/pdf.worker.min.js'
+              : 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+          }
           const pdfData = blob ? new Uint8Array(await blob.arrayBuffer()) : null;
           let pdf = null;
           let pdfError = null;
@@ -1559,13 +1566,14 @@ async function renderDocumentInSourceViewer(doc, targetId, opts={}){
                 span.style.top = Math.max(0, tx[5] - fontHeight * 0.92) + 'px';
                 span.style.fontSize = fontHeight + 'px';
                 span.style.fontFamily = 'sans-serif';
-                let transform = `rotate(${angle}rad)`;
-                const expectedWidth = Number(item.width || 0) * viewport.scale;
-                const approxWidth = Math.max(str.length, 1) * fontHeight * 0.5;
-                if(expectedWidth > 0 && approxWidth > 0){
-                  transform += ` scaleX(${expectedWidth / approxWidth})`;
+                span.style.lineHeight = '1';
+                const expectedWidth = Math.max(0, Number(item.width || 0) * viewport.scale);
+                if(expectedWidth > 0){
+                  span.style.width = expectedWidth + 'px';
                 }
-                span.style.transform = transform;
+                span.style.height = Math.max(fontHeight, 1) + 'px';
+                span.style.minWidth = Math.max(expectedWidth, fontHeight * 0.35, 1) + 'px';
+                span.style.transform = `rotate(${angle}rad)`;
                 textLayer.appendChild(span);
               });
             }
@@ -1593,6 +1601,18 @@ async function renderDocumentInSourceViewer(doc, targetId, opts={}){
           holder.innerHTML = `<div class="label">Preview</div><iframe class="docViewerFrame" src="${url}"></iframe><div class="hint" style="margin-top:8px">Text selection is available for PDF and DOCX files. For other file types, use the standard document preview.</div>`;
           return true;
         }
+        requestAnimationFrame(() => {
+          holder.querySelectorAll('.sourcePdfStage').forEach(stage => {
+            const canvas = stage.querySelector('.sourcePdfCanvas');
+            const textLayer = stage.querySelector('.sourceTextLayer');
+            if(!canvas || !textLayer) return;
+            const rect = canvas.getBoundingClientRect();
+            stage.style.width = rect.width + 'px';
+            stage.style.height = rect.height + 'px';
+            textLayer.style.width = rect.width + 'px';
+            textLayer.style.height = rect.height + 'px';
+          });
+        });
         clearSourceHighlights(holder);
         if(sourceRef?.excerpt){
           let highlighted = false;
