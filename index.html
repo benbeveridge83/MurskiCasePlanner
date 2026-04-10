@@ -1566,8 +1566,28 @@ async function renderDocumentInSourceViewer(doc, targetId, opts={}){
       }
     }
     async function openSourceDocumentPickerDoc(docId){ const doc = (state.documents || []).find(d => d.id === docId); if(!doc) return; ui.sourceDocSelectedId = docId; ui.sourceDocSelection = null; $('sourceDocCreateElement').disabled = true; $('sourceDocSelectionInfo').textContent = 'Loading document…'; $('sourceDocModalTitle').textContent = 'Elements from Document'; $('sourceDocBackToPicker').style.display = ''; ui.sourceDocMaximized = true; $('sourceDocModalCard')?.classList.add('sourceDocModalMax'); if($('sourceDocModalMaxBtn')) $('sourceDocModalMaxBtn').textContent = 'Restore'; await renderDocumentInSourceViewer(doc, 'sourceDocViewerInner'); const shell = $('sourceDocViewerShell'); if(shell) shell.scrollTop = 0; }
-    function openSourceDocModal(){ ui.sourceDocContext = 'create'; ui.sourceDocOpenFromElementId = null; ui.sourceDocSelection = null; ui.sourceDocSelectedId = null; ui.sourceDocMaximized = true; $('sourceDocSearch').value = ''; $('sourceDocCreateElement').disabled = true; $('sourceDocSelectionInfo').textContent = 'Highlight text in the document, then click Create element from selection.'; $('sourceDocModal').classList.add('open'); $('sourceDocBackToPicker').style.display = 'none'; $('sourceDocViewerInner').innerHTML = '<div class="sourceDocEmpty">Choose a document to open it here.</div>'; $('sourceDocModalCard')?.classList.add('sourceDocModalMax'); if($('sourceDocModalMaxBtn')) $('sourceDocModalMaxBtn').textContent = 'Restore'; renderSourceDocPicker(); }
-    function closeSourceDocModal(){ $('sourceDocModal').classList.remove('open'); ui.sourceDocMaximized = false; $('sourceDocModalCard')?.classList.remove('sourceDocModalMax'); if($('sourceDocModalMaxBtn')) $('sourceDocModalMaxBtn').textContent = 'Maximize'; }
+    function openSourceDocModal(){
+      ui.sourceDocContext = 'create';
+      ui.sourceDocOpenFromElementId = null;
+      ui.sourceDocSelection = null;
+      ui.sourceDocSelectedId = null;
+      ui.sourceDocMaximized = true;
+      $('sourceDocSearch').value = '';
+      $('sourceDocCreateElement').disabled = true;
+      $('sourceDocSelectionInfo').textContent = 'Highlight text in the document, then click Create element from selection.';
+      $('sourceDocModal').classList.add('open');
+      $('sourceDocBackToPicker').style.display = 'none';
+      $('sourceDocViewerInner').innerHTML = '<div class="sourceDocEmpty">Choose a document to open it here.</div>';
+      $('sourceDocModalCard')?.classList.add('sourceDocModalMax');
+      if($('sourceDocModalMaxBtn')) $('sourceDocModalMaxBtn').textContent = 'Restore';
+      renderSourceDocPicker();
+    }
+    function closeSourceDocModal(){
+      $('sourceDocModal').classList.remove('open');
+      ui.sourceDocMaximized = false;
+      $('sourceDocModalCard')?.classList.remove('sourceDocModalMax');
+      if($('sourceDocModalMaxBtn')) $('sourceDocModalMaxBtn').textContent = 'Maximize';
+    }
     function toggleSourceDocModalMax(){ ui.sourceDocMaximized = !ui.sourceDocMaximized; $('sourceDocModalCard')?.classList.toggle('sourceDocModalMax', ui.sourceDocMaximized); if($('sourceDocModalMaxBtn')) $('sourceDocModalMaxBtn').textContent = ui.sourceDocMaximized ? 'Restore' : 'Maximize'; }
     function handleSourceSelectionChange(){ const ctx = getSelectionPageContext(); if(!ctx || !ui.sourceDocSelectedId){ $('sourceDocCreateElement').disabled = true; $('sourceDocSelectionInfo').textContent = 'Highlight text in the document, then click Create element from selection.'; return; } const excerpt = String(ctx.text || '').replace(/\s+/g, ' ').trim(); ui.sourceDocSelection = { documentId: ui.sourceDocSelectedId, excerpt, pageNumber: ctx.pageNumber, pageLabel: ctx.pageLabel || (ctx.pageNumber ? ('Page ' + ctx.pageNumber) : 'Document'), sourceType: 'document' }; $('sourceDocCreateElement').disabled = !excerpt; $('sourceDocSelectionInfo').textContent = excerpt ? `Selected ${ctx.pageLabel || (ctx.pageNumber ? ('Page ' + ctx.pageNumber) : 'text')}: “${excerpt.slice(0,160)}${excerpt.length>160?'…':''}”` : 'Highlight text in the document, then click Create element from selection.'; }
     function createElementFromSourceSelection(){
@@ -1598,6 +1618,367 @@ async function renderDocumentInSourceViewer(doc, targetId, opts={}){
       setTimeout(()=>{ const nameInput = $('elementName'); if(nameInput) nameInput.focus(); }, 50);
       toast('Selection moved into a new element.');
     }
+    function getTimelineColumns(eventColumnModel){
+  const cols = [{ id:'date', label:'Date', kind:'base' }];
+  if(ui.timelineShowEventColumn) cols.push({ id:'event', label:'Event', kind:'base' });
+  if(ui.timelineShowDocumentColumn) cols.push({ id:'document', label:'Document', kind:'base' });
+  if(ui.timelineShowHeadlineColumn) cols.push({ id:'headline', label:'Headline', kind:'base' });
+  for(const group of (eventColumnModel || [])){
+    for(const sub of (group.subcols || [])){
+      cols.push({ id: timelineSubcolumnKey(group.tag.id, sub.subtagId || ''), label: `${group.tag.name} • ${sub.label}`, kind:'tag', tagId: group.tag.id, subtagId: sub.subtagId || '' });
+    }
+  }
+  const existing = Array.isArray(ui.timelineColumnOrder) ? ui.timelineColumnOrder.slice() : [];
+  const desired = cols.map(c=>c.id);
+  ui.timelineColumnOrder = existing.filter(id => desired.includes(id));
+  for(const id of desired){ if(!ui.timelineColumnOrder.includes(id)) ui.timelineColumnOrder.push(id); }
+  return ui.timelineColumnOrder.map(id => cols.find(c=>c.id===id)).filter(Boolean);
+}
+function moveTimelineColumn(columnId, insertBeforeId){
+  const arr = Array.isArray(ui.timelineColumnOrder) ? ui.timelineColumnOrder.slice() : [];
+  const from = arr.indexOf(columnId);
+  if(from < 0) return;
+  arr.splice(from, 1);
+  let idx = insertBeforeId ? arr.indexOf(insertBeforeId) : arr.length;
+  if(idx < 0) idx = arr.length;
+  arr.splice(idx, 0, columnId);
+  ui.timelineColumnOrder = arr;
+  safeSave();
+  renderTimeline();
+}
+function getTimelineColumnValueHtml(col, row){
+  if(col.id === 'date') return escapeHtml(row.kind === 'undated' ? 'No date' : formatTimelineDateDisplay(row.date || ''));
+  if(col.id === 'event'){
+    if(row.kind === 'undated'){
+      const isDrag = row.item && row.item._timelineKind !== 'element';
+      return `<div style="display:flex; gap:8px; align-items:center">${isDrag ? `<span class="outlineDragHandle timelineUndatedHandle" draggable="true" data-undated-handle="${row.item.id}" title="Drag to reorder">⋮⋮</span>` : ''}${renderTimelineRecordLink(row.item)}</div>`;
+    }
+    const records = (row.events || []).concat(row.elements || []);
+    return records.length ? records.map(ev=>`<div>${renderTimelineRecordLink(ev)}</div>`).join('') : '<span class="timelineEmptyCell">—</span>';
+  }
+  if(col.id === 'document'){
+    if(row.kind === 'undated') return '<span class="timelineEmptyCell">—</span>';
+    return row.documents.length ? row.documents.map(doc=>`<div><a href="#" data-timeline-doc-open="${doc.id}">${escapeHtml(doc.name || 'Document')}</a></div>`).join('') : '<span class="timelineEmptyCell">—</span>';
+  }
+  if(col.id === 'headline'){
+    if(row.kind === 'undated') return '<span class="timelineEmptyCell">—</span>';
+    return row.headlines.length ? row.headlines.map(item=>`<div title="${escapeHtml(getRowTitlePath(item.id))}">${escapeHtml(item.title || 'Untitled heading')}</div>`).join('') : '<span class="timelineEmptyCell">—</span>';
+  }
+  if(row.kind === 'undated'){
+    const hasMatch = getEventTagLinks(row.item).some(link => link.tagId === col.tagId && (link.subtagId || '') === (col.subtagId || ''));
+    return hasMatch ? renderTimelineRecordLink(row.item) : '<span class="timelineEmptyCell">—</span>';
+  }
+  const matches = (row.events || []).concat(row.elements || []).filter(ev => getEventTagLinks(ev).some(link => link.tagId === col.tagId && (link.subtagId || '') === (col.subtagId || '')));
+  const docMatches = (row.documents || []).filter(doc => Array.isArray(doc.tags) && doc.tags.includes(col.tagId));
+  const parts = [];
+  if(matches.length) parts.push(matches.map(ev=>`<div>${renderTimelineRecordLink(ev)}</div>`).join(''));
+  if(docMatches.length) parts.push(docMatches.map(doc=>`<div><a href="#" data-timeline-doc-open="${doc.id}">${escapeHtml(doc.name || 'Document')}</a></div>`).join(''));
+  return parts.length ? parts.join('') : '<span class="timelineEmptyCell">—</span>';
+}
+function syncTimelineScrollbars(){
+  const top = $('timelineScrollTop');
+  const topInner = $('timelineScrollTopInner');
+  const wrap = $('timelineMatrixWrap');
+  const dock = $('timelineScrollDock');
+  const dockInner = $('timelineScrollDockInner');
+  if(!top || !topInner || !wrap) return;
+  const table = wrap.querySelector('table');
+  const needsScroll = !!table && table.scrollWidth > wrap.clientWidth + 2;
+  const width = needsScroll ? (table.scrollWidth + 'px') : '1px';
+  top.style.display = needsScroll ? '' : 'none';
+  topInner.style.width = width;
+  if(dock && dockInner){
+    dock.style.display = (needsScroll && ui.currentView === 'timeline') ? 'block' : 'none';
+    dockInner.style.width = width;
+  }
+  function bindPair(scroller){
+    if(!scroller || scroller._boundWrap === wrap) return;
+    let syncing = false;
+    scroller.addEventListener('scroll', ()=>{ if(syncing) return; syncing = true; wrap.scrollLeft = scroller.scrollLeft; if(top !== scroller) top.scrollLeft = scroller.scrollLeft; if(dock && dock !== scroller) dock.scrollLeft = scroller.scrollLeft; syncing = false; });
+    wrap.addEventListener('scroll', ()=>{ if(syncing) return; syncing = true; scroller.scrollLeft = wrap.scrollLeft; if(scroller !== top) top.scrollLeft = wrap.scrollLeft; if(dock && scroller !== dock) dock.scrollLeft = wrap.scrollLeft; syncing = false; });
+    scroller._boundWrap = wrap;
+  }
+  bindPair(top);
+  bindPair(dock);
+  if(needsScroll){
+    if(Math.abs(top.scrollLeft - wrap.scrollLeft) > 1) top.scrollLeft = wrap.scrollLeft;
+    if(dock && Math.abs(dock.scrollLeft - wrap.scrollLeft) > 1) dock.scrollLeft = wrap.scrollLeft;
+  }
+}
+function renderTimeline(){
+  const eventToggle = $('timelineShowEventColumn');
+  const docToggle = $('timelineShowDocumentColumn');
+  const headlineToggle = $('timelineShowHeadlineColumn');
+  if(eventToggle) eventToggle.checked = !!ui.timelineShowEventColumn;
+  if(docToggle) docToggle.checked = !!ui.timelineShowDocumentColumn;
+  if(headlineToggle) headlineToggle.checked = !!ui.timelineShowHeadlineColumn;
+
+  const events = state.timelineEvents.slice().filter(e => e && e.date).sort((a,b)=>
+    getTimelineDateSortKey(a.date || '').localeCompare(getTimelineDateSortKey(b.date || '')) ||
+    (a.name||'').localeCompare(b.name||'')
+  );
+  const timelineElements = getTimelineRenderableElements();
+  const datedElements = timelineElements.filter(e => e && e.date).sort((a,b)=>
+    getTimelineDateSortKey(a.date || '').localeCompare(getTimelineDateSortKey(b.date || '')) ||
+    (a.name||'').localeCompare(b.name||'')
+  );
+  const undatedEvents = sortUndatedTimelineEvents(state.timelineEvents.slice().filter(e => e && !e.date));
+  const undatedElements = (timelineElements.filter(e => e && !e.date)).slice().sort((a,b)=> (a.name||'').localeCompare(b.name||''));
+  const datedDocs = ui.timelineShowDocumentColumn ? getTimelineDatedDocuments() : [];
+  const datedHeadlines = ui.timelineShowHeadlineColumn ? getTimelineDatedHeadlines() : [];
+  const wrap = $('timelineMatrixWrap');
+  const empty = $('timelineEmpty');
+  renderTimelineTagFilterControl();
+  const filteredEvents = events.filter(ev => itemMatchesTimelineTagFilter(ev.tags || []));
+  const filteredDatedElements = datedElements.filter(ev => itemMatchesTimelineTagFilter(ev.tags || []));
+  const filteredUndatedEvents = undatedEvents.filter(ev => itemMatchesTimelineTagFilter(ev.tags || []));
+  const filteredUndatedElements = undatedElements.filter(ev => itemMatchesTimelineTagFilter(ev.tags || []));
+  const filteredDocs = datedDocs.filter(doc => itemMatchesTimelineTagFilter(doc.tags || []));
+  const filteredHeadlines = datedHeadlines.filter(row => itemMatchesTimelineTagFilter(row.tags || []));
+  let eventColumnModel = buildTimelineTagColumnModel(filteredEvents.concat(filteredDatedElements, filteredUndatedEvents, filteredUndatedElements) || []);
+  const selectedTimelineTags = Array.isArray(ui.timelineFilterTagIds) ? ui.timelineFilterTagIds : [];
+  const allTimelineTagOptions = getTimelineFilterTagOptions();
+  if(selectedTimelineTags.length && selectedTimelineTags.length !== allTimelineTagOptions.length){
+    eventColumnModel = eventColumnModel.filter(group => selectedTimelineTags.includes(group.tag.id));
+  }
+  const columns = getTimelineColumns(eventColumnModel);
+  const dates = Array.from(new Set([
+    ...(ui.timelineShowEventColumn ? filteredEvents.map(e=>e.date).filter(Boolean) : []),
+    ...filteredDatedElements.map(e=>e.date).filter(Boolean),
+    ...filteredDocs.map(d=>d.date).filter(Boolean),
+    ...filteredHeadlines.map(h=>h.rowDate).filter(Boolean)
+  ])).sort((a,b)=> getTimelineDateSortKey(a).localeCompare(getTimelineDateSortKey(b)) || String(a).localeCompare(String(b)));
+
+  const hasAnything = !!(filteredUndatedEvents.length || filteredUndatedElements.length || dates.length);
+  empty.style.display = hasAnything ? 'none' : '';
+  if(!hasAnything){
+    wrap.innerHTML='';
+    syncTimelineScrollbars();
+    return;
+  }
+
+  const datedRows = dates.map(date => ({
+    kind:'dated',
+    date,
+    events: filteredEvents.filter(ev => ev.date === date),
+    elements: filteredDatedElements.filter(ev => ev.date === date),
+    documents: filteredDocs.filter(doc => doc.date === date),
+    headlines: filteredHeadlines.filter(row => row.rowDate === date)
+  }));
+  const undatedRows = filteredUndatedEvents.concat(filteredUndatedElements).map(ev => ({ kind:'undated', item: ev }));
+  const totalSlots = datedRows.length + undatedRows.length;
+  undatedRows.sort((a,b)=>{ const ao = Number.isFinite(Number(a.item?.timelineOrder)) ? Number(a.item.timelineOrder) : 999999; const bo = Number.isFinite(Number(b.item?.timelineOrder)) ? Number(b.item.timelineOrder) : 999999; return ao - bo || ((a.item?._timelineKind || '').localeCompare(b.item?._timelineKind || '')) || String(a.item?.name || '').localeCompare(String(b.item?.name || '')); });
+  const rows = [];
+  let undatedIndex = 0;
+  for(let slot = 0; slot < totalSlots; slot++){
+    while(undatedIndex < undatedRows.length){
+      const target = Number.isFinite(Number(undatedRows[undatedIndex].item?.timelineOrder)) ? Number(undatedRows[undatedIndex].item.timelineOrder) : rows.length;
+      if(target <= rows.length){ rows.push(undatedRows[undatedIndex++]); } else break;
+    }
+    if(rows.length < slot + 1 && datedRows.length){ rows.push(datedRows.shift()); }
+  }
+  while(undatedIndex < undatedRows.length) rows.push(undatedRows[undatedIndex++]);
+  while(datedRows.length) rows.push(datedRows.shift());
+
+  const colCount = columns.length;
+  wrap.innerHTML = `
+    <table class="timelineTable">
+      <thead>
+        <tr>
+          ${columns.map(col=>`<th class="timelineDragHeader" draggable="${col.id === 'date' ? 'false' : 'true'}" data-timeline-col="${col.id}" style="min-width:${col.id === 'date' ? 140 : 190}px"><span class="docRowTitle" style="gap:6px">${col.id === 'date' ? '' : `<span class="timelineColDragHandle" data-timeline-col-handle="${col.id}" draggable="true" title="Drag column">⋮⋮</span>`}<span>${escapeHtml(col.label)}</span></span></th>`).join('')}
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="timelineDropSlot" data-undated-insert="0"><td colspan="${colCount}"></td></tr>
+        ${rows.map((row, rowIndex) => row.kind === 'undated' ? `
+          <tr class="timelineUndatedRow" data-undated-event-row="${row.item.id}" data-undated-index="${rowIndex}" data-timeline-display-row="${rowIndex}">
+            ${columns.map(col=>`<td class="${col.id === 'event' || col.kind === 'tag' ? 'timelineEventCell' : (col.id === 'document' || col.id === 'headline' ? 'timelineEventCell' : '')}">${getTimelineColumnValueHtml(col, row)}</td>`).join('')}
+          </tr>
+          <tr class="timelineDropSlot" data-undated-insert="${rowIndex + 1}"><td colspan="${colCount}"></td></tr>` : `
+          <tr data-timeline-display-row="${rowIndex}">
+            ${columns.map(col=>`<td class="${col.id === 'event' || col.kind === 'tag' ? 'timelineEventCell' : (col.id === 'document' || col.id === 'headline' ? 'timelineEventCell' : '')}">${getTimelineColumnValueHtml(col, row)}</td>`).join('')}
+          </tr>
+          <tr class="timelineDropSlot" data-undated-insert="${rowIndex + 1}"><td colspan="${colCount}"></td></tr>`).join('')}
+      </tbody>
+    </table>
+  `;
+  syncTimelineScrollbars();
+
+  wrap.querySelectorAll('[data-timeline-open]').forEach(a =>
+    a.addEventListener('click', (e)=>{
+      e.preventDefault();
+      openTimelineEventModal(a.getAttribute('data-timeline-open'));
+    })
+  );
+  wrap.querySelectorAll('[data-timeline-open-element]').forEach(a =>
+    a.addEventListener('click', (e)=>{
+      e.preventDefault();
+      openElementModal(a.getAttribute('data-timeline-open-element'));
+    })
+  );
+  wrap.querySelectorAll('[data-timeline-doc-open]').forEach(a => a.addEventListener('click', (e)=>{
+    e.preventDefault();
+    openDocumentEditModal(a.getAttribute('data-timeline-doc-open'));
+  }));
+
+  let draggingColId = null;
+  function getHeaderInsertBefore(clientX){
+    const headers = Array.from(wrap.querySelectorAll('th[data-timeline-col]')).filter(th => th.getAttribute('data-timeline-col') !== 'date' && th.getAttribute('data-timeline-col') !== draggingColId);
+    let candidate = null;
+    let best = Number.NEGATIVE_INFINITY;
+    for(const header of headers){
+      const rect = header.getBoundingClientRect();
+      const offset = clientX - rect.left - rect.width / 2;
+      if(offset < 0 && offset > best){ best = offset; candidate = header; }
+    }
+    return candidate;
+  }
+  wrap.querySelectorAll('th[data-timeline-col]').forEach(th => {
+    const colId = th.getAttribute('data-timeline-col') || '';
+    if(colId === 'date') return;
+    const startDrag = (ev) => {
+      draggingColId = colId;
+      th.classList.add('dragging');
+      try{ ev.dataTransfer.effectAllowed = 'move'; ev.dataTransfer.setData('text/plain', colId); }catch(err){}
+    };
+    th.addEventListener('dragstart', startDrag);
+    const handle = th.querySelector('[data-timeline-col-handle]');
+    if(handle) handle.addEventListener('dragstart', startDrag);
+    th.addEventListener('dragend', ()=>{ draggingColId = null; wrap.querySelectorAll('th.timelineDragHeader').forEach(x=>x.classList.remove('dragging')); });
+    th.addEventListener('dragover', (ev)=>{ if(!draggingColId) return; ev.preventDefault(); });
+    th.addEventListener('drop', (ev)=>{
+      if(!draggingColId) return;
+      ev.preventDefault();
+      moveTimelineColumn(draggingColId, colId === draggingColId ? null : colId);
+      draggingColId = null;
+    });
+  });
+  const headerRow = wrap.querySelector('thead tr');
+  headerRow?.addEventListener('dragover', (ev)=>{ if(!draggingColId) return; ev.preventDefault(); });
+  headerRow?.addEventListener('drop', (ev)=>{
+    if(!draggingColId) return;
+    ev.preventDefault();
+    const before = getHeaderInsertBefore(ev.clientX);
+    moveTimelineColumn(draggingColId, before?.getAttribute('data-timeline-col') || null);
+    draggingColId = null;
+  });
+  wrap.querySelectorAll('[data-timeline-col-handle]').forEach(handle => handle.addEventListener('mousedown', (ev)=>{
+    ev.preventDefault();
+    ev.stopPropagation();
+    const colId = handle.getAttribute('data-timeline-col-handle') || '';
+    const th = handle.closest('th[data-timeline-col]');
+    th?.classList.add('pointer-dragging');
+    const onMove = (moveEv)=>{
+      wrap.querySelectorAll('th.timelineDragHeader').forEach(x=>x.classList.remove('drag-target'));
+      const before = getHeaderInsertBefore(moveEv.clientX);
+      if(before) before.classList.add('drag-target');
+    };
+    const onUp = (upEv)=>{
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseup', onUp);
+      const before = getHeaderInsertBefore(upEv.clientX);
+      wrap.querySelectorAll('th.timelineDragHeader').forEach(x=>x.classList.remove('drag-target','pointer-dragging'));
+      moveTimelineColumn(colId, before?.getAttribute('data-timeline-col') || null);
+    };
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onUp);
+  }));
+
+  wrap.querySelectorAll('[data-undated-handle]').forEach(handle => handle.addEventListener('mousedown', (ev)=>{
+    ev.preventDefault();
+    ev.stopPropagation();
+    const draggedId = handle.getAttribute('data-undated-handle') || '';
+    ui.timelineDraggingUndatedId = draggedId;
+    const sourceRow = handle.closest('[data-undated-event-row]');
+    sourceRow?.classList.add('pointer-dragging');
+    const getInsertIndexFromPoint = (clientY)=>{
+      const rows = Array.from(wrap.querySelectorAll('[data-timeline-display-row]'));
+      for(const row of rows){
+        const rect = row.getBoundingClientRect();
+        const idx = Number(row.getAttribute('data-timeline-display-row')) || 0;
+        if(clientY < rect.top + rect.height / 2) return idx;
+        if(clientY <= rect.bottom) return idx + 1;
+      }
+      return rows.length;
+    };
+    const onMove = (moveEv)=>{ markTimelineDropIndex(getInsertIndexFromPoint(moveEv.clientY)); };
+    const onUp = (upEv)=>{
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseup', onUp);
+      sourceRow?.classList.remove('pointer-dragging');
+      const insertIndex = getInsertIndexFromPoint(upEv.clientY);
+      clearTimelineDropMarkers();
+      ui.timelineDraggingUndatedId = null;
+      moveUndatedTimelineEvent(draggedId, insertIndex);
+    };
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onUp);
+  }));
+  function clearTimelineDropMarkers(){ wrap.querySelectorAll('.timelineDropSlot').forEach(el=>el.classList.remove('drop-before')); }
+  function markTimelineDropIndex(index){ clearTimelineDropMarkers(); const slot = wrap.querySelector(`.timelineDropSlot[data-undated-insert="${index}"]`); if(slot) slot.classList.add('drop-before'); }
+  function getDraggedUndatedId(ev){ return (ev.dataTransfer && ev.dataTransfer.getData('text/plain')) || ui.timelineDraggingUndatedId || ''; }
+
+  wrap.querySelectorAll('[data-undated-handle]').forEach(handle => {
+    handle.addEventListener('dragstart', (ev)=>{
+      const id = handle.getAttribute('data-undated-handle') || '';
+      ui.timelineDraggingUndatedId = id;
+      try{ ev.dataTransfer.effectAllowed = 'move'; ev.dataTransfer.setData('text/plain', id); }catch(err){}
+      handle.closest('[data-undated-event-row]')?.classList.add('isDragSource');
+    });
+    handle.addEventListener('dragend', ()=>{
+      ui.timelineDraggingUndatedId = null;
+      handle.closest('[data-undated-event-row]')?.classList.remove('isDragSource');
+      clearTimelineDropMarkers();
+    });
+  });
+  wrap.querySelectorAll('[data-undated-event-row]').forEach(row=>{
+    row.addEventListener('dragstart', (ev)=>{ const id = row.getAttribute('data-undated-event-row') || ''; ui.timelineDraggingUndatedId = id; row.classList.add('isDragSource'); try{ ev.dataTransfer.effectAllowed = 'move'; ev.dataTransfer.setData('text/plain', id); }catch(err){} });
+    row.addEventListener('dragend', ()=>{ ui.timelineDraggingUndatedId = null; row.classList.remove('isDragSource'); clearTimelineDropMarkers(); });
+    row.addEventListener('dragover', (ev)=>{
+      ev.preventDefault();
+      const idx = Number(row.getAttribute('data-undated-index')) || 0;
+      const rect = row.getBoundingClientRect();
+      const insertIndex = (ev.clientY - rect.top) < rect.height / 2 ? idx : idx + 1;
+      markTimelineDropIndex(insertIndex);
+    });
+    row.addEventListener('drop', (ev)=>{
+      ev.preventDefault();
+      const idx = Number(row.getAttribute('data-undated-index')) || 0;
+      const rect = row.getBoundingClientRect();
+      const insertIndex = (ev.clientY - rect.top) < rect.height / 2 ? idx : idx + 1;
+      const draggedId = getDraggedUndatedId(ev);
+      clearTimelineDropMarkers();
+      ui.timelineDraggingUndatedId = null;
+      moveUndatedTimelineEvent(draggedId, insertIndex);
+    });
+  });
+  wrap.querySelectorAll('.timelineDropSlot').forEach(slot=>{
+    slot.addEventListener('dragover', (ev)=>{ ev.preventDefault(); markTimelineDropIndex(Number(slot.getAttribute('data-undated-insert'))); });
+    slot.addEventListener('dragleave', ()=> slot.classList.remove('drop-before'));
+    slot.addEventListener('drop', (ev)=>{ ev.preventDefault(); const draggedId = getDraggedUndatedId(ev); const insertIndex = Number(slot.getAttribute('data-undated-insert')); clearTimelineDropMarkers(); ui.timelineDraggingUndatedId = null; moveUndatedTimelineEvent(draggedId, insertIndex); });
+  });
+  wrap.querySelectorAll('tr').forEach(row=>{
+    if(row.classList.contains('timelineUndatedRow') || row.classList.contains('timelineDropSlot')) return;
+    row.addEventListener('dragover', (ev)=>{ ev.preventDefault(); const rect = row.getBoundingClientRect(); const displayIndex = Number(row.getAttribute('data-timeline-display-row')) || rows.length; const insertIndex = (ev.clientY - rect.top) < rect.height / 2 ? displayIndex : displayIndex + 1; markTimelineDropIndex(insertIndex); });
+    row.addEventListener('drop', (ev)=>{ ev.preventDefault(); const rect = row.getBoundingClientRect(); const displayIndex = Number(row.getAttribute('data-timeline-display-row')) || rows.length; const insertIndex = (ev.clientY - rect.top) < rect.height / 2 ? displayIndex : displayIndex + 1; const draggedId = getDraggedUndatedId(ev); clearTimelineDropMarkers(); ui.timelineDraggingUndatedId = null; moveUndatedTimelineEvent(draggedId, insertIndex); });
+  });
+
+  if(eventToggle && !eventToggle.dataset.bound){
+    eventToggle.dataset.bound = '1';
+    eventToggle.addEventListener('change', ()=>{ ui.timelineShowEventColumn = !!eventToggle.checked; renderTimeline(); });
+  }
+  if(docToggle && !docToggle.dataset.bound){
+    docToggle.dataset.bound = '1';
+    docToggle.addEventListener('change', ()=>{ ui.timelineShowDocumentColumn = !!docToggle.checked; renderTimeline(); });
+  }
+  if(headlineToggle && !headlineToggle.dataset.bound){
+    headlineToggle.dataset.bound = '1';
+    headlineToggle.addEventListener('change', ()=>{ ui.timelineShowHeadlineColumn = !!headlineToggle.checked; renderTimeline(); });
+  }
+}
+    $('timelineAddEventBtn')?.addEventListener('click', (e)=>{ e.preventDefault(); openTimelineForm(); });
+    $('timelineAddElementBtn')?.addEventListener('click', ()=>{ const box = $('timelineElementPicker'); if(box){ box.style.display = box.style.display === 'none' || !box.style.display ? '' : 'none'; renderTimelineElementPicker(); } });
+    
     function closeTimelineEventModal(){ $('timelineEventModal')?.classList.remove('open'); }
     function deleteTimelineEvent(id){
       const ev = (state.timelineEvents || []).find(x => x.id === id);
