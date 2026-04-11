@@ -4384,10 +4384,15 @@ function openStructuredDocEditor(docId){
     renderOutline();
   }
 
+
+  function isUuidValue(value){
+    return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(String(value || '').trim());
+  }
+
   async function upsertElementRow(payload){
     if(!sb() || !cid()) return null;
+    const hasSupabaseId = isUuidValue(payload && payload.id);
     const row = {
-      id: payload.id,
       case_id: cid(),
       name: payload.name || '',
       element_date: payload.date || '',
@@ -4402,12 +4407,35 @@ function openStructuredDocEditor(docId){
       source_refs: cloneJson(payload.sourceRefs || [], []),
       updated_at: new Date().toISOString()
     };
-    const { data, error } = await sb().from('elements').upsert(row, { onConflict:'id' }).select().single();
-    if(error){ console.error('Save element error:', error); alert('Could not save element to Supabase.'); return null; }
+    let query = sb().from('elements');
+    let result = null;
+    if(hasSupabaseId){
+      result = await query.upsert({ id: payload.id, ...row }, { onConflict:'id' }).select().single();
+    }else{
+      result = await query.insert(row).select().single();
+    }
+    const { data, error } = result || {};
+    if(error){
+      console.error('Save element error:', error, 'payload:', payload, 'row:', row);
+      alert('Could not save element to Supabase.
+
+' + (error.message || JSON.stringify(error)));
+      return null;
+    }
     return data;
   }
 
   async function deleteElementRowSupabase(id){
+    if(!sb()) return false;
+    if(!isUuidValue(id)) return true;
+    const { error } = await sb().from('elements').delete().eq('id', id);
+    if(error){ console.error('Delete element error:', error, 'id:', id); alert('Could not delete element from Supabase.
+
+' + (error.message || JSON.stringify(error))); return false; }
+    return true;
+  }
+
+  async function loadTimelineEventsFromSupabase(id){
     if(!sb()) return false;
     const { error } = await sb().from('elements').delete().eq('id', id);
     if(error){ console.error('Delete element error:', error); alert('Could not delete element from Supabase.'); return false; }
@@ -4490,11 +4518,33 @@ function openStructuredDocEditor(docId){
     if(ui.sourceDocSelection?.documentId && !payload.documentIds.includes(ui.sourceDocSelection.documentId)) payload.documentIds = payload.documentIds.concat(ui.sourceDocSelection.documentId);
     if(ui.sourceDocSelection?.documentId && ui.sourceDocSelection?.excerpt) payload.sourceRefs = [{ ...ui.sourceDocSelection }];
     const existing = ui.selectedElementId ? getElementById(ui.selectedElementId) : null;
+    const isExistingSupabaseRow = !!(existing && isUuidValue(existing.id));
     const record = existing ? Object.assign(existing, payload) : { id: uid(), timelineOrder: (state.elements || []).length, ...payload };
     if(record.includeInTimeline && !Number.isFinite(Number(record.timelineOrder))) record.timelineOrder = (state.elements || []).length;
     const saved = await upsertElementRow(record);
     if(!saved) return;
-    if(!existing){ state.elements = state.elements || []; state.elements.push(record); }
+
+    if(existing){
+      record.id = saved.id;
+    }else{
+      state.elements = state.elements || [];
+      state.elements.push({
+        id: saved.id,
+        name: saved.name || record.name || '',
+        date: saved.element_date || record.date || '',
+        type: saved.element_type || record.type || 'text',
+        text: saved.text_html || record.text || '',
+        tags: Array.from(new Set(((saved.tag_links || []) || []).map(link => link && link.tagId).filter(Boolean))),
+        tagLinks: Array.isArray(saved.tag_links) ? saved.tag_links.filter(link => link && link.tagId).map(link => ({ tagId: link.tagId || '', subtagId: link.subtagId || '' })) : (record.tagLinks || []),
+        documentIds: Array.isArray(saved.document_ids) ? saved.document_ids.filter(Boolean) : (record.documentIds || []),
+        witnessIds: Array.isArray(saved.witness_ids) ? saved.witness_ids.filter(Boolean) : (record.witnessIds || []),
+        exhibitDocIds: Array.isArray(saved.exhibit_doc_ids) ? saved.exhibit_doc_ids.filter(Boolean) : (record.exhibitDocIds || []),
+        includeInTimeline: saved.include_in_timeline !== false,
+        timelineOrder: Number.isFinite(Number(saved.timeline_order)) ? Number(saved.timeline_order) : (record.timelineOrder || 0),
+        sourceRefs: Array.isArray(saved.source_refs) ? saved.source_refs : (record.sourceRefs || [])
+      });
+    }
+
     safeSave();
     resetElementForm();
     await loadElementsFromSupabase();
