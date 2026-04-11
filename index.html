@@ -4384,7 +4384,6 @@ function openStructuredDocEditor(docId){
     renderOutline();
   }
 
-
   function isUuidValue(value){
     return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(String(value || '').trim());
   }
@@ -4407,12 +4406,11 @@ function openStructuredDocEditor(docId){
       source_refs: cloneJson(payload.sourceRefs || [], []),
       updated_at: new Date().toISOString()
     };
-    let query = sb().from('elements');
     let result = null;
     if(hasSupabaseId){
-      result = await query.upsert({ id: payload.id, ...row }, { onConflict:'id' }).select().single();
+      result = await sb().from('elements').upsert({ id: payload.id, ...row }, { onConflict:'id' }).select().single();
     }else{
-      result = await query.insert(row).select().single();
+      result = await sb().from('elements').insert(row).select().single();
     }
     const { data, error } = result || {};
     if(error){
@@ -4429,16 +4427,13 @@ function openStructuredDocEditor(docId){
     if(!sb()) return false;
     if(!isUuidValue(id)) return true;
     const { error } = await sb().from('elements').delete().eq('id', id);
-    if(error){ console.error('Delete element error:', error, 'id:', id); alert('Could not delete element from Supabase.
+    if(error){
+      console.error('Delete element error:', error, 'id:', id);
+      alert('Could not delete element from Supabase.
 
-' + (error.message || JSON.stringify(error))); return false; }
-    return true;
-  }
-
-  async function loadTimelineEventsFromSupabase(id){
-    if(!sb()) return false;
-    const { error } = await sb().from('elements').delete().eq('id', id);
-    if(error){ console.error('Delete element error:', error); alert('Could not delete element from Supabase.'); return false; }
+' + (error.message || JSON.stringify(error)));
+      return false;
+    }
     return true;
   }
 
@@ -4518,14 +4513,26 @@ function openStructuredDocEditor(docId){
     if(ui.sourceDocSelection?.documentId && !payload.documentIds.includes(ui.sourceDocSelection.documentId)) payload.documentIds = payload.documentIds.concat(ui.sourceDocSelection.documentId);
     if(ui.sourceDocSelection?.documentId && ui.sourceDocSelection?.excerpt) payload.sourceRefs = [{ ...ui.sourceDocSelection }];
     const existing = ui.selectedElementId ? getElementById(ui.selectedElementId) : null;
-    const isExistingSupabaseRow = !!(existing && isUuidValue(existing.id));
     const record = existing ? Object.assign(existing, payload) : { id: uid(), timelineOrder: (state.elements || []).length, ...payload };
     if(record.includeInTimeline && !Number.isFinite(Number(record.timelineOrder))) record.timelineOrder = (state.elements || []).length;
+
     const saved = await upsertElementRow(record);
     if(!saved) return;
 
     if(existing){
-      record.id = saved.id;
+      existing.id = saved.id;
+      existing.name = saved.name || record.name || '';
+      existing.date = saved.element_date || record.date || '';
+      existing.type = saved.element_type || record.type || 'text';
+      existing.text = saved.text_html || record.text || '';
+      existing.tagLinks = Array.isArray(saved.tag_links) ? saved.tag_links.filter(link => link && link.tagId).map(link => ({ tagId: link.tagId || '', subtagId: link.subtagId || '' })) : (record.tagLinks || []);
+      existing.tags = Array.from(new Set((existing.tagLinks || []).map(link => link.tagId).filter(Boolean)));
+      existing.documentIds = Array.isArray(saved.document_ids) ? saved.document_ids.filter(Boolean) : (record.documentIds || []);
+      existing.witnessIds = Array.isArray(saved.witness_ids) ? saved.witness_ids.filter(Boolean) : (record.witnessIds || []);
+      existing.exhibitDocIds = Array.isArray(saved.exhibit_doc_ids) ? saved.exhibit_doc_ids.filter(Boolean) : (record.exhibitDocIds || []);
+      existing.includeInTimeline = saved.include_in_timeline !== false;
+      existing.timelineOrder = Number.isFinite(Number(saved.timeline_order)) ? Number(saved.timeline_order) : (record.timelineOrder || 0);
+      existing.sourceRefs = Array.isArray(saved.source_refs) ? saved.source_refs : (record.sourceRefs || []);
     }else{
       state.elements = state.elements || [];
       state.elements.push({
