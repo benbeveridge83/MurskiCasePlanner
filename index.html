@@ -4415,9 +4415,7 @@ function openStructuredDocEditor(docId){
     const { data, error } = result || {};
     if(error){
       console.error('Save element error:', error, 'payload:', payload, 'row:', row);
-      alert('Could not save element to Supabase.
-
-' + (error.message || JSON.stringify(error)));
+      alert('Could not save element to Supabase.\n\n' + (error.message || JSON.stringify(error)));
       return null;
     }
     return data;
@@ -4429,9 +4427,7 @@ function openStructuredDocEditor(docId){
     const { error } = await sb().from('elements').delete().eq('id', id);
     if(error){
       console.error('Delete element error:', error, 'id:', id);
-      alert('Could not delete element from Supabase.
-
-' + (error.message || JSON.stringify(error)));
+      alert('Could not delete element from Supabase.\n\n' + (error.message || JSON.stringify(error)));
       return false;
     }
     return true;
