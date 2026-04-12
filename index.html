@@ -897,6 +897,7 @@
     .structuredTray{border:1px solid var(--border);border-radius:14px;padding:10px;background:#fff;display:grid;gap:8px;}
     .structuredTrayList{display:flex;gap:8px;flex-wrap:wrap;max-height:140px;overflow:auto;}
     .structuredModal{position:fixed;inset:0;background:rgba(15,23,42,.35);display:none;align-items:center;justify-content:center;z-index:60;padding:20px;}
+    #elementModal{z-index:80;}
     .structuredModal.open{display:flex;}
     .structuredModalCard{width:min(760px, calc(100vw - 40px));max-height:calc(100vh - 40px);overflow:auto;background:#fff;border:1px solid var(--border);border-radius:20px;box-shadow:var(--shadow);padding:18px;display:grid;gap:12px;} .sourceDocModalCard{width:98vw;height:96vh;max-height:96vh;grid-template-rows:auto auto auto 1fr auto;padding:14px;} .sourceDocModalCard.sourceDocModalMax{width:99vw;height:99vh;max-height:99vh;border-radius:12px;padding:12px;} .sourceDocViewerShell{min-height:68vh;height:100%;padding:10px;} .sourceDocViewerInner{justify-items:center;} .sourceDocPage{width:fit-content;max-width:100%;margin:0 auto;} .sourceDocStickyBar{position:sticky;top:0;z-index:12;} .sourceDocStickyActions{display:flex;gap:8px;flex-wrap:wrap;align-items:center;} .sourceDocStickyInfo{min-width:260px;flex:1;} .sourceDocModalActions{display:flex;gap:8px;flex-wrap:wrap;align-items:center;} .sourceDocPickerList{max-height:22vh;overflow:auto;} .sourceDocHeaderActions{display:flex;gap:8px;flex-wrap:wrap;align-items:center;} .elementsHeaderBar{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap;margin-bottom:10px;} .elementsHeaderControls{display:flex;gap:8px;flex-wrap:wrap;align-items:center;} .elementsFilterPanel{max-height:280px;overflow:auto;border:1px solid var(--border);border-radius:12px;padding:10px;background:#fff;min-width:280px;} .docTagSummary{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;} .docTagPathPill{display:inline-flex;align-items:center;gap:6px;padding:5px 9px;border-radius:999px;border:1px solid rgba(37,99,235,.18);background:rgba(37,99,235,.07);font-size:12px;font-weight:700;} .docTagModalTree{max-height:46vh;overflow:auto;border:1px solid var(--border);border-radius:14px;padding:10px;background:#fbfdff;} .docTagModalSummary{display:flex;gap:6px;flex-wrap:wrap;}
     .structuredTagChecklist{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:8px;}
@@ -965,10 +966,7 @@
     .elementsHoverSection:hover,.elementsHoverSection:focus-within,.elementsHoverSection.open{z-index:50;}
     .elementsHoverHeader{display:flex;justify-content:space-between;gap:10px;align-items:center;font-weight:800;}
     .elementsHoverSummary{font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;}
-    .elementsHoverBody{display:none;position:fixed;left:50%;top:120px;transform:translateX(-50%);width:min(90vw,1500px);min-width:min(980px,calc(100vw - 24px));z-index:55;border:1px solid var(--border);border-radius:16px;background:#fff;box-shadow:var(--shadow2);padding:12px;max-height:min(60vh,520px);overflow:auto;}
-    .elementsHoverBody.open-left{left:auto;right:12px;transform:none;}
-    .elementsHoverBody.open-right{left:12px;right:auto;transform:none;}
-    .elementsHoverBody.open-center{left:50%;right:auto;transform:translateX(-50%);}
+    .elementsHoverBody{display:none;position:absolute;left:0;right:auto;transform:none;width:min(90vw,1500px);min-width:980px;bottom:calc(100% + 6px);top:auto;z-index:55;border:1px solid var(--border);border-radius:16px;background:#fff;box-shadow:var(--shadow2);padding:12px;max-height:min(60vh,520px);overflow:auto;}
     .elementsHoverSection:hover .elementsHoverBody,.elementsHoverSection:focus-within .elementsHoverBody,.elementsHoverSection.open .elementsHoverBody{display:grid;gap:8px;}
     .elementsPaneSection{display:grid;gap:8px;min-height:0;}
     .elementsPaneSectionGrow{min-height:0;display:grid;gap:8px;align-content:start;}
@@ -978,10 +976,7 @@
     .elementLibraryRowCompact{border:1px solid var(--border);border-radius:12px;background:#fff;padding:7px 9px;cursor:pointer;position:relative;overflow:visible;}
     .elementLibraryRowCompact:hover,.elementLibraryRowCompact:focus-within{border-color:rgba(37,99,235,.28);box-shadow:0 0 0 3px rgba(37,99,235,.08);}
     .elementLibraryRowName{font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-    .elementLibraryHoverPanel{display:none;position:fixed;left:50%;top:120px;transform:translateX(-50%);width:min(88vw,1280px);min-width:min(900px,calc(100vw - 24px));z-index:220;border:1px solid var(--border);border-radius:14px;background:#fff;box-shadow:var(--shadow2);padding:12px;gap:10px;max-height:min(68vh,640px);overflow:auto;}
-    .elementLibraryHoverPanel.open-left{left:auto;right:12px;transform:none;}
-    .elementLibraryHoverPanel.open-right{left:12px;right:auto;transform:none;}
-    .elementLibraryHoverPanel.open-center{left:50%;right:auto;transform:translateX(-50%);}
+    .elementLibraryHoverPanel{display:none;position:absolute;left:0;right:auto;transform:none;width:min(88vw,1280px);min-width:900px;top:calc(100% + 6px);bottom:auto;z-index:220;border:1px solid var(--border);border-radius:14px;background:#fff;box-shadow:var(--shadow2);padding:12px;gap:10px;max-height:min(68vh,640px);overflow:auto;}
     .elementLibraryRowCompact.open .elementLibraryHoverPanel,.elementLibraryRowCompact:focus-within .elementLibraryHoverPanel{display:grid;}
     .elementsTagToolbar{display:flex;gap:8px;flex-wrap:wrap;}
     .elementTagChildren.collapsed{display:none;}
@@ -1003,11 +998,8 @@
     .elementHoverPicker{position:relative;border:1px solid var(--border);border-radius:14px;background:#fff;padding:10px;}
     .elementHoverPickerHeader{display:flex;justify-content:space-between;gap:8px;align-items:center;font-weight:800;}
     .elementHoverPickerSummary{font-size:12px;color:var(--muted);margin-top:6px;line-height:1.35;}
-    .elementHoverPickerBody{display:none;position:fixed;left:50%;top:140px;transform:translateX(-50%);z-index:240;width:min(72vw,960px);min-width:min(420px,calc(100vw - 24px));max-height:min(55vh,520px);overflow:auto;border:1px solid var(--border);border-radius:14px;background:#fff;box-shadow:var(--shadow2);padding:12px;}
-    .elementHoverPicker.openLeft .elementHoverPickerBody{left:auto;right:12px;transform:none;}
-    .elementHoverPickerBody.open-left{left:auto;right:12px;transform:none;}
-    .elementHoverPickerBody.open-right{left:12px;right:auto;transform:none;}
-    .elementHoverPickerBody.open-center{left:50%;right:auto;transform:translateX(-50%);}
+    .elementHoverPickerBody{display:none;position:absolute;left:0;top:calc(100% + 6px);z-index:240;width:min(72vw,960px);min-width:420px;max-height:min(55vh,520px);overflow:auto;border:1px solid var(--border);border-radius:14px;background:#fff;box-shadow:var(--shadow2);padding:12px;}
+    .elementHoverPicker.openLeft .elementHoverPickerBody{left:auto;right:0;}
     .elementHoverPicker:hover .elementHoverPickerBody,.elementHoverPicker.open .elementHoverPickerBody{display:grid;gap:8px;}
     .elementHoverPickerList{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;}
     .elementHoverPickerSearch{margin-bottom:2px;}
@@ -1437,7 +1429,7 @@
       toast('Element updated');
     }
 
-    function renderElements(){ const list = $('elementsList'); if(!list) return; bindElementRichTextToolbar(); setupElementsHoverPanels(); const editing = ui.selectedElementId ? getElementById(ui.selectedElementId) : null; if(!Object.keys(ui.collapsedElementTagNodes || {}).length) setAllElementTagNodesCollapsed(true); renderElementWitnessList(editing?.witnessIds || getElementFormSelectedWitnessIds()); renderElementDocumentList(editing?.documentIds || getElementFormSelectedDocumentIds()); renderElementExhibitList(editing?.exhibitDocIds || getElementFormSelectedExhibitIds()); renderElementCreateTagChoices(editing ? getEventTagLinks(editing) : getElementFormSelectedTagLinks()); updateElementHoverSummaries(); const search = String(ui.elementsSearch || '').trim().toLowerCase(); const mode = ui.elementsFilterMode || 'all'; const items = (state.elements || []).filter(el => { if(mode === 'timeline' && !el.includeInTimeline) return false; if(mode === 'not_timeline' && el.includeInTimeline) return false; if(!search) return true; const hay = [el.name, (el.text || '').replace(/<[^>]+>/g, ' '), ...(el.tags || []).map(tagId => state.tags.find(t=>t.id===tagId)?.name || ''), ...getElementLinkedWitnesses(el).map(p => p.name || ''), ...getElementLinkedDocuments(el).map(d => d.name || ''), ...getElementLinkedExhibits(el).map(d => d.name || '')].join(' ').toLowerCase(); return hay.includes(search); }).sort((a,b)=> (a.name||'').localeCompare(b.name||'')); list.innerHTML = ''; $('elementsEmpty').style.display = items.length ? 'none' : ''; items.forEach(el => { const row = document.createElement('div'); row.className = 'elementLibraryRowCompact' + (ui.selectedElementId===el.id ? ' selectedDoc' : ''); row.innerHTML = `<div class="elementLibraryRowName">${escapeHtml(el.name || 'Untitled element')}</div><div class="elementLibraryHoverPanel">${renderElementHoverEditor(el)}</div>`; bindElementLibraryHoverRow(row); bindElementHoverSearches(row); row.addEventListener('mouseenter', ()=>{ if(document.activeElement && (document.activeElement.id==='elementName' || document.activeElement.id==='elementDate' || (document.activeElement.closest && document.activeElement.closest('#elementText')))) return; loadElementIntoEditor(el.id); }); row.addEventListener('click', (e)=>{ if(e.target && e.target.closest('button')) return; openElementModal(el.id); }); list.appendChild(row); }); list.querySelectorAll('[data-element-act]').forEach(btn=>btn.addEventListener('click', (ev)=>{ ev.preventDefault(); ev.stopPropagation(); const id = btn.getAttribute('data-id'); const act = btn.getAttribute('data-element-act'); if(act === 'edit') loadElementIntoEditor(id, { focusName:true }); if(act === 'open') openElementModal(id); if(act === 'hoverSave') saveElementFromHoverPanel(btn.closest('.elementLibraryRowCompact'), id); if(act === 'toggleTimeline'){ const el = getElementById(id); if(el) toggleElementInTimeline(id, !el.includeInTimeline); } if(act === 'del') deleteElement(id); })); }
+    function renderElements(){ const list = $('elementsList'); if(!list) return; bindElementRichTextToolbar(); const editing = ui.selectedElementId ? getElementById(ui.selectedElementId) : null; if(!Object.keys(ui.collapsedElementTagNodes || {}).length) setAllElementTagNodesCollapsed(true); renderElementWitnessList(editing?.witnessIds || getElementFormSelectedWitnessIds()); renderElementDocumentList(editing?.documentIds || getElementFormSelectedDocumentIds()); renderElementExhibitList(editing?.exhibitDocIds || getElementFormSelectedExhibitIds()); renderElementCreateTagChoices(editing ? getEventTagLinks(editing) : getElementFormSelectedTagLinks()); updateElementHoverSummaries(); const search = String(ui.elementsSearch || '').trim().toLowerCase(); const mode = ui.elementsFilterMode || 'all'; const items = (state.elements || []).filter(el => { if(mode === 'timeline' && !el.includeInTimeline) return false; if(mode === 'not_timeline' && el.includeInTimeline) return false; if(!search) return true; const hay = [el.name, (el.text || '').replace(/<[^>]+>/g, ' '), ...(el.tags || []).map(tagId => state.tags.find(t=>t.id===tagId)?.name || ''), ...getElementLinkedWitnesses(el).map(p => p.name || ''), ...getElementLinkedDocuments(el).map(d => d.name || ''), ...getElementLinkedExhibits(el).map(d => d.name || '')].join(' ').toLowerCase(); return hay.includes(search); }).sort((a,b)=> (a.name||'').localeCompare(b.name||'')); list.innerHTML = ''; $('elementsEmpty').style.display = items.length ? 'none' : ''; items.forEach(el => { const row = document.createElement('div'); row.className = 'elementLibraryRowCompact' + (ui.selectedElementId===el.id ? ' selectedDoc' : ''); row.innerHTML = `<div class="elementLibraryRowName">${escapeHtml(el.name || 'Untitled element')}</div><div class="elementLibraryHoverPanel">${renderElementHoverEditor(el)}</div>`; bindElementLibraryHoverRow(row); bindElementHoverSearches(row); row.addEventListener('mouseenter', ()=>{ if(document.activeElement && (document.activeElement.id==='elementName' || document.activeElement.id==='elementDate' || (document.activeElement.closest && document.activeElement.closest('#elementText')))) return; loadElementIntoEditor(el.id); }); row.addEventListener('click', (e)=>{ if(e.target && e.target.closest('button')) return; openElementModal(el.id); }); list.appendChild(row); }); list.querySelectorAll('[data-element-act]').forEach(btn=>btn.addEventListener('click', (ev)=>{ ev.preventDefault(); ev.stopPropagation(); const id = btn.getAttribute('data-id'); const act = btn.getAttribute('data-element-act'); if(act === 'edit') loadElementIntoEditor(id, { focusName:true }); if(act === 'open') openElementModal(id); if(act === 'hoverSave') saveElementFromHoverPanel(btn.closest('.elementLibraryRowCompact'), id); if(act === 'toggleTimeline'){ const el = getElementById(id); if(el) toggleElementInTimeline(id, !el.includeInTimeline); } if(act === 'del') deleteElement(id); })); }
     
     let activeElementLibraryHoverRow = null;
     let activeElementLibraryHoverTimer = null;
@@ -1446,8 +1438,6 @@
       clearTimeout(activeElementLibraryHoverTimer);
       if(activeElementLibraryHoverRow && activeElementLibraryHoverRow !== row) activeElementLibraryHoverRow.classList.remove('open');
       row.classList.add('open');
-      const panel = row.querySelector('.elementLibraryHoverPanel');
-      if(panel) positionFloatingHoverPanel(panel, row, 'center');
       activeElementLibraryHoverRow = row;
     }
     function scheduleCloseElementLibraryHover(row){
@@ -1457,98 +1447,6 @@
         if(activeElementLibraryHoverRow === row) activeElementLibraryHoverRow = null;
       }, 180);
     }
-    function positionFloatingHoverPanel(panel, trigger, mode='auto'){
-      if(!panel || !trigger || window.innerWidth <= 1180) return;
-      panel.classList.remove('open-left','open-right','open-center');
-      const viewportPad = 12;
-      const triggerRect = trigger.getBoundingClientRect();
-      const panelRect = panel.getBoundingClientRect();
-      const panelWidth = Math.min(panelRect.width || panel.offsetWidth || 0, window.innerWidth - viewportPad * 2);
-      let resolvedMode = mode;
-      if(resolvedMode === 'auto'){
-        resolvedMode = triggerRect.left + panelWidth > window.innerWidth - viewportPad ? 'left' : 'center';
-      }
-      if(resolvedMode === 'left') panel.classList.add('open-left');
-      else if(resolvedMode === 'right') panel.classList.add('open-right');
-      else panel.classList.add('open-center');
-      const nextRect = panel.getBoundingClientRect();
-      const height = nextRect.height || panel.offsetHeight || 0;
-      let top = triggerRect.top - height - 8;
-      const minTop = 12;
-      const maxTop = Math.max(minTop, window.innerHeight - height - 12);
-      if(top < minTop) top = Math.min(maxTop, triggerRect.bottom + 8);
-      panel.style.top = `${Math.max(minTop, Math.min(top, maxTop))}px`;
-    }
-
-    function setupElementsHoverPanels(){
-      document.querySelectorAll('.elementsHoverSection').forEach((section, index) => {
-        if(section.dataset.hoverSetup === '1') return;
-        section.dataset.hoverSetup = '1';
-        const header = section.querySelector('.elementsHoverHeader') || section;
-        const panel = section.querySelector('.elementsHoverBody');
-        if(!panel) return;
-        const preferredMode = (section.id === 'elementExhibitSection' || section.id === 'elementTagSection') ? 'left' : (index === 0 ? 'right' : 'center');
-        const openPanel = (pinned=false) => {
-          document.querySelectorAll('.elementsHoverSection.open').forEach(other => {
-            if(other !== section) other.classList.remove('open');
-          });
-          section.classList.add('open');
-          if(pinned) section.dataset.pinnedOpen = '1';
-          positionFloatingHoverPanel(panel, header, preferredMode);
-        };
-        const closePanel = () => {
-          if(section.dataset.pinnedOpen === '1') return;
-          section.classList.remove('open');
-        };
-        section.addEventListener('mouseenter', () => openPanel(false));
-        section.addEventListener('mouseleave', closePanel);
-        header.addEventListener('click', (e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          const isPinned = section.dataset.pinnedOpen === '1';
-          document.querySelectorAll('.elementsHoverSection').forEach(other => {
-            if(other !== section){ other.classList.remove('open'); delete other.dataset.pinnedOpen; }
-          });
-          if(isPinned){
-            delete section.dataset.pinnedOpen;
-            section.classList.remove('open');
-          } else {
-            openPanel(true);
-          }
-        });
-      });
-
-      document.querySelectorAll('.elementHoverPicker').forEach((picker) => {
-        if(picker.dataset.hoverSetup === '1') return;
-        picker.dataset.hoverSetup = '1';
-        const body = picker.querySelector('.elementHoverPickerBody');
-        const header = picker.querySelector('.elementHoverPickerHeader') || picker;
-        if(!body) return;
-        const preferredMode = picker.classList.contains('openLeft') ? 'left' : 'center';
-        const openPicker = (pinned=false) => {
-          picker.classList.add('open');
-          if(pinned) picker.dataset.pinnedOpen = '1';
-          positionFloatingHoverPanel(body, header, preferredMode);
-        };
-        const closePicker = () => {
-          if(picker.dataset.pinnedOpen === '1') return;
-          picker.classList.remove('open');
-        };
-        picker.addEventListener('mouseenter', () => openPicker(false));
-        picker.addEventListener('mouseleave', closePicker);
-        header.addEventListener('click', (e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          if(picker.dataset.pinnedOpen === '1'){
-            delete picker.dataset.pinnedOpen;
-            picker.classList.remove('open');
-          } else {
-            openPicker(true);
-          }
-        });
-      });
-    }
-
     function bindElementLibraryHoverRow(row){
       if(!row || row.dataset.hoverBound === '1') return;
       row.dataset.hoverBound = '1';
@@ -2041,20 +1939,32 @@ async function renderDocumentInSourceViewer(doc, targetId, opts={}){
       const cleanExcerpt = String(sel.excerpt || '').replace(/\s+/g, ' ').trim();
       const citation = `${doc.name}${sel.pageNumber ? ', p. ' + sel.pageNumber : ''}`;
       const quoted = `“${escapeHtml(cleanExcerpt)}” <span class="hint">(${escapeHtml(citation)})</span>`;
-      ui.selectedElementId = null;
+      const newElement = {
+        id: uid(),
+        name: '',
+        date: '',
+        type: 'text',
+        text: quoted,
+        tags: [],
+        tagLinks: [],
+        documentIds: [doc.id],
+        witnessIds: [],
+        exhibitDocIds: [],
+        includeInTimeline: false,
+        timelineOrder: (state.elements || []).length,
+        sourceRefs: [{ ...sel, excerpt: cleanExcerpt }]
+      };
+      state.elements = state.elements || [];
+      state.elements.push(newElement);
+      ui.selectedElementId = newElement.id;
       ui.sourceDocSelection = { ...sel, excerpt: cleanExcerpt };
-      if($('elementName')) $('elementName').value = '';
-      if($('elementText')) $('elementText').innerHTML = quoted;
-      if($('elementDocumentsSearch')) $('elementDocumentsSearch').value = '';
-      if($('elementWitnessSearch')) $('elementWitnessSearch').value = '';
-      renderElementDocumentList([doc.id]);
-      renderElementWitnessList([]);
-      renderElementExhibitList([]);
-      renderElementCreateTagChoices([]);
-      setTab('elements');
-      closeSourceDocModal();
-      setTimeout(()=>{ const nameInput = $('elementName'); if(nameInput) nameInput.focus(); }, 50);
-      toast('Selection moved into a new element.');
+      safeSave();
+      renderElements();
+      renderTimeline();
+      renderOutline();
+      openElementModal(newElement.id);
+      setTimeout(()=>{ const nameInput = $('elementModalEditName'); if(nameInput) nameInput.focus(); }, 50);
+      toast('New element opened for editing.');
     }
     function getTimelineColumns(eventColumnModel){
   const cols = [{ id:'date', label:'Date', kind:'base' }];
