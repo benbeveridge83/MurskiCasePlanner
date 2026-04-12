@@ -1024,9 +1024,11 @@
     .elementsWorksheetWrap{margin-top:14px;border:1px solid var(--border);border-radius:16px;background:#fff;box-shadow:var(--shadow2);padding:12px;display:none;}
     .elementsWorksheetWrap.open{display:block;}
     .elementsWorksheetShell{overflow:auto;border:1px solid var(--border);border-radius:12px;background:#fff;}
-    .elementsWorksheetTable{border-collapse:collapse;width:max-content;min-width:100%;}
-    .elementsWorksheetTable th,.elementsWorksheetTable td{border-bottom:1px solid var(--border);padding:10px;vertical-align:top;text-align:left;white-space:nowrap;}
+    .elementsWorksheetTable{border-collapse:separate;border-spacing:0;width:max-content;min-width:100%;}
+    .elementsWorksheetTable th,.elementsWorksheetTable td{border-bottom:1px solid var(--border);border-right:1px solid var(--border);padding:10px;vertical-align:top;text-align:left;white-space:nowrap;}
+    .elementsWorksheetTable th:first-child,.elementsWorksheetTable td:first-child{border-left:1px solid var(--border);}
     .elementsWorksheetTable th{position:sticky;top:0;background:#f8fbff;z-index:2;}
+    .elementsWorksheetTable thead tr:first-child th{border-top:1px solid var(--border);}
     .elementsWorksheetTable td.tagsCell{white-space:normal;min-width:420px;}
     .elementsWorksheetRow{cursor:pointer;}
     .elementsWorksheetRow:hover{background:#f8fbff;}
@@ -1802,7 +1804,6 @@
       }).sort((a,b)=> (a.name||'').localeCompare(b.name||''));
     }
     function buildHierarchicalTagColumns(allowedTagIds=null, allowedLeafKeys=null){
-      const tagMap = new Map((state.tags || []).map(tag => [tag.id, tag]));
       const rootTags = (state.tags || []).filter(tag => !allowedTagIds || allowedTagIds.has(tag.id)).slice().sort(sortByName);
       return rootTags.map(tag => {
         const directChildren = (state.subtags || []).filter(st => st.parentTagId === tag.id && !(st.parentSubtagId || '')).slice().sort((a,b)=>(a.name||'').localeCompare(b.name||''));
@@ -1819,23 +1820,22 @@
         }).filter(group => group.leaves.length);
         const rootLeaves = [];
         const rootLeaf = { key: `${tag.id}::`, tagId: tag.id, subtagId: '', rootName: tag.name || 'Tag', childName: '', grandName: '', label: tag.name || 'Tag' };
-        if(!allowedLeafKeys || allowedLeafKeys.has(rootLeaf.key)) rootLeaves.push(rootLeaf);
+        if(!childGroups.length && (!allowedLeafKeys || allowedLeafKeys.has(rootLeaf.key))) rootLeaves.push(rootLeaf);
         const allLeaves = rootLeaves.concat(childGroups.flatMap(group => group.leaves));
         return { tag, rootLeaves, childGroups, leaves: allLeaves };
       }).filter(group => group.leaves.length);
     }
-    function renderHierarchicalHeaderRows(groups, type){
-      if(!(groups || []).length) return '';
+    function getHierarchicalHeaderRowData(groups, type){
       const isTimeline = type === 'timeline';
       const row1 = [];
       const row2 = [];
       const row3 = [];
-      for(const group of groups){
+      for(const group of (groups || [])){
         row1.push(`<th${isTimeline ? ' class="timelineTagTopHead"' : ''} colspan="${group.leaves.length}">${escapeHtml(group.tag.name || 'Tag')}</th>`);
         if(group.rootLeaves.length){
           row2.push(`<th${isTimeline ? ' class="timelineTagMidHead"' : ''} rowspan="2">${escapeHtml(group.tag.name || 'Tag')}</th>`);
         }
-        for(const childGroup of group.childGroups){
+        for(const childGroup of (group.childGroups || [])){
           const childLeaves = childGroup.leaves || [];
           const grandLeaves = childLeaves.filter(leaf => leaf.grandName);
           if(grandLeaves.length){
@@ -1848,7 +1848,12 @@
           }
         }
       }
-      return `<tr>${row1.join('')}</tr><tr>${row2.join('')}</tr><tr>${row3.join('')}</tr>`;
+      return { row1, row2, row3 };
+    }
+    function renderHierarchicalHeaderRows(groups, type){
+      if(!(groups || []).length) return '';
+      const rows = getHierarchicalHeaderRowData(groups, type);
+      return `<tr>${rows.row1.join('')}</tr><tr>${rows.row2.join('')}</tr><tr>${rows.row3.join('')}</tr>`;
     }
     function getElementWorksheetSortValue(el, key){
       if(key === 'name') return String(el?.name || '').toLowerCase();
@@ -1893,7 +1898,8 @@
       const sort = ui.elementsWorksheetSort || { key:'name', dir:'asc' };
       const arrow = (key) => sort.key === key ? (sort.dir === 'asc' ? ' ▲' : ' ▼') : '';
       const baseCols = 4;
-      host.innerHTML = `<table class="elementsWorksheetTable"><thead><tr><th rowspan="3" data-elements-worksheet-sort="name" style="cursor:pointer">Element${arrow('name')}</th><th rowspan="3" data-elements-worksheet-sort="witness" style="cursor:pointer">Witness${arrow('witness')}</th><th rowspan="3" data-elements-worksheet-sort="date" style="cursor:pointer">Date${arrow('date')}</th><th rowspan="3" data-elements-worksheet-sort="source" style="cursor:pointer">Source${arrow('source')}</th>${renderHierarchicalHeaderRows(groups, 'worksheet')}</tr></thead><tbody>${sortedItems.map(el => {
+      const headerRows = getHierarchicalHeaderRowData(groups, 'worksheet');
+      host.innerHTML = `<table class="elementsWorksheetTable"><thead><tr><th rowspan="3" data-elements-worksheet-sort="name" style="cursor:pointer">Element${arrow('name')}</th><th rowspan="3" data-elements-worksheet-sort="witness" style="cursor:pointer">Witness${arrow('witness')}</th><th rowspan="3" data-elements-worksheet-sort="date" style="cursor:pointer">Date${arrow('date')}</th><th rowspan="3" data-elements-worksheet-sort="source" style="cursor:pointer">Source${arrow('source')}</th>${headerRows.row1.join('')}</tr><tr>${headerRows.row2.join('')}</tr><tr>${headerRows.row3.join('')}</tr></thead><tbody>${sortedItems.map(el => {
         const links = Array.isArray(el.tagLinks) ? el.tagLinks : [];
         const witnesses = getElementLinkedWitnesses(el).map(p => p.name || '').join(' • ') || '';
         const source = [getElementSourceText(el), ...getElementSourceDocumentIds(el).map(id => getDocumentById(id)?.name || ''), ...getElementSourcePersonIds(el).map(id => getPersonById(id)?.name || '')].filter(Boolean).join(' • ');
@@ -2227,26 +2233,10 @@ function renderTimelineHeaderRows(columns){
     childGroup.leaves.push(leaf);
   }
   for(const [,group] of byRoot) groups.push(group);
-  const row1 = [`<tr>${baseCols.map(col => `<th class="timelineDragHeader" rowspan="3" draggable="${col.id === 'date' ? 'false' : 'true'}" data-timeline-col="${col.id}" style="min-width:${col.id === 'date' ? 140 : 190}px"><span class="docRowTitle" style="gap:6px">${col.id === 'date' ? '' : `<span class="timelineColDragHandle" data-timeline-col-handle="${col.id}" draggable="true" title="Drag column">⋮⋮</span>`}<span>${escapeHtml(col.label)}</span></span></th>`).join('')}${groups.map(group => `<th colspan="${group.leaves.length}">${escapeHtml(group.tag.name || 'Tag')}</th>`).join('')}</tr>`];
+  const headerRows = getHierarchicalHeaderRowData(groups, 'timeline');
+  const row1 = [`<tr>${baseCols.map(col => `<th class="timelineDragHeader" rowspan="3" draggable="${col.id === 'date' ? 'false' : 'true'}" data-timeline-col="${col.id}" style="min-width:${col.id === 'date' ? 140 : 190}px"><span class="docRowTitle" style="gap:6px">${col.id === 'date' ? '' : `<span class="timelineColDragHandle" data-timeline-col-handle="${col.id}" draggable="true" title="Drag column">⋮⋮</span>`}<span>${escapeHtml(col.label)}</span></span></th>`).join('')}${headerRows.row1.join('')}</tr>`];
   if(!groups.length) return row1.join('');
-  const row2 = [];
-  const row3 = [];
-  for(const group of groups){
-    if(group.rootLeaves.length) row2.push(`<th rowspan="2">${escapeHtml(group.tag.name || 'Tag')}</th>`);
-    for(const childGroup of (group.childGroups || [])){
-      const childLeaves = childGroup.leaves || [];
-      const grandLeaves = childLeaves.filter(leaf => leaf.grandName);
-      if(grandLeaves.length){
-        row2.push(`<th colspan="${childLeaves.length}">${escapeHtml(childGroup.child.name || 'Child')}</th>`);
-        const selfLeaf = childLeaves.find(leaf => !leaf.grandName);
-        if(selfLeaf) row3.push(`<th>${escapeHtml(childGroup.child.name || 'Child')}</th>`);
-        grandLeaves.forEach(leaf => row3.push(`<th>${escapeHtml(leaf.grandName || '')}</th>`));
-      } else {
-        row2.push(`<th rowspan="2">${escapeHtml(childGroup.child.name || 'Child')}</th>`);
-      }
-    }
-  }
-  return row1.join('') + `<tr>${row2.join('')}</tr><tr>${row3.join('')}</tr>`;
+  return row1.join('') + `<tr>${headerRows.row2.join('')}</tr><tr>${headerRows.row3.join('')}</tr>`;
 }
 function moveTimelineColumn(columnId, insertBeforeId){
   const arr = Array.isArray(ui.timelineColumnOrder) ? ui.timelineColumnOrder.slice() : [];
