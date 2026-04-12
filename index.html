@@ -1966,6 +1966,10 @@ async function renderDocumentInSourceViewer(doc, targetId, opts={}){
       setTimeout(()=>{ const nameInput = $('elementModalEditName'); if(nameInput) nameInput.focus(); }, 50);
       toast('New element opened for editing.');
     }
+    function timelineSubcolumnKey(tagId, subtagId=''){
+      return `timeline_tag_${String(tagId || '').trim()}__${String(subtagId || '').trim() || 'root'}`;
+    }
+
     function getTimelineColumns(eventColumnModel){
   const cols = [{ id:'date', label:'Date', kind:'base' }];
   if(ui.timelineShowEventColumn) cols.push({ id:'event', label:'Event', kind:'base' });
