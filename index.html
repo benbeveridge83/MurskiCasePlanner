@@ -2108,7 +2108,7 @@
       host.querySelectorAll('[data-worksheet-open-edit]').forEach(btn => btn.addEventListener('click', (ev)=>{ ev.preventDefault(); ev.stopPropagation(); openElementModal(btn.getAttribute('data-worksheet-open-edit')); }));
       host.querySelectorAll('[data-worksheet-edit]').forEach(td => td.addEventListener('click', (ev)=>{ ev.stopPropagation(); openElementsWorksheetCellEditor(td); }));
       host.querySelectorAll('[data-worksheet-tag]').forEach(td => td.addEventListener('click', (ev)=>{ ev.stopPropagation(); const row = td.closest('[data-worksheet-element]'); if(!row) return; toggleWorksheetTagForElement(row.getAttribute('data-worksheet-element'), td.getAttribute('data-tag-id') || '', td.getAttribute('data-subtag-id') || ''); }));
-      $('elementsWorksheetAddRowBtn')?.onclick = ()=> addBlankWorksheetElement();
+      { const addRowBtn = $('elementsWorksheetAddRowBtn'); if(addRowBtn) addRowBtn.onclick = ()=> addBlankWorksheetElement(); }
       syncElementsWorksheetScrollbars();
     }
     function bindElementPickerToggles(scope){
