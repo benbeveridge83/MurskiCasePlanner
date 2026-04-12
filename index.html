@@ -1029,11 +1029,17 @@
     .elementsWorksheetTable th:first-child,.elementsWorksheetTable td:first-child{border-left:1px solid var(--border);}
     .elementsWorksheetTable th{position:sticky;top:0;background:#f8fbff;z-index:2;}
     .elementsWorksheetTable thead tr:first-child th{border-top:1px solid var(--border);}
-    .elementsWorksheetTable td.tagsCell{white-space:normal;min-width:420px;}
-    .elementsWorksheetRow{cursor:pointer;}
+    .elementsWorksheetTable td.tagsCell{white-space:normal;min-width:120px;text-align:center;cursor:pointer;transition:background .12s ease;}
+    .elementsWorksheetTable td.tagsCell.active{background:rgba(37,99,235,.16);}
     .elementsWorksheetRow:hover{background:#f8fbff;}
     .elementsWorksheetTable thead th{text-align:center;}
     .elementsWorksheetTable thead th[rowspan="3"]{text-align:left;}
+    .elementsWorksheetEditCol{width:120px;min-width:120px;text-align:center;}
+    .elementsWorksheetBaseCell{cursor:pointer;min-width:140px;background:#fff;}
+    .elementsWorksheetBaseCell.editing{padding:6px;background:#f8fbff;}
+    .elementsWorksheetInlineInput,.elementsWorksheetInlineSelect{width:100%;border:1px solid var(--border);border-radius:10px;padding:8px 10px;font-size:13px;background:#fff;}
+    .elementsWorksheetTagCell{min-width:90px;}
+    .elementsWorksheetTagCell.active{background:rgba(37,99,235,.16);}
     .timelineTable thead th{text-align:center;}
     .timelineTable thead th[rowspan="3"]{text-align:left;}
   </style>
@@ -1860,6 +1866,8 @@
       if(key === 'witness') return getElementLinkedWitnesses(el).map(p => p.name || '').join(' | ').toLowerCase();
       if(key === 'date') return getTimelineDateSortKey(el?.date || '');
       if(key === 'source') return [getElementSourceText(el), ...getElementSourceDocumentIds(el).map(id => getDocumentById(id)?.name || ''), ...getElementSourcePersonIds(el).map(id => getPersonById(id)?.name || '')].join(' | ').toLowerCase();
+      if(key === 'document') return getElementLinkedDocuments(el).map(d => d.name || '').join(' | ').toLowerCase();
+      if(key === 'exhibit') return getElementLinkedExhibits(el).map(d => d.name || '').join(' | ').toLowerCase();
       if(String(key || '').startsWith('tag:')){
         const parts = String(key).slice(4).split('::');
         const tagId = parts[0] || '';
@@ -1883,9 +1891,106 @@
     function toggleElementsWorksheetSort(key){
       const current = ui.elementsWorksheetSort || { key: 'name', dir: 'asc' };
       if(current.key === key) current.dir = current.dir === 'asc' ? 'desc' : 'asc';
-      else ui.elementsWorksheetSort = { key, dir: key === 'date' ? 'asc' : 'asc' };
+      else ui.elementsWorksheetSort = { key, dir: 'asc' };
       safeSave();
       renderElements();
+    }
+    function getElementWorksheetDisplayValue(el, key){
+      if(key === 'name') return el?.name || '';
+      if(key === 'witness') return getElementLinkedWitnesses(el).map(p => p.name || '').join(' • ');
+      if(key === 'date') return formatTimelineDateDisplay(el?.date || '');
+      if(key === 'source') return getElementSourceText(el) || '';
+      if(key === 'document') return getElementLinkedDocuments(el).map(d => d.name || '').join(' • ');
+      if(key === 'exhibit') return getElementLinkedExhibits(el).map(d => (getDocumentExhibitMeta(d.id).label || d.name || '')).join(' • ');
+      return '';
+    }
+    function updateElementFromWorksheetCell(el, key, value){
+      if(!el) return;
+      if(key === 'name') el.name = String(value || '').trim();
+      else if(key === 'date') el.date = normalizeFlexibleDateInput(value || '');
+      else if(key === 'source'){
+        el.source = String(value || '').trim();
+        el.sourceRefs = buildElementSourceRefs(el.sourceRefs, el.source, getElementSourceDocumentIds(el), getElementSourcePersonIds(el), null);
+      }
+      else if(key === 'witness'){
+        const ids = Array.isArray(value) ? value.filter(Boolean) : [];
+        el.witnessIds = ids;
+      }
+      else if(key === 'document') el.documentIds = Array.isArray(value) ? value.filter(Boolean) : [];
+      else if(key === 'exhibit') el.exhibitDocIds = Array.isArray(value) ? value.filter(Boolean) : [];
+      syncElementDerivedSourceFields(el);
+      safeSave();
+      renderElements();
+      renderTimeline();
+      renderOutline();
+    }
+    function buildWorksheetMultiSelect(options, selectedIds, kind){
+      const selected = new Set(selectedIds || []);
+      return `<select class="elementsWorksheetInlineSelect" data-worksheet-inline-select="${kind}" multiple size="6">${(options || []).map(opt => `<option value="${opt.id}" ${selected.has(opt.id) ? 'selected' : ''}>${escapeHtml(opt.label || opt.name || '')}</option>`).join('')}</select><div class="hint" style="margin-top:6px">Ctrl/Command-click for multiple.</div>`;
+    }
+    function openElementsWorksheetCellEditor(td){
+      if(!td || td.classList.contains('editing')) return;
+      const row = td.closest('[data-worksheet-element]');
+      const el = row ? getElementById(row.getAttribute('data-worksheet-element')) : null;
+      const key = td.getAttribute('data-worksheet-edit');
+      if(!el || !key) return;
+      td.classList.add('editing');
+      const finish = (save)=>{
+        if(!td.classList.contains('editing')) return;
+        let value = null;
+        if(save){
+          if(key === 'witness') value = Array.from(td.querySelectorAll('select option:checked')).map(o => o.value);
+          else if(key === 'document') value = Array.from(td.querySelectorAll('select option:checked')).map(o => o.value);
+          else if(key === 'exhibit') value = Array.from(td.querySelectorAll('select option:checked')).map(o => o.value);
+          else value = td.querySelector('input')?.value || '';
+          updateElementFromWorksheetCell(el, key, value);
+        } else {
+          renderElements();
+        }
+      };
+      if(key === 'name' || key === 'date' || key === 'source'){
+        const current = key === 'date' ? formatTimelineDateDisplay(el.date || '') : (key === 'source' ? (getElementSourceText(el) || '') : (el.name || ''));
+        td.innerHTML = `<input class="elementsWorksheetInlineInput" type="text" value="${escapeHtml(current)}" />`;
+        const input = td.querySelector('input');
+        input?.focus();
+        input?.select();
+        input?.addEventListener('keydown', (ev)=>{ if(ev.key === 'Enter'){ ev.preventDefault(); finish(true); } if(ev.key === 'Escape'){ ev.preventDefault(); finish(false); } });
+        input?.addEventListener('blur', ()=> finish(true), { once:true });
+      } else if(key === 'witness'){
+        const options = getWitnessCandidates().map(p => ({ id:p.id, label:p.name || 'Unnamed person' }));
+        td.innerHTML = buildWorksheetMultiSelect(options, el.witnessIds || [], key);
+        const select = td.querySelector('select');
+        select?.focus();
+        select?.addEventListener('blur', ()=> finish(true), { once:true });
+        select?.addEventListener('keydown', (ev)=>{ if(ev.key === 'Escape'){ ev.preventDefault(); finish(false); } if(ev.key === 'Enter' && !ev.shiftKey){ ev.preventDefault(); finish(true); } });
+      } else if(key === 'document'){
+        const options = (state.documents || []).slice().sort(sortByName).map(d => ({ id:d.id, label:d.name || 'Untitled document' }));
+        td.innerHTML = buildWorksheetMultiSelect(options, el.documentIds || [], key);
+        const select = td.querySelector('select');
+        select?.focus();
+        select?.addEventListener('blur', ()=> finish(true), { once:true });
+        select?.addEventListener('keydown', (ev)=>{ if(ev.key === 'Escape'){ ev.preventDefault(); finish(false); } if(ev.key === 'Enter' && !ev.shiftKey){ ev.preventDefault(); finish(true); } });
+      } else if(key === 'exhibit'){
+        const options = (state.documents || []).slice().sort(sortByName).map(d => ({ id:d.id, label:(getDocumentExhibitMeta(d.id).label || d.name || 'Document') }));
+        td.innerHTML = buildWorksheetMultiSelect(options, el.exhibitDocIds || [], key);
+        const select = td.querySelector('select');
+        select?.focus();
+        select?.addEventListener('blur', ()=> finish(true), { once:true });
+        select?.addEventListener('keydown', (ev)=>{ if(ev.key === 'Escape'){ ev.preventDefault(); finish(false); } if(ev.key === 'Enter' && !ev.shiftKey){ ev.preventDefault(); finish(true); } });
+      }
+    }
+    function toggleWorksheetTagForElement(elementId, tagId, subtagId){
+      const el = getElementById(elementId);
+      if(!el) return;
+      el.tagLinks = Array.isArray(el.tagLinks) ? el.tagLinks.slice() : [];
+      const idx = el.tagLinks.findIndex(link => link.tagId === tagId && String(link.subtagId || '') === String(subtagId || ''));
+      if(idx >= 0) el.tagLinks.splice(idx, 1);
+      else el.tagLinks.push({ tagId, subtagId: subtagId || '' });
+      el.tags = Array.from(new Set(el.tagLinks.map(link => link.tagId).filter(Boolean)));
+      safeSave();
+      renderElements();
+      renderTimeline();
+      renderOutline();
     }
     function renderElementsWorksheet(items){
       const wrap = $('elementsWorksheetWrap'); const host = $('elementsWorksheetTableHost');
@@ -1897,16 +2002,20 @@
       const sortedItems = sortElementsWorksheetItems(items || []);
       const sort = ui.elementsWorksheetSort || { key:'name', dir:'asc' };
       const arrow = (key) => sort.key === key ? (sort.dir === 'asc' ? ' ▲' : ' ▼') : '';
-      const baseCols = 4;
+      const baseCols = 7;
       const headerRows = getHierarchicalHeaderRowData(groups, 'worksheet');
-      host.innerHTML = `<table class="elementsWorksheetTable"><thead><tr><th rowspan="3" data-elements-worksheet-sort="name" style="cursor:pointer">Element${arrow('name')}</th><th rowspan="3" data-elements-worksheet-sort="witness" style="cursor:pointer">Witness${arrow('witness')}</th><th rowspan="3" data-elements-worksheet-sort="date" style="cursor:pointer">Date${arrow('date')}</th><th rowspan="3" data-elements-worksheet-sort="source" style="cursor:pointer">Source${arrow('source')}</th>${headerRows.row1.join('')}</tr><tr>${headerRows.row2.join('')}</tr><tr>${headerRows.row3.join('')}</tr></thead><tbody>${sortedItems.map(el => {
+      host.innerHTML = `<table class="elementsWorksheetTable"><thead><tr><th rowspan="3" class="elementsWorksheetEditCol">Edit</th><th rowspan="3" data-elements-worksheet-sort="name" style="cursor:pointer">Element${arrow('name')}</th><th rowspan="3" data-elements-worksheet-sort="witness" style="cursor:pointer">Witness${arrow('witness')}</th><th rowspan="3">Document</th><th rowspan="3">Exhibit</th><th rowspan="3" data-elements-worksheet-sort="date" style="cursor:pointer">Date${arrow('date')}</th><th rowspan="3" data-elements-worksheet-sort="source" style="cursor:pointer">Source${arrow('source')}</th>${headerRows.row1.join('')}</tr><tr>${headerRows.row2.join('')}</tr><tr>${headerRows.row3.join('')}</tr></thead><tbody>${sortedItems.map(el => {
         const links = Array.isArray(el.tagLinks) ? el.tagLinks : [];
-        const witnesses = getElementLinkedWitnesses(el).map(p => p.name || '').join(' • ') || '';
-        const source = [getElementSourceText(el), ...getElementSourceDocumentIds(el).map(id => getDocumentById(id)?.name || ''), ...getElementSourcePersonIds(el).map(id => getPersonById(id)?.name || '')].filter(Boolean).join(' • ');
-        return `<tr class="elementsWorksheetRow" data-worksheet-element="${el.id}"><td><b>${escapeHtml(el.name || '')}</b></td><td>${escapeHtml(witnesses)}</td><td>${escapeHtml(formatTimelineDateDisplay(el.date || ''))}</td><td>${escapeHtml(source)}</td>${leafColumns.map(t => `<td class="tagsCell">${links.some(link => link.tagId === t.tagId && String(link.subtagId || '') === String(t.subtagId || '')) ? '✓' : ''}</td>`).join('')}</tr>`;
+        const cells = leafColumns.map(t => {
+          const isOn = links.some(link => link.tagId === t.tagId && String(link.subtagId || '') === String(t.subtagId || ''));
+          return `<td class="tagsCell elementsWorksheetTagCell ${isOn ? 'active' : ''}" data-worksheet-tag="1" data-tag-id="${t.tagId}" data-subtag-id="${t.subtagId || ''}"></td>`;
+        }).join('');
+        return `<tr class="elementsWorksheetRow" data-worksheet-element="${el.id}"><td class="elementsWorksheetEditCol"><button type="button" class="mini" data-worksheet-open-edit="${el.id}">Edit element</button></td><td class="elementsWorksheetBaseCell" data-worksheet-edit="name">${escapeHtml(getElementWorksheetDisplayValue(el, 'name'))}</td><td class="elementsWorksheetBaseCell" data-worksheet-edit="witness">${escapeHtml(getElementWorksheetDisplayValue(el, 'witness'))}</td><td class="elementsWorksheetBaseCell" data-worksheet-edit="document">${escapeHtml(getElementWorksheetDisplayValue(el, 'document'))}</td><td class="elementsWorksheetBaseCell" data-worksheet-edit="exhibit">${escapeHtml(getElementWorksheetDisplayValue(el, 'exhibit'))}</td><td class="elementsWorksheetBaseCell" data-worksheet-edit="date">${escapeHtml(getElementWorksheetDisplayValue(el, 'date'))}</td><td class="elementsWorksheetBaseCell" data-worksheet-edit="source">${escapeHtml(getElementWorksheetDisplayValue(el, 'source'))}</td>${cells}</tr>`;
       }).join('') || `<tr><td colspan="${baseCols + Math.max(1, leafColumns.length)}" class="hint">No elements match the current filters.</td></tr>`}</tbody></table>`;
-      host.querySelectorAll('[data-worksheet-element]').forEach(row => row.addEventListener('click', ()=> openElementModal(row.getAttribute('data-worksheet-element'))));
       host.querySelectorAll('[data-elements-worksheet-sort]').forEach(th => th.addEventListener('click', (ev)=>{ ev.stopPropagation(); toggleElementsWorksheetSort(th.getAttribute('data-elements-worksheet-sort') || 'name'); }));
+      host.querySelectorAll('[data-worksheet-open-edit]').forEach(btn => btn.addEventListener('click', (ev)=>{ ev.preventDefault(); ev.stopPropagation(); editElement(btn.getAttribute('data-worksheet-open-edit')); }));
+      host.querySelectorAll('[data-worksheet-edit]').forEach(td => td.addEventListener('click', (ev)=>{ ev.stopPropagation(); openElementsWorksheetCellEditor(td); }));
+      host.querySelectorAll('[data-worksheet-tag]').forEach(td => td.addEventListener('click', (ev)=>{ ev.stopPropagation(); const row = td.closest('[data-worksheet-element]'); if(!row) return; toggleWorksheetTagForElement(row.getAttribute('data-worksheet-element'), td.getAttribute('data-tag-id') || '', td.getAttribute('data-subtag-id') || ''); }));
     }
     function bindElementPickerToggles(scope){
       const root = scope || document;
