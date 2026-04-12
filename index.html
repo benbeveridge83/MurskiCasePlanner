@@ -1116,6 +1116,7 @@
     let state = { caseName: '', tags: [], people: [], documents: [], elements: [], outline: [], timelineEvents: [], subtags: [], iconLibrary: [] };
     const ui = { selectedNodeId: null, selectedWitnessId: null, selectedDocId: null, selectedPersonId: null, selectedElementId: null, activeWitnessColumnId: null, expandedDocIds: {}, showDocDownloadList: false, showDocTagIndex: false, docTagFilterIds: [], docTagIndexExpandedIds: {}, docTagIndexShowUsedOnly: false, docTagNoTagsOnly: false, docTagHasTagsOnly: false, docExhibitFilter: 'all', outlineIndexFilterIds: [], outlineIndexExpandedIds: {}, outlineIndexShowUsedOnly: false, outlineIndexNoTagsOnly: false, outlineIndexHasTagsOnly: false, outlineIndexExhibitFilter: 'all', docSort: { field: 'file', dir: 'asc' }, docRepoSort: { field: 'date', dir: 'desc' }, docDownloadSelections: {}, docDownloadEligibilityFilter: 'all', docRepoEligibilityFilters: ['possible','not'], docRepoStatusFilters: ['exhibit','not_exhibit'], docRepoColWidths: { name: 340, date: 150, uploadDate: 160, timeline: 170, eligibility: 220, exhibitStatus: 190, file: 90 }, outlineCompact: false, outlineStructureView: false, outlinePaneWidth: 720, timelineSelectedId: null, timelineEditingId: null, timelineShowEventColumn: true, timelineShowDocumentColumn: true, timelineShowHeadlineColumn: true, timelineDocPickerOpen: false, timelineColumnOrder: ['date','event','document','headline'], timelineDraggingUndatedId: null, timelineFilterTagIds: [], timelineFilterTagOpen: false, elementsFilterMode: 'all', elementsSearch: '', currentView: INITIAL_VIEW, outlineFilterTagIds: [], outlineFilterWitnessIds: [], outlineFilterTagOpen: false, outlineFilterWitnessOpen: false, outlineIndexTagIds: [], outlineIndexWitnessIds: [], outlineIndexTagOpen: false, outlineIndexWitnessOpen: false, structuredOutlineWitnessFilterIds: [], structuredHeadingTagIds: [], structuredHeadingWitnessIds: [], structuredHeadingTagOpen: false, structuredHeadingWitnessOpen: false, structuredTraySearch: '', structuredTrayAssignmentFilter: 'all', structuredTrayPersonFilterId: 'any', structuredTrayTagFilterIds: [], structuredDocEditorId: null, structuredDragging: null, sourceDocSearch: '', sourceDocSelectedId: null, sourceDocSelection: null, sourceDocContext: 'create', sourceDocOpenFromElementId: null, sourceDocMaximized: false, sourceDocImageCapture: null, sourceDocCapturePointer: null, sourceDocScrollByDocumentId: {}, sourceDocAnchorByDocumentId: {}, elementsFilterTagIds: [], elementsFilterWitnessIds: [], elementsFilterDocumentIds: [], elementsFilterExhibitIds: [], elementsFilterSourceDocumentIds: [], elementsFilterSourcePersonIds: [], elementsFilterPanelOpen: false, elementsWorksheetOpen: false, elementsWorksheetPinnedTopIds: [], elementsWorksheetSort: { key: 'name', dir: 'asc' }, elementsWorksheetCollapsedTags: {}, elementsWorksheetCollapsedChildren: {}, newDocumentTagLinks: [], selectedTagNodeId: null, collapsedTagNodes: {}, collapsedElementTagNodes: {} };
     const structuredUi = { headingFilterOpen: false, visibleHeadingIds: [], headingFilterInitialized: false, witnessColWidths: {}, resizingWitnessId: null, resizeStartX: 0, resizeStartWidth: 220 };
+    function buildImportedStateDefaults(){ return { caseName:'', tags:[], people:[], documents:[], elements:[], exhibits:[], outline:[], timelineEvents:[], subtags:[], iconLibrary:[] }; }
     const HEADING_EXHIBIT_KEY = '__heading__';
     const $ = (id) => document.getElementById(id);
     function setSourceDocSelectionMessage(message){
@@ -5294,13 +5295,13 @@ function openStructuredDocEditor(docId){
         const text = await file.text();
         const parsed = JSON.parse(text);
         if(!parsed || typeof parsed !== 'object') throw new Error('Invalid JSON');
-        state = Object.assign(getImportedStateDefaults(), parsed);
+        state = Object.assign(buildImportedStateDefaults(), parsed);
         normalizeState();
         safeSave();
         $('caseName').value = state.caseName || '';
         renderTags();
-        await syncImportedStateToSupabase(state);
-        await reloadAllSupabaseData();
+        if(window.syncImportedStateToSupabase) await window.syncImportedStateToSupabase(state);
+        if(window.reloadAllSupabaseData) await window.reloadAllSupabaseData();
         toast('Imported JSON and synced to Supabase');
       } catch(e){
         console.error(e);
@@ -5310,7 +5311,7 @@ function openStructuredDocEditor(docId){
     $('resetBtn').addEventListener('click', async ()=>{
       if(!confirm("Clear only this browser's local cache? Your Supabase data and automatic backup will be kept.")) return;
       localStorage.removeItem(STORAGE_KEY);
-      try{ await reloadAllSupabaseData(); }catch(e){ console.error(e); }
+      try{ if(window.reloadAllSupabaseData) await window.reloadAllSupabaseData(); }catch(e){ console.error(e); }
       toast('Local cache cleared. Supabase data reloaded.');
       setTab('outline');
     });
@@ -5329,7 +5330,7 @@ function openStructuredDocEditor(docId){
 
     load(); syncOutlineFromSupabase(); syncDocumentsFromSupabase(); syncPeopleFromSupabase(); syncWitnessCellsFromSupabase(); syncTagsFromSupabase(); syncTagAssignmentsFromSupabase(); renderTags(); setDraftDocumentTagLinks(ui.newDocumentTagLinks || []); renderDocuments(); renderPeople(); renderOutline(); renderExhibits(); setTab(getInitialViewFromUrl(), { pushState:false });
     setTimeout(async ()=>{
-      const restored = await hydrateStateFromFullBackup(false);
+      const restored = window.hydrateStateFromFullBackup ? await window.hydrateStateFromFullBackup(false) : false;
       if(restored){
         syncOutlineFromSupabase(); syncDocumentsFromSupabase(); syncPeopleFromSupabase(); syncWitnessCellsFromSupabase(); syncTagsFromSupabase(); syncTagAssignmentsFromSupabase();
         renderTags(); setDraftDocumentTagLinks(ui.newDocumentTagLinks || []); renderDocuments(); renderPeople(); renderOutline(); renderExhibits(); renderElements(); renderTimeline();
@@ -5532,7 +5533,7 @@ function openStructuredDocEditor(docId){
   }
 
   function getImportedStateDefaults(){
-    return { caseName:'', tags:[], people:[], documents:[], elements:[], exhibits:[], outline:[], timelineEvents:[], subtags:[], iconLibrary:[] };
+    return buildImportedStateDefaults();
   }
 
   async function reloadAllSupabaseData(){
