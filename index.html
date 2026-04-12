@@ -5308,7 +5308,7 @@ function openStructuredDocEditor(docId){
       }
     });
     $('resetBtn').addEventListener('click', async ()=>{
-      if(!confirm('Clear only this browser's local cache? Your Supabase data and automatic backup will be kept.')) return;
+      if(!confirm("Clear only this browser's local cache? Your Supabase data and automatic backup will be kept.")) return;
       localStorage.removeItem(STORAGE_KEY);
       try{ await reloadAllSupabaseData(); }catch(e){ console.error(e); }
       toast('Local cache cleared. Supabase data reloaded.');
