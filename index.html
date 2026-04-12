@@ -1171,7 +1171,55 @@
       document.addEventListener('mousemove', onMove);
       document.addEventListener('mouseup', onUp);
     }
-    function safeSave(){ try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); return true; } catch (e){ console.error(e); alert('Save failed (browser storage full).\n\nTip: Export JSON as a backup, then Reset (local) to clear space.\n\nDetails: ' + (e && e.name ? e.name : e)); return false; } }
+    function buildLightweightStateSnapshot(){
+      return {
+        caseName: state.caseName || '',
+        exhibits: Array.isArray(state.exhibits) ? state.exhibits : [],
+        exhibitOrder: Array.isArray(state.exhibitOrder) ? state.exhibitOrder : [],
+        outlineLocal: Array.isArray(state.outline) ? state.outline.map(row => ({
+          id: row.id,
+          collapsed: !!row.collapsed,
+          detailsOpen: !!row.detailsOpen,
+          elementIds: Array.isArray(row.elementIds) ? row.elementIds : [],
+          headingExhibits: Array.isArray(row?.witnessData?.[HEADING_EXHIBIT_KEY]?.exhibits) ? row.witnessData[HEADING_EXHIBIT_KEY].exhibits : [],
+          witnessElementIds: row && row.witnessData && typeof row.witnessData === 'object' ? Object.fromEntries(Object.entries(row.witnessData).map(([wid, cell]) => [wid, Array.isArray(cell?.elementIds) ? cell.elementIds : []]).filter(([, ids]) => ids.length)) : {}
+        })) : []
+      };
+    }
+    function applyLightweightStateSnapshot(snapshot){
+      if(!snapshot || typeof snapshot !== 'object') return;
+      state.caseName = String(snapshot.caseName || '');
+      state.exhibits = Array.isArray(snapshot.exhibits) ? snapshot.exhibits : [];
+      state.exhibitOrder = Array.isArray(snapshot.exhibitOrder) ? snapshot.exhibitOrder : [];
+      const outlineLocal = new Map((Array.isArray(snapshot.outlineLocal) ? snapshot.outlineLocal : []).map(item => [item.id, item]));
+      state.outline = (state.outline || []).map(row => {
+        const local = outlineLocal.get(row.id);
+        if(!local) return row;
+        row.collapsed = !!local.collapsed;
+        row.detailsOpen = !!local.detailsOpen;
+        row.elementIds = Array.isArray(local.elementIds) ? local.elementIds.slice() : [];
+        row.witnessData = row.witnessData && typeof row.witnessData === 'object' ? row.witnessData : {};
+        if(Array.isArray(local.headingExhibits) && local.headingExhibits.length){
+          row.witnessData[HEADING_EXHIBIT_KEY] = row.witnessData[HEADING_EXHIBIT_KEY] || { exhibits: [], testimonyHtml: '', testimony: '' };
+          row.witnessData[HEADING_EXHIBIT_KEY].exhibits = local.headingExhibits.slice();
+        }
+        const witnessElementIds = local.witnessElementIds && typeof local.witnessElementIds === 'object' ? local.witnessElementIds : {};
+        Object.entries(witnessElementIds).forEach(([wid, ids]) => {
+          row.witnessData[wid] = row.witnessData[wid] || { exhibits: [], testimonyHtml: '', testimony: '' };
+          row.witnessData[wid].elementIds = Array.isArray(ids) ? ids.slice() : [];
+        });
+        return row;
+      });
+    }
+    function safeSave(){
+      try{
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(buildLightweightStateSnapshot()));
+        return true;
+      }catch(e){
+        console.warn('Lightweight local save failed:', e);
+        return false;
+      }
+    }
     const DB_NAME = 'murski_case_planner_db'; const DB_VER = 1; const STORE_FILES = 'docFiles';
     function openDb(){ return new Promise((resolve,reject)=>{ if(!('indexedDB' in window)) return reject(new Error('IndexedDB not supported in this browser')); const req = indexedDB.open(DB_NAME, DB_VER); req.onupgradeneeded = () => { const db = req.result; if(!db.objectStoreNames.contains(STORE_FILES)) db.createObjectStore(STORE_FILES); }; req.onsuccess = () => resolve(req.result); req.onerror = () => reject(req.error || new Error('Failed to open IndexedDB')); }); }
     async function idbGetFile(key){ const db = await openDb(); return new Promise((resolve,reject)=>{ const tx = db.transaction(STORE_FILES, 'readonly'); const req = tx.objectStore(STORE_FILES).get(key); req.onsuccess = ()=>{ const v=req.result||null; db.close(); resolve(v); }; req.onerror = ()=>{ db.close(); reject(req.error || new Error('IndexedDB read failed')); }; }); }
@@ -1210,7 +1258,20 @@
     }
 
     function normalizeState(){ state.tags = Array.isArray(state.tags) ? state.tags.filter(t => t && (t.name||'').trim()).map(t => ({ id: t.id || uid(), name: String(t.name||'').trim(), description: String(t.description||'').trim(), parentId: String(t.parentId || t.parent_id || t.parentTagId || t.parent_tag_id || '').trim() })) : []; state.people = Array.isArray(state.people) ? state.people.filter(p => p && (p.name||'').trim()).map(p => ({ id: p.id || uid(), name: String(p.name||'').trim(), description: String(p.description||'').trim(), tags: Array.isArray(p.tags) ? p.tags.filter(Boolean) : [] })) : []; state.documents = Array.isArray(state.documents) ? state.documents.filter(d => d && (d.name||'').trim()).map(d => ({ id: d.id || uid(), name: String(d.name||'').trim(), date: d.date || '', description: String(d.description||'').trim(), tags: Array.isArray(d.tags) ? d.tags.filter(Boolean) : [], filename: d.filename || d.originalFileName || '', originalFileName: d.originalFileName || d.filename || '', filePath: d.filePath || '', mimeType: d.mimeType || '', fileSize: Number(d.fileSize || 0) || 0, hasFile: !!(d.hasFile || d.filePath), dataUrl: d.dataUrl || '', exhibitLabel: d.exhibitLabel || '', createdAt: d.createdAt || d.created_at || '', exhibitEligibility: d.exhibitEligibility === 'not' ? 'not' : 'possible', includeInTimeline: d.includeInTimeline !== false })) : []; state.elements = Array.isArray(state.elements) ? state.elements.filter(e => e && (e.name||'').trim()).map((e, idx) => ({ id: e.id || uid(), name: String(e.name||'').trim(), addedAt: e.addedAt || e.added_at || e.createdAt || e.created_at || '', date: e.date || '', type: 'text', text: String(e.text||'').trim(), tags: Array.isArray(e.tags) ? e.tags.filter(Boolean) : [], tagLinks: Array.isArray(e.tagLinks) ? e.tagLinks.map(link => ({ tagId: link.tagId || '', subtagId: link.subtagId || '' })).filter(link => link.tagId) : (Array.isArray(e.tags) ? Array.from(new Set(e.tags.filter(Boolean))).map(tagId => ({ tagId, subtagId: '' })) : []), documentIds: Array.isArray(e.documentIds) ? e.documentIds.filter(Boolean) : [], witnessIds: Array.isArray(e.witnessIds) ? e.witnessIds.filter(Boolean) : (Array.isArray(e.personIds) ? e.personIds.filter(Boolean) : []), exhibitDocIds: Array.isArray(e.exhibitDocIds) ? e.exhibitDocIds.filter(Boolean) : [], includeInTimeline: !!e.includeInTimeline, timelineOrder: Number.isFinite(Number(e.timelineOrder)) ? Number(e.timelineOrder) : idx, sourceRefs: Array.isArray(e.sourceRefs) ? e.sourceRefs.map(ref => ({ documentId: ref.documentId || '', excerpt: String(ref.excerpt || ''), pageNumber: ref.pageNumber == null ? null : Number(ref.pageNumber), sourceType: String(ref.sourceType || ''), pageLabel: String(ref.pageLabel || ''), normalizedExcerpt: String(ref.normalizedExcerpt || ''), imageDataUrl: String(ref.imageDataUrl || ''), imageName: String(ref.imageName || ''), text: String(ref.text || '') })).filter(ref => (ref.documentId && ref.excerpt) || (ref.sourceType === 'manual_text' && String(ref.text || '').trim()) || (ref.sourceType === 'image_capture' && ref.imageDataUrl) || ref.sourceType === 'document_link' || ref.sourceType === 'person_link') : (e.imageDataUrl ? [{ sourceType: 'image_capture', imageDataUrl: String(e.imageDataUrl || ''), imageName: String(e.imageName || ''), pageLabel: 'Captured image' }] : []) })) : []; state.elements.forEach(el => { el.tags = Array.from(new Set((el.tagLinks || []).map(link => link.tagId).filter(Boolean))); syncElementDerivedSourceFields(el); }); state.outline = Array.isArray(state.outline) ? state.outline.filter(n => n && n.id).map(n => ({ ...n, title: typeof n.title === 'string' ? n.title : '', description: typeof n.description === 'string' ? n.description : '', tags: Array.isArray(n.tags) ? n.tags.filter(Boolean) : [], witnessIds: Array.isArray(n.witnessIds) ? n.witnessIds.filter(Boolean) : [], elementIds: Array.isArray(n.elementIds) ? n.elementIds.filter(Boolean) : [], witnessData: n.witnessData && typeof n.witnessData === 'object' ? n.witnessData : {}, rowDate: n.rowDate || '', collapsed: !!n.collapsed, detailsOpen: !!n.detailsOpen })) : []; state.subtags = Array.isArray(state.subtags) ? state.subtags.map(s => ({ raw: s || {}, name: String((s && (s.name || s.label || s.title)) || '').trim() })).filter(s => s.name).map(s => ({ id: s.raw.id || uid(), parentTagId: String(s.raw.parentTagId || s.raw.parent_tag_id || s.raw.tagId || s.raw.tag_id || s.raw.mainTagId || s.raw.main_tag_id || '').trim(), parentSubtagId: String(s.raw.parentSubtagId || s.raw.parent_subtag_id || s.raw.parentSubId || s.raw.parent_sub_id || s.raw.parentId || s.raw.parent_id || '').trim(), name: s.name, iconId: s.raw.iconId || s.raw.icon_id || '' })).filter(s => s.parentTagId) : []; state.iconLibrary = Array.isArray(state.iconLibrary) ? state.iconLibrary.filter(i => i && (i.name||'').trim() && (i.dataUrl||'')).map(i => ({ id: i.id || uid(), name: String(i.name||'').trim(), dataUrl: i.dataUrl || '' })) : []; state.timelineEvents = Array.isArray(state.timelineEvents) ? state.timelineEvents.filter(e => e && e.id).map((e, idx) => ({ id: e.id || uid(), name: String(e.name||'').trim(), date: e.date || '', description: String(e.description||'').trim(), location: String(e.location||'').trim(), tags: Array.isArray(e.tags) ? e.tags.filter(Boolean) : [], tagLinks: Array.isArray(e.tagLinks) ? e.tagLinks.map(link => ({ tagId: link.tagId || '', subtagId: link.subtagId || '' })).filter(link => link.tagId) : (Array.isArray(e.tags) ? Array.from(new Set(e.tags.filter(Boolean))).map(tagId => ({ tagId, subtagId: '' })) : []), documents: Array.isArray(e.documents) ? e.documents.filter(Boolean) : [], witnesses: Array.isArray(e.witnesses) ? e.witnesses.map(w => ({ personId: w.personId || w.id || '', testimony: String(w.testimony||'') })).filter(w => w.personId) : [], timelineOrder: Number.isFinite(Number(e.timelineOrder)) ? Number(e.timelineOrder) : idx, source: String(e.source||'').trim(), imageDataUrl: String(e.imageDataUrl||'').trim(), imageName: String(e.imageName||'').trim() })) : []; state.timelineEvents.forEach(ev => { ev.tags = Array.from(new Set((ev.tagLinks || []).map(link => link.tagId).filter(Boolean))); }); }
-    function load(){ const raw = localStorage.getItem(STORAGE_KEY); if(raw){ try{ const parsed = JSON.parse(raw); if(parsed && typeof parsed === 'object') state = Object.assign(state, parsed); } catch(e){ console.warn('Failed to parse saved data', e); } } normalizeState(); if(INITIAL_WORKSHEET_OPEN){ ui.currentView = 'elements'; ui.elementsWorksheetOpen = true; } $('caseName').value = state.caseName || ''; }
+    function load(){
+      const raw = localStorage.getItem(STORAGE_KEY);
+      normalizeState();
+      if(raw){
+        try{
+          const parsed = JSON.parse(raw);
+          applyLightweightStateSnapshot(parsed);
+        }catch(e){
+          console.warn('Failed to parse saved local preferences', e);
+        }
+      }
+      if(INITIAL_WORKSHEET_OPEN){ ui.currentView = 'elements'; ui.elementsWorksheetOpen = true; }
+      $('caseName').value = state.caseName || '';
+    }
     var activeOutlineEdit = null;
     function syncPeopleFromSupabase(){ if (!Array.isArray(window.loadedPeople)) return; const previousById = new Map((state.people || []).map(p => [p.id, p])); state.people = window.loadedPeople.map((p) => { const prev = previousById.get(p.id); return { id: p.id, name: p.name || '', description: p.description || '', tags: prev?.tags || [] }; }); safeSave(); renderElements(); }
     window.syncPeopleFromSupabase = syncPeopleFromSupabase;
@@ -1403,7 +1464,7 @@
     }
     function allWitnessIds(){ const set = new Set(); for(const n of state.outline){ (n.witnessIds||[]).forEach(id=> set.add(id)); } return Array.from(set); }
         function timelineTagNames(ids){ return (ids||[]).map(id => state.tags.find(t=>t.id===id)?.name).filter(Boolean); }
-    let timelineImageDraft = { dataUrl: '', name: '' };
+    let timelineImageDraft = { dataUrl: '', name: '', file: null, uploadedPath: '' };
     let timelineImportDrafts = [];
     function closeElementSourceModal(){ $('elementSourceModal').classList.remove('open'); }
     function getElementSourceText(el){ if(typeof el?.source === 'string' && el.source.trim()) return el.source.trim(); const manual = (Array.isArray(el?.sourceRefs) ? el.sourceRefs : []).find(ref => ref && ref.sourceType === 'manual_text' && String(ref.text || '').trim()); return manual ? String(manual.text || '').trim() : ''; }
@@ -1578,8 +1639,8 @@
       });
     }
 
-    function renderTimelineImagePreview(){ const host = $('timelineImagePreview'); if(!host) return; host.innerHTML = timelineImageDraft.dataUrl ? `<img src="${timelineImageDraft.dataUrl}" alt="" /><span class="hint">${escapeHtml(timelineImageDraft.name || 'Image selected')}</span><button type="button" class="btnGhost" id="timelineClearImageBtn">Remove image</button>` : '<span class="hint">No image selected.</span>'; $('timelineClearImageBtn')?.addEventListener('click', ()=>{ timelineImageDraft = { dataUrl:'', name:'' }; const inp = $('timelineImage'); if(inp) inp.value = ''; renderTimelineImagePreview(); }); }
-    function bindTimelineImageInput(){ const input = $('timelineImage'); if(!input || input.dataset.boundImageInput) return; input.dataset.boundImageInput = '1'; input.addEventListener('change', async ()=>{ const file = input.files && input.files[0] ? input.files[0] : null; if(!file){ timelineImageDraft = { dataUrl:'', name:'' }; renderTimelineImagePreview(); return; } const dataUrl = await fileToDataUrl(file); timelineImageDraft = { dataUrl, name: file.name || 'image' }; renderTimelineImagePreview(); }); }
+    function renderTimelineImagePreview(){ const host = $('timelineImagePreview'); if(!host) return; host.innerHTML = timelineImageDraft.dataUrl ? `<img src="${timelineImageDraft.dataUrl}" alt="" /><span class="hint">${escapeHtml(timelineImageDraft.name || 'Image selected')}</span><button type="button" class="btnGhost" id="timelineClearImageBtn">Remove image</button>` : '<span class="hint">No image selected.</span>'; $('timelineClearImageBtn')?.addEventListener('click', ()=>{ timelineImageDraft = { dataUrl:'', name:'', file:null, uploadedPath:'' }; const inp = $('timelineImage'); if(inp) inp.value = ''; renderTimelineImagePreview(); }); }
+    function bindTimelineImageInput(){ const input = $('timelineImage'); if(!input || input.dataset.boundImageInput) return; input.dataset.boundImageInput = '1'; input.addEventListener('change', async ()=>{ const file = input.files && input.files[0] ? input.files[0] : null; if(!file){ timelineImageDraft = { dataUrl:'', name:'', file:null, uploadedPath:'' }; renderTimelineImagePreview(); return; } const dataUrl = await fileToDataUrl(file); timelineImageDraft = { dataUrl, name: file.name || 'image', file, uploadedPath:'' }; renderTimelineImagePreview(); }); }
     function getTimelineFilterTagOptions(){ return [{ id:NO_TAG_FILTER_VALUE, name:'No tag' }].concat((state.tags || []).slice().sort(sortByName).map(t => ({ id:t.id, name:t.name || 'Untitled tag' }))); }
     function renderTimelineTagFilterControl(){ const options = getTimelineFilterTagOptions(); renderCheckboxDropdown('timelineTagFilterHost', { key:'timelineTag', label:'Timeline tags', noun:'Tag', openKey:'timelineFilterTagOpen', selectedKey:'timelineFilterTagIds', options, onChange:()=>renderTimeline() }); }
     function itemMatchesTimelineTagFilter(tagIds){ const options = getTimelineFilterTagOptions(); const selected = Array.isArray(ui.timelineFilterTagIds) ? ui.timelineFilterTagIds : []; if(!options.length || !selected.length || selected.length === options.length) return true; const used = Array.isArray(tagIds) ? tagIds.filter(Boolean) : []; if(!used.length) return selected.includes(NO_TAG_FILTER_VALUE); return used.some(id => selected.includes(id)); }
@@ -2678,9 +2739,13 @@ async function renderDocumentInSourceViewer(doc, targetId, opts={}){
       crop.width = Math.max(1, Math.round(capture.width * scaleX));
       crop.height = Math.max(1, Math.round(capture.height * scaleY));
       crop.getContext('2d').drawImage(rendered, Math.round(capture.left * scaleX), Math.round(capture.top * scaleY), crop.width, crop.height, 0, 0, crop.width, crop.height);
-      const imageDataUrl = crop.toDataURL('image/png');
+      const captureBlob = await new Promise(resolve => crop.toBlob(resolve, 'image/png'));
+      if(!captureBlob){ toast('Could not capture that image.'); return; }
+      const uploadedImage = await uploadCaseAsset(captureBlob, `element_capture_${capture.pageNumber || 'page'}.png`, 'element-images');
+      if(!uploadedImage?.url) return;
+      const imageDataUrl = uploadedImage.url;
       const citation = `${doc.name}${capture.pageNumber ? ', p. ' + capture.pageNumber : ''}`;
-      const imageRef = { sourceType:'image_capture', documentId:doc.id, pageNumber:capture.pageNumber, pageLabel:capture.pageLabel, imageDataUrl, imageName:'capture.png', excerpt:'Image capture' };
+      const imageRef = { sourceType:'image_capture', documentId:doc.id, pageNumber:capture.pageNumber, pageLabel:capture.pageLabel, imageDataUrl, imageName:'capture.png', imagePath: uploadedImage.path || '', excerpt:'Image capture' };
       const appendTarget = getSourceDocTargetElement();
       if(appendTarget){
         const imageHtml = `<div style="margin-top:10px"><div class="label">Captured image</div><div class="elementImagePreview"><img src="${imageDataUrl}" alt="Captured element image" /><span class="hint">${escapeHtml(capture.pageLabel || (capture.pageNumber ? ('Page ' + capture.pageNumber) : 'Document image'))}</span></div></div>`;
@@ -5228,6 +5293,41 @@ function openStructuredDocEditor(docId){
   const sb = ()=> window.supabase;
   const cid = ()=> String(window.CASE_ID || '');
   function cloneJson(value, fallback){ try{ return JSON.parse(JSON.stringify(value == null ? fallback : value)); }catch(e){ return fallback; } }
+  const CASE_ASSET_BUCKET = 'case-documents';
+  function sanitizeAssetFileName(name){
+    return String(name || 'file').replace(/[^a-zA-Z0-9._-]+/g, '_').replace(/_+/g, '_').replace(/^_+|_+$/g, '') || 'file';
+  }
+  function dataUrlToBlob(dataUrl){
+    const parts = String(dataUrl || '').split(',');
+    const meta = parts[0] || '';
+    const body = parts[1] || '';
+    const mimeMatch = meta.match(/data:([^;]+);base64/);
+    const mime = mimeMatch ? mimeMatch[1] : 'application/octet-stream';
+    const binary = atob(body);
+    const len = binary.length;
+    const bytes = new Uint8Array(len);
+    for(let i=0;i<len;i++) bytes[i] = binary.charCodeAt(i);
+    return new Blob([bytes], { type: mime });
+  }
+  async function uploadCaseAsset(blob, fileName, folder){
+    if(!sb() || !cid() || !blob) return null;
+    const safeName = sanitizeAssetFileName(fileName || 'file');
+    const path = `${cid()}/${folder}/${Date.now()}_${safeName}`;
+    const { error } = await sb().storage.from(CASE_ASSET_BUCKET).upload(path, blob, { upsert:true, contentType: blob.type || undefined });
+    if(error){
+      console.error('Upload asset error:', error);
+      alert('Could not upload image to Supabase Storage.\n\n' + (error.message || JSON.stringify(error)));
+      return null;
+    }
+    const { data } = sb().storage.from(CASE_ASSET_BUCKET).getPublicUrl(path);
+    return { path, url: data?.publicUrl || '' };
+  }
+  async function uploadDataUrlAsCaseAsset(dataUrl, fileName, folder){
+    const value = String(dataUrl || '');
+    if(!value) return null;
+    if(!/^data:/i.test(value)) return { path:'', url:value };
+    return uploadCaseAsset(dataUrlToBlob(value), fileName, folder);
+  }
 
   async function loadElementsFromSupabase(){
     if(!sb() || !cid()) return;
@@ -5327,7 +5427,8 @@ function openStructuredDocEditor(docId){
       witnesses: Array.isArray(row.witnesses) ? row.witnesses.map(w => ({ personId: w.personId || w.id || '', testimony: w.testimony || '' })).filter(w => w.personId) : [],
       timelineOrder: Number.isFinite(Number(row.timeline_order)) ? Number(row.timeline_order) : idx,
       imageDataUrl: row.image_data_url || '',
-      imageName: row.image_name || ''
+      imageName: row.image_name || '',
+      imagePath: row.image_path || ''
     }));
     safeSave();
     renderTimeline();
@@ -5349,6 +5450,7 @@ function openStructuredDocEditor(docId){
       timeline_order: Number.isFinite(Number(payload.timelineOrder)) ? Number(payload.timelineOrder) : 0,
       image_data_url: payload.imageDataUrl || '',
       image_name: payload.imageName || '',
+      image_path: payload.imagePath || '',
       updated_at: new Date().toISOString()
     };
     const { data, error } = await sb().from('timeline_events').upsert(row, { onConflict:'id' }).select().single();
@@ -5466,7 +5568,7 @@ function openStructuredDocEditor(docId){
     if($('timelineLocation')) $('timelineLocation').value = '';
     if($('timelineSource')) $('timelineSource').value = '';
     if($('timelineImage')) $('timelineImage').value = '';
-    timelineImageDraft = { dataUrl:'', name:'' };
+    timelineImageDraft = { dataUrl:'', name:'', file:null, uploadedPath:'' };
     renderTimelineImagePreview();
     renderTimelineTagChoices([]);
     renderTimelineDocChoices([]);
@@ -5507,7 +5609,7 @@ function openStructuredDocEditor(docId){
     if($('timelineDesc')) $('timelineDesc').value = ev?.description || '';
     if($('timelineLocation')) $('timelineLocation').value = ev?.location || '';
     if($('timelineSource')) $('timelineSource').value = ev?.source || '';
-    timelineImageDraft = { dataUrl: ev?.imageDataUrl || '', name: ev?.imageName || '' };
+    timelineImageDraft = { dataUrl: ev?.imageDataUrl || '', name: ev?.imageName || '', file:null, uploadedPath: ev?.imagePath || '' };
     renderTimelineImagePreview();
     renderTimelineTagChoices(ev ? getEventTagLinks(ev) : []);
     renderTimelineDocChoices(ev?.documents || []);
@@ -5525,6 +5627,19 @@ function openStructuredDocEditor(docId){
     const witnesses = witnessIds.map(id => ({ personId:id, testimony: String(document.querySelector(`[data-timeline-testimony="${id}"]`)?.value || '').trim() }));
     const existing = ui.timelineEditingId ? (state.timelineEvents || []).find(x => x.id === ui.timelineEditingId) : null;
     const record = existing || { id: uid(), timelineOrder: getNextTimelineOrder() };
+    let timelineImageUrl = timelineImageDraft.dataUrl || '';
+    let timelineImagePath = timelineImageDraft.uploadedPath || (existing?.imagePath || '');
+    if(timelineImageDraft.file){
+      const uploadedImage = await uploadCaseAsset(timelineImageDraft.file, timelineImageDraft.name || 'timeline_image.png', 'timeline-images');
+      if(!uploadedImage?.url) return;
+      timelineImageUrl = uploadedImage.url;
+      timelineImagePath = uploadedImage.path || '';
+    }else if(/^data:/i.test(timelineImageUrl)){
+      const uploadedImage = await uploadDataUrlAsCaseAsset(timelineImageUrl, timelineImageDraft.name || 'timeline_image.png', 'timeline-images');
+      if(!uploadedImage?.url) return;
+      timelineImageUrl = uploadedImage.url;
+      timelineImagePath = uploadedImage.path || '';
+    }
     Object.assign(record, {
       name,
       date: normalizeFlexibleDateInput($('timelineDate')?.value || ''),
@@ -5535,8 +5650,9 @@ function openStructuredDocEditor(docId){
       tagLinks,
       documents,
       witnesses,
-      imageDataUrl: timelineImageDraft.dataUrl || '',
-      imageName: timelineImageDraft.name || ''
+      imageDataUrl: timelineImageUrl || '',
+      imageName: timelineImageDraft.name || '',
+      imagePath: timelineImagePath || ''
     });
     const saved = await upsertTimelineEventRow(record); if(!saved) return;
     if(!existing){ state.timelineEvents.push(record); }
