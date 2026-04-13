@@ -1112,7 +1112,8 @@
     const INITIAL_VIEW = String(window.INITIAL_VIEW || (new URLSearchParams(window.location.search).get('view') || 'outline')).toLowerCase();
     const INITIAL_WORKSHEET_OPEN = (()=>{ try{ return new URLSearchParams(window.location.search).get('worksheet') === '1'; }catch(e){ return false; } })();
     const getCaseId = () => String(window.CASE_ID || CASE_ID || new URLSearchParams(window.location.search).get('case') || '');
-    const STORAGE_KEY = 'murski_case_planner_v1';
+    const UI_STORAGE_KEY = 'murski_ui_prefs_v1';
+    const LEGACY_STORAGE_KEY = 'murski_case_planner_v1';
     let state = { caseName: '', tags: [], people: [], documents: [], elements: [], outline: [], timelineEvents: [], subtags: [], iconLibrary: [] };
     const ui = { selectedNodeId: null, selectedWitnessId: null, selectedDocId: null, selectedPersonId: null, selectedElementId: null, activeWitnessColumnId: null, expandedDocIds: {}, showDocDownloadList: false, showDocTagIndex: false, docTagFilterIds: [], docTagIndexExpandedIds: {}, docTagIndexShowUsedOnly: false, docTagNoTagsOnly: false, docTagHasTagsOnly: false, docExhibitFilter: 'all', outlineIndexFilterIds: [], outlineIndexExpandedIds: {}, outlineIndexShowUsedOnly: false, outlineIndexNoTagsOnly: false, outlineIndexHasTagsOnly: false, outlineIndexExhibitFilter: 'all', docSort: { field: 'file', dir: 'asc' }, docRepoSort: { field: 'date', dir: 'desc' }, docDownloadSelections: {}, docDownloadEligibilityFilter: 'all', docRepoEligibilityFilters: ['possible','not'], docRepoStatusFilters: ['exhibit','not_exhibit'], docRepoColWidths: { name: 340, date: 150, uploadDate: 160, timeline: 170, eligibility: 220, exhibitStatus: 190, file: 90 }, outlineCompact: false, outlineStructureView: false, outlinePaneWidth: 720, timelineSelectedId: null, timelineEditingId: null, timelineShowEventColumn: true, timelineShowDocumentColumn: true, timelineShowHeadlineColumn: true, timelineDocPickerOpen: false, timelineColumnOrder: ['date','event','document','headline'], timelineDraggingUndatedId: null, timelineFilterTagIds: [], timelineFilterTagOpen: false, elementsFilterMode: 'all', elementsSearch: '', currentView: INITIAL_VIEW, outlineFilterTagIds: [], outlineFilterWitnessIds: [], outlineFilterTagOpen: false, outlineFilterWitnessOpen: false, outlineIndexTagIds: [], outlineIndexWitnessIds: [], outlineIndexTagOpen: false, outlineIndexWitnessOpen: false, structuredOutlineWitnessFilterIds: [], structuredHeadingTagIds: [], structuredHeadingWitnessIds: [], structuredHeadingTagOpen: false, structuredHeadingWitnessOpen: false, structuredTraySearch: '', structuredTrayAssignmentFilter: 'all', structuredTrayPersonFilterId: 'any', structuredTrayTagFilterIds: [], structuredDocEditorId: null, structuredDragging: null, sourceDocSearch: '', sourceDocSelectedId: null, sourceDocSelection: null, sourceDocContext: 'create', sourceDocOpenFromElementId: null, sourceDocMaximized: false, sourceDocImageCapture: null, sourceDocCapturePointer: null, sourceDocScrollByDocumentId: {}, sourceDocAnchorByDocumentId: {}, elementsFilterTagIds: [], elementsFilterWitnessIds: [], elementsFilterDocumentIds: [], elementsFilterExhibitIds: [], elementsFilterSourceDocumentIds: [], elementsFilterSourcePersonIds: [], elementsFilterPanelOpen: false, elementsWorksheetOpen: false, elementsWorksheetPinnedTopIds: [], elementsWorksheetSort: { key: 'name', dir: 'asc' }, elementsWorksheetCollapsedTags: {}, elementsWorksheetCollapsedChildren: {}, newDocumentTagLinks: [], selectedTagNodeId: null, collapsedTagNodes: {}, collapsedElementTagNodes: {} };
     const structuredUi = { headingFilterOpen: false, visibleHeadingIds: [], headingFilterInitialized: false, witnessColWidths: {}, resizingWitnessId: null, resizeStartX: 0, resizeStartWidth: 220 };
@@ -1171,12 +1172,15 @@
       document.addEventListener('mousemove', onMove);
       document.addEventListener('mouseup', onUp);
     }
-    function buildLightweightStateSnapshot(){
+    function buildUiPrefsSnapshot(){
       return {
-        caseName: state.caseName || '',
-        exhibits: Array.isArray(state.exhibits) ? state.exhibits : [],
-        exhibitOrder: Array.isArray(state.exhibitOrder) ? state.exhibitOrder : [],
-        outlineLocal: Array.isArray(state.outline) ? state.outline.map(row => ({
+        outlinePaneWidth: Math.max(360, Number(ui.outlinePaneWidth) || 720),
+        outlineCompact: !!ui.outlineCompact,
+        outlineStructureView: !!ui.outlineStructureView,
+        docRepoSort: ui.docRepoSort || { field: 'date', dir: 'desc' },
+        elementsFilterMode: ui.elementsFilterMode || 'all',
+        elementsWorksheetOpen: !!ui.elementsWorksheetOpen,
+        localOutlineCache: Array.isArray(state.outline) ? state.outline.map(row => ({
           id: row.id,
           collapsed: !!row.collapsed,
           detailsOpen: !!row.detailsOpen,
@@ -1186,12 +1190,16 @@
         })) : []
       };
     }
-    function applyLightweightStateSnapshot(snapshot){
+    function applyUiPrefsSnapshot(snapshot){
       if(!snapshot || typeof snapshot !== 'object') return;
-      state.caseName = String(snapshot.caseName || '');
-      state.exhibits = Array.isArray(snapshot.exhibits) ? snapshot.exhibits : [];
-      state.exhibitOrder = Array.isArray(snapshot.exhibitOrder) ? snapshot.exhibitOrder : [];
-      const outlineLocal = new Map((Array.isArray(snapshot.outlineLocal) ? snapshot.outlineLocal : []).map(item => [item.id, item]));
+      const paneWidth = Number(snapshot.outlinePaneWidth);
+      if(Number.isFinite(paneWidth) && paneWidth >= 360) ui.outlinePaneWidth = paneWidth;
+      ui.outlineCompact = !!snapshot.outlineCompact;
+      ui.outlineStructureView = !!snapshot.outlineStructureView;
+      if(snapshot.docRepoSort && typeof snapshot.docRepoSort === 'object') ui.docRepoSort = snapshot.docRepoSort;
+      if(typeof snapshot.elementsFilterMode === 'string') ui.elementsFilterMode = snapshot.elementsFilterMode;
+      ui.elementsWorksheetOpen = !!snapshot.elementsWorksheetOpen || INITIAL_WORKSHEET_OPEN;
+      const outlineLocal = new Map((Array.isArray(snapshot.localOutlineCache) ? snapshot.localOutlineCache : []).map(item => [item.id, item]));
       state.outline = (state.outline || []).map(row => {
         const local = outlineLocal.get(row.id);
         if(!local) return row;
@@ -1211,28 +1219,12 @@
         return row;
       });
     }
-    const FULL_STATE_DB_NAME = 'murski_case_planner_state_db'; const FULL_STATE_STORE = 'fullState';
-    let fullStateBackupTimer = null;
-    function openFullStateDb(){ return new Promise((resolve,reject)=>{ if(!('indexedDB' in window)) return reject(new Error('IndexedDB not supported in this browser')); const req = indexedDB.open(FULL_STATE_DB_NAME, 1); req.onupgradeneeded = ()=>{ const db = req.result; if(!db.objectStoreNames.contains(FULL_STATE_STORE)) db.createObjectStore(FULL_STATE_STORE); }; req.onsuccess = ()=> resolve(req.result); req.onerror = ()=> reject(req.error || new Error('Failed to open full-state IndexedDB')); }); }
-    async function idbPutFullState(key, value){ const db = await openFullStateDb(); return new Promise((resolve,reject)=>{ const tx = db.transaction(FULL_STATE_STORE, 'readwrite'); const req = tx.objectStore(FULL_STATE_STORE).put(value, key); req.onsuccess = ()=>{ db.close(); resolve(true); }; req.onerror = ()=>{ db.close(); reject(req.error || new Error('IndexedDB full-state write failed')); }; }); }
-    async function idbGetFullState(key){ const db = await openFullStateDb(); return new Promise((resolve,reject)=>{ const tx = db.transaction(FULL_STATE_STORE, 'readonly'); const req = tx.objectStore(FULL_STATE_STORE).get(key); req.onsuccess = ()=>{ const v = req.result || null; db.close(); resolve(v); }; req.onerror = ()=>{ db.close(); reject(req.error || new Error('IndexedDB full-state read failed')); }; }); }
-    function scheduleFullStateBackup(){
-      clearTimeout(fullStateBackupTimer);
-      fullStateBackupTimer = setTimeout(async ()=>{
-        try{
-          await idbPutFullState(getCaseId() || 'default', { savedAt: new Date().toISOString(), state: JSON.parse(JSON.stringify(state || {})) });
-        }catch(e){
-          console.warn('Full-state backup failed:', e);
-        }
-      }, 120);
-    }
     function safeSave(){
-      scheduleFullStateBackup();
       try{
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(buildLightweightStateSnapshot()));
+        localStorage.setItem(UI_STORAGE_KEY, JSON.stringify(buildUiPrefsSnapshot()));
         return true;
       }catch(e){
-        console.warn('Lightweight local save failed:', e);
+        console.warn('Local UI cache save failed:', e);
         return false;
       }
     }
@@ -1275,14 +1267,14 @@
 
     function normalizeState(){ state.tags = Array.isArray(state.tags) ? state.tags.filter(t => t && (t.name||'').trim()).map(t => ({ id: t.id || uid(), name: String(t.name||'').trim(), description: String(t.description||'').trim(), parentId: String(t.parentId || t.parent_id || t.parentTagId || t.parent_tag_id || '').trim() })) : []; state.people = Array.isArray(state.people) ? state.people.filter(p => p && (p.name||'').trim()).map(p => ({ id: p.id || uid(), name: String(p.name||'').trim(), description: String(p.description||'').trim(), tags: Array.isArray(p.tags) ? p.tags.filter(Boolean) : [] })) : []; state.documents = Array.isArray(state.documents) ? state.documents.filter(d => d && (d.name||'').trim()).map(d => ({ id: d.id || uid(), name: String(d.name||'').trim(), date: d.date || '', description: String(d.description||'').trim(), tags: Array.isArray(d.tags) ? d.tags.filter(Boolean) : [], filename: d.filename || d.originalFileName || '', originalFileName: d.originalFileName || d.filename || '', filePath: d.filePath || '', mimeType: d.mimeType || '', fileSize: Number(d.fileSize || 0) || 0, hasFile: !!(d.hasFile || d.filePath), dataUrl: d.dataUrl || '', exhibitLabel: d.exhibitLabel || '', createdAt: d.createdAt || d.created_at || '', exhibitEligibility: d.exhibitEligibility === 'not' ? 'not' : 'possible', includeInTimeline: d.includeInTimeline !== false })) : []; state.elements = Array.isArray(state.elements) ? state.elements.filter(e => e && (e.name||'').trim()).map((e, idx) => ({ id: e.id || uid(), name: String(e.name||'').trim(), addedAt: e.addedAt || e.added_at || e.createdAt || e.created_at || '', date: e.date || '', type: 'text', text: String(e.text||'').trim(), tags: Array.isArray(e.tags) ? e.tags.filter(Boolean) : [], tagLinks: Array.isArray(e.tagLinks) ? e.tagLinks.map(link => ({ tagId: link.tagId || '', subtagId: link.subtagId || '' })).filter(link => link.tagId) : (Array.isArray(e.tags) ? Array.from(new Set(e.tags.filter(Boolean))).map(tagId => ({ tagId, subtagId: '' })) : []), documentIds: Array.isArray(e.documentIds) ? e.documentIds.filter(Boolean) : [], witnessIds: Array.isArray(e.witnessIds) ? e.witnessIds.filter(Boolean) : (Array.isArray(e.personIds) ? e.personIds.filter(Boolean) : []), exhibitDocIds: Array.isArray(e.exhibitDocIds) ? e.exhibitDocIds.filter(Boolean) : [], includeInTimeline: !!e.includeInTimeline, timelineOrder: Number.isFinite(Number(e.timelineOrder)) ? Number(e.timelineOrder) : idx, sourceRefs: Array.isArray(e.sourceRefs) ? e.sourceRefs.map(ref => ({ documentId: ref.documentId || '', excerpt: String(ref.excerpt || ''), pageNumber: ref.pageNumber == null ? null : Number(ref.pageNumber), sourceType: String(ref.sourceType || ''), pageLabel: String(ref.pageLabel || ''), normalizedExcerpt: String(ref.normalizedExcerpt || ''), imageDataUrl: String(ref.imageDataUrl || ''), imageName: String(ref.imageName || ''), text: String(ref.text || '') })).filter(ref => (ref.documentId && ref.excerpt) || (ref.sourceType === 'manual_text' && String(ref.text || '').trim()) || (ref.sourceType === 'image_capture' && ref.imageDataUrl) || ref.sourceType === 'document_link' || ref.sourceType === 'person_link') : (e.imageDataUrl ? [{ sourceType: 'image_capture', imageDataUrl: String(e.imageDataUrl || ''), imageName: String(e.imageName || ''), pageLabel: 'Captured image' }] : []) })) : []; state.elements.forEach(el => { el.tags = Array.from(new Set((el.tagLinks || []).map(link => link.tagId).filter(Boolean))); syncElementDerivedSourceFields(el); }); state.outline = Array.isArray(state.outline) ? state.outline.filter(n => n && n.id).map(n => ({ ...n, title: typeof n.title === 'string' ? n.title : '', description: typeof n.description === 'string' ? n.description : '', tags: Array.isArray(n.tags) ? n.tags.filter(Boolean) : [], witnessIds: Array.isArray(n.witnessIds) ? n.witnessIds.filter(Boolean) : [], elementIds: Array.isArray(n.elementIds) ? n.elementIds.filter(Boolean) : [], witnessData: n.witnessData && typeof n.witnessData === 'object' ? n.witnessData : {}, rowDate: n.rowDate || '', collapsed: !!n.collapsed, detailsOpen: !!n.detailsOpen })) : []; state.subtags = Array.isArray(state.subtags) ? state.subtags.map(s => ({ raw: s || {}, name: String((s && (s.name || s.label || s.title)) || '').trim() })).filter(s => s.name).map(s => ({ id: s.raw.id || uid(), parentTagId: String(s.raw.parentTagId || s.raw.parent_tag_id || s.raw.tagId || s.raw.tag_id || s.raw.mainTagId || s.raw.main_tag_id || '').trim(), parentSubtagId: String(s.raw.parentSubtagId || s.raw.parent_subtag_id || s.raw.parentSubId || s.raw.parent_sub_id || s.raw.parentId || s.raw.parent_id || '').trim(), name: s.name, iconId: s.raw.iconId || s.raw.icon_id || '' })).filter(s => s.parentTagId) : []; state.iconLibrary = Array.isArray(state.iconLibrary) ? state.iconLibrary.filter(i => i && (i.name||'').trim() && (i.dataUrl||'')).map(i => ({ id: i.id || uid(), name: String(i.name||'').trim(), dataUrl: i.dataUrl || '' })) : []; state.timelineEvents = Array.isArray(state.timelineEvents) ? state.timelineEvents.filter(e => e && e.id).map((e, idx) => ({ id: e.id || uid(), name: String(e.name||'').trim(), date: e.date || '', description: String(e.description||'').trim(), location: String(e.location||'').trim(), tags: Array.isArray(e.tags) ? e.tags.filter(Boolean) : [], tagLinks: Array.isArray(e.tagLinks) ? e.tagLinks.map(link => ({ tagId: link.tagId || '', subtagId: link.subtagId || '' })).filter(link => link.tagId) : (Array.isArray(e.tags) ? Array.from(new Set(e.tags.filter(Boolean))).map(tagId => ({ tagId, subtagId: '' })) : []), documents: Array.isArray(e.documents) ? e.documents.filter(Boolean) : [], witnesses: Array.isArray(e.witnesses) ? e.witnesses.map(w => ({ personId: w.personId || w.id || '', testimony: String(w.testimony||'') })).filter(w => w.personId) : [], timelineOrder: Number.isFinite(Number(e.timelineOrder)) ? Number(e.timelineOrder) : idx, source: String(e.source||'').trim(), imageDataUrl: String(e.imageDataUrl||'').trim(), imageName: String(e.imageName||'').trim() })) : []; state.timelineEvents.forEach(ev => { ev.tags = Array.from(new Set((ev.tagLinks || []).map(link => link.tagId).filter(Boolean))); }); }
     function load(){
-      const raw = localStorage.getItem(STORAGE_KEY);
+      const raw = localStorage.getItem(UI_STORAGE_KEY) || localStorage.getItem(LEGACY_STORAGE_KEY);
       normalizeState();
       if(raw){
         try{
           const parsed = JSON.parse(raw);
-          applyLightweightStateSnapshot(parsed);
+          applyUiPrefsSnapshot(parsed);
         }catch(e){
-          console.warn('Failed to parse saved local preferences', e);
+          console.warn('Failed to parse saved local UI cache', e);
         }
       }
       if(INITIAL_WORKSHEET_OPEN){ ui.currentView = 'elements'; ui.elementsWorksheetOpen = true; }
@@ -5443,25 +5435,13 @@ function openStructuredDocEditor(docId){
         const text = await file.text();
         const parsed = JSON.parse(text);
         if(!parsed || typeof parsed !== 'object') throw new Error('Invalid JSON');
-        state = Object.assign(getImportedStateDefaults(), parsed);
-        normalizeState();
-        safeSave();
-        $('caseName').value = state.caseName || '';
-        renderTags();
-        renderDocuments();
-        renderPeople();
-        renderOutline();
-        renderExhibits();
-        renderElements();
-        renderTimeline();
-        if(window.syncCriticalImportedStateToSupabase){
-          await window.syncCriticalImportedStateToSupabase(state);
-        }
+        if(!window.syncCriticalImportedStateToSupabase) throw new Error('Supabase import sync is not available in this build.');
+        await window.syncCriticalImportedStateToSupabase(parsed);
         await new Promise(resolve => setTimeout(resolve, 800));
-        if(window.reloadAllSupabaseData) await window.reloadAllSupabaseData();
+        if(window.reloadAllSupabaseData) await window.reloadAllSupabaseData(true);
         else if(window.reloadCriticalSupabaseData) await window.reloadCriticalSupabaseData();
         safeSave();
-        toast('Imported JSON and reloaded from Supabase');
+        toast('Imported JSON to Supabase and reloaded');
       } catch(e){
         console.error(e);
         alert('Import failed: ' + (e && e.message ? e.message : e));
@@ -5469,7 +5449,8 @@ function openStructuredDocEditor(docId){
     });
     $('resetBtn').addEventListener('click', async ()=>{
       if(!confirm("Clear only this browser local cache? Your Supabase data will be reloaded.")) return;
-      localStorage.removeItem(STORAGE_KEY);
+      localStorage.removeItem(UI_STORAGE_KEY);
+      localStorage.removeItem(LEGACY_STORAGE_KEY);
       clearLocalStateForSupabaseReload();
       try{
         if(window.reloadAllSupabaseData) await window.reloadAllSupabaseData(true);
@@ -5755,21 +5736,7 @@ function openStructuredDocEditor(docId){
   }
 
   async function hydrateStateFromFullBackup(force){
-    try{
-      const payload = await idbGetFullState(cid() || getCaseId() || 'default');
-      const backupState = payload && payload.state ? payload.state : null;
-      if(!backupState || typeof backupState !== 'object') return false;
-      const shouldUse = !!force || !(Array.isArray(state.outline) && state.outline.length) || !(Array.isArray(state.elements) && state.elements.length) || !(Array.isArray(state.timelineEvents) && state.timelineEvents.length);
-      if(!shouldUse) return false;
-      state = Object.assign(getImportedStateDefaults(), backupState);
-      normalizeState();
-      $('caseName').value = state.caseName || '';
-      safeSave();
-      return true;
-    }catch(e){
-      console.warn('Full-state recovery skipped:', e);
-      return false;
-    }
+    return false;
   }
 
   async function syncImportedStateToSupabase(imported){
