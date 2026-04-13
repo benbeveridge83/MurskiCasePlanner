@@ -5299,7 +5299,7 @@ function openStructuredDocEditor(docId){
         safeSave();
         $('caseName').value = state.caseName || '';
         renderTags();
-        await syncImportedStateToSupabase(state);
+        try{ await syncImportedStateToSupabase(state); }catch(syncErr){ console.warn('Import sync warning:', syncErr); }
         await reloadAllSupabaseData();
         toast('Imported JSON and synced to Supabase');
       } catch(e){
@@ -5578,73 +5578,37 @@ function openStructuredDocEditor(docId){
     if(!sb() || !cid()) return;
     const next = Object.assign(getImportedStateDefaults(), imported || {});
 
-    async function upsertWithFallback(table, rows, onConflict, fallbackColumns){
+    async function upsertSafe(table, rows, onConflict, allowedColumns){
       if(!Array.isArray(rows) || !rows.length) return;
-      let { error } = await sb().from(table).upsert(rows, { onConflict });
-      if(!error) return;
-      const msg = String(error.message || '');
-      const missing = msg.match(/Could not find the '([^']+)' column/);
-      if(missing){
-        const col = missing[1];
-        const trimmed = rows.map(row => {
-          const copy = { ...row };
-          delete copy[col];
-          return copy;
-        });
-        ({ error } = await sb().from(table).upsert(trimmed, { onConflict }));
-        if(!error) return;
+      const trimmed = rows.map(row => {
+        if(!Array.isArray(allowedColumns) || !allowedColumns.length) return { ...row };
+        const out = {};
+        for(const key of allowedColumns){ if(Object.prototype.hasOwnProperty.call(row, key)) out[key] = row[key]; }
+        return out;
+      });
+      try{
+        const { error } = await sb().from(table).upsert(trimmed, { onConflict });
+        if(error) throw error;
+      }catch(err){
+        console.warn('Import sync skipped for ' + table + ':', err);
       }
-      if(Array.isArray(fallbackColumns) && fallbackColumns.length){
-        const trimmed = rows.map(row => {
-          const copy = {};
-          fallbackColumns.forEach(key => { if(Object.prototype.hasOwnProperty.call(row, key)) copy[key] = row[key]; });
-          return copy;
-        });
-        ({ error } = await sb().from(table).upsert(trimmed, { onConflict }));
-        if(!error) return;
-      }
-      throw error;
     }
 
-    const tags = Array.isArray(next.tags) ? next.tags : [];
-    const subtags = Array.isArray(next.subtags) ? next.subtags : [];
-    const allTagRows = [];
-    tags.forEach(tag => {
-      if(!tag || !tag.id) return;
-      allTagRows.push({ id: tag.id, case_id: cid(), name: tag.name || '', parent_id: null, icon_id: tag.iconId || tag.icon_id || null });
-    });
-    subtags.forEach(st => {
-      if(!st || !st.id) return;
-      const parentId = st.parentSubtagId || st.parent_subtag_id || st.parentTagId || st.parent_tag_id || null;
-      allTagRows.push({ id: st.id, case_id: cid(), name: st.name || '', parent_id: parentId || null, icon_id: st.iconId || st.icon_id || null });
-    });
-    if(allTagRows.length){
-      await upsertWithFallback('tags', allTagRows, 'id', ['id','case_id','name','parent_id','icon_id']);
+    async function deleteByIdsSafe(table, column, ids){
+      if(!Array.isArray(ids) || !ids.length) return;
+      try{
+        const { error } = await sb().from(table).delete().in(column, ids);
+        if(error) throw error;
+      }catch(err){
+        console.warn('Import delete skipped for ' + table + ':', err);
+      }
     }
 
     const peopleRows = (Array.isArray(next.people) ? next.people : []).filter(p => p && p.id).map(p => ({ id: p.id, case_id: cid(), name: p.name || '', description: p.description || '' }));
-    if(peopleRows.length){ await upsertWithFallback('people', peopleRows, 'id', ['id','case_id','name','description']); }
-
-    const documentRows = (Array.isArray(next.documents) ? next.documents : []).filter(d => d && d.id).map(d => ({ id: d.id, case_id: cid(), name: d.name || '', doc_date: d.date || null, description: d.description || '', file_path: d.filePath || '', original_file_name: d.originalFileName || d.filename || '', mime_type: d.mimeType || '', file_size: Number(d.fileSize || 0) || 0, created_at: d.createdAt || undefined }));
-    if(documentRows.length){ await upsertWithFallback('documents', documentRows, 'id', ['id','case_id','name','doc_date','description','file_path','original_file_name','mime_type','file_size','created_at']); }
+    await upsertSafe('people', peopleRows, 'id', ['id','case_id','name','description']);
 
     const outlineRows = (Array.isArray(next.outline) ? next.outline : []).filter(r => r && r.id).map((r, idx) => ({ id: r.id, case_id: cid(), parent_row_id: r.parentId || null, heading: r.title || '', description: r.description || '', row_date: r.rowDate || null, sort_order: Number.isFinite(Number(r.order)) ? Number(r.order) : (idx + 1) }));
-    if(outlineRows.length){ await upsertWithFallback('outline_rows', outlineRows, 'id', ['id','case_id','parent_row_id','heading','description','row_date','sort_order']); }
-
-    const rowTagRows = [];
-    (Array.isArray(next.outline) ? next.outline : []).forEach(row => ((row && Array.isArray(row.tags)) ? row.tags : []).filter(Boolean).forEach(tagId => rowTagRows.push({ case_id: cid(), row_id: row.id, tag_id: tagId })));
-    const documentTagRows = [];
-    (Array.isArray(next.documents) ? next.documents : []).forEach(doc => ((doc && Array.isArray(doc.tags)) ? doc.tags : []).filter(Boolean).forEach(tagId => documentTagRows.push({ case_id: cid(), document_id: doc.id, tag_id: tagId })));
-    const personTagRows = [];
-    (Array.isArray(next.people) ? next.people : []).forEach(person => ((person && Array.isArray(person.tags)) ? person.tags : []).filter(Boolean).forEach(tagId => personTagRows.push({ case_id: cid(), person_id: person.id, tag_id: tagId })));
-
-    if(outlineRows.length){ const rowIds = outlineRows.map(r => r.id); await sb().from('row_tags').delete().in('row_id', rowIds); }
-    if(documentRows.length){ const docIds = documentRows.map(d => d.id); await sb().from('document_tags').delete().in('document_id', docIds); }
-    if(peopleRows.length){ const personIds = peopleRows.map(p => p.id); await sb().from('person_tags').delete().in('person_id', personIds); }
-
-    if(rowTagRows.length){ await upsertWithFallback('row_tags', rowTagRows, 'row_id,tag_id', ['case_id','row_id','tag_id']); }
-    if(documentTagRows.length){ await upsertWithFallback('document_tags', documentTagRows, 'document_id,tag_id', ['case_id','document_id','tag_id']); }
-    if(personTagRows.length){ await upsertWithFallback('person_tags', personTagRows, 'person_id,tag_id', ['case_id','person_id','tag_id']); }
+    await upsertSafe('outline_rows', outlineRows, 'id', ['id','case_id','parent_row_id','heading','description','row_date','sort_order']);
 
     const witnessCells = [];
     (Array.isArray(next.outline) ? next.outline : []).forEach(row => {
@@ -5654,23 +5618,22 @@ function openStructuredDocEditor(docId){
         witnessCells.push({ case_id: cid(), row_id: row.id, person_id: personId, exhibits: Array.isArray(cell && cell.exhibits) ? cell.exhibits : [], testimony_html: cell && cell.testimonyHtml ? cell.testimonyHtml : '', updated_at: new Date().toISOString() });
       });
     });
-    if(outlineRows.length){ const rowIds = outlineRows.map(r => r.id); await sb().from('witness_cells').delete().in('row_id', rowIds); }
-    if(witnessCells.length){ await upsertWithFallback('witness_cells', witnessCells, 'row_id,person_id', ['case_id','row_id','person_id','exhibits','testimony_html','updated_at']); }
+    await deleteByIdsSafe('witness_cells', 'row_id', outlineRows.map(r => r.id));
+    await upsertSafe('witness_cells', witnessCells, 'row_id,person_id', ['case_id','row_id','person_id','exhibits','testimony_html','updated_at']);
 
-    for(const icon of (Array.isArray(next.iconLibrary) ? next.iconLibrary : [])){
-      if(!icon || !icon.id) continue;
-      await createIconRowSupabase({ id: icon.id, name: icon.name || '', dataUrl: icon.dataUrl || '' });
-    }
     for(const el of (Array.isArray(next.elements) ? next.elements : [])){
       if(!el) continue;
-      await upsertElementRow(el);
+      try{ await upsertElementRow(el); }catch(err){ console.warn('Element import skipped for', el && el.id, err); }
     }
     for(const ev of (Array.isArray(next.timelineEvents) ? next.timelineEvents : [])){
       if(!ev || !ev.id) continue;
-      await upsertTimelineEventRow(ev);
+      try{ await upsertTimelineEventRow(ev); }catch(err){ console.warn('Timeline import skipped for', ev && ev.id, err); }
     }
   }
 
+
+
+  window.syncImportedStateToSupabase = syncImportedStateToSupabase;
 
   saveElement = async function(){
     const payload = collectElementForm();
