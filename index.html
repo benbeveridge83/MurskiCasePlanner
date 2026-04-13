@@ -6111,11 +6111,27 @@ function openStructuredDocEditor(docId){
     });
   }
 
+  async function waitForSupabaseBootstrapReady(timeoutMs){
+    const start = Date.now();
+    while(Date.now() - start < timeoutMs){
+      if(window.supabase && (window.CASE_ID || getCaseId())) return true;
+      await new Promise(resolve => setTimeout(resolve, 50));
+    }
+    return !!(window.supabase && (window.CASE_ID || getCaseId()));
+  }
+
   setTimeout(async ()=>{
+    const ready = await waitForSupabaseBootstrapReady(5000);
+    if(!ready){
+      console.warn('Supabase bootstrap not ready at startup; skipping initial remote reload.');
+      const currentView = (ui && ui.currentView) ? ui.currentView : getInitialViewFromUrl();
+      setTab(currentView || 'outline', { pushState:false });
+      return;
+    }
     await loadIconLibraryFromSupabase();
-    await loadElementsFromSupabase();
+    await loadElementsFromSupabase({ replaceLocal:true });
     await loadTimelineEventsFromSupabase();
-    if(window.reloadAllSupabaseData) await window.reloadAllSupabaseData();
+    if(window.reloadAllSupabaseData) await window.reloadAllSupabaseData(true);
     const currentView = (ui && ui.currentView) ? ui.currentView : getInitialViewFromUrl();
     setTab(currentView || 'outline', { pushState:false });
   }, 0);
