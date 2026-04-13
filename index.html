@@ -5279,6 +5279,121 @@ function openStructuredDocEditor(docId){
     function getSelectedNode(){ return state.outline.find(n=>n.id===ui.selectedNodeId); }
     function runOnSelected(fn){ const nid = ui.selectedNodeId; if(!nid){ alert('Select an outline row first.'); return; } fn(nid); }
     function syncSelectionHints(){ const sel = $('selHint'); const ex = $('exHint'); const n = getSelectedNode(); if(sel) sel.textContent = ui.selectedNodeId ? ('Selected row: ' + ((n && n.title) ? n.title : '(untitled)')) : 'Select a row, then use these controls'; const active = state.people.find(p=>p.id===ui.activeWitnessColumnId); if(ex) ex.textContent = active ? ('Active witness column: ' + active.name) : 'Open a row, click a witness name, then add exhibits/testimony'; }
+
+    function getImportedStateDefaults(){ return { caseName:'', tags:[], people:[], documents:[], elements:[], exhibits:[], outline:[], timelineEvents:[], subtags:[], iconLibrary:[] }; }
+    async function reloadCriticalSupabaseData(){
+      if(window.loadOutlineRows) await window.loadOutlineRows(true);
+      if(window.loadPeople) await window.loadPeople();
+      if(window.loadWitnessCells) await window.loadWitnessCells();
+      if(window.loadDocuments) await window.loadDocuments();
+      if(window.loadTags) await window.loadTags();
+      if(window.loadRowTags) await window.loadRowTags();
+      if(window.loadDocumentTags) await window.loadDocumentTags();
+      if(window.loadPersonTags) await window.loadPersonTags();
+      if(window.loadElementsFromSupabase) await window.loadElementsFromSupabase();
+      if(window.loadTimelineEventsFromSupabase) await window.loadTimelineEventsFromSupabase();
+      if(window.loadIconLibraryFromSupabase) await window.loadIconLibraryFromSupabase();
+      renderTags();
+      renderDocuments();
+      renderPeople();
+      renderOutline();
+      renderExhibits();
+      renderElements();
+      renderTimeline();
+    }
+    async function syncCriticalImportedStateToSupabase(imported){
+      const sb = window.supabase;
+      const caseId = String(window.CASE_ID || '');
+      if(!sb || !caseId) return;
+      const next = Object.assign(getImportedStateDefaults(), imported || {});
+      const peopleRows = (Array.isArray(next.people) ? next.people : []).filter(p => p && p.id).map(p => ({ id: p.id, case_id: caseId, name: p.name || '', description: p.description || '' }));
+      if(peopleRows.length){
+        const { error } = await sb.from('people').upsert(peopleRows, { onConflict:'id' });
+        if(error) console.warn('People sync warning:', error);
+      }
+      const outlineRows = (Array.isArray(next.outline) ? next.outline : []).filter(r => r && r.id).map((r, idx) => ({
+        id: r.id,
+        case_id: caseId,
+        parent_row_id: r.parentId || null,
+        heading: r.title || '',
+        description: r.description || '',
+        row_date: r.rowDate || null,
+        sort_order: Number.isFinite(Number(r.order)) ? Number(r.order) : idx + 1
+      }));
+      if(outlineRows.length){
+        const { error } = await sb.from('outline_rows').upsert(outlineRows, { onConflict:'id' });
+        if(error) console.warn('Outline sync warning:', error);
+      }
+      const witnessRows = [];
+      (Array.isArray(next.outline) ? next.outline : []).forEach(r => {
+        const witnessIds = Array.isArray(r?.witnessIds) ? r.witnessIds : [];
+        const witnessData = r && r.witnessData && typeof r.witnessData === 'object' ? r.witnessData : {};
+        witnessIds.forEach(personId => {
+          const cell = witnessData[personId] || {};
+          witnessRows.push({
+            case_id: caseId,
+            row_id: r.id,
+            person_id: personId,
+            exhibits: Array.isArray(cell.exhibits) ? cell.exhibits : [],
+            testimony_html: cell.testimonyHtml || cell.testimony || '',
+            updated_at: new Date().toISOString()
+          });
+        });
+      });
+      if(witnessRows.length){
+        const { error } = await sb.from('witness_cells').upsert(witnessRows, { onConflict:'row_id,person_id' });
+        if(error) console.warn('Witness cell sync warning:', error);
+      }
+      const elementRows = (Array.isArray(next.elements) ? next.elements : []).filter(el => el && el.id).map((el, idx) => ({
+        id: el.id,
+        case_id: caseId,
+        name: el.name || '',
+        element_date: el.date || '',
+        element_type: el.type || 'text',
+        text_html: el.text || '',
+        tag_links: Array.isArray(el.tagLinks) ? el.tagLinks : [],
+        document_ids: Array.isArray(el.documentIds) ? el.documentIds : [],
+        witness_ids: Array.isArray(el.witnessIds) ? el.witnessIds : [],
+        exhibit_doc_ids: Array.isArray(el.exhibitDocIds) ? el.exhibitDocIds : [],
+        include_in_timeline: el.includeInTimeline !== false,
+        timeline_order: Number.isFinite(Number(el.timelineOrder)) ? Number(el.timelineOrder) : idx,
+        source_refs: Array.isArray(el.sourceRefs) ? el.sourceRefs : [],
+        updated_at: new Date().toISOString()
+      }));
+      if(elementRows.length){
+        const { error } = await sb.from('elements').upsert(elementRows, { onConflict:'id' });
+        if(error) console.warn('Element sync warning:', error);
+      }
+      const timelineRows = (Array.isArray(next.timelineEvents) ? next.timelineEvents : []).filter(ev => ev && ev.id).map((ev, idx) => ({
+        id: ev.id,
+        case_id: caseId,
+        name: ev.name || '',
+        event_date: ev.date || '',
+        description: ev.description || '',
+        location: ev.location || '',
+        source: ev.source || '',
+        tag_links: Array.isArray(ev.tagLinks) ? ev.tagLinks : [],
+        document_ids: Array.isArray(ev.documents) ? ev.documents : [],
+        witnesses: Array.isArray(ev.witnesses) ? ev.witnesses : [],
+        timeline_order: Number.isFinite(Number(ev.timelineOrder)) ? Number(ev.timelineOrder) : idx,
+        image_data_url: ev.imageDataUrl || '',
+        image_name: ev.imageName || '',
+        image_path: ev.imagePath || '',
+        updated_at: new Date().toISOString()
+      }));
+      if(timelineRows.length){
+        const { error } = await sb.from('timeline_events').upsert(timelineRows, { onConflict:'id' });
+        if(error) console.warn('Timeline sync warning:', error);
+      }
+      const iconRows = (Array.isArray(next.iconLibrary) ? next.iconLibrary : []).filter(icon => icon && icon.id).map(icon => ({ id: icon.id, case_id: caseId, name: icon.name || '', data_url: icon.dataUrl || '' }));
+      if(iconRows.length){
+        const { error } = await sb.from('case_icon_library').upsert(iconRows, { onConflict:'id' });
+        if(error) console.warn('Icon library sync warning:', error);
+      }
+    }
+    window.getImportedStateDefaults = getImportedStateDefaults;
+    window.syncCriticalImportedStateToSupabase = syncCriticalImportedStateToSupabase;
+    window.reloadCriticalSupabaseData = reloadCriticalSupabaseData;
     function bindOutlineActionButtons(){ const map = [['actSibling', (nid)=> runRowControl('sibling', nid)],['actChild', (nid)=> runRowControl('child', nid)],['actIndent', (nid)=> runRowControl('indent', nid)],['actOutdent', (nid)=> runRowControl('outdent', nid)],['actUp', (nid)=> runRowControl('up', nid)],['actDown', (nid)=> runRowControl('down', nid)],['actDelete', (nid)=> runRowControl('delete', nid)]]; for(const [id, fn] of map){ const b = $(id); if(!b) continue; b.addEventListener('click', ()=> runOnSelected(fn)); } const addEx = $('actAddExhibit'); if(addEx) addEx.addEventListener('click', addExhibitToSelected); }
     bindOutlineActionButtons();
     $('addTop').addEventListener('click', async () => { const nextSortOrder = (window.loadedRows && window.loadedRows.length) ? Math.max(...window.loadedRows.map(r => Number(r.sort_order) || 0)) + 1 : 1; await window.createOutlineRow({ parentRowId: null, heading: 'New heading', description: '', sortOrder: nextSortOrder }); });
@@ -5299,9 +5414,15 @@ function openStructuredDocEditor(docId){
         safeSave();
         $('caseName').value = state.caseName || '';
         renderTags();
-        try{ await syncImportedStateToSupabase(state); }catch(syncErr){ console.warn('Import sync warning:', syncErr); }
-        await reloadAllSupabaseData();
-        toast('Imported JSON and synced to Supabase');
+        renderDocuments();
+        renderPeople();
+        renderOutline();
+        renderExhibits();
+        renderElements();
+        renderTimeline();
+        await syncCriticalImportedStateToSupabase(state);
+        await reloadCriticalSupabaseData();
+        toast('Imported JSON and synced critical data to Supabase');
       } catch(e){
         console.error(e);
         alert('Import failed: ' + (e && e.message ? e.message : e));
@@ -5310,7 +5431,7 @@ function openStructuredDocEditor(docId){
     $('resetBtn').addEventListener('click', async ()=>{
       if(!confirm("Clear only this browser's local cache? Your Supabase data and automatic backup will be kept.")) return;
       localStorage.removeItem(STORAGE_KEY);
-      try{ await reloadAllSupabaseData(); }catch(e){ console.error(e); }
+      try{ await reloadCriticalSupabaseData(); }catch(e){ console.error(e); }
       toast('Local cache cleared. Supabase data reloaded.');
       setTab('outline');
     });
@@ -5329,7 +5450,7 @@ function openStructuredDocEditor(docId){
 
     load(); syncOutlineFromSupabase(); syncDocumentsFromSupabase(); syncPeopleFromSupabase(); syncWitnessCellsFromSupabase(); syncTagsFromSupabase(); syncTagAssignmentsFromSupabase(); renderTags(); setDraftDocumentTagLinks(ui.newDocumentTagLinks || []); renderDocuments(); renderPeople(); renderOutline(); renderExhibits(); setTab(getInitialViewFromUrl(), { pushState:false });
     setTimeout(async ()=>{
-      const restored = await hydrateStateFromFullBackup(false);
+      const restored = window.hydrateStateFromFullBackup ? await window.hydrateStateFromFullBackup(false) : false;
       if(restored){
         syncOutlineFromSupabase(); syncDocumentsFromSupabase(); syncPeopleFromSupabase(); syncWitnessCellsFromSupabase(); syncTagsFromSupabase(); syncTagAssignmentsFromSupabase();
         renderTags(); setDraftDocumentTagLinks(ui.newDocumentTagLinks || []); renderDocuments(); renderPeople(); renderOutline(); renderExhibits(); renderElements(); renderTimeline();
@@ -5577,38 +5698,46 @@ function openStructuredDocEditor(docId){
   async function syncImportedStateToSupabase(imported){
     if(!sb() || !cid()) return;
     const next = Object.assign(getImportedStateDefaults(), imported || {});
-
-    async function upsertSafe(table, rows, onConflict, allowedColumns){
-      if(!Array.isArray(rows) || !rows.length) return;
-      const trimmed = rows.map(row => {
-        if(!Array.isArray(allowedColumns) || !allowedColumns.length) return { ...row };
-        const out = {};
-        for(const key of allowedColumns){ if(Object.prototype.hasOwnProperty.call(row, key)) out[key] = row[key]; }
-        return out;
-      });
-      try{
-        const { error } = await sb().from(table).upsert(trimmed, { onConflict });
-        if(error) throw error;
-      }catch(err){
-        console.warn('Import sync skipped for ' + table + ':', err);
-      }
-    }
-
-    async function deleteByIdsSafe(table, column, ids){
-      if(!Array.isArray(ids) || !ids.length) return;
-      try{
-        const { error } = await sb().from(table).delete().in(column, ids);
-        if(error) throw error;
-      }catch(err){
-        console.warn('Import delete skipped for ' + table + ':', err);
-      }
+    const tags = Array.isArray(next.tags) ? next.tags : [];
+    const subtags = Array.isArray(next.subtags) ? next.subtags : [];
+    const allTagRows = [];
+    tags.forEach(tag => {
+      if(!tag || !tag.id) return;
+      allTagRows.push({ id: tag.id, case_id: cid(), name: tag.name || '', description: tag.description || '', parent_id: null, icon_id: tag.iconId || tag.icon_id || null });
+    });
+    subtags.forEach(st => {
+      if(!st || !st.id) return;
+      const parentId = st.parentSubtagId || st.parent_subtag_id || st.parentTagId || st.parent_tag_id || null;
+      allTagRows.push({ id: st.id, case_id: cid(), name: st.name || '', description: st.description || '', parent_id: parentId || null, icon_id: st.iconId || st.icon_id || null });
+    });
+    if(allTagRows.length){
+      const { error } = await sb().from('tags').upsert(allTagRows, { onConflict:'id' });
+      if(error) throw error;
     }
 
     const peopleRows = (Array.isArray(next.people) ? next.people : []).filter(p => p && p.id).map(p => ({ id: p.id, case_id: cid(), name: p.name || '', description: p.description || '' }));
-    await upsertSafe('people', peopleRows, 'id', ['id','case_id','name','description']);
+    if(peopleRows.length){ const { error } = await sb().from('people').upsert(peopleRows, { onConflict:'id' }); if(error) throw error; }
+
+    const documentRows = (Array.isArray(next.documents) ? next.documents : []).filter(d => d && d.id).map(d => ({ id: d.id, case_id: cid(), name: d.name || '', doc_date: d.date || null, description: d.description || '', file_path: d.filePath || '', original_file_name: d.originalFileName || d.filename || '', mime_type: d.mimeType || '', file_size: Number(d.fileSize || 0) || 0, has_file: !!(d.hasFile || d.filePath), created_at: d.createdAt || undefined }));
+    if(documentRows.length){ const { error } = await sb().from('documents').upsert(documentRows, { onConflict:'id' }); if(error) throw error; }
 
     const outlineRows = (Array.isArray(next.outline) ? next.outline : []).filter(r => r && r.id).map((r, idx) => ({ id: r.id, case_id: cid(), parent_row_id: r.parentId || null, heading: r.title || '', description: r.description || '', row_date: r.rowDate || null, sort_order: Number.isFinite(Number(r.order)) ? Number(r.order) : (idx + 1) }));
-    await upsertSafe('outline_rows', outlineRows, 'id', ['id','case_id','parent_row_id','heading','description','row_date','sort_order']);
+    if(outlineRows.length){ const { error } = await sb().from('outline_rows').upsert(outlineRows, { onConflict:'id' }); if(error) throw error; }
+
+    const rowTagRows = [];
+    (Array.isArray(next.outline) ? next.outline : []).forEach(row => ((row && Array.isArray(row.tags)) ? row.tags : []).filter(Boolean).forEach(tagId => rowTagRows.push({ case_id: cid(), row_id: row.id, tag_id: tagId })));
+    const documentTagRows = [];
+    (Array.isArray(next.documents) ? next.documents : []).forEach(doc => ((doc && Array.isArray(doc.tags)) ? doc.tags : []).filter(Boolean).forEach(tagId => documentTagRows.push({ case_id: cid(), document_id: doc.id, tag_id: tagId })));
+    const personTagRows = [];
+    (Array.isArray(next.people) ? next.people : []).forEach(person => ((person && Array.isArray(person.tags)) ? person.tags : []).filter(Boolean).forEach(tagId => personTagRows.push({ case_id: cid(), person_id: person.id, tag_id: tagId })));
+
+    if(outlineRows.length){ const rowIds = outlineRows.map(r => r.id); await sb().from('row_tags').delete().in('row_id', rowIds); }
+    if(documentRows.length){ const docIds = documentRows.map(d => d.id); await sb().from('document_tags').delete().in('document_id', docIds); }
+    if(peopleRows.length){ const personIds = peopleRows.map(p => p.id); await sb().from('person_tags').delete().in('person_id', personIds); }
+
+    if(rowTagRows.length){ const { error } = await sb().from('row_tags').upsert(rowTagRows, { onConflict:'row_id,tag_id' }); if(error) throw error; }
+    if(documentTagRows.length){ const { error } = await sb().from('document_tags').upsert(documentTagRows, { onConflict:'document_id,tag_id' }); if(error) throw error; }
+    if(personTagRows.length){ const { error } = await sb().from('person_tags').upsert(personTagRows, { onConflict:'person_id,tag_id' }); if(error) throw error; }
 
     const witnessCells = [];
     (Array.isArray(next.outline) ? next.outline : []).forEach(row => {
@@ -5618,22 +5747,22 @@ function openStructuredDocEditor(docId){
         witnessCells.push({ case_id: cid(), row_id: row.id, person_id: personId, exhibits: Array.isArray(cell && cell.exhibits) ? cell.exhibits : [], testimony_html: cell && cell.testimonyHtml ? cell.testimonyHtml : '', updated_at: new Date().toISOString() });
       });
     });
-    await deleteByIdsSafe('witness_cells', 'row_id', outlineRows.map(r => r.id));
-    await upsertSafe('witness_cells', witnessCells, 'row_id,person_id', ['case_id','row_id','person_id','exhibits','testimony_html','updated_at']);
+    if(outlineRows.length){ const rowIds = outlineRows.map(r => r.id); await sb().from('witness_cells').delete().in('row_id', rowIds); }
+    if(witnessCells.length){ const { error } = await sb().from('witness_cells').upsert(witnessCells, { onConflict:'row_id,person_id' }); if(error) throw error; }
 
+    for(const icon of (Array.isArray(next.iconLibrary) ? next.iconLibrary : [])){
+      if(!icon || !icon.id) continue;
+      await createIconRowSupabase({ id: icon.id, name: icon.name || '', dataUrl: icon.dataUrl || '' });
+    }
     for(const el of (Array.isArray(next.elements) ? next.elements : [])){
       if(!el) continue;
-      try{ await upsertElementRow(el); }catch(err){ console.warn('Element import skipped for', el && el.id, err); }
+      await upsertElementRow(el);
     }
     for(const ev of (Array.isArray(next.timelineEvents) ? next.timelineEvents : [])){
       if(!ev || !ev.id) continue;
-      try{ await upsertTimelineEventRow(ev); }catch(err){ console.warn('Timeline import skipped for', ev && ev.id, err); }
+      await upsertTimelineEventRow(ev);
     }
   }
-
-
-
-  window.syncImportedStateToSupabase = syncImportedStateToSupabase;
 
   saveElement = async function(){
     const payload = collectElementForm();
