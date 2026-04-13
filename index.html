@@ -5344,25 +5344,27 @@ function openStructuredDocEditor(docId){
         const { error } = await sb.from('witness_cells').upsert(witnessRows, { onConflict:'row_id,person_id' });
         if(error) console.warn('Witness cell sync warning:', error);
       }
-      const elementRows = (Array.isArray(next.elements) ? next.elements : []).filter(el => el && el.id).map((el, idx) => ({
-        id: el.id,
-        case_id: caseId,
-        name: el.name || '',
-        element_date: el.date || '',
-        element_type: el.type || 'text',
-        text_html: el.text || '',
-        tag_links: Array.isArray(el.tagLinks) ? el.tagLinks : [],
-        document_ids: Array.isArray(el.documentIds) ? el.documentIds : [],
-        witness_ids: Array.isArray(el.witnessIds) ? el.witnessIds : [],
-        exhibit_doc_ids: Array.isArray(el.exhibitDocIds) ? el.exhibitDocIds : [],
-        include_in_timeline: el.includeInTimeline !== false,
-        timeline_order: Number.isFinite(Number(el.timelineOrder)) ? Number(el.timelineOrder) : idx,
-        source_refs: Array.isArray(el.sourceRefs) ? el.sourceRefs : [],
-        updated_at: new Date().toISOString()
-      }));
-      if(elementRows.length){
-        const { error } = await sb.from('elements').upsert(elementRows, { onConflict:'id' });
-        if(error) console.warn('Element sync warning:', error);
+      const elementsToSync = (Array.isArray(next.elements) ? next.elements : []).filter(el => el && el.id);
+      for(let idx = 0; idx < elementsToSync.length; idx += 1){
+        const el = elementsToSync[idx];
+        const row = {
+          id: el.id,
+          case_id: caseId,
+          name: el.name || '',
+          element_date: el.date || '',
+          element_type: el.type || 'text',
+          text_html: el.text || '',
+          tag_links: Array.isArray(el.tagLinks) ? el.tagLinks : [],
+          document_ids: Array.isArray(el.documentIds) ? el.documentIds : [],
+          witness_ids: Array.isArray(el.witnessIds) ? el.witnessIds : [],
+          exhibit_doc_ids: Array.isArray(el.exhibitDocIds) ? el.exhibitDocIds : [],
+          include_in_timeline: el.includeInTimeline !== false,
+          timeline_order: Number.isFinite(Number(el.timelineOrder)) ? Number(el.timelineOrder) : idx,
+          source_refs: Array.isArray(el.sourceRefs) ? el.sourceRefs : [],
+          updated_at: new Date().toISOString()
+        };
+        const { error } = await sb.from('elements').upsert(row, { onConflict:'id' });
+        if(error) throw error;
       }
       const timelineRows = (Array.isArray(next.timelineEvents) ? next.timelineEvents : []).filter(ev => ev && ev.id).map((ev, idx) => ({
         id: ev.id,
@@ -5420,18 +5422,26 @@ function openStructuredDocEditor(docId){
         renderExhibits();
         renderElements();
         renderTimeline();
-        await syncCriticalImportedStateToSupabase(state);
-        await reloadCriticalSupabaseData();
-        toast('Imported JSON and synced critical data to Supabase');
+        if(window.syncCriticalImportedStateToSupabase){
+          await window.syncCriticalImportedStateToSupabase(state);
+        }
+        await new Promise(resolve => setTimeout(resolve, 800));
+        if(window.reloadAllSupabaseData) await window.reloadAllSupabaseData();
+        else if(window.reloadCriticalSupabaseData) await window.reloadCriticalSupabaseData();
+        safeSave();
+        toast('Imported JSON and reloaded from Supabase');
       } catch(e){
         console.error(e);
         alert('Import failed: ' + (e && e.message ? e.message : e));
       }
     });
     $('resetBtn').addEventListener('click', async ()=>{
-      if(!confirm("Clear only this browser's local cache? Your Supabase data and automatic backup will be kept.")) return;
+      if(!confirm("Clear only this browser local cache? Your Supabase data will be reloaded.")) return;
       localStorage.removeItem(STORAGE_KEY);
-      try{ await reloadCriticalSupabaseData(); }catch(e){ console.error(e); }
+      try{
+        if(window.reloadAllSupabaseData) await window.reloadAllSupabaseData();
+        else if(window.reloadCriticalSupabaseData) await window.reloadCriticalSupabaseData();
+      }catch(e){ console.error(e); }
       toast('Local cache cleared. Supabase data reloaded.');
       setTab('outline');
     });
@@ -5449,13 +5459,6 @@ function openStructuredDocEditor(docId){
     $('structuredDocModal')?.addEventListener('click', (ev)=>{ if(ev.target && ev.target.id === 'structuredDocModal') closeStructuredDocEditor(); });
 
     load(); syncOutlineFromSupabase(); syncDocumentsFromSupabase(); syncPeopleFromSupabase(); syncWitnessCellsFromSupabase(); syncTagsFromSupabase(); syncTagAssignmentsFromSupabase(); renderTags(); setDraftDocumentTagLinks(ui.newDocumentTagLinks || []); renderDocuments(); renderPeople(); renderOutline(); renderExhibits(); setTab(getInitialViewFromUrl(), { pushState:false });
-    setTimeout(async ()=>{
-      const restored = window.hydrateStateFromFullBackup ? await window.hydrateStateFromFullBackup(false) : false;
-      if(restored){
-        syncOutlineFromSupabase(); syncDocumentsFromSupabase(); syncPeopleFromSupabase(); syncWitnessCellsFromSupabase(); syncTagsFromSupabase(); syncTagAssignmentsFromSupabase();
-        renderTags(); setDraftDocumentTagLinks(ui.newDocumentTagLinks || []); renderDocuments(); renderPeople(); renderOutline(); renderExhibits(); renderElements(); renderTimeline();
-      }
-    }, 0);
   
 
 // --- Supabase integration for remaining case data: elements, timeline events, icon library ---
@@ -5763,6 +5766,14 @@ function openStructuredDocEditor(docId){
       await upsertTimelineEventRow(ev);
     }
   }
+
+
+  window.loadElementsFromSupabase = loadElementsFromSupabase;
+  window.loadTimelineEventsFromSupabase = loadTimelineEventsFromSupabase;
+  window.loadIconLibraryFromSupabase = loadIconLibraryFromSupabase;
+  window.hydrateStateFromFullBackup = hydrateStateFromFullBackup;
+  window.reloadAllSupabaseData = reloadAllSupabaseData;
+  window.syncImportedStateToSupabase = syncImportedStateToSupabase;
 
   saveElement = async function(){
     const payload = collectElementForm();
