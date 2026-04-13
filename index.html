@@ -5441,9 +5441,10 @@ function openStructuredDocEditor(docId){
       try{
         if(window.reloadAllSupabaseData) await window.reloadAllSupabaseData();
         else if(window.reloadCriticalSupabaseData) await window.reloadCriticalSupabaseData();
+        if(window.loadElementsFromSupabase) await window.loadElementsFromSupabase();
       }catch(e){ console.error(e); }
       toast('Local cache cleared. Supabase data reloaded.');
-      setTab('outline');
+      setTab(getInitialViewFromUrl(), { pushState:false });
     });
     loadOutlinePaneWidth();
     $('structuredWitnessSelectAll')?.addEventListener('click', ()=>{ ui.structuredOutlineWitnessFilterIds = getStructuredOutlineWitnesses().map(p=>p.id); renderStructuredOutline(); });
@@ -5528,6 +5529,7 @@ function openStructuredDocEditor(docId){
     }));
     state.elements = remoteElements.concat(localOnly.filter(el => !remoteElements.some(remote => remote.id === el.id)));
     state.elements.forEach(syncElementDerivedSourceFields);
+    console.log('Loaded elements:', state.elements);
     safeSave();
     renderElements();
     renderTimeline();
@@ -6022,6 +6024,9 @@ function openStructuredDocEditor(docId){
     await loadIconLibraryFromSupabase();
     await loadElementsFromSupabase();
     await loadTimelineEventsFromSupabase();
+    if(window.reloadAllSupabaseData) await window.reloadAllSupabaseData();
+    const currentView = (ui && ui.currentView) ? ui.currentView : getInitialViewFromUrl();
+    setTab(currentView || 'outline', { pushState:false });
   }, 0);
 })();
 
