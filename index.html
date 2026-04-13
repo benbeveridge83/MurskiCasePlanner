@@ -5584,12 +5584,12 @@ function openStructuredDocEditor(docId){
     const allTagRows = [];
     tags.forEach(tag => {
       if(!tag || !tag.id) return;
-      allTagRows.push({ id: tag.id, case_id: cid(), name: tag.name || '', description: tag.description || '', parent_id: null, icon_id: tag.iconId || tag.icon_id || null });
+      allTagRows.push({ id: tag.id, case_id: cid(), name: tag.name || '', parent_id: null, icon_id: tag.iconId || tag.icon_id || null });
     });
     subtags.forEach(st => {
       if(!st || !st.id) return;
       const parentId = st.parentSubtagId || st.parent_subtag_id || st.parentTagId || st.parent_tag_id || null;
-      allTagRows.push({ id: st.id, case_id: cid(), name: st.name || '', description: st.description || '', parent_id: parentId || null, icon_id: st.iconId || st.icon_id || null });
+      allTagRows.push({ id: st.id, case_id: cid(), name: st.name || '', parent_id: parentId || null, icon_id: st.iconId || st.icon_id || null });
     });
     if(allTagRows.length){
       const { error } = await sb().from('tags').upsert(allTagRows, { onConflict:'id' });
