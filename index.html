@@ -5281,10 +5281,31 @@ function openStructuredDocEditor(docId){
     function syncSelectionHints(){ const sel = $('selHint'); const ex = $('exHint'); const n = getSelectedNode(); if(sel) sel.textContent = ui.selectedNodeId ? ('Selected row: ' + ((n && n.title) ? n.title : '(untitled)')) : 'Select a row, then use these controls'; const active = state.people.find(p=>p.id===ui.activeWitnessColumnId); if(ex) ex.textContent = active ? ('Active witness column: ' + active.name) : 'Open a row, click a witness name, then add exhibits/testimony'; }
 
     function getImportedStateDefaults(){ return { caseName:'', tags:[], people:[], documents:[], elements:[], exhibits:[], outline:[], timelineEvents:[], subtags:[], iconLibrary:[] }; }
+    function resetElementUiState(){
+      ui.selectedElementId = null;
+      ui.elementsFilterMode = 'all';
+      ui.elementsSearch = '';
+      ui.elementsFilterTagIds = [];
+      ui.elementsFilterWitnessIds = [];
+      ui.elementsFilterDocumentIds = [];
+      ui.elementsFilterExhibitIds = [];
+      ui.elementsFilterSourceDocumentIds = [];
+      ui.elementsFilterSourcePersonIds = [];
+      ui.elementsFilterPanelOpen = false;
+      ui.elementsWorksheetOpen = false;
+      ui.elementsWorksheetPinnedTopIds = [];
+      if($('elementsFilterMode')) $('elementsFilterMode').value = 'all';
+      if($('elementsSearch')) $('elementsSearch').value = '';
+      if($('elementsTagFilterPanel')){
+        $('elementsTagFilterPanel').style.display = 'none';
+        $('elementsTagFilterPanel').classList.remove('open');
+      }
+      if($('elementsWorksheetWrap')) $('elementsWorksheetWrap').classList.remove('open');
+    }
     function clearLocalStateForSupabaseReload(){
       const preservedCaseName = String(state.caseName || $('caseName')?.value || '');
       state = Object.assign(getImportedStateDefaults(), { caseName: preservedCaseName });
-      ui.selectedElementId = null;
+      resetElementUiState();
       ui.sourceDocOpenFromElementId = null;
       ui.sourceDocSelection = null;
       ui.sourceDocImageCapture = null;
@@ -5520,7 +5541,8 @@ function openStructuredDocEditor(docId){
     const opts = options && typeof options === 'object' ? options : {};
     const keepLocalOnly = !opts.replaceLocal;
     const localOnly = keepLocalOnly ? (state.elements || []).filter(el => el && !isUuidValue(el.id)).map(el => ({ ...el })) : [];
-    const { data, error } = await sb().from('elements').select('*').eq('case_id', cid()).order('timeline_order', { ascending:true }).order('updated_at', { ascending:true });
+    const query = sb().from('elements').select('*').eq('case_id', cid()).order('timeline_order', { ascending:true }).order('updated_at', { ascending:true });
+    const { data, error } = await query;
     if(error){ console.error('Load elements error:', error); return; }
     const remoteElements = (data || []).map((row, idx) => ({
       id: row.id,
@@ -5543,7 +5565,8 @@ function openStructuredDocEditor(docId){
     }));
     state.elements = remoteElements.concat(localOnly.filter(el => !remoteElements.some(remote => remote.id === el.id)));
     state.elements.forEach(syncElementDerivedSourceFields);
-    console.log('Loaded elements:', state.elements);
+    console.log('Loaded elements from Supabase:', remoteElements.length, 'remote,', localOnly.length, 'local-only retained');
+    if(opts.replaceLocal && typeof resetElementUiState === 'function') resetElementUiState();
     safeSave();
     renderElements();
     renderTimeline();
