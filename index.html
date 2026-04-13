@@ -1079,7 +1079,7 @@
   </style>
 </head>
 <body>
-  <div class="topbar"><div class="topbar-inner"><div class="brand"><div class="dot"></div><div><div style="font-size:18px; font-weight:900">Murski – Case Planner</div><div class="pill">Single-file • local save</div></div></div><div class="grow"></div><input id="caseName" class="caseName" type="text" placeholder="Case name (optional)" /><div class="row"><button id="exportBtn" class="btnPrimary">Export JSON</button><button id="importBtn">Import JSON</button><button id="resetBtn" class="btnDanger">Reset (local)</button></div><input id="importFile" type="file" accept="application/json" style="display:none" /></div></div>
+  <div class="topbar"><div class="topbar-inner"><div class="brand"><div class="dot"></div><div><div style="font-size:18px; font-weight:900">Murski – Case Planner</div><div class="pill">Single-file • local save</div></div></div><div class="grow"></div><input id="caseName" class="caseName" type="text" placeholder="Case name (optional)" /><div class="row"><button id="exportBtn" class="btnPrimary">Export JSON</button><button id="importBtn">Import JSON</button><button id="bulkImportElementsBtn">Bulk import elements to Supabase</button><button id="resetBtn" class="btnDanger">Reset (local)</button></div><input id="importFile" type="file" accept="application/json" style="display:none" /><input id="bulkImportElementsFile" type="file" accept="application/json" style="display:none" /></div></div>
   <div class="tabs"><a id="tabOutline" class="tab active" data-view-link="outline" href="?view=outline">Case Outline</a><a id="tabDocuments" class="tab" data-view-link="documents" href="?view=documents">Documents</a><a id="tabTagIndex" class="tab" data-view-link="tagindex" href="?view=tagindex">Tag Index</a><a id="tabOutlineIndex" class="tab" data-view-link="outlineindex" href="?view=outlineindex">Outline Index</a><a id="tabStructuredOutline" class="tab" data-view-link="structuredoutline" href="?view=structuredoutline">Structured Outline</a><a id="tabExhibits" class="tab" data-view-link="exhibits" href="?view=exhibits">Exhibits</a><a id="tabPeople" class="tab" data-view-link="people" href="?view=people">People</a><a id="tabElements" class="tab" data-view-link="elements" href="?view=elements">Elements</a><a id="tabTimeline" class="tab" data-view-link="timeline" href="?view=timeline">Timeline</a><a id="tabSettings" class="tab" data-view-link="settings" href="?view=settings">Add Tag</a></div>
   <div class="container">
     <div id="viewOutline" class="card"><h2>Case Outline</h2><div class="hint">Build a structured outline and then tie it to witnesses, exhibits, and testimony. Add witnesses to a row to create witness columns. In each witness column cell, select exhibits (from Documents) and add testimony.</div>
@@ -5281,6 +5281,16 @@ function openStructuredDocEditor(docId){
     function syncSelectionHints(){ const sel = $('selHint'); const ex = $('exHint'); const n = getSelectedNode(); if(sel) sel.textContent = ui.selectedNodeId ? ('Selected row: ' + ((n && n.title) ? n.title : '(untitled)')) : 'Select a row, then use these controls'; const active = state.people.find(p=>p.id===ui.activeWitnessColumnId); if(ex) ex.textContent = active ? ('Active witness column: ' + active.name) : 'Open a row, click a witness name, then add exhibits/testimony'; }
 
     function getImportedStateDefaults(){ return { caseName:'', tags:[], people:[], documents:[], elements:[], exhibits:[], outline:[], timelineEvents:[], subtags:[], iconLibrary:[] }; }
+    function clearLocalStateForSupabaseReload(){
+      const preservedCaseName = String(state.caseName || $('caseName')?.value || '');
+      state = Object.assign(getImportedStateDefaults(), { caseName: preservedCaseName });
+      ui.selectedElementId = null;
+      ui.sourceDocOpenFromElementId = null;
+      ui.sourceDocSelection = null;
+      ui.sourceDocImageCapture = null;
+      safeSave();
+      if($('caseName')) $('caseName').value = state.caseName || '';
+    }
     async function reloadCriticalSupabaseData(){
       if(window.loadOutlineRows) await window.loadOutlineRows(true);
       if(window.loadPeople) await window.loadPeople();
@@ -5403,6 +5413,7 @@ function openStructuredDocEditor(docId){
     $('caseName').addEventListener('input', ()=>{ state.caseName = $('caseName').value; safeSave(); });
     $('exportBtn').addEventListener('click', ()=>{ const blob = new Blob([JSON.stringify(state, null, 2)], {type:'application/json'}); const a = document.createElement('a'); const name = (state.caseName || 'murski_case').replace(/[^a-z0-9\-_ ]/gi,'').trim().replace(/\s+/g,'_'); a.href = URL.createObjectURL(blob); a.download = name + '.json'; document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(a.href); toast('Exported JSON'); });
     $('importBtn').addEventListener('click', ()=> $('importFile').click());
+    $('bulkImportElementsBtn')?.addEventListener('click', ()=> $('bulkImportElementsFile')?.click());
     $('importFile').addEventListener('change', async ()=>{
       const file = $('importFile').files && $('importFile').files[0];
       $('importFile').value = '';
@@ -5438,10 +5449,11 @@ function openStructuredDocEditor(docId){
     $('resetBtn').addEventListener('click', async ()=>{
       if(!confirm("Clear only this browser local cache? Your Supabase data will be reloaded.")) return;
       localStorage.removeItem(STORAGE_KEY);
+      clearLocalStateForSupabaseReload();
       try{
-        if(window.reloadAllSupabaseData) await window.reloadAllSupabaseData();
+        if(window.reloadAllSupabaseData) await window.reloadAllSupabaseData(true);
         else if(window.reloadCriticalSupabaseData) await window.reloadCriticalSupabaseData();
-        if(window.loadElementsFromSupabase) await window.loadElementsFromSupabase();
+        if(window.loadElementsFromSupabase) await window.loadElementsFromSupabase({ replaceLocal:true });
       }catch(e){ console.error(e); }
       toast('Local cache cleared. Supabase data reloaded.');
       setTab(getInitialViewFromUrl(), { pushState:false });
@@ -5503,9 +5515,11 @@ function openStructuredDocEditor(docId){
     return uploadCaseAsset(dataUrlToBlob(value), fileName, folder);
   }
 
-  async function loadElementsFromSupabase(){
+  async function loadElementsFromSupabase(options){
     if(!sb() || !cid()) return;
-    const localOnly = (state.elements || []).filter(el => el && !isUuidValue(el.id)).map(el => ({ ...el }));
+    const opts = options && typeof options === 'object' ? options : {};
+    const keepLocalOnly = !opts.replaceLocal;
+    const localOnly = keepLocalOnly ? (state.elements || []).filter(el => el && !isUuidValue(el.id)).map(el => ({ ...el })) : [];
     const { data, error } = await sb().from('elements').select('*').eq('case_id', cid()).order('timeline_order', { ascending:true }).order('updated_at', { ascending:true });
     if(error){ console.error('Load elements error:', error); return; }
     const remoteElements = (data || []).map((row, idx) => ({
@@ -5661,7 +5675,42 @@ function openStructuredDocEditor(docId){
     return { caseName:'', tags:[], people:[], documents:[], elements:[], exhibits:[], outline:[], timelineEvents:[], subtags:[], iconLibrary:[] };
   }
 
-  async function reloadAllSupabaseData(){
+  async function bulkImportElementsToSupabase(parsed){
+    const source = parsed && typeof parsed === 'object' ? parsed : {};
+    let incoming = [];
+    if(Array.isArray(source)) incoming = source;
+    else if(Array.isArray(source.elements)) incoming = source.elements;
+    if(!incoming.length) throw new Error('No elements array found in that JSON file.');
+    const normalized = incoming.filter(el => el && String(el.name || '').trim()).map((el, idx) => {
+      const id = isUuidValue(el.id) ? el.id : crypto.randomUUID();
+      const tagLinks = Array.isArray(el.tagLinks)
+        ? el.tagLinks.map(link => ({ tagId: link?.tagId || '', subtagId: link?.subtagId || '' })).filter(link => link.tagId)
+        : (Array.isArray(el.tags) ? Array.from(new Set(el.tags.filter(Boolean))).map(tagId => ({ tagId, subtagId:'' })) : []);
+      return {
+        id,
+        name: String(el.name || '').trim(),
+        date: normalizeFlexibleDateInput(el.date || ''),
+        type: el.type || 'text',
+        text: String(el.text || '').trim(),
+        tagLinks,
+        documentIds: Array.isArray(el.documentIds) ? el.documentIds.filter(Boolean) : [],
+        witnessIds: Array.isArray(el.witnessIds) ? el.witnessIds.filter(Boolean) : (Array.isArray(el.personIds) ? el.personIds.filter(Boolean) : []),
+        exhibitDocIds: Array.isArray(el.exhibitDocIds) ? el.exhibitDocIds.filter(Boolean) : [],
+        includeInTimeline: el.includeInTimeline !== false,
+        timelineOrder: Number.isFinite(Number(el.timelineOrder)) ? Number(el.timelineOrder) : idx,
+        sourceRefs: Array.isArray(el.sourceRefs) ? el.sourceRefs : []
+      };
+    });
+    if(!normalized.length) throw new Error('No valid named elements were found in that JSON file.');
+    for(const row of normalized){
+      const saved = await upsertElementRow(row);
+      if(!saved) throw new Error('At least one element could not be saved to Supabase.');
+    }
+    await loadElementsFromSupabase({ replaceLocal:true });
+    return normalized.length;
+  }
+
+  async function reloadAllSupabaseData(force){
     if(window.loadOutlineRows) await window.loadOutlineRows(true);
     if(window.loadDocuments) await window.loadDocuments();
     if(window.loadPeople) await window.loadPeople();
@@ -5670,7 +5719,7 @@ function openStructuredDocEditor(docId){
     if(window.loadRowTags) await window.loadRowTags();
     if(window.loadDocumentTags) await window.loadDocumentTags();
     if(window.loadPersonTags) await window.loadPersonTags();
-    await loadElementsFromSupabase();
+    await loadElementsFromSupabase(force ? { replaceLocal:true } : undefined);
     await loadTimelineEventsFromSupabase();
     await loadIconLibraryFromSupabase();
     renderTags();
@@ -5771,6 +5820,7 @@ function openStructuredDocEditor(docId){
 
 
   window.loadElementsFromSupabase = loadElementsFromSupabase;
+  window.bulkImportElementsToSupabase = bulkImportElementsToSupabase;
   window.loadTimelineEventsFromSupabase = loadTimelineEventsFromSupabase;
   window.loadIconLibraryFromSupabase = loadIconLibraryFromSupabase;
   window.hydrateStateFromFullBackup = hydrateStateFromFullBackup;
@@ -6019,6 +6069,24 @@ function openStructuredDocEditor(docId){
   if(cancelEventBtn){ const clone = cancelEventBtn.cloneNode(true); cancelEventBtn.parentNode.replaceChild(clone, cancelEventBtn); clone.addEventListener('click', ()=> closeTimelineForm()); }
   const importConfirmBtn = $('timelineImportReviewConfirm');
   if(importConfirmBtn){ const clone = importConfirmBtn.cloneNode(true); importConfirmBtn.parentNode.replaceChild(clone, importConfirmBtn); clone.addEventListener('click', ()=> confirmTimelineImportReview()); }
+
+  const bulkImportElementsFile = $('bulkImportElementsFile');
+  if(bulkImportElementsFile){
+    bulkImportElementsFile.addEventListener('change', async ()=>{
+      const file = bulkImportElementsFile.files && bulkImportElementsFile.files[0];
+      bulkImportElementsFile.value = '';
+      if(!file) return;
+      try{
+        const text = await file.text();
+        const parsed = JSON.parse(text);
+        const count = await bulkImportElementsToSupabase(parsed);
+        toast(`Imported ${count} element${count === 1 ? '' : 's'} to Supabase`);
+      }catch(e){
+        console.error(e);
+        alert('Bulk element import failed: ' + (e && e.message ? e.message : e));
+      }
+    });
+  }
 
   setTimeout(async ()=>{
     await loadIconLibraryFromSupabase();
