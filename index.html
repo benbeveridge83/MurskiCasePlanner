@@ -5645,6 +5645,10 @@ function openStructuredDocEditor(docId){
     }
   }
 
+  window.reloadAllSupabaseData = reloadAllSupabaseData;
+  window.syncImportedStateToSupabase = syncImportedStateToSupabase;
+  window.getImportedStateDefaults = getImportedStateDefaults;
+
   saveElement = async function(){
     const payload = collectElementForm();
     if(!payload) return;
