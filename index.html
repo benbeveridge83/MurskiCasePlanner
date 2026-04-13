@@ -792,7 +792,7 @@
     .elementImagePreview{margin-top:10px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
     .elementImagePreview img{max-width:220px;max-height:160px;border-radius:12px;border:1px solid var(--border);background:#fff;}
     .elementModalImage img{max-width:100%;max-height:280px;border-radius:12px;border:1px solid var(--border);background:#fff;}
-    .sourceDocViewerInner{display:grid;gap:16px;}
+    .sourceDocViewerInner{display:grid;gap:16px;position:relative;}
     .sourceDocPage{border:1px solid var(--border);border-radius:14px;background:#fff;padding:12px;box-shadow:0 2px 8px rgba(15,23,42,.04);margin:0 auto;}
     .sourceDocPage.activeSourcePage{box-shadow:0 0 0 3px rgba(37,99,235,.16);border-color:rgba(37,99,235,.40);}
     .sourceDocPageHeader{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:10px;font-size:12px;color:var(--muted);font-weight:800;}
@@ -2678,6 +2678,27 @@ async function renderDocumentInSourceViewer(doc, targetId, opts={}){
       document.querySelectorAll('.sourceDocCaptureBox').forEach(el => el.remove());
       refreshSourceDocActionButtons();
     }
+    function getSourceDocCaptureContainer(){
+      return $('sourceDocViewerInner');
+    }
+    function getSourceDocCapturePoint(ev, container){
+      const rect = container?.getBoundingClientRect();
+      if(!rect) return null;
+      const x = Math.max(0, Math.min(rect.width, ev.clientX - rect.left));
+      const y = Math.max(0, Math.min(rect.height, ev.clientY - rect.top));
+      return { x, y };
+    }
+    function getSourceDocPageRangeForCapture(top, height){
+      const pages = Array.from(document.querySelectorAll('#sourceDocViewerInner .sourceDocPage'));
+      if(!pages.length) return { startPage: null, endPage: null };
+      const startY = top + 1;
+      const endY = top + Math.max(1, height) - 1;
+      let startPage = pages.find(page => startY >= page.offsetTop && startY <= (page.offsetTop + page.offsetHeight)) || null;
+      let endPage = pages.find(page => endY >= page.offsetTop && endY <= (page.offsetTop + page.offsetHeight)) || null;
+      if(!startPage) startPage = pages.find(page => startY < page.offsetTop) || pages[pages.length - 1] || null;
+      if(!endPage) endPage = pages.find(page => endY < page.offsetTop) || pages[pages.length - 1] || startPage;
+      return { startPage, endPage: endPage || startPage };
+    }
     function bindSourceDocImageCapture(){
       const shell = $('sourceDocViewerShell');
       if(!shell || shell.dataset.captureBound === '1') return;
@@ -2685,39 +2706,51 @@ async function renderDocumentInSourceViewer(doc, targetId, opts={}){
       shell.addEventListener('pointerdown', (ev)=>{
         if(!shell.classList.contains('sourceDocCaptureMode')) return;
         const page = ev.target.closest('.sourceDocPage');
-        if(!page) return;
+        const container = getSourceDocCaptureContainer();
+        if(!page || !container) return;
+        const point = getSourceDocCapturePoint(ev, container);
+        if(!point) return;
         ev.preventDefault();
         resetSourceDocImageCapture();
         shell.classList.add('sourceDocCaptureMode');
-        const rect = page.getBoundingClientRect();
-        const startX = Math.max(0, Math.min(rect.width, ev.clientX - rect.left));
-        const startY = Math.max(0, Math.min(rect.height, ev.clientY - rect.top));
         const box = document.createElement('div');
         box.className = 'sourceDocCaptureBox';
-        page.appendChild(box);
-        ui.sourceDocCapturePointer = { page, startX, startY, box };
+        container.appendChild(box);
+        ui.sourceDocCapturePointer = { page, container, startX: point.x, startY: point.y, box, pointerId: ev.pointerId };
+        if(typeof shell.setPointerCapture === 'function'){
+          try{ shell.setPointerCapture(ev.pointerId); }catch(err){}
+        }
+        Object.assign(box.style, { left: point.x + 'px', top: point.y + 'px', width:'0px', height:'0px' });
       });
       shell.addEventListener('pointermove', (ev)=>{
         const ptr = ui.sourceDocCapturePointer;
-        if(!ptr) return;
-        const rect = ptr.page.getBoundingClientRect();
-        const x = Math.max(0, Math.min(rect.width, ev.clientX - rect.left));
-        const y = Math.max(0, Math.min(rect.height, ev.clientY - rect.top));
-        const left = Math.min(ptr.startX, x);
-        const top = Math.min(ptr.startY, y);
-        const width = Math.abs(x - ptr.startX);
-        const height = Math.abs(y - ptr.startY);
+        if(!ptr || (ptr.pointerId != null && ev.pointerId !== ptr.pointerId)) return;
+        const point = getSourceDocCapturePoint(ev, ptr.container);
+        if(!point) return;
+        const left = Math.min(ptr.startX, point.x);
+        const top = Math.min(ptr.startY, point.y);
+        const width = Math.abs(point.x - ptr.startX);
+        const height = Math.abs(point.y - ptr.startY);
         Object.assign(ptr.box.style, { left:left + 'px', top:top + 'px', width:width + 'px', height:height + 'px' });
       });
-      const finishCapture = ()=>{
+      const finishCapture = (ev)=>{
         const ptr = ui.sourceDocCapturePointer;
+        if(!ptr || (ev && ptr.pointerId != null && ev.pointerId !== ptr.pointerId)) return;
         ui.sourceDocCapturePointer = null;
-        if(!ptr) return;
+        if(ev && typeof shell.releasePointerCapture === 'function'){
+          try{ shell.releasePointerCapture(ev.pointerId); }catch(err){}
+        }
         const box = ptr.box;
         const width = parseFloat(box.style.width || '0') || 0;
         const height = parseFloat(box.style.height || '0') || 0;
         if(width < 12 || height < 12){ box.remove(); setSourceDocSelectionMessage('Image capture cancelled. Drag a larger box.'); return; }
-        ui.sourceDocImageCapture = { documentId: ui.sourceDocSelectedId, pageNumber: Number(ptr.page.getAttribute('data-page-number') || '') || null, pageLabel: ptr.page.getAttribute('data-page-label') || 'Document', left: parseFloat(box.style.left || '0') || 0, top: parseFloat(box.style.top || '0') || 0, width, height };
+        const left = parseFloat(box.style.left || '0') || 0;
+        const top = parseFloat(box.style.top || '0') || 0;
+        const range = getSourceDocPageRangeForCapture(top, height);
+        const startPageNumber = Number(range.startPage?.getAttribute('data-page-number') || '') || null;
+        const endPageNumber = Number(range.endPage?.getAttribute('data-page-number') || '') || startPageNumber;
+        const pageLabel = startPageNumber && endPageNumber && startPageNumber !== endPageNumber ? `Pages ${startPageNumber}-${endPageNumber}` : (range.startPage?.getAttribute('data-page-label') || 'Document');
+        ui.sourceDocImageCapture = { documentId: ui.sourceDocSelectedId, pageNumber: startPageNumber, endPageNumber, pageLabel, left, top, width, height };
         storeSourceDocAnchor(ui.sourceDocSelectedId, ui.sourceDocImageCapture.pageNumber, '');
         $('sourceDocViewerShell')?.classList.remove('sourceDocCaptureMode');
         refreshSourceDocActionButtons();
@@ -2737,23 +2770,29 @@ async function renderDocumentInSourceViewer(doc, targetId, opts={}){
       const capture = ui.sourceDocImageCapture;
       if(!capture || !capture.documentId){ toast('Select an image area first.'); return; }
       const doc = getDocumentById(capture.documentId);
+      const container = getSourceDocCaptureContainer();
       const page = Array.from(document.querySelectorAll('#sourceDocViewerInner .sourceDocPage')).find(el => String(el.getAttribute('data-page-number') || '') === String(capture.pageNumber || '')) || document.querySelector('#sourceDocViewerInner .sourceDocPage');
-      if(!doc || !page || !window.html2canvas){ toast('Image capture is not ready.'); return; }
-      const rendered = await window.html2canvas(page, { backgroundColor:'#ffffff', scale:2, useCORS:true, logging:false });
-      const pageRect = page.getBoundingClientRect();
-      const scaleX = rendered.width / Math.max(1, pageRect.width);
-      const scaleY = rendered.height / Math.max(1, pageRect.height);
+      if(!doc || !page || !container || !window.html2canvas){ toast('Image capture is not ready.'); return; }
+      const overlay = document.querySelector('#sourceDocViewerInner .sourceDocCaptureBox');
+      const prevVisibility = overlay ? overlay.style.visibility : '';
+      if(overlay) overlay.style.visibility = 'hidden';
+      const rendered = await window.html2canvas(container, { backgroundColor:'#ffffff', scale:2, useCORS:true, logging:false });
+      if(overlay) overlay.style.visibility = prevVisibility;
+      const containerRect = container.getBoundingClientRect();
+      const scaleX = rendered.width / Math.max(1, containerRect.width);
+      const scaleY = rendered.height / Math.max(1, containerRect.height);
       const crop = document.createElement('canvas');
       crop.width = Math.max(1, Math.round(capture.width * scaleX));
       crop.height = Math.max(1, Math.round(capture.height * scaleY));
       crop.getContext('2d').drawImage(rendered, Math.round(capture.left * scaleX), Math.round(capture.top * scaleY), crop.width, crop.height, 0, 0, crop.width, crop.height);
       const captureBlob = await new Promise(resolve => crop.toBlob(resolve, 'image/png'));
       if(!captureBlob){ toast('Could not capture that image.'); return; }
-      const uploadedImage = await uploadCaseAsset(captureBlob, `element_capture_${capture.pageNumber || 'page'}.png`, 'element-images');
+      const filePageLabel = capture.pageNumber && capture.endPageNumber && capture.pageNumber !== capture.endPageNumber ? `${capture.pageNumber}-${capture.endPageNumber}` : (capture.pageNumber || 'page');
+      const uploadedImage = await uploadCaseAsset(captureBlob, `element_capture_${filePageLabel}.png`, 'element-images');
       if(!uploadedImage?.url) return;
       const imageDataUrl = uploadedImage.url;
-      const citation = `${doc.name}${capture.pageNumber ? ', p. ' + capture.pageNumber : ''}`;
-      const imageRef = { sourceType:'image_capture', documentId:doc.id, pageNumber:capture.pageNumber, pageLabel:capture.pageLabel, imageDataUrl, imageName:'capture.png', imagePath: uploadedImage.path || '', excerpt:'Image capture' };
+      const citation = capture.pageNumber && capture.endPageNumber && capture.pageNumber !== capture.endPageNumber ? `${doc.name}, pp. ${capture.pageNumber}-${capture.endPageNumber}` : `${doc.name}${capture.pageNumber ? ', p. ' + capture.pageNumber : ''}`;
+      const imageRef = { sourceType:'image_capture', documentId:doc.id, pageNumber:capture.pageNumber, endPageNumber:capture.endPageNumber || capture.pageNumber, pageLabel:capture.pageLabel, imageDataUrl, imageName:'capture.png', imagePath: uploadedImage.path || '', excerpt:'Image capture' };
       const appendTarget = getSourceDocTargetElement();
       if(appendTarget){
         const imageHtml = `<div style="margin-top:10px"><div class="label">Captured image</div><div class="elementImagePreview"><img src="${imageDataUrl}" alt="Captured element image" /><span class="hint">${escapeHtml(capture.pageLabel || (capture.pageNumber ? ('Page ' + capture.pageNumber) : 'Document image'))}</span></div></div>`;
