@@ -5592,8 +5592,15 @@ function openStructuredDocEditor(docId){
       allTagRows.push({ id: st.id, case_id: cid(), name: st.name || '', parent_id: parentId || null, icon_id: st.iconId || st.icon_id || null });
     });
     if(allTagRows.length){
-      const { error } = await sb().from('tags').upsert(allTagRows, { onConflict:'id' });
-      if(error) throw error;
+      const basicTagRows = allTagRows.map(row => ({ id: row.id, case_id: row.case_id, name: row.name || '' }));
+      let tagError = null;
+      try{
+        const { error } = await sb().from('tags').upsert(basicTagRows, { onConflict:'id' });
+        if(error) tagError = error;
+      }catch(err){
+        tagError = err;
+      }
+      if(tagError) console.warn('Tag import skipped due to schema mismatch:', tagError);
     }
 
     const peopleRows = (Array.isArray(next.people) ? next.people : []).filter(p => p && p.id).map(p => ({ id: p.id, case_id: cid(), name: p.name || '', description: p.description || '' }));
