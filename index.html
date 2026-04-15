@@ -1038,27 +1038,30 @@
     .elementsFilterTagTree .elementTagNode.hover-open > .elementTagChildren.collapsed,.elementsFilterTagTree .elementTagRoot.hover-open > .elementTagChildren.collapsed{display:grid;}
     .elementsWorksheetWrap{margin-top:14px;border:1px solid var(--border);border-radius:16px;background:#fff;box-shadow:var(--shadow2);padding:12px;display:none;}
     .elementsWorksheetWrap.open{display:block;}
-    .elementsWorksheetScrollTop{position:sticky;top:0;z-index:6;overflow-x:auto;overflow-y:hidden;height:18px;margin:0 0 0 0;border:1px solid var(--border);border-radius:12px 12px 0 0;background:#fff;}
-    .elementsWorksheetScrollDock{position:fixed;left:24px;right:24px;top:118px;z-index:80;display:none;overflow-x:auto;overflow-y:hidden;height:18px;border:1px solid var(--border);border-radius:12px;background:#fff;box-shadow:var(--shadow2);}
-    .elementsWorksheetScrollDockInner{height:1px;}
+    .elementsWorksheetScrollTop,.elementsWorksheetScrollDock{display:none !important;}
+    .elementsWorksheetScrollDockInner,.elementsWorksheetScrollTopInner{height:1px;}
     .elementsWorksheetGroupHead{cursor:pointer;user-select:none;}
     .elementsWorksheetGroupHead:hover{background:#eef4ff;}
     .elementsWorksheetCountBadge{display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:18px;padding:0 6px;border-radius:999px;background:rgba(37,99,235,.16);color:var(--brand2);font-size:11px;font-weight:800;}
-    .elementsWorksheetScrollTopInner{height:1px;}
-    .elementsWorksheetShell{overflow:auto;border:1px solid var(--border);border-top:none;border-radius:0 0 12px 12px;background:#fff;}
+    .elementsWorksheetShell{overflow:auto;max-height:calc(100vh - 230px);border:1px solid var(--border);border-radius:12px;background:#fff;position:relative;}
     .elementsWorksheetTable{border-collapse:separate;border-spacing:0;width:max-content;min-width:100%;}
-    .elementsWorksheetTable th,.elementsWorksheetTable td{border-bottom:1px solid var(--border);border-right:1px solid var(--border);padding:10px;vertical-align:top;text-align:left;white-space:nowrap;}
+    .elementsWorksheetTable th,.elementsWorksheetTable td{border-bottom:1px solid var(--border);border-right:1px solid var(--border);padding:10px;vertical-align:top;text-align:left;white-space:nowrap;background:#fff;}
     .elementsWorksheetTable th:first-child,.elementsWorksheetTable td:first-child{border-left:1px solid var(--border);}
-    .elementsWorksheetTable th{position:sticky;top:0;background:#f8fbff;z-index:2;}
+    .elementsWorksheetTable thead th{position:sticky;background:#f8fbff;z-index:20;text-align:center;}
+    .elementsWorksheetTable thead tr:nth-child(1) th{top:0;}
+    .elementsWorksheetTable thead tr:nth-child(2) th{top:41px;}
+    .elementsWorksheetTable thead tr:nth-child(3) th{top:82px;}
     .elementsWorksheetTable thead tr:first-child th{border-top:1px solid var(--border);}
+    .elementsWorksheetTable thead th[rowspan="3"]{text-align:left;top:0;z-index:28;}
     .elementsWorksheetTable td.tagsCell{white-space:normal;min-width:120px;text-align:center;cursor:pointer;transition:background .12s ease;}
     .elementsWorksheetTable td.tagsCell.active{background:rgba(37,99,235,.16);}
-    .elementsWorksheetRow:hover{background:#f8fbff;}
-    .elementsWorksheetTable thead th{text-align:center;}
-    .elementsWorksheetTable thead th[rowspan="3"]{text-align:left;}
-    .elementsWorksheetEditCol{width:120px;min-width:120px;text-align:center;}
+    .elementsWorksheetRow:hover td{background:#f8fbff;}
+    .elementsWorksheetEditCol{width:120px;min-width:120px;max-width:120px;text-align:center;}
+    .elementsWorksheetTable th:nth-child(1),.elementsWorksheetTable td:nth-child(1){position:sticky;left:0;z-index:32;background:inherit;box-shadow:1px 0 0 var(--border);}
+    .elementsWorksheetTable th:nth-child(2),.elementsWorksheetTable td:nth-child(2){position:sticky;left:120px;z-index:31;background:inherit;box-shadow:1px 0 0 var(--border);min-width:320px;}
+    .elementsWorksheetTable thead th:nth-child(1),.elementsWorksheetTable thead th:nth-child(2){background:#f8fbff;}
     .elementsWorksheetBaseCell{cursor:pointer;min-width:140px;background:#fff;}
-    .elementsWorksheetBaseCell.editing{padding:6px;background:#f8fbff;position:relative;overflow:visible;z-index:20;}
+    .elementsWorksheetBaseCell.editing{padding:6px;background:#f8fbff !important;position:relative;overflow:visible;z-index:40;}
     .elementsWorksheetInlineInput,.elementsWorksheetInlineSelect{width:100%;border:1px solid var(--border);border-radius:10px;padding:8px 10px;font-size:13px;background:#fff;}
     .elementsWorksheetPicker{display:grid;gap:8px;min-width:260px;}
     .elementsWorksheetPickerSearch{width:100%;border:1px solid var(--border);border-radius:10px;padding:8px 10px;font-size:13px;background:#fff;}
