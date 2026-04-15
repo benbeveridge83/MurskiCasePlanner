@@ -1032,6 +1032,7 @@
 
     .elementsFilterPanel.open{display:block !important;}
     .elementsFilterGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;align-items:start;}
+    .elementsFilterDual{display:grid;gap:10px;}
     .elementsFilterChecklist{max-height:220px;overflow:auto;border:1px solid var(--border);border-radius:12px;padding:8px;background:#fff;display:grid;gap:6px;}
     .elementsFilterChecklist .checkItem{cursor:pointer;}
     .elementsFilterTagTree .elementTagRoot:hover > .elementTagChildren.collapsed,.elementsFilterTagTree .elementTagNode:hover > .elementTagChildren.collapsed,.elementsFilterTagTree .elementTagRoot:hover > .elementTagChildren > .elementTagNode > .elementTagChildren.collapsed,.elementsFilterTagTree .elementTagNode:hover > .elementTagChildren > .elementTagNode > .elementTagChildren.collapsed{display:none;}
@@ -1193,7 +1194,7 @@
     const UI_STORAGE_KEY = 'murski_ui_prefs_v1';
     const LEGACY_STORAGE_KEY = 'murski_case_planner_v1';
     let state = { caseName: '', tags: [], people: [], documents: [], elements: [], outline: [], timelineEvents: [], subtags: [], iconLibrary: [] };
-    const ui = { selectedNodeId: null, selectedWitnessId: null, selectedDocId: null, selectedPersonId: null, selectedElementId: null, activeWitnessColumnId: null, expandedDocIds: {}, showDocDownloadList: false, showDocTagIndex: false, docTagFilterIds: [], docTagIndexExpandedIds: {}, docTagIndexShowUsedOnly: false, docTagNoTagsOnly: false, docTagHasTagsOnly: false, docExhibitFilter: 'all', outlineIndexFilterIds: [], outlineIndexExpandedIds: {}, outlineIndexShowUsedOnly: false, outlineIndexNoTagsOnly: false, outlineIndexHasTagsOnly: false, outlineIndexExhibitFilter: 'all', docSort: { field: 'file', dir: 'asc' }, docRepoSort: { field: 'date', dir: 'desc' }, docDownloadSelections: {}, docDownloadEligibilityFilter: 'all', docRepoEligibilityFilters: ['possible','not'], docRepoStatusFilters: ['exhibit','not_exhibit'], docRepoColWidths: { name: 340, date: 150, uploadDate: 160, timeline: 170, eligibility: 220, exhibitStatus: 190, file: 90 }, outlineCompact: false, outlineStructureView: false, outlinePaneWidth: 720, timelineSelectedId: null, timelineEditingId: null, timelineShowEventColumn: true, timelineShowDocumentColumn: true, timelineShowHeadlineColumn: true, timelineDocPickerOpen: false, timelineColumnOrder: ['date','event','document','headline'], timelineDraggingUndatedId: null, timelineFilterTagIds: [], timelineFilterTagOpen: false, elementsFilterMode: 'all', elementsSearch: '', currentView: INITIAL_VIEW, outlineFilterTagIds: [], outlineFilterWitnessIds: [], outlineFilterTagOpen: false, outlineFilterWitnessOpen: false, outlineIndexTagIds: [], outlineIndexWitnessIds: [], outlineIndexTagOpen: false, outlineIndexWitnessOpen: false, structuredOutlineWitnessFilterIds: [], structuredHeadingTagIds: [], structuredHeadingWitnessIds: [], structuredHeadingTagOpen: false, structuredHeadingWitnessOpen: false, structuredTraySearch: '', structuredTrayAssignmentFilter: 'all', structuredTrayPersonFilterId: 'any', structuredTrayTagFilterIds: [], structuredDocEditorId: null, structuredDragging: null, sourceDocSearch: '', sourceDocSelectedId: null, sourceDocSelection: null, sourceDocContext: 'create', sourceDocOpenFromElementId: null, sourceDocMaximized: false, sourceDocImageCapture: null, sourceDocCapturePointer: null, sourceDocScrollByDocumentId: {}, sourceDocAnchorByDocumentId: {}, elementsFilterTagIds: [], elementsFilterWitnessIds: [], elementsFilterDocumentIds: [], elementsFilterExhibitIds: [], elementsFilterSourceDocumentIds: [], elementsFilterSourcePersonIds: [], elementsFilterPanelOpen: false, elementsCreatorFilter: 'all', elementsWorksheetOpen: false, elementsWorksheetPinnedTopIds: [], elementsWorksheetSort: { key: 'name', dir: 'asc' }, elementsWorksheetCollapsedTags: {}, elementsWorksheetCollapsedChildren: {}, newDocumentTagLinks: [], selectedTagNodeId: null, collapsedTagNodes: {}, collapsedElementTagNodes: {} };
+    const ui = { selectedNodeId: null, selectedWitnessId: null, selectedDocId: null, selectedPersonId: null, selectedElementId: null, activeWitnessColumnId: null, expandedDocIds: {}, showDocDownloadList: false, showDocTagIndex: false, docTagFilterIds: [], docTagIndexExpandedIds: {}, docTagIndexShowUsedOnly: false, docTagNoTagsOnly: false, docTagHasTagsOnly: false, docExhibitFilter: 'all', outlineIndexFilterIds: [], outlineIndexExpandedIds: {}, outlineIndexShowUsedOnly: false, outlineIndexNoTagsOnly: false, outlineIndexHasTagsOnly: false, outlineIndexExhibitFilter: 'all', docSort: { field: 'file', dir: 'asc' }, docRepoSort: { field: 'date', dir: 'desc' }, docDownloadSelections: {}, docDownloadEligibilityFilter: 'all', docRepoEligibilityFilters: ['possible','not'], docRepoStatusFilters: ['exhibit','not_exhibit'], docRepoColWidths: { name: 340, date: 150, uploadDate: 160, timeline: 170, eligibility: 220, exhibitStatus: 190, file: 90 }, outlineCompact: false, outlineStructureView: false, outlinePaneWidth: 720, timelineSelectedId: null, timelineEditingId: null, timelineShowEventColumn: true, timelineShowDocumentColumn: true, timelineShowHeadlineColumn: true, timelineDocPickerOpen: false, timelineColumnOrder: ['date','event','document','headline'], timelineDraggingUndatedId: null, timelineFilterTagIds: [], timelineFilterTagOpen: false, elementsFilterMode: 'all', elementsSearch: '', currentView: INITIAL_VIEW, outlineFilterTagIds: [], outlineFilterWitnessIds: [], outlineFilterTagOpen: false, outlineFilterWitnessOpen: false, outlineIndexTagIds: [], outlineIndexWitnessIds: [], outlineIndexTagOpen: false, outlineIndexWitnessOpen: false, structuredOutlineWitnessFilterIds: [], structuredHeadingTagIds: [], structuredHeadingWitnessIds: [], structuredHeadingTagOpen: false, structuredHeadingWitnessOpen: false, structuredTraySearch: '', structuredTrayAssignmentFilter: 'all', structuredTrayPersonFilterId: 'any', structuredTrayTagFilterIds: [], structuredDocEditorId: null, structuredDragging: null, sourceDocSearch: '', sourceDocSelectedId: null, sourceDocSelection: null, sourceDocContext: 'create', sourceDocOpenFromElementId: null, sourceDocMaximized: false, sourceDocImageCapture: null, sourceDocCapturePointer: null, sourceDocScrollByDocumentId: {}, sourceDocAnchorByDocumentId: {}, elementsFilterTagIds: [], elementsFilterTagExcludeIds: [], elementsFilterTagNoneSelected: false, elementsFilterTagExcludeNoneSelected: true, elementsFilterWitnessIds: [], elementsFilterWitnessExcludeIds: [], elementsFilterWitnessNoneSelected: false, elementsFilterWitnessExcludeNoneSelected: true, elementsFilterDocumentIds: [], elementsFilterDocumentExcludeIds: [], elementsFilterDocumentNoneSelected: false, elementsFilterDocumentExcludeNoneSelected: true, elementsFilterExhibitIds: [], elementsFilterExhibitExcludeIds: [], elementsFilterExhibitNoneSelected: false, elementsFilterExhibitExcludeNoneSelected: true, elementsFilterSourceDocumentIds: [], elementsFilterSourceDocumentExcludeIds: [], elementsFilterSourceDocumentNoneSelected: false, elementsFilterSourceDocumentExcludeNoneSelected: true, elementsFilterSourcePersonIds: [], elementsFilterSourcePersonExcludeIds: [], elementsFilterSourcePersonNoneSelected: false, elementsFilterSourcePersonExcludeNoneSelected: true, elementsFilterPanelOpen: false, elementsCreatorFilter: 'all', elementsWorksheetOpen: false, elementsWorksheetPinnedTopIds: [], elementsWorksheetSort: { key: 'name', dir: 'asc' }, elementsWorksheetCollapsedTags: {}, elementsWorksheetCollapsedChildren: {}, newDocumentTagLinks: [], selectedTagNodeId: null, collapsedTagNodes: {}, collapsedElementTagNodes: {} };
     const structuredUi = { headingFilterOpen: false, visibleHeadingIds: [], headingFilterInitialized: false, witnessColWidths: {}, resizingWitnessId: null, resizeStartX: 0, resizeStartWidth: 220 };
     const HEADING_EXHIBIT_KEY = '__heading__';
     const $ = (id) => document.getElementById(id);
@@ -2047,16 +2048,55 @@
       toast('Document tags updated');
     }
 
-    function renderElementSimpleFilter(hostId, items, selectedIds, attr){
+    function renderElementSimpleFilter(hostId, items, includeIds, excludeIds, includeNoneSelected, excludeNoneSelected, attr){
       const host = $(hostId); if(!host) return;
-      const selected = new Set(selectedIds || []);
-      host.innerHTML = (items || []).length ? items.map(item => `<label class="checkItem" style="margin:0"><input type="checkbox" ${attr} value="${item.id}" ${selected.has(item.id) ? 'checked' : ''} /> <span>${escapeHtml(item.name || 'Untitled')}</span></label>`).join('') : '<div class="hint">No options.</div>';
+      const allItems = Array.isArray(items) ? items.slice() : [];
+      const includeSet = new Set(includeIds || []);
+      const excludeSet = new Set(excludeIds || []);
+      const orderedItems = allItems.slice().sort((a, b)=>{
+        const aSel = includeSet.has(a.id) ? 0 : 1;
+        const bSel = includeSet.has(b.id) ? 0 : 1;
+        if(aSel !== bSel) return aSel - bSel;
+        return (a.name || '').localeCompare(b.name || '');
+      });
+      if(!orderedItems.length){
+        host.innerHTML = '<div class="hint">No options.</div>';
+        return;
+      }
+      host.innerHTML = `<div class="elementsFilterDual">
+        <div>
+          <div class="label" style="margin-bottom:6px">Filter-inclusion</div>
+          <div class="elementsFilterChecklist">
+            <label class="checkItem" style="margin:0"><input type="checkbox" data-elements-filter-none-include="${attr}" ${includeNoneSelected ? 'checked' : ''} /> <span>none selected</span></label>
+            ${orderedItems.map(item => `<label class="checkItem" style="margin:0"><input type="checkbox" ${attr} value="${item.id}" ${includeSet.has(item.id) ? 'checked' : ''} /> <span>${escapeHtml(item.name || 'Untitled')}</span></label>`).join('')}
+          </div>
+        </div>
+        <div>
+          <div class="label" style="margin-bottom:6px">Filter exclusion</div>
+          <div class="elementsFilterChecklist">
+            <label class="checkItem" style="margin:0"><input type="checkbox" data-elements-filter-none-exclude="${attr}" ${excludeNoneSelected ? 'checked' : ''} /> <span>none selected</span></label>
+            ${allItems.map(item => `<label class="checkItem" style="margin:0"><input type="checkbox" data-elements-filter-exclude="${attr}" value="${item.id}" ${excludeSet.has(item.id) ? '' : 'checked'} /> <span>${escapeHtml(item.name || 'Untitled')}</span></label>`).join('')}
+          </div>
+        </div>
+      </div>`;
+      const keyMap = {
+        'data-elements-filter-witness': ['elementsFilterWitnessIds','elementsFilterWitnessExcludeIds','elementsFilterWitnessNoneSelected','elementsFilterWitnessExcludeNoneSelected'],
+        'data-elements-filter-document': ['elementsFilterDocumentIds','elementsFilterDocumentExcludeIds','elementsFilterDocumentNoneSelected','elementsFilterDocumentExcludeNoneSelected'],
+        'data-elements-filter-exhibit': ['elementsFilterExhibitIds','elementsFilterExhibitExcludeIds','elementsFilterExhibitNoneSelected','elementsFilterExhibitExcludeNoneSelected'],
+        'data-elements-filter-source-document': ['elementsFilterSourceDocumentIds','elementsFilterSourceDocumentExcludeIds','elementsFilterSourceDocumentNoneSelected','elementsFilterSourceDocumentExcludeNoneSelected'],
+        'data-elements-filter-source-person': ['elementsFilterSourcePersonIds','elementsFilterSourcePersonExcludeIds','elementsFilterSourcePersonNoneSelected','elementsFilterSourcePersonExcludeNoneSelected']
+      };
+      const keys = keyMap[attr] || [];
       host.querySelectorAll(`input[${attr}]`).forEach(input => input.addEventListener('change', ()=>{
-        const keyMap = { 'data-elements-filter-witness':'elementsFilterWitnessIds', 'data-elements-filter-document':'elementsFilterDocumentIds', 'data-elements-filter-exhibit':'elementsFilterExhibitIds', 'data-elements-filter-source-document':'elementsFilterSourceDocumentIds', 'data-elements-filter-source-person':'elementsFilterSourcePersonIds' };
-        const key = keyMap[attr];
-        if(key) ui[key] = Array.from(host.querySelectorAll(`input[${attr}]:checked`)).map(x => x.value).filter(Boolean);
+        if(keys[0]) ui[keys[0]] = Array.from(host.querySelectorAll(`input[${attr}]:checked`)).map(x => x.value).filter(Boolean);
         renderElements();
       }));
+      host.querySelectorAll(`input[data-elements-filter-exclude="${attr}"]`).forEach(input => input.addEventListener('change', ()=>{
+        if(keys[1]) ui[keys[1]] = Array.from(host.querySelectorAll(`input[data-elements-filter-exclude="${attr}"]:not(:checked)`)).map(x => x.value).filter(Boolean);
+        renderElements();
+      }));
+      host.querySelector(`input[data-elements-filter-none-include="${attr}"]`)?.addEventListener('change', (ev)=>{ if(keys[2]) ui[keys[2]] = !!ev.target.checked; renderElements(); });
+      host.querySelector(`input[data-elements-filter-none-exclude="${attr}"]`)?.addEventListener('change', (ev)=>{ if(keys[3]) ui[keys[3]] = !!ev.target.checked; renderElements(); });
     }
     function getElementFilterOptionSets(){
       const witnessIds = new Set();
@@ -2076,24 +2116,61 @@
     function renderElementsAdvancedFilters(){
       const optionSets = getElementFilterOptionSets();
       renderElementsFilterTagTree();
-      renderElementSimpleFilter('elementsFilterWitnesses', (state.people || []).filter(p => optionSets.witnessIds.has(p.id)).slice().sort(sortByName), (ui.elementsFilterWitnessIds || []).filter(id => optionSets.witnessIds.has(id)), 'data-elements-filter-witness');
-      renderElementSimpleFilter('elementsFilterDocuments', (state.documents || []).filter(d => optionSets.documentIds.has(d.id)).slice().sort(sortByName), (ui.elementsFilterDocumentIds || []).filter(id => optionSets.documentIds.has(id)), 'data-elements-filter-document');
-      renderElementSimpleFilter('elementsFilterExhibits', (state.documents || []).filter(d => optionSets.exhibitIds.has(d.id)).slice().sort(sortByName), (ui.elementsFilterExhibitIds || []).filter(id => optionSets.exhibitIds.has(id)), 'data-elements-filter-exhibit');
-      renderElementSimpleFilter('elementsFilterSourceDocuments', (state.documents || []).filter(d => optionSets.sourceDocumentIds.has(d.id)).slice().sort(sortByName), (ui.elementsFilterSourceDocumentIds || []).filter(id => optionSets.sourceDocumentIds.has(id)), 'data-elements-filter-source-document');
-      renderElementSimpleFilter('elementsFilterSourcePeople', (state.people || []).filter(p => optionSets.sourcePersonIds.has(p.id)).slice().sort(sortByName), (ui.elementsFilterSourcePersonIds || []).filter(id => optionSets.sourcePersonIds.has(id)), 'data-elements-filter-source-person');
+      const witnessItems = (state.people || []).filter(p => optionSets.witnessIds.has(p.id)).slice().sort(sortByName);
+      const documentItems = (state.documents || []).filter(d => optionSets.documentIds.has(d.id)).slice().sort(sortByName);
+      const exhibitItems = (state.documents || []).filter(d => optionSets.exhibitIds.has(d.id)).slice().sort(sortByName);
+      const sourceDocumentItems = (state.documents || []).filter(d => optionSets.sourceDocumentIds.has(d.id)).slice().sort(sortByName);
+      const sourcePersonItems = (state.people || []).filter(p => optionSets.sourcePersonIds.has(p.id)).slice().sort(sortByName);
+      renderElementSimpleFilter('elementsFilterWitnesses', witnessItems, (ui.elementsFilterWitnessIds || []).filter(id => optionSets.witnessIds.has(id)), (ui.elementsFilterWitnessExcludeIds || []).filter(id => optionSets.witnessIds.has(id)), !!ui.elementsFilterWitnessNoneSelected, ui.elementsFilterWitnessExcludeNoneSelected !== false, 'data-elements-filter-witness');
+      renderElementSimpleFilter('elementsFilterDocuments', documentItems, (ui.elementsFilterDocumentIds || []).filter(id => optionSets.documentIds.has(id)), (ui.elementsFilterDocumentExcludeIds || []).filter(id => optionSets.documentIds.has(id)), !!ui.elementsFilterDocumentNoneSelected, ui.elementsFilterDocumentExcludeNoneSelected !== false, 'data-elements-filter-document');
+      renderElementSimpleFilter('elementsFilterExhibits', exhibitItems, (ui.elementsFilterExhibitIds || []).filter(id => optionSets.exhibitIds.has(id)), (ui.elementsFilterExhibitExcludeIds || []).filter(id => optionSets.exhibitIds.has(id)), !!ui.elementsFilterExhibitNoneSelected, ui.elementsFilterExhibitExcludeNoneSelected !== false, 'data-elements-filter-exhibit');
+      renderElementSimpleFilter('elementsFilterSourceDocuments', sourceDocumentItems, (ui.elementsFilterSourceDocumentIds || []).filter(id => optionSets.sourceDocumentIds.has(id)), (ui.elementsFilterSourceDocumentExcludeIds || []).filter(id => optionSets.sourceDocumentIds.has(id)), !!ui.elementsFilterSourceDocumentNoneSelected, ui.elementsFilterSourceDocumentExcludeNoneSelected !== false, 'data-elements-filter-source-document');
+      renderElementSimpleFilter('elementsFilterSourcePeople', sourcePersonItems, (ui.elementsFilterSourcePersonIds || []).filter(id => optionSets.sourcePersonIds.has(id)), (ui.elementsFilterSourcePersonExcludeIds || []).filter(id => optionSets.sourcePersonIds.has(id)), !!ui.elementsFilterSourcePersonNoneSelected, ui.elementsFilterSourcePersonExcludeNoneSelected !== false, 'data-elements-filter-source-person');
       ui.elementsFilterWitnessIds = (ui.elementsFilterWitnessIds || []).filter(id => optionSets.witnessIds.has(id));
+      ui.elementsFilterWitnessExcludeIds = (ui.elementsFilterWitnessExcludeIds || []).filter(id => optionSets.witnessIds.has(id));
       ui.elementsFilterDocumentIds = (ui.elementsFilterDocumentIds || []).filter(id => optionSets.documentIds.has(id));
+      ui.elementsFilterDocumentExcludeIds = (ui.elementsFilterDocumentExcludeIds || []).filter(id => optionSets.documentIds.has(id));
       ui.elementsFilterExhibitIds = (ui.elementsFilterExhibitIds || []).filter(id => optionSets.exhibitIds.has(id));
+      ui.elementsFilterExhibitExcludeIds = (ui.elementsFilterExhibitExcludeIds || []).filter(id => optionSets.exhibitIds.has(id));
       ui.elementsFilterSourceDocumentIds = (ui.elementsFilterSourceDocumentIds || []).filter(id => optionSets.sourceDocumentIds.has(id));
+      ui.elementsFilterSourceDocumentExcludeIds = (ui.elementsFilterSourceDocumentExcludeIds || []).filter(id => optionSets.sourceDocumentIds.has(id));
       ui.elementsFilterSourcePersonIds = (ui.elementsFilterSourcePersonIds || []).filter(id => optionSets.sourcePersonIds.has(id));
+      ui.elementsFilterSourcePersonExcludeIds = (ui.elementsFilterSourcePersonExcludeIds || []).filter(id => optionSets.sourcePersonIds.has(id));
+    }
+    function elementTagFilterLinksMatch(filterLinks, ownLinks){
+      if(!Array.isArray(filterLinks) || !filterLinks.length) return false;
+      const own = Array.isArray(ownLinks) ? ownLinks : [];
+      return filterLinks.some(sel => own.some(link => link.tagId === sel.tagId && (!sel.subtagId || sel.subtagId === link.subtagId)));
+    }
+    function elementTagFilterLinksMatch(filterLinks, ownLinks){
+      if(!Array.isArray(filterLinks) || !filterLinks.length) return false;
+      const own = Array.isArray(ownLinks) ? ownLinks : [];
+      return filterLinks.some(sel => own.some(link => link.tagId === sel.tagId && (!sel.subtagId || sel.subtagId === link.subtagId)));
     }
     function elementMatchesHierFilter(el){
       const selected = Array.isArray(ui.elementsFilterTagIds) ? ui.elementsFilterTagIds : [];
-      if(!selected.length) return true;
+      const excluded = Array.isArray(ui.elementsFilterTagExcludeIds) ? ui.elementsFilterTagExcludeIds : [];
+      const includeNone = !!ui.elementsFilterTagNoneSelected;
+      const excludeNone = ui.elementsFilterTagExcludeNoneSelected !== false;
       const own = Array.isArray(el?.tagLinks) ? el.tagLinks : Array.from(new Set((el?.tags || []).filter(Boolean))).map(tagId => ({ tagId, subtagId:'' }));
-      return selected.some(sel => own.some(link => link.tagId === sel.tagId && (!sel.subtagId || sel.subtagId === link.subtagId)));
+      const hasOwn = own.length > 0;
+      if((selected.length || includeNone) && !(includeNone && !hasOwn) && !elementTagFilterLinksMatch(selected, own)) return false;
+      if(!hasOwn && !excludeNone) return false;
+      if(hasOwn && elementTagFilterLinksMatch(excluded, own)) return false;
+      return true;
     }
-    function elementMatchesIdFilter(ids, selected){ if(!Array.isArray(selected) || !selected.length) return true; const used = new Set((ids || []).filter(Boolean)); return selected.some(id => used.has(id)); }
+    function elementMatchesIdFilter(ids, selected, excluded, includeNoneSelected, excludeNoneSelected){
+      const used = Array.from(new Set((ids || []).filter(Boolean)));
+      if((Array.isArray(selected) && selected.length) || includeNoneSelected){
+        const selectedSet = new Set((selected || []).filter(Boolean));
+        const includeMatch = used.some(id => selectedSet.has(id));
+        if(!(includeMatch || (includeNoneSelected && !used.length))) return false;
+      }
+      if(!used.length) return excludeNoneSelected !== false;
+      const excludedSet = new Set((excluded || []).filter(Boolean));
+      if(used.some(id => excludedSet.has(id))) return false;
+      return true;
+    }
     function getFilteredElements(){
       const search = String(ui.elementsSearch || '').trim().toLowerCase();
       const mode = ui.elementsFilterMode || 'all';
@@ -2105,11 +2182,11 @@
           if(!hay.includes(search)) return false;
         }
         if(!elementMatchesHierFilter(el)) return false;
-        if(!elementMatchesIdFilter(el.witnessIds || [], ui.elementsFilterWitnessIds)) return false;
-        if(!elementMatchesIdFilter(el.documentIds || [], ui.elementsFilterDocumentIds)) return false;
-        if(!elementMatchesIdFilter(el.exhibitDocIds || [], ui.elementsFilterExhibitIds)) return false;
-        if(!elementMatchesIdFilter(getElementSourceDocumentIds(el), ui.elementsFilterSourceDocumentIds)) return false;
-        if(!elementMatchesIdFilter(getElementSourcePersonIds(el), ui.elementsFilterSourcePersonIds)) return false;
+        if(!elementMatchesIdFilter(el.witnessIds || [], ui.elementsFilterWitnessIds, ui.elementsFilterWitnessExcludeIds, !!ui.elementsFilterWitnessNoneSelected, ui.elementsFilterWitnessExcludeNoneSelected !== false)) return false;
+        if(!elementMatchesIdFilter(el.documentIds || [], ui.elementsFilterDocumentIds, ui.elementsFilterDocumentExcludeIds, !!ui.elementsFilterDocumentNoneSelected, ui.elementsFilterDocumentExcludeNoneSelected !== false)) return false;
+        if(!elementMatchesIdFilter(el.exhibitDocIds || [], ui.elementsFilterExhibitIds, ui.elementsFilterExhibitExcludeIds, !!ui.elementsFilterExhibitNoneSelected, ui.elementsFilterExhibitExcludeNoneSelected !== false)) return false;
+        if(!elementMatchesIdFilter(getElementSourceDocumentIds(el), ui.elementsFilterSourceDocumentIds, ui.elementsFilterSourceDocumentExcludeIds, !!ui.elementsFilterSourceDocumentNoneSelected, ui.elementsFilterSourceDocumentExcludeNoneSelected !== false)) return false;
+        if(!elementMatchesIdFilter(getElementSourcePersonIds(el), ui.elementsFilterSourcePersonIds, ui.elementsFilterSourcePersonExcludeIds, !!ui.elementsFilterSourcePersonNoneSelected, ui.elementsFilterSourcePersonExcludeNoneSelected !== false)) return false;
         if((ui.elementsCreatorFilter || 'all') !== 'all' && getElementCreatorLabel(el) !== ui.elementsCreatorFilter) return false;
         return true;
       }).sort((a,b)=> (a.name||'').localeCompare(b.name||''));
@@ -2463,14 +2540,9 @@
         });
       });
     }
-    function renderElementsFilterTagTree(){
-      renderHierarchicalTagTree('elementsFilterTagTree', ui.elementsFilterTagIds || [], { rootClass:'elementsFilterTagTree' });
-      const host = $('elementsFilterTagTree');
-      if(!host) return;
-      host.querySelectorAll('input[data-hier-tag-link]').forEach(input => {
-        input.onchange = ()=>{ ui.elementsFilterTagIds = collectHierarchicalTagLinks('elementsFilterTagTree'); renderElements(); };
-      });
-      host.querySelectorAll('.elementTagRow').forEach(row => {
+    function bindElementsFilterTagTreeInteractions(root){
+      if(!root) return;
+      root.querySelectorAll('.elementTagRow').forEach(row => {
         row.addEventListener('click', (ev)=>{
           if(ev.target.closest('input,button')) return;
           const node = row.closest('.elementTagNode, .elementTagRoot');
@@ -2487,6 +2559,36 @@
           row.addEventListener('mouseleave', ()=> node.classList.remove('hover-open'));
         }
       });
+    }
+    function renderElementsFilterTagTree(){
+      const host = $('elementsFilterTagTree');
+      if(!host) return;
+      host.innerHTML = `<div class="elementsFilterDual">
+        <div>
+          <div class="label" style="margin-bottom:6px">Filter-inclusion</div>
+          <div class="elementsFilterChecklist" style="margin-bottom:8px"><label class="checkItem" style="margin:0"><input type="checkbox" id="elementsFilterTagNoneSelected" ${ui.elementsFilterTagNoneSelected ? 'checked' : ''} /> <span>none selected</span></label></div>
+          <div id="elementsFilterTagTreeInclude"></div>
+        </div>
+        <div>
+          <div class="label" style="margin-bottom:6px">Filter exclusion</div>
+          <div class="elementsFilterChecklist" style="margin-bottom:8px"><label class="checkItem" style="margin:0"><input type="checkbox" id="elementsFilterTagExcludeNoneSelected" ${ui.elementsFilterTagExcludeNoneSelected !== false ? 'checked' : ''} /> <span>none selected</span></label></div>
+          <div id="elementsFilterTagTreeExclude"></div>
+        </div>
+      </div>`;
+      renderHierarchicalTagTree('elementsFilterTagTreeInclude', ui.elementsFilterTagIds || [], { rootClass:'elementsFilterTagTree' });
+      renderHierarchicalTagTree('elementsFilterTagTreeExclude', ui.elementsFilterTagExcludeIds || [], { rootClass:'elementsFilterTagTree' });
+      host.querySelector('#elementsFilterTagNoneSelected')?.addEventListener('change', (ev)=>{ ui.elementsFilterTagNoneSelected = !!ev.target.checked; renderElements(); });
+      host.querySelector('#elementsFilterTagExcludeNoneSelected')?.addEventListener('change', (ev)=>{ ui.elementsFilterTagExcludeNoneSelected = !!ev.target.checked; renderElements(); });
+      const includeRoot = $('elementsFilterTagTreeInclude');
+      const excludeRoot = $('elementsFilterTagTreeExclude');
+      includeRoot?.querySelectorAll('input[data-hier-tag-link]').forEach(input => {
+        input.onchange = ()=>{ ui.elementsFilterTagIds = collectHierarchicalTagLinks('elementsFilterTagTreeInclude'); renderElements(); };
+      });
+      excludeRoot?.querySelectorAll('input[data-hier-tag-link]').forEach(input => {
+        input.onchange = ()=>{ ui.elementsFilterTagExcludeIds = collectHierarchicalTagLinks('elementsFilterTagTreeExclude'); renderElements(); };
+      });
+      bindElementsFilterTagTreeInteractions(includeRoot);
+      bindElementsFilterTagTreeInteractions(excludeRoot);
     }
     function collectElementForm(){ const name = ($('elementName')?.value || '').trim(); if(!name){ alert('Element name is required.'); return null; } const date = normalizeFlexibleDateInput($('elementDate')?.value || ''); const textValue = $('elementText')?.innerHTML?.trim() || ''; const tagLinks = getElementFormSelectedTagLinks(); const tags = Array.from(new Set(tagLinks.map(link => link.tagId).filter(Boolean))); const documentIds = getElementFormSelectedDocumentIds(); const witnessIds = getElementFormSelectedWitnessIds(); const exhibitDocIds = getElementFormSelectedExhibitIds(); const existing = ui.selectedElementId ? getElementById(ui.selectedElementId) : null; const source = String($('elementSource')?.value || '').trim(); const sourceDocumentIds = getElementFormSelectedSourceDocumentIds(); const sourcePersonIds = getElementFormSelectedSourcePersonIds(); const sourceRefs = buildElementSourceRefs(Array.isArray(existing?.sourceRefs) ? existing.sourceRefs.slice() : [], source, sourceDocumentIds, sourcePersonIds, ui.sourceDocSelection); return finalizeElementSystemMeta({ name, addedAt: existing?.addedAt || new Date().toISOString(), type: 'text', date, text: textValue, documentIds, witnessIds, exhibitDocIds, tags, tagLinks, includeInTimeline: !!$('elementIncludeInTimeline')?.checked, source, sourceDocumentIds, sourcePersonIds, sourceRefs }); }
     function resetElementForm(){ if($('elementName')) $('elementName').value = ''; if($('elementDate')) $('elementDate').value = ''; if($('elementSource')) $('elementSource').value = ''; if($('elementText')) $('elementText').innerHTML = ''; if($('elementIncludeInTimeline')) $('elementIncludeInTimeline').checked = false; if($('elementWitnessSearch')) $('elementWitnessSearch').value = ''; if($('elementDocumentsSearch')) $('elementDocumentsSearch').value = ''; if($('elementExhibitsSearch')) $('elementExhibitsSearch').value = ''; if($('elementSourceDocumentsSearch')) $('elementSourceDocumentsSearch').value = ''; if($('elementSourcePeopleSearch')) $('elementSourcePeopleSearch').value = ''; renderElementWitnessList([]); renderElementDocumentList([]); renderElementExhibitList([]); renderElementSourceDocumentList([]); renderElementSourcePeopleList([]); renderElementCreateTagChoices([]); ui.selectedElementId = null; ui.sourceDocSelection = null; }
@@ -5451,11 +5553,29 @@ function openStructuredDocEditor(docId){
       ui.elementsFilterMode = 'all';
       ui.elementsSearch = '';
       ui.elementsFilterTagIds = [];
+      ui.elementsFilterTagExcludeIds = [];
+      ui.elementsFilterTagNoneSelected = false;
+      ui.elementsFilterTagExcludeNoneSelected = true;
       ui.elementsFilterWitnessIds = [];
+      ui.elementsFilterWitnessExcludeIds = [];
+      ui.elementsFilterWitnessNoneSelected = false;
+      ui.elementsFilterWitnessExcludeNoneSelected = true;
       ui.elementsFilterDocumentIds = [];
+      ui.elementsFilterDocumentExcludeIds = [];
+      ui.elementsFilterDocumentNoneSelected = false;
+      ui.elementsFilterDocumentExcludeNoneSelected = true;
       ui.elementsFilterExhibitIds = [];
+      ui.elementsFilterExhibitExcludeIds = [];
+      ui.elementsFilterExhibitNoneSelected = false;
+      ui.elementsFilterExhibitExcludeNoneSelected = true;
       ui.elementsFilterSourceDocumentIds = [];
+      ui.elementsFilterSourceDocumentExcludeIds = [];
+      ui.elementsFilterSourceDocumentNoneSelected = false;
+      ui.elementsFilterSourceDocumentExcludeNoneSelected = true;
       ui.elementsFilterSourcePersonIds = [];
+      ui.elementsFilterSourcePersonExcludeIds = [];
+      ui.elementsFilterSourcePersonNoneSelected = false;
+      ui.elementsFilterSourcePersonExcludeNoneSelected = true;
       ui.elementsFilterPanelOpen = false;
       ui.elementsWorksheetOpen = false;
       ui.elementsWorksheetPinnedTopIds = [];
