@@ -5988,27 +5988,20 @@ small{color:#4b5563;}
       const rows = [];
       try{
         if(window.supabase){
-          let profileRes = await window.supabase
+          const profileRes = await window.supabase
             .from('profiles')
-            .select('id, email, display_name, nda_signed_at, nda_document_path')
-            .not('nda_signed_at','is',null)
-            .order('nda_signed_at', { ascending:false });
-          if(profileRes.error){
-            console.warn('Primary signed NDA profile lookup failed, trying fallback query:', profileRes.error);
-            profileRes = await window.supabase
-              .from('profiles')
-              .select('*')
-              .not('nda_signed_at','is',null)
-              .order('nda_signed_at', { ascending:false });
-          }
+            .select('*');
           if(profileRes.error){
             console.warn('Profile NDA lookup failed:', profileRes.error);
           }else if(Array.isArray(profileRes.data)){
-            profileRes.data.forEach(item => {
-              const path = item.nda_document_path || '';
-              const publicUrl = path ? (window.supabase.storage.from(NDA_STORAGE_BUCKET).getPublicUrl(path).data?.publicUrl || '') : '';
-              rows.push({ name: item.display_name || item.email || 'User', email: item.email || '', signedAt: item.nda_signed_at || '', url: publicUrl, path });
-            });
+            profileRes.data
+              .filter(item => item && item.nda_signed_at)
+              .sort((a, b) => String(b.nda_signed_at || '').localeCompare(String(a.nda_signed_at || '')))
+              .forEach(item => {
+                const path = item.nda_document_path || '';
+                const publicUrl = path ? (window.supabase.storage.from(NDA_STORAGE_BUCKET).getPublicUrl(path).data?.publicUrl || '') : '';
+                rows.push({ name: item.display_name || item.email || 'User', email: item.email || '', signedAt: item.nda_signed_at || '', url: publicUrl, path });
+              });
           }
         }
       }catch(e){
