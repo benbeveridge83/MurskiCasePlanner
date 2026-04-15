@@ -2542,22 +2542,33 @@
     }
     function bindElementsFilterTagTreeInteractions(root){
       if(!root) return;
+      root.querySelectorAll('[data-element-tag-collapse]').forEach(btn => {
+        if(btn.dataset.boundClick === '1') return;
+        btn.dataset.boundClick = '1';
+        btn.addEventListener('click', (ev)=>{
+          ev.preventDefault();
+          ev.stopPropagation();
+          const nodeId = btn.getAttribute('data-element-tag-collapse') || '';
+          if(!nodeId) return;
+          ui.collapsedElementTagNodes = ui.collapsedElementTagNodes || {};
+          ui.collapsedElementTagNodes[nodeId] = !ui.collapsedElementTagNodes[nodeId];
+          renderElementsAdvancedFilters();
+        });
+      });
       root.querySelectorAll('.elementTagRow').forEach(row => {
+        if(row.dataset.boundClick === '1') return;
+        row.dataset.boundClick = '1';
         row.addEventListener('click', (ev)=>{
           if(ev.target.closest('input,button')) return;
           const node = row.closest('.elementTagNode, .elementTagRoot');
           if(!node || !node.querySelector(':scope > .elementTagChildren')) return;
-          const toggleBtn = row.querySelector('[data-element-tag-collapse]');
-          if(toggleBtn){ toggleBtn.click(); return; }
-          const nodeId = row.querySelector('input[data-hier-tag-link]')?.getAttribute('data-subtag-id') || row.querySelector('input[data-hier-tag-link]')?.getAttribute('data-tag-id');
-          if(nodeId){ ui.collapsedElementTagNodes[nodeId] = !ui.collapsedElementTagNodes[nodeId]; renderElementsAdvancedFilters(); }
+          const input = row.querySelector('input[data-hier-tag-link]');
+          const nodeId = input?.getAttribute('data-subtag-id') || input?.getAttribute('data-tag-id') || '';
+          if(!nodeId) return;
+          ui.collapsedElementTagNodes = ui.collapsedElementTagNodes || {};
+          ui.collapsedElementTagNodes[nodeId] = !ui.collapsedElementTagNodes[nodeId];
+          renderElementsAdvancedFilters();
         });
-        const textTarget = row.querySelector('span:last-child');
-        const node = row.closest('.elementTagNode, .elementTagRoot');
-        if(textTarget && node){
-          textTarget.addEventListener('mouseenter', ()=> node.classList.add('hover-open'));
-          row.addEventListener('mouseleave', ()=> node.classList.remove('hover-open'));
-        }
       });
     }
     function renderElementsFilterTagTree(){
