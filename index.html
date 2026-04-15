@@ -1102,7 +1102,16 @@
     .memberRow{display:flex;justify-content:space-between;gap:10px;align-items:center;padding:10px 12px;border:1px solid var(--border);border-radius:12px;background:#fff;}
     .setupBox{border:1px dashed rgba(37,99,235,.35);border-radius:14px;padding:12px;background:#f8fbff;color:var(--muted);}
     .hidden{display:none !important;}
-    @media (max-width: 980px){.authGrid,.dashboardGrid{grid-template-columns:1fr;}}
+    .ndaModalBackdrop{position:fixed;inset:0;background:rgba(15,23,42,.45);display:none;align-items:center;justify-content:center;z-index:120;padding:20px;}
+    .ndaModalBackdrop.open{display:flex;}
+    .ndaModalCard{width:min(1100px,96vw);max-height:96vh;overflow:auto;background:#fff;border:1px solid var(--border);border-radius:20px;box-shadow:var(--shadow);padding:18px;display:grid;gap:14px;}
+    .ndaPreview{border:1px solid var(--border);border-radius:16px;background:#fff;padding:18px;line-height:1.55;}
+    .ndaPreview h3{margin:0 0 10px 0;text-align:center;}
+    .ndaPreview p{margin:0 0 12px 0;}
+    .ndaSignatureWrap{display:grid;grid-template-columns:minmax(320px,1fr) minmax(240px,300px);gap:14px;align-items:start;}
+    .ndaSignaturePad{width:100%;height:220px;border:2px dashed rgba(37,99,235,.28);border-radius:16px;background:#fff;touch-action:none;cursor:crosshair;}
+    .ndaSignedFileRow{display:flex;justify-content:space-between;gap:10px;align-items:center;padding:10px 12px;border:1px solid var(--border);border-radius:12px;background:#fff;flex-wrap:wrap;}
+    @media (max-width: 980px){.authGrid,.dashboardGrid,.ndaSignatureWrap{grid-template-columns:1fr;}}
   </style>
 </head>
 <body>
@@ -1120,7 +1129,8 @@
         </div>
         <div class="card" style="box-shadow:none">
           <h2 style="margin-bottom:8px">Create login</h2>
-          <div class="authMuted">This creates the user's login. Case access is granted separately from the dashboard by an admin.</div>
+          <div class="authMuted">This creates the user\'s login. Before the login is created, the user will review and sign the NDA with their mouse. A signed copy is downloaded for the user and stored for admin download.</div>
+          <div class="label" style="margin-top:10px">Full name</div><input id="authSignupName" type="text" placeholder="Full legal name" />
           <div class="label" style="margin-top:10px">Email</div><input id="authSignupEmail" type="text" placeholder="name@email.com" />
           <div class="label" style="margin-top:10px">Password</div><input id="authSignupPassword" type="password" placeholder="Choose a password" />
           <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px"><button id="authSignUpBtn" class="btnPrimary" type="button">Create login</button></div>
@@ -1156,6 +1166,43 @@
         </div>
         <div id="caseMembersList" style="display:grid;gap:8px;margin-top:14px"></div>
       </div>
+      <div id="signedNdaPanel" class="card" style="box-shadow:none;margin-top:16px">
+        <div style="display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap"><h2 style="margin:0">Signed NDAs</h2><button id="refreshSignedNdasBtn" class="btnGhost" type="button">Refresh NDA list</button></div>
+        <div class="authMuted" style="margin:8px 0 12px 0">Every newly created profile is prompted to sign the NDA. Signed copies appear here for admin download.</div>
+        <div id="signedNdaList" style="display:grid;gap:8px"></div>
+      </div>
+    </div>
+  </div>
+  <div id="ndaModal" class="ndaModalBackdrop">
+    <div class="ndaModalCard">
+      <div style="display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap">
+        <div><h2 style="margin:0">Non-Disclosure Agreement</h2><div class="authMuted">The new user must review and sign this before the profile is created.</div></div>
+        <button id="ndaModalClose" class="btnGhost" type="button">Cancel</button>
+      </div>
+      <div id="ndaPreview" class="ndaPreview"></div>
+      <div class="ndaSignatureWrap">
+        <div>
+          <div class="label">Receiving party signature</div>
+          <canvas id="ndaSignaturePad" class="ndaSignaturePad" width="900" height="300"></canvas>
+          <div class="hint" style="margin-top:8px">Sign with the mouse or finger inside the box above.</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">
+            <button id="ndaClearSignature" class="btnGhost" type="button">Clear signature</button>
+          </div>
+        </div>
+        <div>
+          <div class="label">Signer</div>
+          <div id="ndaSignerSummary" class="setupBox" style="margin-top:6px"></div>
+          <label class="checkItem" style="margin-top:12px"><input id="ndaAgreeCheckbox" type="checkbox" /> <span>I agree to the NDA above.</span></label>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px">
+            <button id="ndaConfirmSignUp" class="btnPrimary" type="button">Sign NDA and create login</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div id="awaitingAccessView" class="card" style="display:none">
+      <h2 style="margin:0 0 8px 0">Account created</h2>
+      <div id="awaitingAccessMessage" class="authMuted">Your account exists, but it has not been assigned to a case yet. An admin must add you to a case before you can open the portal.</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px"><button id="awaitingAccessSignOutBtn" class="btnGhost" type="button">Sign out</button></div>
     </div>
   </div>
   <div class="tabs" id="mainTabs" style="display:none"><a id="tabOutline" class="tab active" data-view-link="outline" href="?view=outline">Case Outline</a><a id="tabDocuments" class="tab" data-view-link="documents" href="?view=documents">Documents</a><a id="tabPeople" class="tab" data-view-link="people" href="?view=people">People</a><a id="tabElements" class="tab" data-view-link="elements" href="?view=elements">Elements</a><a id="tabTimeline" class="tab" data-view-link="timeline" href="?view=timeline">Timeline</a><a id="tabSettings" class="tab" data-view-link="settings" href="?view=settings">Add Tag</a></div>
@@ -1388,17 +1435,19 @@
       el.sourceRefs = mergeElementSystemMeta(el.sourceRefs, meta);
       return el;
     }
-    function getElementCreatorLabel(el){ const meta = getElementSystemMeta(el); return String(meta.createdByEmail || meta.createdByName || '').trim() || 'Unknown'; }
+    function getElementCreatorLabel(el){ const meta = getElementSystemMeta(el); return String(meta.createdByEmail || meta.createdByName || '').trim() || 'Unknown user'; }
     function isElementCreatedByCurrentUser(el){ const meta = getElementSystemMeta(el); const currentUserId = getCurrentUserId(); const currentUserEmail = getCurrentUserEmail(); return (!!currentUserId && meta.createdByUserId === currentUserId) || (!!currentUserEmail && String(meta.createdByEmail || '').toLowerCase() === currentUserEmail); }
     function isElementPendingAdminReview(el){ const meta = getElementSystemMeta(el); if(!meta.createdByUserId && !meta.createdByEmail) return false; if(isElementCreatedByCurrentUser(el)) return false; return !meta.acceptedByAdminUserId && !meta.acceptedAt; }
     async function acceptElementReview(elementId){ const el = getElementById(elementId); if(!el || authUi.currentCaseRole !== 'admin') return; finalizeElementSystemMeta(el, { acceptByAdmin:true }); if(window.upsertElementRecord) await window.upsertElementRecord(el); safeSave(); renderElements(); toast('Element accepted'); }
     function populateElementCreatorFilter(){ const sel = $('elementsCreatorFilter'); if(!sel) return; const values = Array.from(new Set((state.elements || []).map(getElementCreatorLabel).filter(Boolean))).sort((a,b)=>a.localeCompare(b)); const prev = ui.elementsCreatorFilter || 'all'; sel.innerHTML = '<option value="all">All creators</option>' + values.map(v => `<option value="${escapeHtml(v)}">${escapeHtml(v)}</option>`).join(''); sel.value = values.includes(prev) ? prev : 'all'; ui.elementsCreatorFilter = sel.value; if(sel.dataset.bound !== '1'){ sel.dataset.bound = '1'; sel.addEventListener('change', ()=>{ ui.elementsCreatorFilter = sel.value || 'all'; renderElements(); }); } }
     function applyCaseRoleVisibility(){
-      const isAdmin = authUi.currentCaseRole === 'admin';
+      const portalAdmin = isPortalAdmin();
+      const isAdmin = portalAdmin || authUi.currentCaseRole === 'admin';
       if($('adminTopbarTools')) $('adminTopbarTools').style.display = isAdmin ? '' : 'none';
       if($('caseName')) $('caseName').style.display = isAdmin ? '' : 'none';
       if($('appBrandTitle')) $('appBrandTitle').textContent = isAdmin ? 'Murski – Case Planner' : 'Case Planner';
       if($('appBrandSubtitle')) $('appBrandSubtitle').style.display = isAdmin ? '' : 'none';
+      updateDashboardButtonVisibility();
     }
     async function loadCurrentCaseMembership(){
       const user = getActiveSessionUser();
@@ -5646,11 +5695,308 @@ function openStructuredDocEditor(docId){
     $('structuredDocDownload')?.addEventListener('click', downloadStructuredDocEditorFile);
     $('structuredDocModal')?.addEventListener('click', (ev)=>{ if(ev.target && ev.target.id === 'structuredDocModal') closeStructuredDocEditor(); });
 
+
+    const NDA_STORAGE_BUCKET = 'case-documents';
+    const NDA_STORAGE_FOLDER = 'signed-ndas';
+    const NDA_DISclosing_PARTY = 'Beveridge Law Firm, PLLC and Ben Beveridge';
+    const ndaUi = { draft:null, signatureDrawing:false, signatureHasInk:false, pointerId:null };
+
+    function formatLongDate(value){
+      const d = value ? new Date(value) : new Date();
+      try{ return d.toLocaleDateString(undefined, { year:'numeric', month:'long', day:'numeric' }); }catch(e){ return d.toISOString().slice(0,10); }
+    }
+    function getTodayIso(){ return new Date().toISOString().slice(0,10); }
+    function sanitizeDownloadFileName(name){
+      return String(name || 'file').replace(/[^a-zA-Z0-9._-]+/g, '_').replace(/_+/g, '_').replace(/^_+|_+$/g, '') || 'file';
+    }
+    function downloadBlobToUser(blob, filename){
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename || 'download';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(()=> URL.revokeObjectURL(url), 1500);
+    }
+    function buildNdaDocumentHtml(payload){
+      const name = escapeHtml(payload?.name || '');
+      const email = escapeHtml(payload?.email || '');
+      const effectiveDate = escapeHtml(payload?.effectiveDateLong || '');
+      const signedDate = escapeHtml(payload?.signedDateLong || '');
+      const signatureDataUrl = String(payload?.signatureDataUrl || '');
+      return `<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Signed NDA - ${name}</title>
+<style>
+body{font-family:Arial,Helvetica,sans-serif;line-height:1.55;color:#111827;margin:32px;}
+h1{text-align:center;margin:0 0 20px 0;font-size:28px;}
+.section{margin:0 0 16px 0;}
+.meta{margin-bottom:18px;}
+.sig{margin-top:28px;display:grid;grid-template-columns:1fr 1fr;gap:30px;}
+.sigbox{border-top:1px solid #111827;padding-top:10px;min-height:130px;}
+.sigimg{max-width:100%;max-height:100px;display:block;margin:8px 0;}
+small{color:#4b5563;}
+</style>
+</head>
+<body>
+<h1>NON-DISCLOSURE AGREEMENT (NDA)</h1>
+<p class="meta">This Non-Disclosure Agreement ("Agreement") is entered into as of <strong>${effectiveDate}</strong> ("Effective Date"), by and between:</p>
+<p class="section"><strong>Disclosing Party:</strong> ${escapeHtml(NDA_DISclosing_PARTY)}<br /><strong>Receiving Party:</strong> ${name}${email ? ` (${email})` : ''}</p>
+<p class="section">Collectively referred to as the "Parties."</p>
+<p class="section"><strong>1. Purpose</strong><br />The Disclosing Party intends to share certain confidential and proprietary information, including but not limited to website designs, software, code, business processes, and technical concepts ("Confidential Information"), for the purpose of evaluation and/or potential business collaboration.</p>
+<p class="section"><strong>2. Definition of Confidential Information</strong><br />Confidential Information includes all non-public information disclosed by the Disclosing Party, whether oral, written, or electronic, including but not limited to website functionality, features, and structure; source code, object code, and algorithms; business methods and strategies; and client data, designs, and documentation. Confidential Information does not include information that is publicly available through no breach of this Agreement, was already known to the Receiving Party prior to disclosure, or is independently developed without use of the Confidential Information.</p>
+<p class="section"><strong>3. Obligations of Receiving Party</strong><br />The Receiving Party agrees to keep all Confidential Information strictly confidential, not disclose such information to any third party without prior written consent, use the Confidential Information solely for the stated Purpose, and take reasonable measures to protect the confidentiality of the information.</p>
+<p class="section"><strong>4. Non-Use</strong><br />The Receiving Party shall not use the Confidential Information for any purpose other than evaluating or engaging in the potential business relationship with the Disclosing Party.</p>
+<p class="section"><strong>5. Term</strong><br />This Agreement shall remain in effect for three (3) years from the Effective Date. The obligation to protect Confidential Information shall survive termination of this Agreement.</p>
+<p class="section"><strong>6. Return or Destruction</strong><br />Upon request, the Receiving Party agrees to return or destroy all Confidential Information, including copies, in their possession.</p>
+<p class="section"><strong>7. No License or Ownership Transfer</strong><br />Nothing in this Agreement grants the Receiving Party any rights, ownership, or license to the Confidential Information.</p>
+<p class="section"><strong>8. Remedies</strong><br />The Receiving Party acknowledges that unauthorized disclosure may cause irreparable harm, and the Disclosing Party is entitled to seek injunctive relief and other legal remedies.</p>
+<p class="section"><strong>9. Governing Law</strong><br />This Agreement shall be governed by the laws of the State of Texas.</p>
+<p class="section"><strong>10. Entire Agreement</strong><br />This Agreement constitutes the entire agreement between the Parties regarding confidentiality and supersedes all prior discussions.</p>
+<div class="sig">
+  <div class="sigbox">
+    <strong>Disclosing Party</strong><br />
+    ${escapeHtml(NDA_DISclosing_PARTY)}<br />
+    <small>Date: ${signedDate}</small>
+  </div>
+  <div class="sigbox">
+    <strong>Receiving Party</strong><br />
+    ${name}<br />
+    ${signatureDataUrl ? `<img class="sigimg" src="${signatureDataUrl}" alt="Receiving Party Signature" />` : ''}
+    <small>Date: ${signedDate}</small>
+  </div>
+</div>
+</body>
+</html>`;
+    }
+    function renderNdaPreview(payload){
+      const host = $('ndaPreview');
+      if(!host) return;
+      host.innerHTML = `<h3>NON-DISCLOSURE AGREEMENT (NDA)</h3>
+<p>This Non-Disclosure Agreement ("Agreement") is entered into as of <strong>${escapeHtml(payload?.effectiveDateLong || '')}</strong> ("Effective Date"), by and between:</p>
+<p><strong>Disclosing Party:</strong> ${escapeHtml(NDA_DISclosing_PARTY)}<br /><strong>Receiving Party:</strong> ${escapeHtml(payload?.name || '')}${payload?.email ? ` (${escapeHtml(payload.email)})` : ''}</p>
+<p>Collectively referred to as the "Parties."</p>
+<p><strong>1. Purpose</strong><br />The Disclosing Party intends to share certain confidential and proprietary information, including but not limited to website designs, software, code, business processes, and technical concepts ("Confidential Information"), for the purpose of evaluation and/or potential business collaboration.</p>
+<p><strong>2. Definition of Confidential Information</strong><br />Confidential Information includes all non-public information disclosed by the Disclosing Party, whether oral, written, or electronic, including but not limited to website functionality, features, and structure; source code, object code, and algorithms; business methods and strategies; and client data, designs, and documentation. Confidential Information does not include information that is publicly available through no breach of this Agreement, was already known to the Receiving Party prior to disclosure, or is independently developed without use of the Confidential Information.</p>
+<p><strong>3. Obligations of Receiving Party</strong><br />The Receiving Party agrees to keep all Confidential Information strictly confidential, not disclose such information to any third party without prior written consent, use the Confidential Information solely for the stated Purpose, and take reasonable measures to protect the confidentiality of the information.</p>
+<p><strong>4. Non-Use</strong><br />The Receiving Party shall not use the Confidential Information for any purpose other than evaluating or engaging in the potential business relationship with the Disclosing Party.</p>
+<p><strong>5. Term</strong><br />This Agreement shall remain in effect for three (3) years from the Effective Date. The obligation to protect Confidential Information shall survive termination of this Agreement.</p>
+<p><strong>6. Return or Destruction</strong><br />Upon request, the Receiving Party agrees to return or destroy all Confidential Information, including copies, in their possession.</p>
+<p><strong>7. No License or Ownership Transfer</strong><br />Nothing in this Agreement grants the Receiving Party any rights, ownership, or license to the Confidential Information.</p>
+<p><strong>8. Remedies</strong><br />The Receiving Party acknowledges that unauthorized disclosure may cause irreparable harm, and the Disclosing Party is entitled to seek injunctive relief and other legal remedies.</p>
+<p><strong>9. Governing Law</strong><br />This Agreement shall be governed by the laws of the State of Texas.</p>
+<p><strong>10. Entire Agreement</strong><br />This Agreement constitutes the entire agreement between the Parties regarding confidentiality and supersedes all prior discussions.</p>
+<p style="margin-top:16px"><strong>Receiving Party signature:</strong> sign below. <strong>Date:</strong> ${escapeHtml(payload?.signedDateLong || '')}</p>`;
+    }
+    function resizeNdaSignatureCanvas(){
+      const canvas = $('ndaSignaturePad');
+      if(!canvas) return;
+      const rect = canvas.getBoundingClientRect();
+      const dpr = Math.max(1, window.devicePixelRatio || 1);
+      const width = Math.max(320, Math.round(rect.width || 900));
+      const height = Math.max(180, Math.round(rect.height || 220));
+      const old = document.createElement('canvas');
+      old.width = canvas.width;
+      old.height = canvas.height;
+      const oldCtx = old.getContext('2d');
+      oldCtx.drawImage(canvas, 0, 0);
+      canvas.width = Math.round(width * dpr);
+      canvas.height = Math.round(height * dpr);
+      const ctx = canvas.getContext('2d');
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      ctx.lineWidth = 2.2;
+      ctx.strokeStyle = '#111827';
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, width, height);
+      if(old.width && old.height){
+        ctx.drawImage(old, 0, 0, width, height);
+      }
+    }
+    function clearNdaSignature(){
+      const canvas = $('ndaSignaturePad');
+      if(!canvas) return;
+      const ctx = canvas.getContext('2d');
+      const rect = canvas.getBoundingClientRect();
+      ctx.save();
+      ctx.setTransform(1,0,0,1,0,0);
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+      ctx.restore();
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0,0,rect.width || 900,rect.height || 220);
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      ctx.lineWidth = 2.2;
+      ctx.strokeStyle = '#111827';
+      ndaUi.signatureHasInk = false;
+      ndaUi.signatureDrawing = false;
+      ndaUi.pointerId = null;
+    }
+    function getNdaCanvasPoint(ev){
+      const canvas = $('ndaSignaturePad');
+      if(!canvas) return null;
+      const rect = canvas.getBoundingClientRect();
+      return { x: ev.clientX - rect.left, y: ev.clientY - rect.top };
+    }
+    function openNdaModal(draft){
+      ndaUi.draft = draft;
+      if($('ndaSignerSummary')) $('ndaSignerSummary').innerHTML = `<div><strong>${escapeHtml(draft.name || '')}</strong></div><div>${escapeHtml(draft.email || '')}</div><div>${escapeHtml(draft.effectiveDateLong || '')}</div>`;
+      if($('ndaAgreeCheckbox')) $('ndaAgreeCheckbox').checked = false;
+      renderNdaPreview(draft);
+      $('ndaModal')?.classList.add('open');
+      resizeNdaSignatureCanvas();
+      clearNdaSignature();
+    }
+    function closeNdaModal(){
+      $('ndaModal')?.classList.remove('open');
+      ndaUi.draft = null;
+    }
+    async function ensureProfileRecord(profile){
+      if(!window.supabase || !profile?.id) return;
+      const payload = {
+        id: profile.id,
+        email: profile.email || '',
+        display_name: profile.display_name || '',
+        nda_signed_at: profile.nda_signed_at || null,
+        nda_document_path: profile.nda_document_path || null,
+        nda_signature_path: profile.nda_signature_path || null
+      };
+      try{
+        const { error } = await window.supabase.from('profiles').upsert(payload, { onConflict:'id' });
+        if(error) throw error;
+      }catch(e){
+        console.warn('Profile upsert skipped:', e);
+        try{
+          const { error: updateError } = await window.supabase.from('profiles').update(payload).eq('id', profile.id);
+          if(updateError) throw updateError;
+        }catch(err){
+          console.warn('Profile update skipped:', err);
+        }
+      }
+    }
+    async function uploadSignedNdaAsset(blob, fileName){
+      if(!window.supabase || !blob) return null;
+      const safeName = sanitizeDownloadFileName(fileName || 'signed_nda.html');
+      const path = `${NDA_STORAGE_FOLDER}/${Date.now()}_${safeName}`;
+      const { error } = await window.supabase.storage.from(NDA_STORAGE_BUCKET).upload(path, blob, { upsert:true, contentType: blob.type || undefined });
+      if(error){
+        console.warn('Signed NDA upload failed:', error);
+        return null;
+      }
+      const { data } = window.supabase.storage.from(NDA_STORAGE_BUCKET).getPublicUrl(path);
+      return { path, url: data?.publicUrl || '' };
+    }
+    async function loadSignedNdas(){
+      const list = $('signedNdaList');
+      if(!list) return;
+      list.innerHTML = '<div class="hint">Loading signed NDAs…</div>';
+      const rows = [];
+      try{
+        if(window.supabase){
+          const profileRes = await window.supabase.from('profiles').select('id, email, display_name, nda_signed_at, nda_document_path').not('nda_signed_at','is',null).order('nda_signed_at', { ascending:false });
+          if(!profileRes.error && Array.isArray(profileRes.data)){
+            profileRes.data.forEach(item => {
+              const path = item.nda_document_path || '';
+              const publicUrl = path ? (window.supabase.storage.from(NDA_STORAGE_BUCKET).getPublicUrl(path).data?.publicUrl || '') : '';
+              rows.push({ name: item.display_name || item.email || 'User', email: item.email || '', signedAt: item.nda_signed_at || '', url: publicUrl, path });
+            });
+          }
+        }
+      }catch(e){
+        console.warn('Profile NDA lookup failed:', e);
+      }
+      if(window.supabase){
+        try{
+          const { data: files, error } = await window.supabase.storage.from(NDA_STORAGE_BUCKET).list(NDA_STORAGE_FOLDER, { limit:100, sortBy:{ column:'created_at', order:'desc' } });
+          if(!error && Array.isArray(files)){
+            files.forEach(file => {
+              const fullPath = `${NDA_STORAGE_FOLDER}/${file.name}`;
+              const url = window.supabase.storage.from(NDA_STORAGE_BUCKET).getPublicUrl(fullPath).data?.publicUrl || '';
+              if(!rows.some(row => row.path === fullPath || (row.url && row.url === url))){
+                rows.push({ name: file.name.replace(/\.html?$/i,'').replace(/_/g,' '), email:'', signedAt: file.created_at || '', url, path: fullPath });
+              }
+            });
+          }
+        }catch(e){
+          console.warn('Storage NDA list failed:', e);
+        }
+      }
+      if(!rows.length){
+        list.innerHTML = '<div class="empty">No signed NDAs found yet.</div>';
+        return;
+      }
+      rows.sort((a,b)=> String(b.signedAt || '').localeCompare(String(a.signedAt || '')));
+      list.innerHTML = rows.map((row, idx) => `<div class="ndaSignedFileRow"><div><b>${escapeHtml(row.name || 'Signed NDA')}</b><div class="authMuted">${escapeHtml(row.email || '')}${row.signedAt ? ` • ${escapeHtml(formatLongDate(row.signedAt))}` : ''}</div></div><div style="display:flex;gap:8px;flex-wrap:wrap">${row.url ? `<a class="btnPrimary docOpenLink" href="${escapeHtml(row.url)}" target="_blank" rel="noopener">Download</a>` : `<span class="hint">Stored, but no public URL</span>`}</div></div>`).join('');
+    }
+    async function completeNdaSignup(){
+      const draft = ndaUi.draft;
+      if(!draft) return;
+      if(!$('ndaAgreeCheckbox')?.checked) throw new Error('Check the agreement box before continuing.');
+      if(!ndaUi.signatureHasInk) throw new Error('Add the signature with the mouse before continuing.');
+      const signatureDataUrl = $('ndaSignaturePad')?.toDataURL('image/png') || '';
+      const signUpRes = await window.supabase.auth.signUp({
+        email: draft.email,
+        password: draft.password,
+        options: {
+          data: {
+            display_name: draft.name,
+            nda_signed_at: draft.signedAtIso
+          }
+        }
+      });
+      if(signUpRes.error) throw signUpRes.error;
+      const userId = signUpRes.data?.user?.id || '';
+      const docHtml = buildNdaDocumentHtml({ ...draft, signatureDataUrl });
+      const signedBlob = new Blob([docHtml], { type:'text/html' });
+      const signedFileName = `${sanitizeDownloadFileName(draft.name)}_signed_nda_${draft.signedAtIso}.html`;
+      downloadBlobToUser(signedBlob, signedFileName);
+      const signatureBlob = await (await fetch(signatureDataUrl)).blob();
+      const [docUpload, sigUpload] = await Promise.all([
+        uploadSignedNdaAsset(signedBlob, signedFileName),
+        uploadSignedNdaAsset(signatureBlob, `${sanitizeDownloadFileName(draft.name)}_signature_${draft.signedAtIso}.png`)
+      ]);
+      if(userId){
+        await ensureProfileRecord({
+          id: userId,
+          email: draft.email,
+          display_name: draft.name,
+          nda_signed_at: draft.signedAtIso,
+          nda_document_path: docUpload?.path || null,
+          nda_signature_path: sigUpload?.path || null
+        });
+      }
+      closeNdaModal();
+      await loadSignedNdas();
+      $('authSignupName').value = '';
+      $('authSignupEmail').value = '';
+      $('authSignupPassword').value = '';
+      alert(docUpload?.url ? 'Login created and NDA signed. A copy was downloaded for the user, and the signed NDA is now available in the admin dashboard.' : 'Login created and NDA signed. A copy was downloaded for the user. The dashboard copy could not be uploaded, so check your Supabase Storage policies for the case-documents bucket.');
+    }
     const authUi = { session:null, cases:[], selectedCase:'', members:[], currentCaseRole:'user', currentCaseName:'', currentCaseMember:null };
+    const PORTAL_ADMIN_EMAILS = ['benbeveridge83@yahoo.com'];
     function getActiveSessionUser(){ return authUi.session && authUi.session.user ? authUi.session.user : null; }
+    function isPortalAdmin(user=null){
+      const email = String((user || getActiveSessionUser())?.email || '').trim().toLowerCase();
+      return !!email && PORTAL_ADMIN_EMAILS.includes(email);
+    }
+    function getUserAdminCaseRows(userId){
+      return (authUi.cases || []).filter(item => item && item.user_id === userId && item.role === 'admin');
+    }
     function hideAppChrome(){ if($('mainTabs')) $('mainTabs').style.display = 'none'; if($('appContainer')) $('appContainer').style.display = 'none'; }
-    function showAppChrome(){ if($('mainTabs')) $('mainTabs').style.display = ''; if($('appContainer')) $('appContainer').style.display = ''; if($('authShell')) $('authShell').style.display = 'none'; if($('authGate')) $('authGate').style.display = 'none'; if($('dashboardView')) $('dashboardView').style.display = 'none'; if($('authTopbar')) $('authTopbar').classList.remove('hidden'); const user=getActiveSessionUser(); if($('authUserBadge')) $('authUserBadge').textContent = user?.email || 'Signed in'; applyCaseRoleVisibility(); }
-    function showLoginOnly(message=''){ hideAppChrome(); if($('authShell')) $('authShell').style.display = ''; if($('authGate')) $('authGate').style.display = ''; if($('dashboardView')) $('dashboardView').style.display = 'none'; if($('authTopbar')) $('authTopbar').classList.add('hidden'); if($('dashboardSetupNotice')){ $('dashboardSetupNotice').classList.toggle('hidden', !message); $('dashboardSetupNotice').textContent = message || ''; } }
+    function hideAllAuthViews(){
+      if($('authShell')) $('authShell').style.display = 'none';
+      if($('authGate')) $('authGate').style.display = 'none';
+      if($('dashboardView')) $('dashboardView').style.display = 'none';
+      if($('awaitingAccessView')) $('awaitingAccessView').style.display = 'none';
+    }
+    function showAppChrome(){ if($('mainTabs')) $('mainTabs').style.display = ''; if($('appContainer')) $('appContainer').style.display = ''; hideAllAuthViews(); if($('authTopbar')) $('authTopbar').classList.remove('hidden'); const user=getActiveSessionUser(); if($('authUserBadge')) $('authUserBadge').textContent = user?.email || 'Signed in'; applyCaseRoleVisibility(); updateDashboardButtonVisibility(); }
+    function showLoginOnly(message=''){ hideAppChrome(); if($('authShell')) $('authShell').style.display = ''; if($('authGate')) $('authGate').style.display = ''; if($('dashboardView')) $('dashboardView').style.display = 'none'; if($('awaitingAccessView')) $('awaitingAccessView').style.display = 'none'; if($('authTopbar')) $('authTopbar').classList.add('hidden'); if($('dashboardSetupNotice')){ $('dashboardSetupNotice').classList.toggle('hidden', !message); $('dashboardSetupNotice').textContent = message || ''; } }
+    function showAwaitingAccessOnly(message=''){ hideAppChrome(); if($('authShell')) $('authShell').style.display = ''; if($('authGate')) $('authGate').style.display = 'none'; if($('dashboardView')) $('dashboardView').style.display = 'none'; if($('awaitingAccessView')) $('awaitingAccessView').style.display = ''; if($('awaitingAccessMessage')) $('awaitingAccessMessage').textContent = message || 'Your account exists, but it has not been assigned to a case yet. An admin must add you to a case before you can open the portal.'; if($('authTopbar')) $('authTopbar').classList.remove('hidden'); const user=getActiveSessionUser(); if($('authUserBadge')) $('authUserBadge').textContent = user?.email || 'Signed in'; updateDashboardButtonVisibility(); }
+    function updateDashboardButtonVisibility(){ const btn = $('dashboardBtn'); if(!btn) return; const user = getActiveSessionUser(); const canSeeDashboard = isPortalAdmin(user) || authUi.currentCaseRole === 'admin' || getUserAdminCaseRows(user?.id || '').length > 0; btn.style.display = canSeeDashboard ? '' : 'none'; }
     async function loadCaseMembers(caseId){
       authUi.members = [];
       if(!caseId) return [];
@@ -5713,17 +6059,44 @@ function openStructuredDocEditor(docId){
         }
         const caseById = new Map(caseRows.map(row => [row.id, row]));
         authUi.cases = memberRows.map(row => ({ ...row, case_name: caseById.get(row.case_id)?.name || 'Untitled case', created_by: caseById.get(row.case_id)?.created_by || '' }));
+        if($('dashboardCreateCaseBtn')) $('dashboardCreateCaseBtn').style.display = isPortalAdmin(user) ? '' : 'none';
+        if($('dashboardCaseName')) $('dashboardCaseName').disabled = !isPortalAdmin(user);
         renderDashboardCases();
+        await loadSignedNdas();
       }catch(e){
         console.error('Dashboard load failed:', e);
         authUi.cases = [];
         renderDashboardCases();
+        await loadSignedNdas();
         if($('dashboardSetupNotice')){ $('dashboardSetupNotice').classList.remove('hidden'); $('dashboardSetupNotice').textContent = 'Dashboard setup is not complete yet. Confirm the new cases and case_members tables exist and that your user is linked to the case.'; }
       }
     }
-    function showDashboardOnly(){ hideAppChrome(); if($('authShell')) $('authShell').style.display = ''; if($('authGate')) $('authGate').style.display = 'none'; if($('dashboardView')) $('dashboardView').style.display = ''; if($('caseAdminPanel')) $('caseAdminPanel').classList.add('hidden'); loadDashboardData(); }
+    function showDashboardOnly(){
+      const user = getActiveSessionUser();
+      if(!user){ showLoginOnly(); return; }
+      const canSeeDashboard = isPortalAdmin(user) || authUi.currentCaseRole === 'admin' || getUserAdminCaseRows(user.id || '').length > 0;
+      if(!canSeeDashboard){ showAwaitingAccessOnly('Your account has been created, but it has not been assigned to a case yet. An admin must add you before you can open the portal.'); return; }
+      hideAppChrome(); if($('authShell')) $('authShell').style.display = ''; if($('authGate')) $('authGate').style.display = 'none'; if($('awaitingAccessView')) $('awaitingAccessView').style.display = 'none'; if($('dashboardView')) $('dashboardView').style.display = ''; if($('caseAdminPanel')) $('caseAdminPanel').classList.add('hidden'); loadDashboardData(); }
     function openCaseFromDashboard(caseId){ if(!caseId) return; localStorage.setItem('murski_selected_case_id', caseId); const url = new URL(window.location.href); url.searchParams.set('case', caseId); url.searchParams.set('view', getInitialViewFromUrl()); window.location.href = url.pathname + '?' + url.searchParams.toString(); }
-    async function routeAfterAuth(){ const user = getActiveSessionUser(); if(!user){ showLoginOnly(); return; } if(CASE_ID){ await loadCurrentCaseMembership(); showAppChrome(); return; } showDashboardOnly(); }
+    async function routeAfterAuth(){
+      const user = getActiveSessionUser();
+      if(!user){ showLoginOnly(); return; }
+      if(CASE_ID){
+        await loadCurrentCaseMembership();
+        if(authUi.currentCaseMember || isPortalAdmin(user)){
+          showAppChrome();
+          return;
+        }
+        showAwaitingAccessOnly('Your account was created successfully, but you have not been assigned to this case yet. Please contact the admin to add you to the case.');
+        return;
+      }
+      await loadDashboardData();
+      if(isPortalAdmin(user) || getUserAdminCaseRows(user.id || '').length > 0){
+        showDashboardOnly();
+        return;
+      }
+      showAwaitingAccessOnly('Your account was created successfully. An admin must assign you to a case before you can continue.');
+    }
 
     async function waitForSupabaseReady(){
       for(let i = 0; i < 200; i += 1){
@@ -5744,13 +6117,47 @@ function openStructuredDocEditor(docId){
       syncTagAssignmentsFromSupabase();
       renderTags();
       setDraftDocumentTagLinks(ui.newDocumentTagLinks || []);
+      const ndaCanvas = $('ndaSignaturePad');
+      if(ndaCanvas){
+        const startDraw = (ev)=>{ ev.preventDefault(); ndaCanvas.setPointerCapture?.(ev.pointerId); ndaUi.pointerId = ev.pointerId; ndaUi.signatureDrawing = true; const pt = getNdaCanvasPoint(ev); if(!pt) return; const ctx = ndaCanvas.getContext('2d'); ctx.beginPath(); ctx.moveTo(pt.x, pt.y); };
+        const moveDraw = (ev)=>{ if(!ndaUi.signatureDrawing) return; if(ndaUi.pointerId != null && ev.pointerId !== ndaUi.pointerId) return; ev.preventDefault(); const pt = getNdaCanvasPoint(ev); if(!pt) return; const ctx = ndaCanvas.getContext('2d'); ctx.lineTo(pt.x, pt.y); ctx.stroke(); ndaUi.signatureHasInk = true; };
+        const stopDraw = (ev)=>{ if(ndaUi.pointerId != null && ev.pointerId !== ndaUi.pointerId) return; ndaUi.signatureDrawing = false; ndaUi.pointerId = null; };
+        ndaCanvas.addEventListener('pointerdown', startDraw);
+        ndaCanvas.addEventListener('pointermove', moveDraw);
+        ndaCanvas.addEventListener('pointerup', stopDraw);
+        ndaCanvas.addEventListener('pointerleave', stopDraw);
+        ndaCanvas.addEventListener('pointercancel', stopDraw);
+        window.addEventListener('resize', ()=>{ if($('ndaModal')?.classList.contains('open')) resizeNdaSignatureCanvas(); });
+      }
       $('dashboardBtn')?.addEventListener('click', ()=> showDashboardOnly());
       $('signOutBtn')?.addEventListener('click', async ()=>{ await window.supabase.auth.signOut(); localStorage.removeItem('murski_selected_case_id'); const url = new URL(window.location.href); url.searchParams.delete('case'); window.location.href = url.pathname; });
+      $('awaitingAccessSignOutBtn')?.addEventListener('click', async ()=>{ await window.supabase.auth.signOut(); localStorage.removeItem('murski_selected_case_id'); const url = new URL(window.location.href); url.searchParams.delete('case'); window.location.href = url.pathname; });
       $('dashboardRefreshBtn')?.addEventListener('click', ()=> loadDashboardData());
+      $('refreshSignedNdasBtn')?.addEventListener('click', ()=> loadSignedNdas());
       $('authSignInBtn')?.addEventListener('click', async ()=>{ try{ const email = $('authEmail').value.trim(); const password = $('authPassword').value; const { error } = await window.supabase.auth.signInWithPassword({ email, password }); if(error) throw error; toast('Signed in'); }catch(e){ alert(e.message || e); } });
-      $('authSignUpBtn')?.addEventListener('click', async ()=>{ try{ const email = $('authSignupEmail').value.trim(); const password = $('authSignupPassword').value; const { error } = await window.supabase.auth.signUp({ email, password }); if(error) throw error; alert('Login created. The user can sign in after email confirmation if your Supabase project requires it.'); }catch(e){ alert(e.message || e); } });
+      $('authSignUpBtn')?.addEventListener('click', async ()=>{ try{
+        const name = $('authSignupName').value.trim();
+        const email = $('authSignupEmail').value.trim().toLowerCase();
+        const password = $('authSignupPassword').value;
+        if(!name) throw new Error('Enter the user\'s full name.');
+        if(!email) throw new Error('Enter the email.');
+        if(!password) throw new Error('Enter the password.');
+        const signedAtIso = getTodayIso();
+        openNdaModal({
+          name,
+          email,
+          password,
+          signedAtIso,
+          effectiveDateLong: formatLongDate(signedAtIso),
+          signedDateLong: formatLongDate(signedAtIso)
+        });
+      }catch(e){ alert(e.message || e); } });
+      $('ndaModalClose')?.addEventListener('click', closeNdaModal);
+      $('ndaClearSignature')?.addEventListener('click', clearNdaSignature);
+      $('ndaConfirmSignUp')?.addEventListener('click', async ()=>{ try{ await completeNdaSignup(); }catch(e){ alert(e.message || e); } });
+      $('ndaModal')?.addEventListener('click', (ev)=>{ if(ev.target && ev.target.id === 'ndaModal') closeNdaModal(); });
       $('authResetPwBtn')?.addEventListener('click', async ()=>{ try{ const email = ($('authEmail').value || $('authSignupEmail').value || '').trim(); if(!email) throw new Error('Enter the email first.'); const { error } = await window.supabase.auth.resetPasswordForEmail(email, { redirectTo: window.location.href.split('?')[0] }); if(error) throw error; alert('Password reset email sent.'); }catch(e){ alert(e.message || e); } });
-      $('dashboardCreateCaseBtn')?.addEventListener('click', async ()=>{ try{ const user = getActiveSessionUser(); if(!user) throw new Error('Sign in first.'); const name = $('dashboardCaseName').value.trim(); if(!name) throw new Error('Enter a case name.'); const { data: caseRow, error } = await window.supabase.from('cases').insert({ name, created_by: user.id }).select().single(); if(error) throw error; const memberRes = await window.supabase.from('case_members').insert({ case_id: caseRow.id, user_id: user.id, role: 'admin' }); if(memberRes.error) throw memberRes.error; $('dashboardCaseName').value = ''; await loadDashboardData(); toast('Case created'); }catch(e){ alert(e.message || e); } });
+      $('dashboardCreateCaseBtn')?.addEventListener('click', async ()=>{ try{ const user = getActiveSessionUser(); if(!user) throw new Error('Sign in first.'); if(!isPortalAdmin(user)) throw new Error('Only the portal admin can create cases.'); const name = $('dashboardCaseName').value.trim(); if(!name) throw new Error('Enter a case name.'); const { data: caseRow, error } = await window.supabase.from('cases').insert({ name, created_by: user.id }).select().single(); if(error) throw error; const memberRes = await window.supabase.from('case_members').insert({ case_id: caseRow.id, user_id: user.id, role: 'admin' }); if(memberRes.error) throw memberRes.error; $('dashboardCaseName').value = ''; await loadDashboardData(); toast('Case created'); }catch(e){ alert(e.message || e); } });
       $('addMemberBtn')?.addEventListener('click', async ()=>{ try{ if(!authUi.selectedCase) throw new Error('Choose a case first.'); const email = $('memberEmail').value.trim().toLowerCase(); const role = $('memberRole').value || 'user'; if(!email) throw new Error('Enter the user email.'); const { data: profile, error: profileError } = await window.supabase.from('profiles').select('*').ilike('email', email).maybeSingle(); if(profileError) throw profileError; if(!profile || !profile.id) throw new Error('That email does not have a login/profile yet. Have them sign up first from the login box.'); const { error } = await window.supabase.from('case_members').upsert({ case_id: authUi.selectedCase, user_id: profile.id, role }, { onConflict:'case_id,user_id' }); if(error) throw error; $('memberEmail').value = ''; await loadCaseMembers(authUi.selectedCase); toast('User added to case'); }catch(e){ alert(e.message || e); } });
       const sessionRes = await window.supabase.auth.getSession();
       authUi.session = sessionRes?.data?.session || null;
@@ -5840,7 +6247,6 @@ function openStructuredDocEditor(docId){
       sourceDocumentIds: [],
       sourcePersonIds: []
     }));
-    remoteElements.forEach(el => finalizeElementSystemMeta(el));
     state.elements = remoteElements.concat(localOnly.filter(el => !remoteElements.some(remote => remote.id === el.id)));
     state.elements.forEach(syncElementDerivedSourceFields);
     console.log('Loaded elements from Supabase:', remoteElements.length, 'remote,', localOnly.length, 'local-only retained');
