@@ -5988,8 +5988,22 @@ small{color:#4b5563;}
       const rows = [];
       try{
         if(window.supabase){
-          const profileRes = await window.supabase.from('profiles').select('id, email, display_name, nda_signed_at, nda_document_path').not('nda_signed_at','is',null).order('nda_signed_at', { ascending:false });
-          if(!profileRes.error && Array.isArray(profileRes.data)){
+          let profileRes = await window.supabase
+            .from('profiles')
+            .select('id, email, display_name, nda_signed_at, nda_document_path')
+            .not('nda_signed_at','is',null)
+            .order('nda_signed_at', { ascending:false });
+          if(profileRes.error){
+            console.warn('Primary signed NDA profile lookup failed, trying fallback query:', profileRes.error);
+            profileRes = await window.supabase
+              .from('profiles')
+              .select('*')
+              .not('nda_signed_at','is',null)
+              .order('nda_signed_at', { ascending:false });
+          }
+          if(profileRes.error){
+            console.warn('Profile NDA lookup failed:', profileRes.error);
+          }else if(Array.isArray(profileRes.data)){
             profileRes.data.forEach(item => {
               const path = item.nda_document_path || '';
               const publicUrl = path ? (window.supabase.storage.from(NDA_STORAGE_BUCKET).getPublicUrl(path).data?.publicUrl || '') : '';
@@ -6893,7 +6907,7 @@ small{color:#4b5563;}
   setTimeout(async ()=>{
     const ready = await waitForSupabaseBootstrapReady(5000);
     if(!ready){
-      console.warn('Supabase bootstrap not ready at startup; skipping initial remote reload.');
+      console.info('Supabase startup reload skipped because case context was not ready yet.');
       const currentView = (ui && ui.currentView) ? ui.currentView : getInitialViewFromUrl();
       setTab(currentView || 'outline', { pushState:false });
       return;
