@@ -1177,7 +1177,7 @@
       <div id="matrixWrap" class="matrixWrap" style="display:none"><div id="matrix" class="matrix"></div></div>
     </div>
     <div id="viewDocuments" class="card" style="display:none"><h2>Documents</h2><div class="hint">Upload documents for this case. These can be selected as exhibits in the Case Outline witness columns.</div><div class="grid2"><div class="card" style="box-shadow:none"><h2 style="margin-bottom:8px">Add document</h2><div class="hint" style="margin-bottom:10px">Only <b>Name</b> is required. Date/tags/description are optional.</div><div class="label">Document name <span style="color:var(--danger)">*</span></div><input id="docName" type="text" placeholder="e.g., Leah Bankruptcy" /><div class="label" style="margin-top:10px">Document date (optional)</div><input id="docDate" type="date" /><div class="label" style="margin-top:10px">Description (optional)</div><textarea id="docDesc" placeholder="What is this document? What does it prove?"></textarea><div class="hint" style="margin-top:10px">Use the Tag + exhibit index to assign tags and filter the document list. Documents are included in the timeline by default, but you can switch that off in the repository.</div><div class="label" style="margin-top:10px">File (optional)</div><input id="docFile" type="file" /><div class="hint" style="margin-top:6px">If you attach a file, it uploads to Supabase Storage so it can be viewed and downloaded from other tabs and computers.</div><div style="margin-top:10px; display:flex; gap:10px; flex-wrap:wrap; align-items:center"><button id="docBulkSelectBtn" type="button" class="btnGhost">Bulk upload documents</button><input id="docBulkFiles" type="file" multiple style="display:none" /></div><div id="docBulkUploadWrap" style="display:none; margin-top:12px"></div><div style="margin-top:10px; display:flex; gap:10px; flex-wrap:wrap; align-items:center"><button id="docAddTagsBtn" type="button" class="btnGhost">Add tags</button><span id="docCreateTagSummary" class="hint">No tags selected.</span></div><div style="margin-top:10px; display:flex; gap:10px; flex-wrap:wrap; align-items:center"><button id="addDoc" class="btnPrimary">Save document</button></div></div><div class="card" style="box-shadow:none"><div style="display:flex; justify-content:space-between; gap:10px; align-items:center; flex-wrap:wrap"><h2 style="margin-bottom:8px">Document repository</h2><div style="display:flex; gap:8px; flex-wrap:wrap"><button id="collapseAllDocs" class="btnGhost">Collapse all</button><button id="toggleDownloadList" class="btnGhost">Download documents</button><a class="btnGhost docOpenLink" data-view-link="documenttable" href="?view=documenttable">Document Table</a><a class="btnGhost docOpenLink" data-view-link="exhibits" href="?view=exhibits">Exhibits</a></div></div><div class="hint" style="margin-bottom:10px">Tags are hidden here so this list stays cleaner. Use the Tag Index page for the document-by-tag table, exhibit filters, and heading details.</div><div id="docRepoFilterBar" style="margin:10px 0 14px 0"></div><div id="docDownloadListWrap" style="display:none; margin:10px 0 14px 0"></div><div id="docList" style="display:flex; flex-direction:column; gap:10px"></div><div id="docEmpty" class="empty" style="display:none">No documents yet.</div></div></div></div>
-    <div id="viewDocumentTable" class="card" style="display:none"><div style="display:flex; justify-content:space-between; gap:10px; align-items:center; flex-wrap:wrap"><div><h2 style="margin-bottom:8px">Document Table</h2><div class="hint">One document per row. Filter by inclusion and exclusion, edit document tags on the row, open the document, download it, or jump straight into Elements from Document.</div></div><div style="display:flex; gap:8px; flex-wrap:wrap"><a class="btnGhost docOpenLink" data-view-link="documents" href="?view=documents">Back to Documents</a></div></div><div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-top:12px"><input id="documentTableSearch" type="text" placeholder="Search documents" style="min-width:240px" /><button type="button" id="documentTableFilterToggle" class="btnGhost">Filters</button></div><div id="documentTableFilterPanel" class="elementsFilterPanel" style="display:none; margin-top:12px"><div class="hint" style="margin-bottom:8px">Use the same inclusion and exclusion style as the Elements page.</div><div class="elementsFilterGrid"><div><div class="label">Tags / subtags</div><div id="documentTableFilterTagTree"></div></div><div><div class="label">Exhibit status</div><div id="documentTableFilterExhibit" class="elementsFilterChecklist"></div></div><div><div class="label">Timeline</div><div id="documentTableFilterTimeline" class="elementsFilterChecklist"></div></div><div><div class="label">File</div><div id="documentTableFilterFile" class="elementsFilterChecklist"></div></div></div></div><div id="documentTableHost" style="margin-top:12px"></div><div id="documentTableEmpty" class="empty" style="display:none">No documents match the current filters.</div></div><div id="viewTagIndex" class="card tagIndexPageCard" style="display:none"><div style="display:flex; justify-content:space-between; gap:10px; align-items:center; flex-wrap:wrap"><div><h2 style="margin-bottom:8px">Tag Index</h2><div class="hint">Rows are documents. Columns are tags. Filter the visible tag columns, filter exhibit status, filter untagged documents, and expand any document row for more detail.</div></div><div style="display:flex; gap:8px; flex-wrap:wrap"><a class="btnGhost docOpenLink" data-view-link="documents" href="?view=documents">Back to Documents</a></div></div><div class="docIndexFilters" style="margin-top:12px"><div style="min-width:260px"><div class="label">Show only these tags</div><div id="docTagFilterBoxes" class="tagFilterBoxWrap"></div><div class="hint" style="margin-top:6px">Leave all unchecked to show every tag column. Check any combination to show only those tag columns.</div></div><div><div class="label">Filter by exhibit status</div><select id="docExhibitFilter"><option value="all">All documents</option><option value="exhibit">Exhibits only</option><option value="not_exhibit">Not added as exhibits</option></select></div></div><div style="display:flex; align-items:end"><label class="checkItem" style="margin:0"><input id="docTagShowUsedOnly" type="checkbox" /> <span>Only show tag columns used by at least one document</span></label></div><div style="display:flex; align-items:end"><label class="checkItem" style="margin:0"><input id="docTagNoTagsOnly" type="checkbox" /> <span>Only show documents with no tags</span></label></div><div style="display:flex; align-items:end"><label class="checkItem" style="margin:0"><input id="docTagHasTagsOnly" type="checkbox" /> <span>Only show documents that have a tag</span></label></div></div><div id="docTagIndexTableShell" class="docTagIndexTableShell"><div id="docTagIndexScrollTop" class="docTagIndexScrollTop" style="display:none"><div id="docTagIndexScrollTopInner" class="docTagIndexScrollTopInner"></div></div><div id="docTagIndexTableWrap" class="docTagIndexTableWrap"></div></div><div id="docTagIndexEmpty" class="empty" style="display:none">No documents match the current filters.</div></div>
+    <div id="viewDocumentTable" class="card" style="display:none"><div style="display:flex; justify-content:space-between; gap:10px; align-items:center; flex-wrap:wrap"><div><h2 style="margin-bottom:8px">Document Table</h2><div class="hint">One document per row. Filter by inclusion and exclusion, edit document tags on the row, open the document, download it, or jump straight into Elements from Document.</div></div><div style="display:flex; gap:8px; flex-wrap:wrap"><a class="btnGhost docOpenLink" data-view-link="documents" href="?view=documents">Back to Documents</a></div></div><div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-top:12px"><input id="documentTableSearch" type="text" placeholder="Search documents" style="min-width:240px" /><button type="button" id="documentTableFilterToggle" class="btnGhost">Filters</button><button type="button" id="documentTableDeleteDuplicates" class="btnGhost">Delete duplicates</button></div><div id="documentTableFilterPanel" class="elementsFilterPanel" style="display:none; margin-top:12px"><div class="hint" style="margin-bottom:8px">Use the same inclusion and exclusion style as the Elements page.</div><div class="elementsFilterGrid"><div><div class="label">Tags / subtags</div><div id="documentTableFilterTagTree"></div></div><div><div class="label">Exhibit status</div><div id="documentTableFilterExhibit" class="elementsFilterChecklist"></div></div><div><div class="label">Timeline</div><div id="documentTableFilterTimeline" class="elementsFilterChecklist"></div></div><div><div class="label">File</div><div id="documentTableFilterFile" class="elementsFilterChecklist"></div></div></div></div><div id="documentTableHost" style="margin-top:12px"></div><div id="documentTableEmpty" class="empty" style="display:none">No documents match the current filters.</div></div><div id="viewTagIndex" class="card tagIndexPageCard" style="display:none"><div style="display:flex; justify-content:space-between; gap:10px; align-items:center; flex-wrap:wrap"><div><h2 style="margin-bottom:8px">Tag Index</h2><div class="hint">Rows are documents. Columns are tags. Filter the visible tag columns, filter exhibit status, filter untagged documents, and expand any document row for more detail.</div></div><div style="display:flex; gap:8px; flex-wrap:wrap"><a class="btnGhost docOpenLink" data-view-link="documents" href="?view=documents">Back to Documents</a></div></div><div class="docIndexFilters" style="margin-top:12px"><div style="min-width:260px"><div class="label">Show only these tags</div><div id="docTagFilterBoxes" class="tagFilterBoxWrap"></div><div class="hint" style="margin-top:6px">Leave all unchecked to show every tag column. Check any combination to show only those tag columns.</div></div><div><div class="label">Filter by exhibit status</div><select id="docExhibitFilter"><option value="all">All documents</option><option value="exhibit">Exhibits only</option><option value="not_exhibit">Not added as exhibits</option></select></div></div><div style="display:flex; align-items:end"><label class="checkItem" style="margin:0"><input id="docTagShowUsedOnly" type="checkbox" /> <span>Only show tag columns used by at least one document</span></label></div><div style="display:flex; align-items:end"><label class="checkItem" style="margin:0"><input id="docTagNoTagsOnly" type="checkbox" /> <span>Only show documents with no tags</span></label></div><div style="display:flex; align-items:end"><label class="checkItem" style="margin:0"><input id="docTagHasTagsOnly" type="checkbox" /> <span>Only show documents that have a tag</span></label></div></div><div id="docTagIndexTableShell" class="docTagIndexTableShell"><div id="docTagIndexScrollTop" class="docTagIndexScrollTop" style="display:none"><div id="docTagIndexScrollTopInner" class="docTagIndexScrollTopInner"></div></div><div id="docTagIndexTableWrap" class="docTagIndexTableWrap"></div></div><div id="docTagIndexEmpty" class="empty" style="display:none">No documents match the current filters.</div></div>
     <div id="viewOutlineIndex" class="card tagIndexPageCard" style="display:none"><div style="display:flex; justify-content:space-between; gap:10px; align-items:center; flex-wrap:wrap"><div><h2 style="margin-bottom:8px">Outline Index</h2><div class="hint">Rows are documents. Columns are outline headings grouped by main heading. Filter the visible heading columns, filter exhibit status, filter documents by whether they have headings, and expand any document row for more detail.</div></div><div style="display:flex; gap:8px; flex-wrap:wrap"><a class="btnGhost docOpenLink" data-view-link="documents" href="?view=documents">Back to Documents</a></div></div><div class="docIndexFilters" style="margin-top:12px"><div style="min-width:260px"><div class="label">Show only these headings</div><div style="display:flex; gap:8px; flex-wrap:wrap; margin:6px 0 8px 0"><button id="outlineIndexSelectAll" type="button" class="btnGhost">Select all headings</button><button id="outlineIndexDeselectAll" type="button" class="btnGhost">Deselect all headings</button></div><div id="outlineIndexFilterBoxes" class="tagFilterBoxWrap"></div><div class="hint" style="margin-top:6px">Leave all unchecked to show every outline heading column. Check any combination to show only those heading columns.</div></div><div id="outlineIndexTagFilterHost"></div><div id="outlineIndexWitnessFilterHost"></div><div><div class="label">Filter by exhibit status</div><select id="outlineIndexExhibitFilter"><option value="all">All documents</option><option value="exhibit">Exhibits only</option><option value="not_exhibit">Not added as exhibits</option></select></div></div><div style="display:flex; align-items:end"><label class="checkItem" style="margin:0"><input id="outlineIndexShowUsedOnly" type="checkbox" /> <span>Only show heading columns used by at least one document</span></label></div><div style="display:flex; align-items:end"><label class="checkItem" style="margin:0"><input id="outlineIndexNoTagsOnly" type="checkbox" /> <span>Only show documents with no heading</span></label></div><div style="display:flex; align-items:end"><label class="checkItem" style="margin:0"><input id="outlineIndexHasTagsOnly" type="checkbox" /> <span>Only show documents with a heading</span></label></div></div><div id="outlineIndexDocCount" class="hint" style="margin:10px 0 4px 0; font-size:14px"></div><div id="outlineIndexTableShell" class="docTagIndexTableShell"><div id="outlineIndexScrollTop" class="docTagIndexScrollTop" style="display:none"><div id="outlineIndexScrollTopInner" class="docTagIndexScrollTopInner"></div></div><div id="outlineIndexTableWrap" class="docTagIndexTableWrap"></div></div><div id="outlineIndexEmpty" class="empty" style="display:none">No documents match the current filters.</div></div>
     <div id="viewStructuredOutline" class="card structuredOutlinePage" style="display:none"><div style="display:flex; justify-content:space-between; gap:10px; align-items:center; flex-wrap:wrap"><div><h2 style="margin-bottom:8px">Structured Outline</h2><div class="hint">View the outline with separate exhibit columns for No witness and any selected witnesses. Drag exhibits between cells to change heading/witness assignment, or drag a document from the tray into any row.</div></div></div><div class="structuredOutlineTop"><div class="structuredWitnessFilters"><span class="label">Witness columns</span><button type="button" id="structuredWitnessSelectAll" class="btnGhost">All</button><button type="button" id="structuredWitnessSelectNone" class="btnGhost">None</button><div id="structuredWitnessFilterList" class="structuredWitnessFilterList"></div></div><div class="structuredWitnessFilters"><span class="label">Show headings</span><div id="structuredHeadingFilterHost"></div><div id="structuredHeadingTagFilterHost"></div><div id="structuredHeadingWitnessFilterHost"></div></div><div class="structuredTray"><div class="structuredTrayTop"><div class="label">Document tray</div><input id="structuredTraySearch" type="text" placeholder="Search documents to drag…" style="max-width:320px" /></div><div class="structuredTrayFilters"><div class="structuredTrayFilterBlock"><div class="label">Assignment</div><select id="structuredTrayAssignmentFilter"><option value="all">All documents</option><option value="assigned">Assigned to a heading</option><option value="unassigned">Not assigned to a heading</option></select></div><div class="structuredTrayFilterBlock"><div class="label">Person</div><select id="structuredTrayPersonFilter"></select></div><div class="structuredTrayFilterBlock" style="min-width:220px"><div class="label">Tags</div><select id="structuredTrayTagFilter" multiple></select></div></div><div id="structuredTrayList" class="structuredTrayList"></div><div class="hint">Drag a document pill into a row/witness cell to add or move it there. Click a pill to edit that document.</div></div><div id="structuredOutlineShell" class="structuredShell"><div id="structuredOutlineTable" class="structuredTable"></div></div><div id="structuredScrollDock" class="structuredScrollDock"><div id="structuredScrollDockInner" class="structuredScrollDockInner"></div></div></div></div>
     <div id="structuredDocModal" class="structuredModal"><div class="structuredModalCard"><div style="display:flex; justify-content:space-between; gap:10px; align-items:center"><h3 style="margin:0">Edit document</h3><button type="button" id="structuredDocModalClose" class="btnGhost">Close</button></div><div><div class="label">Document name</div><input id="structuredDocName" type="text" /></div><div><div class="label">Description</div><textarea id="structuredDocDesc" placeholder="Document description"></textarea></div><div><div class="label">Tags</div><div id="structuredDocTags" class="structuredTagChecklist"></div></div><div style="display:flex; gap:8px; flex-wrap:wrap"><button type="button" id="structuredDocSave" class="btnPrimary">Save</button><button type="button" id="structuredDocView" class="btnGhost">View file</button><button type="button" id="structuredDocDownload" class="btnGhost">Download file</button></div><div id="structuredDocViewer"></div></div></div>
@@ -1192,7 +1192,7 @@
 
     <div id="sourceDocModal" class="structuredModal"><div id="sourceDocModalCard" class="structuredModalCard sourceDocModalCard"><div style="display:flex; justify-content:space-between; gap:10px; align-items:center"><h3 id="sourceDocModalTitle" style="margin:0">Elements from Document</h3><div class="sourceDocHeaderActions"><button type="button" id="sourceDocModalMaxBtn" class="btnGhost">Maximize</button><button type="button" id="sourceDocModalClose" class="btnGhost">Close</button></div></div><div id="sourceDocPickerMode"><div class="sourceDocToolbar"><input id="sourceDocSearch" type="text" placeholder="Search documents" style="min-width:260px" /><div class="hint">Pick any uploaded document, then select text in the viewer or capture an image snippet.</div></div><div id="sourceDocPickerList" class="sourceDocPickerList"></div></div><div id="sourceDocStickyBar" class="sourceDocStickyBar"><div id="sourceDocStickyInfo" class="sourceDocStickyInfo">Highlight text in the document, then click Create element from selection or use image capture.</div><div class="sourceDocStickyActions"><button type="button" id="sourceDocBackToPicker" class="btnGhost" style="display:none">Choose another document</button><button type="button" id="sourceDocCreateElement" class="btnPrimary" disabled>Create element from selection</button><button type="button" id="sourceDocStartImageCapture" class="btnGhost" disabled>Create element from image capture</button><button type="button" id="sourceDocReturnToElement" class="btnGhost" style="display:none">Back to element</button></div></div><div id="sourceDocViewerShell" class="sourceDocViewerShell"><div id="sourceDocViewerInner" class="sourceDocViewerInner"><div class="sourceDocEmpty">Choose a document to open it here.</div></div></div><div style="display:flex; justify-content:space-between; gap:10px; align-items:center; flex-wrap:wrap"><div id="sourceDocSelectionInfo" class="hint">Highlight text in the document, then click Create element from selection or use image capture.</div></div></div></div>
     <div id="elementSourceModal" class="structuredModal"><div class="structuredModalCard sourceDocModalCard"><div style="display:flex; justify-content:space-between; gap:10px; align-items:center"><h3 id="elementSourceModalTitle" style="margin:0">Element source</h3><button type="button" id="elementSourceModalClose" class="btnGhost">Close</button></div><div id="elementSourceMeta" class="hint"></div><div id="elementSourceQuote" class="sourceQuotePreview" style="display:none"></div><div id="elementSourceViewerShell" class="sourceDocViewerShell"><div id="elementSourceViewerInner" class="sourceDocViewerInner"><div class="sourceDocEmpty">No source selected.</div></div></div></div></div>
-    <div id="documentTagModal" class="structuredModal"><div class="structuredModalCard"><div style="display:flex; justify-content:space-between; gap:10px; align-items:center"><h3 id="documentTagModalTitle" style="margin:0">Add tags to document</h3><button type="button" id="documentTagModalClose" class="btnGhost">Close</button></div><div class="hint">Select as many main tags, sub-tags, and sub-sub-tags as you want.</div><div id="documentTagModalSummary" class="docTagModalSummary"></div><div id="documentTagModalTree" class="docTagModalTree"></div><div style="display:flex; justify-content:flex-end; gap:8px; flex-wrap:wrap"><button type="button" id="documentTagModalCancel" class="btnGhost">Cancel</button><button type="button" id="documentTagModalSave" class="btnPrimary">Save tags</button></div></div></div>
+    <div id="documentTagModal" class="structuredModal"><div class="structuredModalCard"><div style="display:flex; justify-content:space-between; gap:10px; align-items:center"><h3 id="documentTagModalTitle" style="margin:0">Add tags to document</h3><button type="button" id="documentTagModalClose" class="btnGhost">Close</button></div><div class="hint">Select as many main tags, sub-tags, and sub-sub-tags as you want.</div><div style="display:flex; gap:8px; flex-wrap:wrap"><button type="button" id="documentTagModalCollapseAll" class="btnGhost">Collapse all</button><button type="button" id="documentTagModalExpandAll" class="btnGhost">Expand all</button></div><div id="documentTagModalSummary" class="docTagModalSummary"></div><div id="documentTagModalTree" class="docTagModalTree"></div><div style="display:flex; justify-content:flex-end; gap:8px; flex-wrap:wrap"><button type="button" id="documentTagModalCancel" class="btnGhost">Cancel</button><button type="button" id="documentTagModalSave" class="btnPrimary">Save tags</button></div></div></div>
     <div id="viewSettings" class="card" style="display:none"><div style="display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap"><h2 style="margin:0">Add Tag</h2><div style="display:flex;gap:8px;flex-wrap:wrap"><a class="btnGhost docOpenLink" data-view-link="tagindex" href="?view=tagindex">Tag Index</a></div></div><div class="hint">Create tags, sub-tags, and sub-sub-tags here. Everything is now saved in Supabase under the tags table, and the library below shows the full hierarchy.</div><div class="toolbar" style="margin-bottom:12px"><span class="pill" id="tagSelHint">Select a tag, then use these controls</span><button id="tagAddRootBtn" class="btnPrimary">+ Top-level tag</button><button id="tagAddSiblingBtn" class="btnGhost">+ Sibling</button><button id="tagAddChildBtn" class="btnGhost">+ Child</button><button id="tagRenameBtn" class="btnGhost">Rename</button><button id="tagDeleteBtn" class="btnDanger">Delete</button><button id="tagCollapseAllBtn" class="btnGhost">Collapse all</button><button id="tagExpandAllBtn" class="btnGhost">Expand all</button></div><div class="grid2"><div class="card" style="box-shadow:none"><h2 style="margin-bottom:8px">Create tag</h2><div class="label">Tag name</div><input id="tagName" type="text" placeholder="e.g., Financial, Parenting time, Credibility" /><div style="margin-top:10px; display:flex; gap:10px; align-items:center; flex-wrap:wrap"><button id="addTag" class="btnPrimary">Add tag</button><span class="pill">Names must be unique</span></div><div style="margin-top:18px; border-top:1px solid var(--border); padding-top:14px"><h2 style="margin-bottom:8px">Create child tag</h2><div class="label">Main tag</div><select id="subtagParent"></select><div class="label" style="margin-top:10px">Create under this sub-tag (optional)</div><select id="subtagParentSubtag"></select><div class="hint" style="margin-top:6px">Leave this as None to create a normal sub-tag. Choose a sub-tag here to create a sub-sub-tag under it.</div><div class="label" style="margin-top:10px">Child tag name</div><input id="subtagName" type="text" placeholder="e.g., Hearing, Motion, School, Medical" /><div class="label" style="margin-top:10px">Icon image (optional)</div><select id="subtagIconSelect"></select><div style="margin-top:10px; display:flex; gap:10px; align-items:center; flex-wrap:wrap"><button id="addSubtag" class="btnPrimary">Add child tag</button></div></div><div style="margin-top:18px; border-top:1px solid var(--border); padding-top:14px"><h2 style="margin-bottom:8px">Icon library</h2><div class="label">Upload new icon</div><input id="iconUploadFile" type="file" accept="image/*" /><div class="label" style="margin-top:10px">Icon name</div><input id="iconUploadName" type="text" placeholder="e.g., Court, School, Doctor" /><div style="margin-top:10px; display:flex; gap:10px; align-items:center; flex-wrap:wrap"><button id="addIconToLibrary" class="btnPrimary">Add icon</button></div><div id="iconLibraryList" style="display:flex; gap:10px; flex-wrap:wrap; margin-top:12px"></div></div></div><div class="card" style="box-shadow:none"><h2 style="margin-bottom:8px">Tag library</h2><div class="hint" style="margin-bottom:10px">Main tags, sub-tags, and sub-sub-tags are shown below in one hierarchy.</div><div id="tagList" style="display:flex; flex-direction:column; gap:10px"></div><div id="tagEmpty" class="empty" style="display:none">No tags yet.</div><div style="margin-top:18px"><h2 style="margin-bottom:8px">Child tag library</h2><div id="subtagList" style="display:flex; flex-direction:column; gap:10px"></div><div id="subtagEmpty" class="empty" style="display:none">No child tags yet.</div></div></div></div></div>
   </div>
   <div id="toast" class="toast"></div>
@@ -1204,7 +1204,7 @@
     const UI_STORAGE_KEY = 'murski_ui_prefs_v1';
     const LEGACY_STORAGE_KEY = 'murski_case_planner_v1';
     let state = { caseName: '', tags: [], people: [], documents: [], elements: [], outline: [], timelineEvents: [], subtags: [], iconLibrary: [] };
-    const ui = { selectedNodeId: null, selectedWitnessId: null, selectedDocId: null, selectedPersonId: null, selectedElementId: null, activeWitnessColumnId: null, expandedDocIds: {}, showDocDownloadList: false, showDocTagIndex: false, docTagFilterIds: [], docTagIndexExpandedIds: {}, docTagIndexShowUsedOnly: false, docTagNoTagsOnly: false, docTagHasTagsOnly: false, docExhibitFilter: 'all', outlineIndexFilterIds: [], outlineIndexExpandedIds: {}, outlineIndexShowUsedOnly: false, outlineIndexNoTagsOnly: false, outlineIndexHasTagsOnly: false, outlineIndexExhibitFilter: 'all', docSort: { field: 'file', dir: 'asc' }, docRepoSort: { field: 'date', dir: 'desc' }, docDownloadSelections: {}, docDownloadEligibilityFilter: 'all', docRepoEligibilityFilters: ['possible','not'], docRepoStatusFilters: ['exhibit','not_exhibit'], docRepoColWidths: { name: 340, date: 150, uploadDate: 160, timeline: 170, eligibility: 220, exhibitStatus: 190, file: 90 }, outlineCompact: false, outlineStructureView: false, outlinePaneWidth: 720, timelineSelectedId: null, timelineEditingId: null, timelineShowEventColumn: true, timelineShowDocumentColumn: true, timelineShowHeadlineColumn: true, timelineDocPickerOpen: false, timelineColumnOrder: ['date','event','document','headline'], timelineDraggingUndatedId: null, timelineFilterTagIds: [], timelineFilterTagOpen: false, elementsFilterMode: 'all', elementsSearch: '', currentView: INITIAL_VIEW, outlineFilterTagIds: [], outlineFilterWitnessIds: [], outlineFilterTagOpen: false, outlineFilterWitnessOpen: false, outlineIndexTagIds: [], outlineIndexWitnessIds: [], outlineIndexTagOpen: false, outlineIndexWitnessOpen: false, structuredOutlineWitnessFilterIds: [], structuredHeadingTagIds: [], structuredHeadingWitnessIds: [], structuredHeadingTagOpen: false, structuredHeadingWitnessOpen: false, structuredTraySearch: '', structuredTrayAssignmentFilter: 'all', structuredTrayPersonFilterId: 'any', structuredTrayTagFilterIds: [], structuredDocEditorId: null, structuredDragging: null, sourceDocSearch: '', sourceDocSelectedId: null, sourceDocSelection: null, sourceDocContext: 'create', sourceDocOpenFromElementId: null, sourceDocMaximized: false, sourceDocImageCapture: null, sourceDocCapturePointer: null, sourceDocScrollByDocumentId: {}, sourceDocAnchorByDocumentId: {}, elementsFilterTagIds: [], elementsFilterTagExcludeIds: [], elementsFilterTagNoneSelected: false, elementsFilterTagExcludeNoneSelected: true, elementsFilterWitnessIds: [], elementsFilterWitnessExcludeIds: [], elementsFilterWitnessNoneSelected: false, elementsFilterWitnessExcludeNoneSelected: true, elementsFilterDocumentIds: [], elementsFilterDocumentExcludeIds: [], elementsFilterDocumentNoneSelected: false, elementsFilterDocumentExcludeNoneSelected: true, elementsFilterExhibitIds: [], elementsFilterExhibitExcludeIds: [], elementsFilterExhibitNoneSelected: false, elementsFilterExhibitExcludeNoneSelected: true, elementsFilterSourceDocumentIds: [], elementsFilterSourceDocumentExcludeIds: [], elementsFilterSourceDocumentNoneSelected: false, elementsFilterSourceDocumentExcludeNoneSelected: true, elementsFilterSourcePersonIds: [], elementsFilterSourcePersonExcludeIds: [], elementsFilterSourcePersonNoneSelected: false, elementsFilterSourcePersonExcludeNoneSelected: true, elementsFilterPanelOpen: false, elementsCreatorFilter: 'all', elementsWorksheetOpen: false, elementsWorksheetPinnedTopIds: [], elementsWorksheetSort: { key: 'name', dir: 'asc' }, elementsWorksheetCollapsedTags: {}, elementsWorksheetCollapsedChildren: {}, newDocumentTagLinks: [], bulkDocumentDrafts: [], bulkDocumentEditIndex: -1, bulkDocumentSelectedIds: [], bulkDocumentViewerId: '', bulkDocumentCancelRequested: false, bulkDocumentSaving: false, bulkDocumentStatus: '', documentTableCollapsedTagNodes: {}, selectedTagNodeId: null, collapsedTagNodes: {}, collapsedElementTagNodes: {}, documentTableSearch: '', documentTableFilterPanelOpen: false, documentTableTagIds: [], documentTableTagExcludeIds: [], documentTableTagNoneSelected: false, documentTableTagExcludeNoneSelected: true, documentTableExhibitIds: [], documentTableExhibitExcludeIds: [], documentTableExhibitNoneSelected: false, documentTableExhibitExcludeNoneSelected: true, documentTableTimelineIds: [], documentTableTimelineExcludeIds: [], documentTableTimelineNoneSelected: false, documentTableTimelineExcludeNoneSelected: true, documentTableFileIds: [], documentTableFileExcludeIds: [], documentTableFileNoneSelected: false, documentTableFileExcludeNoneSelected: true };
+    const ui = { selectedNodeId: null, selectedWitnessId: null, selectedDocId: null, selectedPersonId: null, selectedElementId: null, activeWitnessColumnId: null, expandedDocIds: {}, showDocDownloadList: false, showDocTagIndex: false, docTagFilterIds: [], docTagIndexExpandedIds: {}, docTagIndexShowUsedOnly: false, docTagNoTagsOnly: false, docTagHasTagsOnly: false, docExhibitFilter: 'all', outlineIndexFilterIds: [], outlineIndexExpandedIds: {}, outlineIndexShowUsedOnly: false, outlineIndexNoTagsOnly: false, outlineIndexHasTagsOnly: false, outlineIndexExhibitFilter: 'all', docSort: { field: 'file', dir: 'asc' }, docRepoSort: { field: 'date', dir: 'desc' }, docDownloadSelections: {}, docDownloadEligibilityFilter: 'all', docRepoEligibilityFilters: ['possible','not'], docRepoStatusFilters: ['exhibit','not_exhibit'], docRepoColWidths: { name: 340, date: 150, uploadDate: 160, timeline: 170, eligibility: 220, exhibitStatus: 190, file: 90 }, outlineCompact: false, outlineStructureView: false, outlinePaneWidth: 720, timelineSelectedId: null, timelineEditingId: null, timelineShowEventColumn: true, timelineShowDocumentColumn: true, timelineShowHeadlineColumn: true, timelineDocPickerOpen: false, timelineColumnOrder: ['date','event','document','headline'], timelineDraggingUndatedId: null, timelineFilterTagIds: [], timelineFilterTagOpen: false, elementsFilterMode: 'all', elementsSearch: '', currentView: INITIAL_VIEW, outlineFilterTagIds: [], outlineFilterWitnessIds: [], outlineFilterTagOpen: false, outlineFilterWitnessOpen: false, outlineIndexTagIds: [], outlineIndexWitnessIds: [], outlineIndexTagOpen: false, outlineIndexWitnessOpen: false, structuredOutlineWitnessFilterIds: [], structuredHeadingTagIds: [], structuredHeadingWitnessIds: [], structuredHeadingTagOpen: false, structuredHeadingWitnessOpen: false, structuredTraySearch: '', structuredTrayAssignmentFilter: 'all', structuredTrayPersonFilterId: 'any', structuredTrayTagFilterIds: [], structuredDocEditorId: null, structuredDragging: null, sourceDocSearch: '', sourceDocSelectedId: null, sourceDocSelection: null, sourceDocContext: 'create', sourceDocOpenFromElementId: null, sourceDocMaximized: false, sourceDocImageCapture: null, sourceDocCapturePointer: null, sourceDocScrollByDocumentId: {}, sourceDocAnchorByDocumentId: {}, elementsFilterTagIds: [], elementsFilterTagExcludeIds: [], elementsFilterTagNoneSelected: false, elementsFilterTagExcludeNoneSelected: true, elementsFilterWitnessIds: [], elementsFilterWitnessExcludeIds: [], elementsFilterWitnessNoneSelected: false, elementsFilterWitnessExcludeNoneSelected: true, elementsFilterDocumentIds: [], elementsFilterDocumentExcludeIds: [], elementsFilterDocumentNoneSelected: false, elementsFilterDocumentExcludeNoneSelected: true, elementsFilterExhibitIds: [], elementsFilterExhibitExcludeIds: [], elementsFilterExhibitNoneSelected: false, elementsFilterExhibitExcludeNoneSelected: true, elementsFilterSourceDocumentIds: [], elementsFilterSourceDocumentExcludeIds: [], elementsFilterSourceDocumentNoneSelected: false, elementsFilterSourceDocumentExcludeNoneSelected: true, elementsFilterSourcePersonIds: [], elementsFilterSourcePersonExcludeIds: [], elementsFilterSourcePersonNoneSelected: false, elementsFilterSourcePersonExcludeNoneSelected: true, elementsFilterPanelOpen: false, elementsCreatorFilter: 'all', elementsWorksheetOpen: false, elementsWorksheetPinnedTopIds: [], elementsWorksheetSort: { key: 'name', dir: 'asc' }, elementsWorksheetCollapsedTags: {}, elementsWorksheetCollapsedChildren: {}, newDocumentTagLinks: [], bulkDocumentDrafts: [], bulkDocumentEditIndex: -1, bulkDocumentSelectedIds: [], bulkDocumentViewerId: '', bulkDocumentCancelRequested: false, bulkDocumentSaving: false, bulkDocumentStatus: '', selectedTagNodeId: null, collapsedTagNodes: {}, collapsedElementTagNodes: {}, documentTableSearch: '', documentTableFilterPanelOpen: false, documentTableTagIds: [], documentTableTagExcludeIds: [], documentTableTagNoneSelected: false, documentTableTagExcludeNoneSelected: true, documentTableExhibitIds: [], documentTableExhibitExcludeIds: [], documentTableExhibitNoneSelected: false, documentTableExhibitExcludeNoneSelected: true, documentTableTimelineIds: [], documentTableTimelineExcludeIds: [], documentTableTimelineNoneSelected: false, documentTableTimelineExcludeNoneSelected: true, documentTableFileIds: [], documentTableFileExcludeIds: [], documentTableFileNoneSelected: false, documentTableFileExcludeNoneSelected: true, documentTableSort: { key: 'name', dir: 'asc' }, docRepoTagIds: [], docRepoTagExcludeIds: [], docRepoTagNoneSelected: false, docRepoTagExcludeNoneSelected: true, docRepoCollapsedTagNodes: {}, documentTableCollapsedTagNodes: {} };
     const structuredUi = { headingFilterOpen: false, visibleHeadingIds: [], headingFilterInitialized: false, witnessColWidths: {}, resizingWitnessId: null, resizeStartX: 0, resizeStartWidth: 220 };
     const HEADING_EXHIBIT_KEY = '__heading__';
     const $ = (id) => document.getElementById(id);
@@ -1271,6 +1271,7 @@
         docRepoSort: ui.docRepoSort || { field: 'date', dir: 'desc' },
         elementsFilterMode: ui.elementsFilterMode || 'all',
         elementsWorksheetOpen: !!ui.elementsWorksheetOpen,
+        docTagLinksLocal: Array.isArray(state.documents) ? Object.fromEntries(state.documents.filter(doc => Array.isArray(doc.tagLinks) && doc.tagLinks.length).map(doc => [doc.id, doc.tagLinks])) : {},
         localOutlineCache: Array.isArray(state.outline) ? state.outline.map(row => ({
           id: row.id,
           collapsed: !!row.collapsed,
@@ -1290,6 +1291,8 @@
       if(snapshot.docRepoSort && typeof snapshot.docRepoSort === 'object') ui.docRepoSort = snapshot.docRepoSort;
       if(typeof snapshot.elementsFilterMode === 'string') ui.elementsFilterMode = snapshot.elementsFilterMode;
       ui.elementsWorksheetOpen = !!snapshot.elementsWorksheetOpen || INITIAL_WORKSHEET_OPEN;
+      const docTagLinksLocal = snapshot.docTagLinksLocal && typeof snapshot.docTagLinksLocal === 'object' ? snapshot.docTagLinksLocal : {};
+      state.documents = (state.documents || []).map(doc => ({ ...doc, tagLinks: Array.isArray(docTagLinksLocal[doc.id]) ? docTagLinksLocal[doc.id] : doc.tagLinks }));
       const outlineLocal = new Map((Array.isArray(snapshot.localOutlineCache) ? snapshot.localOutlineCache : []).map(item => [item.id, item]));
       state.outline = (state.outline || []).map(row => {
         const local = outlineLocal.get(row.id);
@@ -1608,7 +1611,21 @@
       const status = Array.isArray(ui.docRepoStatusFilters) && ui.docRepoStatusFilters.length ? ui.docRepoStatusFilters : ['exhibit','not_exhibit'];
       ui.docRepoEligibilityFilters = elig.slice();
       ui.docRepoStatusFilters = status.slice();
-      host.innerHTML = `<div class="card" style="box-shadow:none; padding:12px 14px"><div style="display:flex; gap:18px; flex-wrap:wrap; align-items:flex-start"><div><div class="label">Exhibit category filter</div><div class="checkGrid" style="margin-top:6px"><label class="checkItem"><input type="checkbox" data-doc-filter-eligibility="possible" ${elig.includes('possible') ? 'checked' : ''} /> <span>Can be used</span></label><label class="checkItem"><input type="checkbox" data-doc-filter-eligibility="not" ${elig.includes('not') ? 'checked' : ''} /> <span>Cannot be used / none</span></label></div></div><div><div class="label">Exhibit status filter</div><div class="checkGrid" style="margin-top:6px"><label class="checkItem"><input type="checkbox" data-doc-filter-status="exhibit" ${status.includes('exhibit') ? 'checked' : ''} /> <span>Exhibit</span></label><label class="checkItem"><input type="checkbox" data-doc-filter-status="not_exhibit" ${status.includes('not_exhibit') ? 'checked' : ''} /> <span>Not an exhibit</span></label></div></div></div></div>`;
+      host.innerHTML = `<div class="card" style="box-shadow:none; padding:12px 14px"><div style="display:flex; gap:18px; flex-wrap:wrap; align-items:flex-start"><div><div class="label">Exhibit category filter</div><div class="checkGrid" style="margin-top:6px"><label class="checkItem"><input type="checkbox" data-doc-filter-eligibility="possible" ${elig.includes('possible') ? 'checked' : ''} /> <span>Can be used</span></label><label class="checkItem"><input type="checkbox" data-doc-filter-eligibility="not" ${elig.includes('not') ? 'checked' : ''} /> <span>Cannot be used / none</span></label></div></div><div><div class="label">Exhibit status filter</div><div class="checkGrid" style="margin-top:6px"><label class="checkItem"><input type="checkbox" data-doc-filter-status="exhibit" ${status.includes('exhibit') ? 'checked' : ''} /> <span>Exhibit</span></label><label class="checkItem"><input type="checkbox" data-doc-filter-status="not_exhibit" ${status.includes('not_exhibit') ? 'checked' : ''} /> <span>Not an exhibit</span></label></div></div><div style="min-width:340px; flex:1 1 340px"><div class="label">Tags / subtags</div><div id="docRepoFilterTagTree"></div></div></div></div>`;
+      renderHierarchicalTagFilterPanel('docRepoFilterTagTree', {
+        includeIds: ui.docRepoTagIds || [],
+        excludeIds: ui.docRepoTagExcludeIds || [],
+        includeNoneSelected: !!ui.docRepoTagNoneSelected,
+        excludeNoneSelected: ui.docRepoTagExcludeNoneSelected !== false,
+        collapsedMap: ui.docRepoCollapsedTagNodes || {},
+        onChange: (stateObj)=>{
+          ui.docRepoTagIds = stateObj.includeIds;
+          ui.docRepoTagExcludeIds = stateObj.excludeIds;
+          ui.docRepoTagNoneSelected = !!stateObj.includeNoneSelected;
+          ui.docRepoTagExcludeNoneSelected = !!stateObj.excludeNoneSelected;
+          renderDocuments();
+        }
+      });
       host.querySelectorAll('[data-doc-filter-eligibility]').forEach(cb => cb.addEventListener('change', ()=>{
         ui.docRepoEligibilityFilters = Array.from(host.querySelectorAll('[data-doc-filter-eligibility]:checked')).map(x => x.getAttribute('data-doc-filter-eligibility'));
         renderDocuments();
@@ -2034,20 +2051,60 @@
     function collectHierarchicalTagLinks(hostId){
       return Array.from(document.querySelectorAll(`#${hostId} input[data-hier-tag-link]:checked`)).map(x => ({ tagId: x.getAttribute('data-tag-id') || '', subtagId: x.getAttribute('data-subtag-id') || '' })).filter(link => link.tagId);
     }
+    function getAllTagTreeNodeIds(){
+      const ids = [];
+      (state.tags || []).forEach(tag => {
+        ids.push(tag.id);
+        (state.subtags || []).filter(st => st.parentTagId === tag.id).forEach(st => ids.push(st.id))
+      });
+      return ids;
+    }
+    function getAllHierarchicalNodeIds(){
+      const ids = [];
+      (state.tags || []).forEach(tag => ids.push(tag.id));
+      (state.subtags || []).forEach(st => ids.push(st.id));
+      return ids;
+    }
+    function setCollapsedMapAll(collapsedMap, collapsed){
+      getAllHierarchicalNodeIds().forEach(id => { collapsedMap[id] = !!collapsed; });
+    }
+    function bindDocumentTagModalTreeInteractions(){
+      const host = $('documentTagModalTree');
+      if(!host) return;
+      host.querySelectorAll('input[data-hier-tag-link]').forEach(input => input.addEventListener('change', ()=> renderDocumentTagModalSummary(collectHierarchicalTagLinks('documentTagModalTree'))));
+      host.querySelectorAll('.elementTagNode').forEach(node => {
+        const toggleBtn = node.querySelector('[data-element-tag-collapse]');
+        if(!toggleBtn) return;
+        let timer = null;
+        node.addEventListener('mouseenter', ()=>{
+          const id = toggleBtn.getAttribute('data-element-tag-collapse') || '';
+          if(!id) return;
+          timer = setTimeout(()=>{
+            if(ui.documentTagModalCollapsedNodes && ui.documentTagModalCollapsedNodes[id]){
+              ui.documentTagModalCollapsedNodes[id] = false;
+              renderHierarchicalTagTree('documentTagModalTree', collectHierarchicalTagLinks('documentTagModalTree'), { collapsedMap: ui.documentTagModalCollapsedNodes });
+              bindDocumentTagModalTreeInteractions();
+            }
+          }, 500);
+        });
+        node.addEventListener('mouseleave', ()=>{ if(timer){ clearTimeout(timer); timer = null; } });
+      });
+    }
     function renderDocumentTagModalSummary(links){
       const host = $('documentTagModalSummary');
       if(host) host.innerHTML = renderTagLinkPills(links || []);
     }
     function openDocumentTagModal(docId=null){
       ui.documentTagModalDocId = docId || '';
+      ui.documentTagModalCollapsedNodes = ui.documentTagModalCollapsedNodes || {};
       const title = $('documentTagModalTitle');
       if(title) title.textContent = docId ? 'Add tags to document' : 'Choose tags for new document';
       const doc = docId ? (state.documents || []).find(d => d.id === docId) : null;
       const links = doc ? getDocumentTagLinks(doc) : (ui.newDocumentTagLinks || []);
-      renderHierarchicalTagTree('documentTagModalTree', links);
+      renderHierarchicalTagTree('documentTagModalTree', links, { collapsedMap: ui.documentTagModalCollapsedNodes });
       renderDocumentTagModalSummary(links);
       $('documentTagModal')?.classList.add('open');
-      document.querySelectorAll('#documentTagModalTree input[data-hier-tag-link]').forEach(input => input.addEventListener('change', ()=> renderDocumentTagModalSummary(collectHierarchicalTagLinks('documentTagModalTree'))));
+      bindDocumentTagModalTreeInteractions();
     }
     function closeDocumentTagModal(){ $('documentTagModal')?.classList.remove('open'); ui.bulkDocumentEditIndex = -1; }
     async function saveDocumentTagModal(){
@@ -2149,33 +2206,19 @@
       return { witnessIds, documentIds, exhibitIds, sourceDocumentIds, sourcePersonIds };
     }
     function renderDocumentTableFilterTagTree(){
-      const host = $('documentTableFilterTagTree');
-      if(!host) return;
-      host.innerHTML = `<div class="elementsFilterDual">
-        <div>
-          <div class="label" style="margin-bottom:6px">Filter-inclusion</div>
-          <div class="elementsFilterChecklist">
-            <label class="checkItem" style="margin:0"><input type="checkbox" id="documentTableTagNoneInclude" ${ui.documentTableTagNoneSelected ? 'checked' : ''} /> <span>none selected</span></label>
-          </div>
-          <div id="documentTableFilterTagTreeInclude"></div>
-        </div>
-        <div>
-          <div class="label" style="margin-bottom:6px">Filter exclusion</div>
-          <div class="elementsFilterChecklist">
-            <label class="checkItem" style="margin:0"><input type="checkbox" id="documentTableTagNoneExclude" ${ui.documentTableTagExcludeNoneSelected !== false ? 'checked' : ''} /> <span>none selected</span></label>
-          </div>
-          <div id="documentTableFilterTagTreeExclude"></div>
-        </div>
-      </div>`;
-      renderHierarchicalTagTree('documentTableFilterTagTreeInclude', ui.documentTableTagIds || [], { rootClass:'elementsFilterTagTree', collapsedMap: ui.documentTableCollapsedTagNodes, onTreeChange: renderDocumentTable });
-      renderHierarchicalTagTree('documentTableFilterTagTreeExclude', ui.documentTableTagExcludeIds || [], { rootClass:'elementsFilterTagTree', collapsedMap: ui.documentTableCollapsedTagNodes, onTreeChange: renderDocumentTable });
-      host.querySelector('#documentTableTagNoneInclude')?.addEventListener('change', (ev)=>{ ui.documentTableTagNoneSelected = !!ev.target.checked; renderDocumentTable(); });
-      host.querySelector('#documentTableTagNoneExclude')?.addEventListener('change', (ev)=>{ ui.documentTableTagExcludeNoneSelected = !!ev.target.checked; renderDocumentTable(); });
-      host.querySelectorAll('#documentTableFilterTagTreeInclude input[type="checkbox"]').forEach(input => {
-        input.onchange = ()=>{ ui.documentTableTagIds = collectHierarchicalTagLinks('documentTableFilterTagTreeInclude'); renderDocumentTable(); };
-      });
-      host.querySelectorAll('#documentTableFilterTagTreeExclude input[type="checkbox"]').forEach(input => {
-        input.onchange = ()=>{ ui.documentTableTagExcludeIds = collectHierarchicalTagLinks('documentTableFilterTagTreeExclude'); renderDocumentTable(); };
+      renderHierarchicalTagFilterPanel('documentTableFilterTagTree', {
+        includeIds: ui.documentTableTagIds || [],
+        excludeIds: ui.documentTableTagExcludeIds || [],
+        includeNoneSelected: !!ui.documentTableTagNoneSelected,
+        excludeNoneSelected: ui.documentTableTagExcludeNoneSelected !== false,
+        collapsedMap: ui.documentTableCollapsedTagNodes || {},
+        onChange: (stateObj)=>{
+          ui.documentTableTagIds = stateObj.includeIds;
+          ui.documentTableTagExcludeIds = stateObj.excludeIds;
+          ui.documentTableTagNoneSelected = !!stateObj.includeNoneSelected;
+          ui.documentTableTagExcludeNoneSelected = !!stateObj.excludeNoneSelected;
+          renderDocumentTable();
+        }
       });
     }
     function getDocumentTableFilterItems(){
@@ -2192,17 +2235,49 @@
       renderElementSimpleFilter('documentTableFilterTimeline', items.timelineItems, ui.documentTableTimelineIds || [], ui.documentTableTimelineExcludeIds || [], !!ui.documentTableTimelineNoneSelected, ui.documentTableTimelineExcludeNoneSelected !== false, 'data-document-table-timeline');
       renderElementSimpleFilter('documentTableFilterFile', items.fileItems, ui.documentTableFileIds || [], ui.documentTableFileExcludeIds || [], !!ui.documentTableFileNoneSelected, ui.documentTableFileExcludeNoneSelected !== false, 'data-document-table-file');
     }
-    function documentMatchesHierFilter(doc){
-      const selected = Array.isArray(ui.documentTableTagIds) ? ui.documentTableTagIds : [];
-      const excluded = Array.isArray(ui.documentTableTagExcludeIds) ? ui.documentTableTagExcludeIds : [];
-      const includeNone = !!ui.documentTableTagNoneSelected;
-      const excludeNone = ui.documentTableTagExcludeNoneSelected !== false;
+
+    function renderHierarchicalTagFilterPanel(hostId, config={}){
+      const host = $(hostId); if(!host) return;
+      const collapsedMap = config.collapsedMap || {};
+      host.innerHTML = `
+        <div class="elementsFilterDual">
+          <div>
+            <div class="label">Filter-inclusion</div>
+            <label class="checkItem" style="margin:6px 0"><input type="checkbox" data-hier-none="include" ${config.includeNoneSelected ? 'checked' : ''} /> <span>None selected</span></label>
+            <div id="${hostId}Include"></div>
+          </div>
+          <div>
+            <div class="label">Filter exclusion</div>
+            <label class="checkItem" style="margin:6px 0"><input type="checkbox" data-hier-none="exclude" ${config.excludeNoneSelected !== false ? 'checked' : ''} /> <span>None selected</span></label>
+            <div id="${hostId}Exclude"></div>
+          </div>
+        </div>`;
+      renderHierarchicalTagTree(`${hostId}Include`, config.includeIds || [], { rootClass:'elementsFilterTagTree', collapsedMap, onTreeChange: ()=>{} });
+      renderHierarchicalTagTree(`${hostId}Exclude`, config.excludeIds || [], { rootClass:'elementsFilterTagTree', collapsedMap, onTreeChange: ()=>{} });
+      const trigger = ()=>{
+        const stateObj = {
+          includeIds: collectHierarchicalTagLinks(`${hostId}Include`),
+          excludeIds: collectHierarchicalTagLinks(`${hostId}Exclude`),
+          includeNoneSelected: !!host.querySelector('[data-hier-none="include"]')?.checked,
+          excludeNoneSelected: !!host.querySelector('[data-hier-none="exclude"]')?.checked
+        };
+        if(typeof config.onChange === 'function') config.onChange(stateObj);
+      };
+      host.querySelectorAll('input[data-hier-tag-link], input[data-hier-none]').forEach(input => input.addEventListener('change', trigger));
+      host.querySelectorAll('[data-element-tag-collapse]').forEach(btn => btn.addEventListener('click', ()=> setTimeout(trigger,0)));
+    }
+
+    function documentMatchesHierFilterWithState(doc, selected, excluded, includeNone, excludeNone){
       const own = getDocumentTagLinks(doc);
       const hasOwn = own.length > 0;
-      if((selected.length || includeNone) && !(includeNone && !hasOwn) && !elementTagFilterLinksMatch(selected, own)) return false;
+      if(((selected || []).length || includeNone) && !(includeNone && !hasOwn) && !elementTagFilterLinksMatch(selected || [], own)) return false;
       if(!hasOwn && !excludeNone) return false;
-      if(hasOwn && elementTagFilterLinksMatch(excluded, own)) return false;
+      if(hasOwn && elementTagFilterLinksMatch(excluded || [], own)) return false;
       return true;
+    }
+
+    function documentMatchesHierFilter(doc){
+      return documentMatchesHierFilterWithState(doc, ui.documentTableTagIds || [], ui.documentTableTagExcludeIds || [], !!ui.documentTableTagNoneSelected, ui.documentTableTagExcludeNoneSelected !== false);
     }
     function documentMatchesSimpleFilter(doc, kind){
       if(kind === 'exhibit'){ const meta = getDocumentExhibitMeta(doc.id); return meta.isExhibit ? ['is_exhibit'] : ['not_exhibit']; }
@@ -2221,114 +2296,6 @@
         if(!elementMatchesIdFilter(documentMatchesSimpleFilter(doc, 'exhibit'), ui.documentTableExhibitIds, ui.documentTableExhibitExcludeIds, !!ui.documentTableExhibitNoneSelected, ui.documentTableExhibitExcludeNoneSelected !== false)) return false;
         if(!elementMatchesIdFilter(documentMatchesSimpleFilter(doc, 'timeline'), ui.documentTableTimelineIds, ui.documentTableTimelineExcludeIds, !!ui.documentTableTimelineNoneSelected, ui.documentTableTimelineExcludeNoneSelected !== false)) return false;
         if(!elementMatchesIdFilter(documentMatchesSimpleFilter(doc, 'file'), ui.documentTableFileIds, ui.documentTableFileExcludeIds, !!ui.documentTableFileNoneSelected, ui.documentTableFileExcludeNoneSelected !== false)) return false;
-        return true;
-      }).sort((a,b)=> (a.name||'').localeCompare(b.name||''));
-    }
-    async function openSourceDocumentDirect(docId){
-      if(!docId) return;
-      openSourceDocModal();
-      await openSourceDocumentPickerDoc(docId);
-    }
-    function renderDocumentTable(){
-      const host = $('documentTableHost');
-      const empty = $('documentTableEmpty');
-      if(!host || !empty) return;
-      const panel = $('documentTableFilterPanel');
-      if(panel){ panel.style.display = ui.documentTableFilterPanelOpen ? '' : 'none'; panel.classList.toggle('open', !!ui.documentTableFilterPanelOpen); }
-      renderDocumentTableFilters();
-      const docs = getFilteredDocumentsForTable();
-      empty.style.display = docs.length ? 'none' : '';
-      if(!docs.length){ host.innerHTML = ''; return; }
-      host.innerHTML = `<div class="bulkDocTableWrap"><table class="bulkDocTable"><thead><tr><th>Document</th><th>Date</th><th>Tags</th><th>View</th><th>Download</th><th>Elements from Document</th><th>Delete</th></tr></thead><tbody>${docs.map(doc => { const meta = getDocumentExhibitMeta(doc.id); return `<tr>
-        <td><div><b>${escapeHtml(doc.name || '')}</b></div><div class="hint">${escapeHtml(formatTimelineDateDisplay(doc.date || '') || 'No date')} ${meta.isExhibit ? '• ' + escapeHtml(meta.label || 'Exhibit') : ''} ${(doc.filePath || doc.dataUrl || doc.hasFile) ? '• Has file' : '• No file'} ${(doc.includeInTimeline !== false) ? '• In timeline' : '• Hidden from timeline'}</div></td>
-        <td>${escapeHtml(formatTimelineDateDisplay(doc.date || '') || '')}</td>
-        <td class="bulkDocTagsCell">${renderTagLinkPills(getDocumentTagLinks(doc), 'document', doc.id)}<div style="margin-top:8px"><button type="button" class="mini" data-document-table-tags="${doc.id}">Edit tags</button></div></td>
-        <td><button type="button" class="mini" data-document-table-view="${doc.id}">View</button></td>
-        <td><button type="button" class="mini" data-document-table-download="${doc.id}">Download</button></td>
-        <td><button type="button" class="mini btnPrimary" data-document-table-elements="${doc.id}">Elements from Document</button></td>
-        <td><button type="button" class="mini btnDanger" data-document-table-delete="${doc.id}">Delete</button></td>
-      </tr>`; }).join('')}</tbody></table></div>`;
-      host.querySelectorAll('[data-document-table-tags]').forEach(btn => btn.addEventListener('click', (ev)=>{ ev.preventDefault(); ev.stopPropagation(); openDocumentTagModal(btn.getAttribute('data-document-table-tags')); }));
-      host.querySelectorAll('[data-document-table-view]').forEach(btn => btn.addEventListener('click', (ev)=>{ ev.preventDefault(); ev.stopPropagation(); openDocumentEditModal(btn.getAttribute('data-document-table-view')); }));
-      host.querySelectorAll('[data-document-table-download]').forEach(btn => btn.addEventListener('click', (ev)=>{ ev.preventDefault(); ev.stopPropagation(); downloadDocument(btn.getAttribute('data-document-table-download')); }));
-      host.querySelectorAll('[data-document-table-elements]').forEach(btn => btn.addEventListener('click', async (ev)=>{ ev.preventDefault(); ev.stopPropagation(); await openSourceDocumentDirect(btn.getAttribute('data-document-table-elements')); }));
-      host.querySelectorAll('[data-document-table-delete]').forEach(btn => btn.addEventListener('click', async (ev)=>{ ev.preventDefault(); ev.stopPropagation(); await deleteDocument(btn.getAttribute('data-document-table-delete')); }));
-    }
-    function renderElementsAdvancedFilters(){
-      const optionSets = getElementFilterOptionSets();
-      renderElementsFilterTagTree();
-      const witnessItems = (state.people || []).filter(p => optionSets.witnessIds.has(p.id)).slice().sort(sortByName);
-      const documentItems = (state.documents || []).filter(d => optionSets.documentIds.has(d.id)).slice().sort(sortByName);
-      const exhibitItems = (state.documents || []).filter(d => optionSets.exhibitIds.has(d.id)).slice().sort(sortByName);
-      const sourceDocumentItems = (state.documents || []).filter(d => optionSets.sourceDocumentIds.has(d.id)).slice().sort(sortByName);
-      const sourcePersonItems = (state.people || []).filter(p => optionSets.sourcePersonIds.has(p.id)).slice().sort(sortByName);
-      renderElementSimpleFilter('elementsFilterWitnesses', witnessItems, (ui.elementsFilterWitnessIds || []).filter(id => optionSets.witnessIds.has(id)), (ui.elementsFilterWitnessExcludeIds || []).filter(id => optionSets.witnessIds.has(id)), !!ui.elementsFilterWitnessNoneSelected, ui.elementsFilterWitnessExcludeNoneSelected !== false, 'data-elements-filter-witness');
-      renderElementSimpleFilter('elementsFilterDocuments', documentItems, (ui.elementsFilterDocumentIds || []).filter(id => optionSets.documentIds.has(id)), (ui.elementsFilterDocumentExcludeIds || []).filter(id => optionSets.documentIds.has(id)), !!ui.elementsFilterDocumentNoneSelected, ui.elementsFilterDocumentExcludeNoneSelected !== false, 'data-elements-filter-document');
-      renderElementSimpleFilter('elementsFilterExhibits', exhibitItems, (ui.elementsFilterExhibitIds || []).filter(id => optionSets.exhibitIds.has(id)), (ui.elementsFilterExhibitExcludeIds || []).filter(id => optionSets.exhibitIds.has(id)), !!ui.elementsFilterExhibitNoneSelected, ui.elementsFilterExhibitExcludeNoneSelected !== false, 'data-elements-filter-exhibit');
-      renderElementSimpleFilter('elementsFilterSourceDocuments', sourceDocumentItems, (ui.elementsFilterSourceDocumentIds || []).filter(id => optionSets.sourceDocumentIds.has(id)), (ui.elementsFilterSourceDocumentExcludeIds || []).filter(id => optionSets.sourceDocumentIds.has(id)), !!ui.elementsFilterSourceDocumentNoneSelected, ui.elementsFilterSourceDocumentExcludeNoneSelected !== false, 'data-elements-filter-source-document');
-      renderElementSimpleFilter('elementsFilterSourcePeople', sourcePersonItems, (ui.elementsFilterSourcePersonIds || []).filter(id => optionSets.sourcePersonIds.has(id)), (ui.elementsFilterSourcePersonExcludeIds || []).filter(id => optionSets.sourcePersonIds.has(id)), !!ui.elementsFilterSourcePersonNoneSelected, ui.elementsFilterSourcePersonExcludeNoneSelected !== false, 'data-elements-filter-source-person');
-      ui.elementsFilterWitnessIds = (ui.elementsFilterWitnessIds || []).filter(id => optionSets.witnessIds.has(id));
-      ui.elementsFilterWitnessExcludeIds = (ui.elementsFilterWitnessExcludeIds || []).filter(id => optionSets.witnessIds.has(id));
-      ui.elementsFilterDocumentIds = (ui.elementsFilterDocumentIds || []).filter(id => optionSets.documentIds.has(id));
-      ui.elementsFilterDocumentExcludeIds = (ui.elementsFilterDocumentExcludeIds || []).filter(id => optionSets.documentIds.has(id));
-      ui.elementsFilterExhibitIds = (ui.elementsFilterExhibitIds || []).filter(id => optionSets.exhibitIds.has(id));
-      ui.elementsFilterExhibitExcludeIds = (ui.elementsFilterExhibitExcludeIds || []).filter(id => optionSets.exhibitIds.has(id));
-      ui.elementsFilterSourceDocumentIds = (ui.elementsFilterSourceDocumentIds || []).filter(id => optionSets.sourceDocumentIds.has(id));
-      ui.elementsFilterSourceDocumentExcludeIds = (ui.elementsFilterSourceDocumentExcludeIds || []).filter(id => optionSets.sourceDocumentIds.has(id));
-      ui.elementsFilterSourcePersonIds = (ui.elementsFilterSourcePersonIds || []).filter(id => optionSets.sourcePersonIds.has(id));
-      ui.elementsFilterSourcePersonExcludeIds = (ui.elementsFilterSourcePersonExcludeIds || []).filter(id => optionSets.sourcePersonIds.has(id));
-    }
-    function elementTagFilterLinksMatch(filterLinks, ownLinks){
-      if(!Array.isArray(filterLinks) || !filterLinks.length) return false;
-      const own = Array.isArray(ownLinks) ? ownLinks : [];
-      return filterLinks.some(sel => own.some(link => link.tagId === sel.tagId && (!sel.subtagId || sel.subtagId === link.subtagId)));
-    }
-    function elementTagFilterLinksMatch(filterLinks, ownLinks){
-      if(!Array.isArray(filterLinks) || !filterLinks.length) return false;
-      const own = Array.isArray(ownLinks) ? ownLinks : [];
-      return filterLinks.some(sel => own.some(link => link.tagId === sel.tagId && (!sel.subtagId || sel.subtagId === link.subtagId)));
-    }
-    function elementMatchesHierFilter(el){
-      const selected = Array.isArray(ui.elementsFilterTagIds) ? ui.elementsFilterTagIds : [];
-      const excluded = Array.isArray(ui.elementsFilterTagExcludeIds) ? ui.elementsFilterTagExcludeIds : [];
-      const includeNone = !!ui.elementsFilterTagNoneSelected;
-      const excludeNone = ui.elementsFilterTagExcludeNoneSelected !== false;
-      const own = Array.isArray(el?.tagLinks) ? el.tagLinks : Array.from(new Set((el?.tags || []).filter(Boolean))).map(tagId => ({ tagId, subtagId:'' }));
-      const hasOwn = own.length > 0;
-      if((selected.length || includeNone) && !(includeNone && !hasOwn) && !elementTagFilterLinksMatch(selected, own)) return false;
-      if(!hasOwn && !excludeNone) return false;
-      if(hasOwn && elementTagFilterLinksMatch(excluded, own)) return false;
-      return true;
-    }
-    function elementMatchesIdFilter(ids, selected, excluded, includeNoneSelected, excludeNoneSelected){
-      const used = Array.from(new Set((ids || []).filter(Boolean)));
-      if((Array.isArray(selected) && selected.length) || includeNoneSelected){
-        const selectedSet = new Set((selected || []).filter(Boolean));
-        const includeMatch = used.some(id => selectedSet.has(id));
-        if(!(includeMatch || (includeNoneSelected && !used.length))) return false;
-      }
-      if(!used.length) return excludeNoneSelected !== false;
-      const excludedSet = new Set((excluded || []).filter(Boolean));
-      if(used.some(id => excludedSet.has(id))) return false;
-      return true;
-    }
-    function getFilteredElements(){
-      const search = String(ui.elementsSearch || '').trim().toLowerCase();
-      const mode = ui.elementsFilterMode || 'all';
-      return (state.elements || []).filter(el => {
-        if(mode === 'timeline' && !el.includeInTimeline) return false;
-        if(mode === 'not_timeline' && el.includeInTimeline) return false;
-        if(search){
-          const hay = [el.name, getElementSourceText(el), (el.text || '').replace(/<[^>]+>/g, ' '), ...(el.tags || []).map(tagId => state.tags.find(t=>t.id===tagId)?.name || ''), ...getElementLinkedWitnesses(el).map(p => p.name || ''), ...getElementLinkedDocuments(el).map(d => d.name || ''), ...getElementLinkedExhibits(el).map(d => d.name || ''), ...getElementSourceDocumentIds(el).map(id => getDocumentById(id)?.name || ''), ...getElementSourcePersonIds(el).map(id => getPersonById(id)?.name || '')].join(' ').toLowerCase();
-          if(!hay.includes(search)) return false;
-        }
-        if(!elementMatchesHierFilter(el)) return false;
-        if(!elementMatchesIdFilter(el.witnessIds || [], ui.elementsFilterWitnessIds, ui.elementsFilterWitnessExcludeIds, !!ui.elementsFilterWitnessNoneSelected, ui.elementsFilterWitnessExcludeNoneSelected !== false)) return false;
-        if(!elementMatchesIdFilter(el.documentIds || [], ui.elementsFilterDocumentIds, ui.elementsFilterDocumentExcludeIds, !!ui.elementsFilterDocumentNoneSelected, ui.elementsFilterDocumentExcludeNoneSelected !== false)) return false;
-        if(!elementMatchesIdFilter(el.exhibitDocIds || [], ui.elementsFilterExhibitIds, ui.elementsFilterExhibitExcludeIds, !!ui.elementsFilterExhibitNoneSelected, ui.elementsFilterExhibitExcludeNoneSelected !== false)) return false;
-        if(!elementMatchesIdFilter(getElementSourceDocumentIds(el), ui.elementsFilterSourceDocumentIds, ui.elementsFilterSourceDocumentExcludeIds, !!ui.elementsFilterSourceDocumentNoneSelected, ui.elementsFilterSourceDocumentExcludeNoneSelected !== false)) return false;
-        if(!elementMatchesIdFilter(getElementSourcePersonIds(el), ui.elementsFilterSourcePersonIds, ui.elementsFilterSourcePersonExcludeIds, !!ui.elementsFilterSourcePersonNoneSelected, ui.elementsFilterSourcePersonExcludeNoneSelected !== false)) return false;
-        if((ui.elementsCreatorFilter || 'all') !== 'all' && getElementCreatorLabel(el) !== ui.elementsCreatorFilter) return false;
         return true;
       }).sort((a,b)=> (a.name||'').localeCompare(b.name||''));
     }
@@ -4794,7 +4761,7 @@ function openStructuredDocEditor(docId){
     const status = Array.isArray(ui.docRepoStatusFilters) ? ui.docRepoStatusFilters : ['exhibit','not_exhibit'];
     const docElig = d.exhibitEligibility === 'not' ? 'not' : 'possible';
     const docStatus = meta.isExhibit ? 'exhibit' : 'not_exhibit';
-    return elig.includes(docElig) && status.includes(docStatus);
+    return elig.includes(docElig) && status.includes(docStatus) && documentMatchesHierFilterWithState(d, ui.docRepoTagIds || [], ui.docRepoTagExcludeIds || [], !!ui.docRepoTagNoneSelected, ui.docRepoTagExcludeNoneSelected !== false);
   }));
   const widths = {
     name: getDocRepoColWidth('name', 340),
@@ -5164,7 +5131,7 @@ function openStructuredDocEditor(docId){
       setDraftDocumentTagLinks([]);
       toast(file ? 'Document and file saved' : 'Document saved');
     }
-    async function deleteDocument(id){ const doc = state.documents.find(d=>d.id===id); if(!doc) return; if(!confirm(`Delete document “${doc.name}”?`)) return; if(doc.filePath){ await window.deleteDocumentFile(doc.filePath); } const ok = await window.deleteDocumentRow(id); if (!ok) return; try{ await idbDeleteFile(id); }catch(err){ console.warn('Local file delete failed:', err); } state.documents = state.documents.filter(d=>d.id!==id); for(const n of state.outline){ if(!n.witnessData) continue; for(const wid of Object.keys(n.witnessData)){ n.witnessData[wid].exhibits = (n.witnessData[wid].exhibits||[]).filter(eid=>eid!==id); } } safeSave(); renderDocuments(); renderOutline(); toast('Document deleted'); }
+    async function deleteDocument(id, options={}){ const doc = state.documents.find(d=>d.id===id); if(!doc) return false; if(options.skipConfirm !== true && !confirm(`Delete document “${doc.name}”?`)) return false; if(doc.filePath){ await window.deleteDocumentFile(doc.filePath); } const ok = await window.deleteDocumentRow(id); if (!ok) return false; try{ await idbDeleteFile(id); }catch(err){ console.warn('Local file delete failed:', err); } state.documents = state.documents.filter(d=>d.id!==id); for(const n of state.outline){ if(!n.witnessData) continue; for(const wid of Object.keys(n.witnessData)){ n.witnessData[wid].exhibits = (n.witnessData[wid].exhibits||[]).filter(eid=>eid!==id); } } safeSave(); renderDocuments(); renderDocumentTable(); renderOutline(); renderOutlineIndex(); renderDocumentTagIndex(); renderStructuredOutline(); renderTimeline(); toast('Document deleted'); return true; }
     async function getDocumentBlob(doc){
       if(!doc) return null;
       try{
@@ -5329,6 +5296,8 @@ function openStructuredDocEditor(docId){
     $('documentTagModalClose')?.addEventListener('click', closeDocumentTagModal);
     $('documentTagModalCancel')?.addEventListener('click', closeDocumentTagModal);
     $('documentTagModalSave')?.addEventListener('click', saveDocumentTagModal);
+    $('documentTagModalCollapseAll')?.addEventListener('click', ()=>{ ui.documentTagModalCollapsedNodes = ui.documentTagModalCollapsedNodes || {}; setCollapsedMapAll(ui.documentTagModalCollapsedNodes, true); renderHierarchicalTagTree('documentTagModalTree', collectHierarchicalTagLinks('documentTagModalTree'), { collapsedMap: ui.documentTagModalCollapsedNodes }); bindDocumentTagModalTreeInteractions(); });
+    $('documentTagModalExpandAll')?.addEventListener('click', ()=>{ ui.documentTagModalCollapsedNodes = ui.documentTagModalCollapsedNodes || {}; setCollapsedMapAll(ui.documentTagModalCollapsedNodes, false); renderHierarchicalTagTree('documentTagModalTree', collectHierarchicalTagLinks('documentTagModalTree'), { collapsedMap: ui.documentTagModalCollapsedNodes }); bindDocumentTagModalTreeInteractions(); });
     $('sourceDocBackToPicker')?.addEventListener('click', ()=>{ resetSourceDocImageCapture(); ui.sourceDocSelectedId = null; ui.sourceDocSelection = null; $('sourceDocViewerInner').innerHTML = '<div class="sourceDocEmpty">Choose a document to open it here.</div>'; $('sourceDocCreateElement').disabled = true; if($('sourceDocStartImageCapture')) $('sourceDocStartImageCapture').disabled = true; refreshSourceDocActionButtons(); setSourceDocSelectionMessage(getSourceDocTargetElement() ? 'Choose a document, then highlight text or capture an image to add more to this element.' : 'Highlight text in the document, then click Create element from selection or use image capture.'); $('sourceDocBackToPicker').style.display = 'none'; renderSourceDocPicker(); });
     $('sourceDocCreateElement')?.addEventListener('click', createElementFromSourceSelection); $('sourceDocStartImageCapture')?.addEventListener('click', startSourceDocImageCapture); $('sourceDocReturnToElement')?.addEventListener('click', ()=>{ const target = getSourceDocTargetElement(); if(!target) return; closeSourceDocModal(); openElementModal(target.id); }); bindSourceDocImageCapture();
     $('sourceDocViewerShell')?.addEventListener('mouseup', ()=> setTimeout(handleSourceSelectionChange, 0));
@@ -5337,6 +5306,7 @@ function openStructuredDocEditor(docId){
     $('elementSourceModalClose')?.addEventListener('click', closeElementSourceModal);
     $('documentTableSearch')?.addEventListener('input', (ev)=>{ ui.documentTableSearch = ev.target.value || ''; renderDocumentTable(); });
     $('documentTableFilterToggle')?.addEventListener('click', ()=>{ ui.documentTableFilterPanelOpen = !ui.documentTableFilterPanelOpen; renderDocumentTable(); });
+    $('documentTableDeleteDuplicates')?.addEventListener('click', deleteDocumentTableDuplicates);
     $('elementsFilterMode')?.addEventListener('change', (ev)=>{ ui.elementsFilterMode = ev.target.value || 'all'; renderElements(); });
     $('elementsSearch')?.addEventListener('input', (ev)=>{ ui.elementsSearch = ev.target.value || ''; renderElements(); });
     $('elementWitnessSearch')?.addEventListener('input', ()=> renderElementWitnessList(ui.selectedElementId ? (getElementById(ui.selectedElementId)?.witnessIds || []) : getElementFormSelectedWitnessIds()));
