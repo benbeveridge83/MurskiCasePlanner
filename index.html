@@ -1093,6 +1093,16 @@
     .richTextEditorBox{min-height:220px;border:1px solid var(--border);border-radius:14px;padding:10px 12px;background:#fff;outline:none;overflow:auto;line-height:1.45;}
     
     .richTextEditorBox:empty:before{content:attr(data-placeholder);color:var(--muted);}
+
+    .bulkDocTableWrap{margin-top:12px;border:1px solid var(--border);border-radius:14px;overflow:auto;background:#fff;}
+    .bulkDocTable{width:100%;border-collapse:collapse;min-width:980px;}
+    .bulkDocTable th,.bulkDocTable td{padding:10px;border-bottom:1px solid var(--border);vertical-align:top;text-align:left;}
+    .bulkDocTable th{background:#f8fbff;font-size:12px;text-transform:uppercase;letter-spacing:.03em;color:var(--muted);}
+    .bulkDocNameInput,.bulkDocDateInput,.bulkDocDescInput{width:100%;}
+    .bulkDocDescInput{min-height:44px;}
+    .bulkDocTagsCell{min-width:240px;}
+    .bulkDocTagSummary{display:grid;gap:6px;}
+    .bulkDocActionsBar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;justify-content:space-between;margin-top:10px;}
     .authShell{max-width:980px;margin:18px auto 0;padding:0 16px;}
     .authGrid{display:grid;grid-template-columns:repeat(2,minmax(280px,1fr));gap:14px;}
     .authMuted{color:var(--muted);font-size:13px;line-height:1.4;}
@@ -1166,15 +1176,15 @@
       <div id="outlineEmpty" class="empty" style="display:none; margin-top:12px">No outline items yet. Click “Add top-level heading”.</div>
       <div id="matrixWrap" class="matrixWrap" style="display:none"><div id="matrix" class="matrix"></div></div>
     </div>
-    <div id="viewDocuments" class="card" style="display:none"><h2>Documents</h2><div class="hint">Upload documents for this case. These can be selected as exhibits in the Case Outline witness columns.</div><div class="grid2"><div class="card" style="box-shadow:none"><h2 style="margin-bottom:8px">Add document</h2><div class="hint" style="margin-bottom:10px">Only <b>Name</b> is required. Date/tags/description are optional.</div><div class="label">Document name <span style="color:var(--danger)">*</span></div><input id="docName" type="text" placeholder="e.g., Leah Bankruptcy" /><div class="label" style="margin-top:10px">Document date (optional)</div><input id="docDate" type="date" /><div class="label" style="margin-top:10px">Description (optional)</div><textarea id="docDesc" placeholder="What is this document? What does it prove?"></textarea><div class="hint" style="margin-top:10px">Use the Tag + exhibit index to assign tags and filter the document list. Documents are included in the timeline by default, but you can switch that off in the repository.</div><div class="label" style="margin-top:10px">File (optional)</div><input id="docFile" type="file" /><div class="hint" style="margin-top:6px">If you attach a file, it uploads to Supabase Storage so it can be viewed and downloaded from other tabs and computers.</div><div style="margin-top:10px; display:flex; gap:10px; flex-wrap:wrap; align-items:center"><button id="docAddTagsBtn" type="button" class="btnGhost">Add tags</button><span id="docCreateTagSummary" class="hint">No tags selected.</span></div><div style="margin-top:10px; display:flex; gap:10px; flex-wrap:wrap; align-items:center"><button id="addDoc" class="btnPrimary">Save document</button></div></div><div class="card" style="box-shadow:none"><div style="display:flex; justify-content:space-between; gap:10px; align-items:center; flex-wrap:wrap"><h2 style="margin-bottom:8px">Document repository</h2><div style="display:flex; gap:8px; flex-wrap:wrap"><button id="collapseAllDocs" class="btnGhost">Collapse all</button><button id="toggleDownloadList" class="btnGhost">Download documents</button><a class="btnGhost docOpenLink" data-view-link="exhibits" href="?view=exhibits">Exhibits</a></div></div><div class="hint" style="margin-bottom:10px">Tags are hidden here so this list stays cleaner. Use the Tag Index page for the document-by-tag table, exhibit filters, and heading details.</div><div id="docRepoFilterBar" style="margin:10px 0 14px 0"></div><div id="docDownloadListWrap" style="display:none; margin:10px 0 14px 0"></div><div id="docList" style="display:flex; flex-direction:column; gap:10px"></div><div id="docEmpty" class="empty" style="display:none">No documents yet.</div></div></div></div>
-    <div id="viewTagIndex" class="card tagIndexPageCard" style="display:none"><div style="display:flex; justify-content:space-between; gap:10px; align-items:center; flex-wrap:wrap"><div><h2 style="margin-bottom:8px">Tag Index</h2><div class="hint">Rows are documents. Columns are tags. Filter the visible tag columns, filter exhibit status, filter untagged documents, and expand any document row for more detail.</div></div><div style="display:flex; gap:8px; flex-wrap:wrap"><a class="btnGhost docOpenLink" data-view-link="documents" href="?view=documents">Back to Documents</a></div></div><div class="docIndexFilters" style="margin-top:12px"><div style="min-width:260px"><div class="label">Show only these tags</div><div id="docTagFilterBoxes" class="tagFilterBoxWrap"></div><div class="hint" style="margin-top:6px">Leave all unchecked to show every tag column. Check any combination to show only those tag columns.</div></div><div><div class="label">Filter by exhibit status</div><select id="docExhibitFilter"><option value="all">All documents</option><option value="exhibit">Exhibits only</option><option value="not_exhibit">Not added as exhibits</option></select></div></div><div style="display:flex; align-items:end"><label class="checkItem" style="margin:0"><input id="docTagShowUsedOnly" type="checkbox" /> <span>Only show tag columns used by at least one document</span></label></div><div style="display:flex; align-items:end"><label class="checkItem" style="margin:0"><input id="docTagNoTagsOnly" type="checkbox" /> <span>Only show documents with no tags</span></label></div><div style="display:flex; align-items:end"><label class="checkItem" style="margin:0"><input id="docTagHasTagsOnly" type="checkbox" /> <span>Only show documents that have a tag</span></label></div></div><div id="docTagIndexTableShell" class="docTagIndexTableShell"><div id="docTagIndexScrollTop" class="docTagIndexScrollTop" style="display:none"><div id="docTagIndexScrollTopInner" class="docTagIndexScrollTopInner"></div></div><div id="docTagIndexTableWrap" class="docTagIndexTableWrap"></div></div><div id="docTagIndexEmpty" class="empty" style="display:none">No documents match the current filters.</div></div>
+    <div id="viewDocuments" class="card" style="display:none"><h2>Documents</h2><div class="hint">Upload documents for this case. These can be selected as exhibits in the Case Outline witness columns.</div><div class="grid2"><div class="card" style="box-shadow:none"><h2 style="margin-bottom:8px">Add document</h2><div class="hint" style="margin-bottom:10px">Only <b>Name</b> is required. Date/tags/description are optional.</div><div class="label">Document name <span style="color:var(--danger)">*</span></div><input id="docName" type="text" placeholder="e.g., Leah Bankruptcy" /><div class="label" style="margin-top:10px">Document date (optional)</div><input id="docDate" type="date" /><div class="label" style="margin-top:10px">Description (optional)</div><textarea id="docDesc" placeholder="What is this document? What does it prove?"></textarea><div class="hint" style="margin-top:10px">Use the Tag + exhibit index to assign tags and filter the document list. Documents are included in the timeline by default, but you can switch that off in the repository.</div><div class="label" style="margin-top:10px">File (optional)</div><input id="docFile" type="file" /><div class="hint" style="margin-top:6px">If you attach a file, it uploads to Supabase Storage so it can be viewed and downloaded from other tabs and computers.</div><div style="margin-top:10px; display:flex; gap:10px; flex-wrap:wrap; align-items:center"><button id="docBulkSelectBtn" type="button" class="btnGhost">Bulk upload documents</button><input id="docBulkFiles" type="file" multiple style="display:none" /></div><div id="docBulkUploadWrap" style="display:none; margin-top:12px"></div><div style="margin-top:10px; display:flex; gap:10px; flex-wrap:wrap; align-items:center"><button id="docAddTagsBtn" type="button" class="btnGhost">Add tags</button><span id="docCreateTagSummary" class="hint">No tags selected.</span></div><div style="margin-top:10px; display:flex; gap:10px; flex-wrap:wrap; align-items:center"><button id="addDoc" class="btnPrimary">Save document</button></div></div><div class="card" style="box-shadow:none"><div style="display:flex; justify-content:space-between; gap:10px; align-items:center; flex-wrap:wrap"><h2 style="margin-bottom:8px">Document repository</h2><div style="display:flex; gap:8px; flex-wrap:wrap"><button id="collapseAllDocs" class="btnGhost">Collapse all</button><button id="toggleDownloadList" class="btnGhost">Download documents</button><a class="btnGhost docOpenLink" data-view-link="documenttable" href="?view=documenttable">Document Table</a><a class="btnGhost docOpenLink" data-view-link="exhibits" href="?view=exhibits">Exhibits</a></div></div><div class="hint" style="margin-bottom:10px">Tags are hidden here so this list stays cleaner. Use the Tag Index page for the document-by-tag table, exhibit filters, and heading details.</div><div id="docRepoFilterBar" style="margin:10px 0 14px 0"></div><div id="docDownloadListWrap" style="display:none; margin:10px 0 14px 0"></div><div id="docList" style="display:flex; flex-direction:column; gap:10px"></div><div id="docEmpty" class="empty" style="display:none">No documents yet.</div></div></div></div>
+    <div id="viewDocumentTable" class="card" style="display:none"><div style="display:flex; justify-content:space-between; gap:10px; align-items:center; flex-wrap:wrap"><div><h2 style="margin-bottom:8px">Document Table</h2><div class="hint">One document per row. Filter by inclusion and exclusion, edit document tags on the row, open the document, download it, or jump straight into Elements from Document.</div></div><div style="display:flex; gap:8px; flex-wrap:wrap"><a class="btnGhost docOpenLink" data-view-link="documents" href="?view=documents">Back to Documents</a></div></div><div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-top:12px"><input id="documentTableSearch" type="text" placeholder="Search documents" style="min-width:240px" /><button type="button" id="documentTableFilterToggle" class="btnGhost">Filters</button><button type="button" id="documentTableDeleteDuplicates" class="btnGhost">Delete duplicates</button></div><div id="documentTableFilterPanel" class="elementsFilterPanel" style="display:none; margin-top:12px"><div class="hint" style="margin-bottom:8px">Use the same inclusion and exclusion style as the Elements page.</div><div class="elementsFilterGrid"><div><div class="label">Tags / subtags</div><div id="documentTableFilterTagTree"></div></div><div><div class="label">Exhibit status</div><div id="documentTableFilterExhibit" class="elementsFilterChecklist"></div></div><div><div class="label">Timeline</div><div id="documentTableFilterTimeline" class="elementsFilterChecklist"></div></div><div><div class="label">File</div><div id="documentTableFilterFile" class="elementsFilterChecklist"></div></div></div></div><div id="documentTableHost" style="margin-top:12px"></div><div id="documentTableEmpty" class="empty" style="display:none">No documents match the current filters.</div></div><div id="viewTagIndex" class="card tagIndexPageCard" style="display:none"><div style="display:flex; justify-content:space-between; gap:10px; align-items:center; flex-wrap:wrap"><div><h2 style="margin-bottom:8px">Tag Index</h2><div class="hint">Rows are documents. Columns are tags. Filter the visible tag columns, filter exhibit status, filter untagged documents, and expand any document row for more detail.</div></div><div style="display:flex; gap:8px; flex-wrap:wrap"><a class="btnGhost docOpenLink" data-view-link="documents" href="?view=documents">Back to Documents</a></div></div><div class="docIndexFilters" style="margin-top:12px"><div style="min-width:260px"><div class="label">Show only these tags</div><div id="docTagFilterBoxes" class="tagFilterBoxWrap"></div><div class="hint" style="margin-top:6px">Leave all unchecked to show every tag column. Check any combination to show only those tag columns.</div></div><div><div class="label">Filter by exhibit status</div><select id="docExhibitFilter"><option value="all">All documents</option><option value="exhibit">Exhibits only</option><option value="not_exhibit">Not added as exhibits</option></select></div></div><div style="display:flex; align-items:end"><label class="checkItem" style="margin:0"><input id="docTagShowUsedOnly" type="checkbox" /> <span>Only show tag columns used by at least one document</span></label></div><div style="display:flex; align-items:end"><label class="checkItem" style="margin:0"><input id="docTagNoTagsOnly" type="checkbox" /> <span>Only show documents with no tags</span></label></div><div style="display:flex; align-items:end"><label class="checkItem" style="margin:0"><input id="docTagHasTagsOnly" type="checkbox" /> <span>Only show documents that have a tag</span></label></div></div><div id="docTagIndexTableShell" class="docTagIndexTableShell"><div id="docTagIndexScrollTop" class="docTagIndexScrollTop" style="display:none"><div id="docTagIndexScrollTopInner" class="docTagIndexScrollTopInner"></div></div><div id="docTagIndexTableWrap" class="docTagIndexTableWrap"></div></div><div id="docTagIndexEmpty" class="empty" style="display:none">No documents match the current filters.</div></div>
     <div id="viewOutlineIndex" class="card tagIndexPageCard" style="display:none"><div style="display:flex; justify-content:space-between; gap:10px; align-items:center; flex-wrap:wrap"><div><h2 style="margin-bottom:8px">Outline Index</h2><div class="hint">Rows are documents. Columns are outline headings grouped by main heading. Filter the visible heading columns, filter exhibit status, filter documents by whether they have headings, and expand any document row for more detail.</div></div><div style="display:flex; gap:8px; flex-wrap:wrap"><a class="btnGhost docOpenLink" data-view-link="documents" href="?view=documents">Back to Documents</a></div></div><div class="docIndexFilters" style="margin-top:12px"><div style="min-width:260px"><div class="label">Show only these headings</div><div style="display:flex; gap:8px; flex-wrap:wrap; margin:6px 0 8px 0"><button id="outlineIndexSelectAll" type="button" class="btnGhost">Select all headings</button><button id="outlineIndexDeselectAll" type="button" class="btnGhost">Deselect all headings</button></div><div id="outlineIndexFilterBoxes" class="tagFilterBoxWrap"></div><div class="hint" style="margin-top:6px">Leave all unchecked to show every outline heading column. Check any combination to show only those heading columns.</div></div><div id="outlineIndexTagFilterHost"></div><div id="outlineIndexWitnessFilterHost"></div><div><div class="label">Filter by exhibit status</div><select id="outlineIndexExhibitFilter"><option value="all">All documents</option><option value="exhibit">Exhibits only</option><option value="not_exhibit">Not added as exhibits</option></select></div></div><div style="display:flex; align-items:end"><label class="checkItem" style="margin:0"><input id="outlineIndexShowUsedOnly" type="checkbox" /> <span>Only show heading columns used by at least one document</span></label></div><div style="display:flex; align-items:end"><label class="checkItem" style="margin:0"><input id="outlineIndexNoTagsOnly" type="checkbox" /> <span>Only show documents with no heading</span></label></div><div style="display:flex; align-items:end"><label class="checkItem" style="margin:0"><input id="outlineIndexHasTagsOnly" type="checkbox" /> <span>Only show documents with a heading</span></label></div></div><div id="outlineIndexDocCount" class="hint" style="margin:10px 0 4px 0; font-size:14px"></div><div id="outlineIndexTableShell" class="docTagIndexTableShell"><div id="outlineIndexScrollTop" class="docTagIndexScrollTop" style="display:none"><div id="outlineIndexScrollTopInner" class="docTagIndexScrollTopInner"></div></div><div id="outlineIndexTableWrap" class="docTagIndexTableWrap"></div></div><div id="outlineIndexEmpty" class="empty" style="display:none">No documents match the current filters.</div></div>
     <div id="viewStructuredOutline" class="card structuredOutlinePage" style="display:none"><div style="display:flex; justify-content:space-between; gap:10px; align-items:center; flex-wrap:wrap"><div><h2 style="margin-bottom:8px">Structured Outline</h2><div class="hint">View the outline with separate exhibit columns for No witness and any selected witnesses. Drag exhibits between cells to change heading/witness assignment, or drag a document from the tray into any row.</div></div></div><div class="structuredOutlineTop"><div class="structuredWitnessFilters"><span class="label">Witness columns</span><button type="button" id="structuredWitnessSelectAll" class="btnGhost">All</button><button type="button" id="structuredWitnessSelectNone" class="btnGhost">None</button><div id="structuredWitnessFilterList" class="structuredWitnessFilterList"></div></div><div class="structuredWitnessFilters"><span class="label">Show headings</span><div id="structuredHeadingFilterHost"></div><div id="structuredHeadingTagFilterHost"></div><div id="structuredHeadingWitnessFilterHost"></div></div><div class="structuredTray"><div class="structuredTrayTop"><div class="label">Document tray</div><input id="structuredTraySearch" type="text" placeholder="Search documents to drag…" style="max-width:320px" /></div><div class="structuredTrayFilters"><div class="structuredTrayFilterBlock"><div class="label">Assignment</div><select id="structuredTrayAssignmentFilter"><option value="all">All documents</option><option value="assigned">Assigned to a heading</option><option value="unassigned">Not assigned to a heading</option></select></div><div class="structuredTrayFilterBlock"><div class="label">Person</div><select id="structuredTrayPersonFilter"></select></div><div class="structuredTrayFilterBlock" style="min-width:220px"><div class="label">Tags</div><select id="structuredTrayTagFilter" multiple></select></div></div><div id="structuredTrayList" class="structuredTrayList"></div><div class="hint">Drag a document pill into a row/witness cell to add or move it there. Click a pill to edit that document.</div></div><div id="structuredOutlineShell" class="structuredShell"><div id="structuredOutlineTable" class="structuredTable"></div></div><div id="structuredScrollDock" class="structuredScrollDock"><div id="structuredScrollDockInner" class="structuredScrollDockInner"></div></div></div></div>
     <div id="structuredDocModal" class="structuredModal"><div class="structuredModalCard"><div style="display:flex; justify-content:space-between; gap:10px; align-items:center"><h3 style="margin:0">Edit document</h3><button type="button" id="structuredDocModalClose" class="btnGhost">Close</button></div><div><div class="label">Document name</div><input id="structuredDocName" type="text" /></div><div><div class="label">Description</div><textarea id="structuredDocDesc" placeholder="Document description"></textarea></div><div><div class="label">Tags</div><div id="structuredDocTags" class="structuredTagChecklist"></div></div><div style="display:flex; gap:8px; flex-wrap:wrap"><button type="button" id="structuredDocSave" class="btnPrimary">Save</button><button type="button" id="structuredDocView" class="btnGhost">View file</button><button type="button" id="structuredDocDownload" class="btnGhost">Download file</button></div><div id="structuredDocViewer"></div></div></div>
     <div id="documentEditModal" class="structuredModal"><div class="structuredModalCard"><div style="display:flex; justify-content:space-between; gap:10px; align-items:center"><h3 style="margin:0">Edit document</h3><button type="button" id="documentEditModalClose" class="btnGhost">Close</button></div><div><div class="label">Document name</div><input id="documentEditName" type="text" /></div><div><div class="label">Document date</div><input id="documentEditDate" type="date" /></div><div><div class="label">Upload date</div><div id="documentEditUploadDate" class="hint"></div></div><div><div class="label">Description</div><textarea id="documentEditDesc" placeholder="What is this document? What does it prove?"></textarea></div><div><div class="label">Tags</div><div id="documentEditTags" class="documentEditTagBox"></div></div><div><div class="label">Replace / add file</div><input id="documentEditFile" type="file" /><div id="documentEditCurrentFile" class="hint" style="margin-top:6px"></div></div><div><div class="label">Exhibit status</div><div id="documentEditExhibitStatus" class="hint"></div></div><div style="display:flex; gap:8px; flex-wrap:wrap"><button type="button" id="documentEditSave" class="btnPrimary">Save changes</button><button type="button" id="documentEditPreview" class="btnGhost">Preview file</button><button type="button" id="documentEditDownload" class="btnGhost">Download file</button><button type="button" id="documentEditDelete" class="btnDanger">Delete</button></div><div id="documentEditViewer"></div></div></div>
     <div id="viewExhibits" class="card" style="display:none"><h2>Exhibits</h2><div class="hint">Documents you have used as exhibits appear here.</div><div class="card" style="box-shadow:none"><h2 style="margin-bottom:8px">Exhibit table</h2><div id="exhibitEmpty" class="empty" style="display:none">No exhibits yet. Add an exhibit from a row/witness intersection.</div><div style="overflow:auto"><table id="exhibitTable" style="width:100%; border-collapse:collapse; display:none"><thead><tr><th style="text-align:left; padding:10px; border-bottom:1px solid var(--line); width:140px">Exhibit</th><th style="text-align:left; padding:10px; border-bottom:1px solid var(--line)">Document name</th></tr></thead><tbody id="exhibitTableBody"></tbody></table></div></div></div>
     <div id="viewPeople" class="card" style="display:none"><h2>People</h2><div class="hint">Add people (including witnesses). Witnesses can then be attached to outline rows.</div><div class="grid2"><div class="card" style="box-shadow:none"><h2 style="margin-bottom:8px">Add person</h2><div class="label">Name <span style="color:var(--danger)">*</span></div><input id="personName" type="text" placeholder="e.g., Leah Murski" /><div class="label" style="margin-top:10px">Notes / Role (optional)</div><textarea id="personDesc" placeholder="e.g., Mother, Father, Therapist, Teacher, etc."></textarea><div class="hint" style="margin-top:10px">Assign tags after saving from the people list.</div><div style="margin-top:10px; display:flex; gap:10px; flex-wrap:wrap; align-items:center"><button id="addPerson" class="btnPrimary">Save person</button></div></div><div class="card" style="box-shadow:none"><h2 style="margin-bottom:8px">People list</h2><div id="peopleList" style="display:flex; flex-direction:column; gap:10px"></div><div id="peopleEmpty" class="empty" style="display:none">No people yet.</div></div></div></div>
-    <div id="viewElements" class="card" style="display:none"><div class="elementsHeaderBar"><div><h2 style="margin-bottom:8px">Elements</h2><div class="hint">Store small chunks of case information here, then reuse them in the timeline or under outline headings and witnesses.</div></div><div class="elementsHeaderControls"><select id="elementsFilterMode"><option value="all">All elements</option><option value="timeline">In timeline</option><option value="not_timeline">Not in timeline</option></select><input id="elementsSearch" type="text" placeholder="Search elements" style="min-width:220px" /><button type="button" id="elementsTagFilterToggle" class="btnGhost">Filters</button><select id="elementsCreatorFilter" class="elementsWorksheetCreatorFilter"><option value="all">All creators</option></select><a id="elementsWorksheetToggle" class="btnGhost tab" data-view-link="elements" href="?view=elements&amp;worksheet=1" style="text-decoration:none">Element Worksheet</a></div></div><div id="elementsTagFilterPanel" class="elementsFilterPanel" style="display:none; margin-bottom:12px"><div class="hint" style="margin-bottom:8px">Filter by any combination of tags, witnesses, documents, exhibits, and sources.</div><div class="elementsFilterGrid"><div><div class="label">Tags / subtags</div><div id="elementsFilterTagTree"></div></div><div><div class="label">Witnesses</div><div id="elementsFilterWitnesses" class="elementsFilterChecklist"></div></div><div><div class="label">Documents</div><div id="elementsFilterDocuments" class="elementsFilterChecklist"></div></div><div><div class="label">Exhibits</div><div id="elementsFilterExhibits" class="elementsFilterChecklist"></div></div><div><div class="label">Source documents</div><div id="elementsFilterSourceDocuments" class="elementsFilterChecklist"></div></div><div><div class="label">Source people</div><div id="elementsFilterSourcePeople" class="elementsFilterChecklist"></div></div></div></div><div id="elementsWorksheetWrap" class="elementsWorksheetWrap"><div style="display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:10px"><div><h3 style="margin:0">Element Worksheet</h3><div class="hint">Edit base cells directly, use the Edit element button for the centered modal, and right-click “Element Worksheet” to open it in a new window.</div></div><div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><button type="button" id="elementsWorksheetAddRowBtn" class="btnPrimary">Add element/row</button><button type="button" id="elementsWorksheetCollapseAllTagsBtn" class="btnGhost">Collapse all columns</button><button type="button" id="elementsWorksheetExpandAllTagsBtn" class="btnGhost">Expand all columns</button></div></div><div id="elementsWorksheetScrollTop" class="elementsWorksheetScrollTop" style="display:none"><div id="elementsWorksheetScrollTopInner" class="elementsWorksheetScrollTopInner"></div></div><div class="elementsWorksheetShell" id="elementsWorksheetShell"><div id="elementsWorksheetTableHost"></div></div><div id="elementsWorksheetScrollDock" class="elementsWorksheetScrollDock"><div id="elementsWorksheetScrollDockInner" class="elementsWorksheetScrollDockInner"></div></div></div><div id="elementsPageRoot" class="elementsPage"><div class="elementsLibraryCard"><div style="display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap"><h2 style="margin:0">Element library</h2><span class="hint">Hover only the element name to quick-edit it.</span></div><div id="elementsList" class="elementsLibraryList"></div><div id="elementsEmpty" class="empty" style="display:none">No elements yet.</div></div><div class="elementsComposerWrap"><div class="card elementsComposer" style="box-shadow:none"><h2 style="margin-bottom:8px; text-align:center">Add element</h2><div class="label">Element name <span style="color:var(--danger)">*</span></div><input id="elementName" type="text" placeholder="e.g., September 2024 school email about anxiety" /><div class="label" style="margin-top:10px">Element date (optional)</div><input id="elementDate" type="text" placeholder="MM/DD/YYYY, 03/00/2024, or 00/00/2024" /><div class="label" style="margin-top:10px">Source</div><input id="elementSource" type="text" placeholder="e.g., School email, therapist notes, dad testimony" /><div class="label" style="margin-top:10px">Details</div><div class="elementToolbar"><button type="button" class="rtbtn" data-element-cmd="bold"><b>B</b></button><button type="button" class="rtbtn" data-element-cmd="underline"><u>U</u></button><button type="button" class="rtbtn" data-element-cmd="insertOrderedList">1. List</button><button type="button" class="rtbtn" data-element-cmd="insertUnorderedList">• List</button><button type="button" class="rtbtn" data-element-cmd="indent">Indent</button><button type="button" class="rtbtn" data-element-cmd="outdent">Outdent</button></div><div id="elementText" class="elementDetailsEditor elementRichText" contenteditable="true" data-placeholder="Facts, quotes, notes, arguments, impeachment points, etc."></div><label class="checkItem" style="margin-top:10px"><input id="elementIncludeInTimeline" type="checkbox" /> <span>Add to timeline now</span></label><div style="margin-top:10px; display:flex; gap:10px; flex-wrap:wrap; align-items:center; justify-content:center"><button id="elementsFromDocumentBtn" class="btnGhost" type="button">Elements from Document</button><button id="addElement" class="btnPrimary">Save element</button></div></div></div><div class="elementsWorkspace"><div class="elementsHoverSection" id="elementWitnessSection"><div class="elementsHoverHeader"><span>Witnesses</span><span class="elementsHoverSummary" id="elementWitnessSummary">Hover to choose</span></div><div class="elementsHoverBody"><input id="elementWitnessSearch" type="text" placeholder="Search witnesses / people" /><div id="elementWitnessList" class="elementsScrollList"></div><div class="hint">Choose from existing witnesses or click “Add new witness” on a person.</div></div></div><div class="elementsHoverSection" id="elementDocumentSection"><div class="elementsHoverHeader"><span>Documents</span><span class="elementsHoverSummary" id="elementDocumentSummary">Hover to choose</span></div><div class="elementsHoverBody"><input id="elementDocumentsSearch" type="text" placeholder="Search documents" /><div id="elementDocumentsList" class="elementsScrollList"></div></div></div><div class="elementsHoverSection" id="elementExhibitSection"><div class="elementsHoverHeader"><span>Exhibits</span><span class="elementsHoverSummary" id="elementExhibitSummary">Hover to choose</span></div><div class="elementsHoverBody"><input id="elementExhibitsSearch" type="text" placeholder="Search exhibits / docs" /><div id="elementExhibitList" class="elementsScrollList"></div><div class="hint">Pick an existing exhibit or click “Add as exhibit” on any document.</div></div></div><div class="elementsHoverSection" id="elementSourceSection"><div class="elementsHoverHeader"><span>Sources</span><span class="elementsHoverSummary" id="elementSourceSummary">Hover to choose</span></div><div class="elementsHoverBody"><div class="label">Source documents</div><input id="elementSourceDocumentsSearch" type="text" placeholder="Search source documents" /><div id="elementSourceDocumentsList" class="elementsScrollList"></div><div class="label" style="margin-top:10px">Source people</div><input id="elementSourcePeopleSearch" type="text" placeholder="Search source people" /><div id="elementSourcePeopleList" class="elementsScrollList"></div><div class="hint">Use this for where the element came from. If created from a document selection, that document is added here automatically.</div></div></div><div class="elementsHoverSection" id="elementTagSection"><div class="elementsHoverHeader"><span>Tags</span><span class="elementsHoverSummary" id="elementTagSummary">Hover to choose</span></div><div class="elementsHoverBody"><div class="elementsTagToolbar"><button type="button" id="elementTagsCollapseAllBtn" class="btnGhost">Collapse all</button><button type="button" id="elementTagsExpandAllBtn" class="btnGhost">Expand all</button></div><div id="elementCreateTagChoices" class="elementsTagTree"></div></div></div></div></div></div><div id="viewTimeline" class="card" style="display:none"><h2>Timeline</h2><div class="hint">Add events and map them by date and tag. Dated documents and dated outline headings also appear here. Events without dates can be dragged and dropped anywhere in the timeline display.</div><div class="timelineTopActionBar"><div class="timelineAddEventWrap" id="timelineAddEventWrap"><div class="timelineAddEventHover"><button id="timelineAddEventBtn" class="btnPrimary">+ Add event</button><button id="timelineAddElementBtn" class="btnGhost">+ Add element</button><button id="timelineAddTagBtn" class="btnGhost">Add tag</button><button id="timelineImportBtn" class="btnGhost">Import Excel</button></div><div id="timelineEventForm" class="timelineAddEventPanel"><div class="timelineInlineHeader"><h2 style="margin:0">Add timeline event</h2><div class="hint">Hover over Add event to open. After you save, this panel closes again.</div></div><div class="label">Event name <span style="color:var(--danger)">*</span></div><input id="timelineName" type="text" placeholder="e.g., Temporary orders hearing" /><div class="label">Event date</div><input id="timelineDate" type="text" placeholder="MM/DD/YYYY, 03/00/2024, or 00/00/2024" /><div class="label" style="margin-top:10px">Description</div><textarea id="timelineDesc" placeholder="What happened? Why does it matter?"></textarea><div class="label" style="margin-top:10px">Location</div><input id="timelineLocation" type="text" placeholder="e.g., DuPage County Courthouse" /><div class="label" style="margin-top:10px">Source</div><input id="timelineSource" type="text" placeholder="e.g., Trial notes, Excel import, Email from clerk" /><div class="label" style="margin-top:10px">Event image (optional)</div><input id="timelineImage" type="file" accept="image/*" /><div id="timelineImagePreview" class="timelineEventImagePreview"></div><div style="display:flex; justify-content:space-between; gap:10px; align-items:center; flex-wrap:wrap; margin-top:10px"><div class="label" style="margin:0">Tags</div><button id="timelineInlineAddTagBtn" type="button" class="btnGhost">+ New tag</button></div><div id="timelineTagChoices" class="checkGrid"></div><div style="display:flex; justify-content:space-between; gap:10px; align-items:center; flex-wrap:wrap; margin-top:10px"><div class="label" style="margin:0">Documents</div><button id="timelineToggleDocsBtn" type="button" class="btnGhost">Choose documents</button></div><div id="timelineDocChoicesWrap" style="display:none"><div id="timelineDocChoices" class="checkGrid"></div></div><div class="label" style="margin-top:10px">Witnesses</div><div id="timelineWitnessChoices" class="checkGrid"></div><div id="timelineWitnessTestimonyWrap" style="margin-top:10px"></div><div style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap"><button id="timelineSaveEvent" class="btnPrimary">Save event</button><button id="timelineCancelEvent" class="btnGhost">Cancel</button></div></div></div><div id="timelineImportBox" class="timelineImportBox"><div><div class="label">Import timeline events from Excel</div><div class="hint">Use the first five columns in this order: date, event title, description, location, source. A header row is allowed. Dates may be exact (03/14/2024) or approximate (03/00/2024 or 00/00/2024).</div></div><div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center"><input id="timelineImportFile" type="file" accept=".xlsx,.xls,.csv" /><button id="timelineImportRunBtn" type="button" class="btnPrimary">Import file</button></div></div><div id="timelineElementPicker" class="card" style="display:none; box-shadow:none; margin-top:12px"><div style="display:flex; justify-content:space-between; gap:10px; align-items:center; flex-wrap:wrap"><div><div class="label">Add existing element to timeline</div><div class="hint">Default view shows elements that are not already in the timeline.</div></div><div style="display:flex; gap:8px; flex-wrap:wrap"><select id="timelineElementFilterMode"><option value="not_timeline">Not yet in timeline</option><option value="timeline">Already in timeline</option><option value="all">All elements</option></select><input id="timelineElementSearch" type="text" placeholder="Search elements" /></div></div><div id="timelineElementPickerList" style="display:flex; flex-direction:column; gap:8px; margin-top:10px"></div></div><div class="hint" style="flex:1; min-width:280px">Undated events can be dropped between dated rows to help you place them where they make the most sense.</div></div><div class="card" style="box-shadow:none; margin-top:12px"><div style="display:flex; justify-content:space-between; gap:10px; align-items:center; flex-wrap:wrap"><h2 style="margin-bottom:8px">Timeline view</h2><div class="toolbar" style="margin:0"><span class="pill">Show columns</span><label class="checkItem" style="margin:0"><input id="timelineShowEventColumn" type="checkbox" checked /> <span>Event</span></label><label class="checkItem" style="margin:0"><input id="timelineShowDocumentColumn" type="checkbox" checked /> <span>Document</span></label><label class="checkItem" style="margin:0"><input id="timelineShowHeadlineColumn" type="checkbox" checked /> <span>Headline</span></label><div id="timelineTagFilterHost"></div></div></div><div class="hint" style="margin-top:8px">Use the Timeline tags filter to show tagged items or items with no tag.</div><div id="timelineEmpty" class="empty" style="display:none; margin-top:12px">No events, documents, or headings yet.</div><div id="timelineTableShell" class="timelineTableShell" style="margin-top:12px"><div id="timelineScrollTop" class="timelineScrollTop" style="display:none"><div id="timelineScrollTopInner" class="timelineScrollTopInner"></div></div><div id="timelineMatrixWrap" class="timelineTableWrap"></div></div><div id="timelineScrollDock" class="timelineScrollDock"><div id="timelineScrollDockInner" class="timelineScrollDockInner"></div></div></div></div>
+    <div id="viewElements" class="card" style="display:none"><div class="elementsHeaderBar"><div><h2 style="margin-bottom:8px">Elements</h2><div class="hint">Store small chunks of case information here, then reuse them in the timeline or under outline headings and witnesses.</div></div><div class="elementsHeaderControls"><select id="elementsFilterMode"><option value="all">All elements</option><option value="timeline">In timeline</option><option value="not_timeline">Not in timeline</option></select><input id="elementsSearch" type="text" placeholder="Search elements" style="min-width:220px" /><button type="button" id="elementsTagFilterToggle" class="btnGhost">Filters</button><select id="elementsCreatorFilter" class="elementsWorksheetCreatorFilter"><option value="all">All creators</option></select><a class="btnGhost docOpenLink" data-view-link="documenttable" href="?view=documenttable" style="text-decoration:none">Document Table</a><a id="elementsWorksheetToggle" class="btnGhost tab" data-view-link="elements" href="?view=elements&amp;worksheet=1" style="text-decoration:none">Element Worksheet</a></div></div><div id="elementsTagFilterPanel" class="elementsFilterPanel" style="display:none; margin-bottom:12px"><div class="hint" style="margin-bottom:8px">Filter by any combination of tags, witnesses, documents, exhibits, and sources.</div><div class="elementsFilterGrid"><div><div class="label">Tags / subtags</div><div id="elementsFilterTagTree"></div></div><div><div class="label">Witnesses</div><div id="elementsFilterWitnesses" class="elementsFilterChecklist"></div></div><div><div class="label">Documents</div><div id="elementsFilterDocuments" class="elementsFilterChecklist"></div></div><div><div class="label">Exhibits</div><div id="elementsFilterExhibits" class="elementsFilterChecklist"></div></div><div><div class="label">Source documents</div><div id="elementsFilterSourceDocuments" class="elementsFilterChecklist"></div></div><div><div class="label">Source people</div><div id="elementsFilterSourcePeople" class="elementsFilterChecklist"></div></div></div></div><div id="elementsWorksheetWrap" class="elementsWorksheetWrap"><div style="display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:10px"><div><h3 style="margin:0">Element Worksheet</h3><div class="hint">Edit base cells directly, use the Edit element button for the centered modal, and right-click “Element Worksheet” to open it in a new window.</div></div><div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><button type="button" id="elementsWorksheetAddRowBtn" class="btnPrimary">Add element/row</button><button type="button" id="elementsWorksheetCollapseAllTagsBtn" class="btnGhost">Collapse all columns</button><button type="button" id="elementsWorksheetExpandAllTagsBtn" class="btnGhost">Expand all columns</button></div></div><div id="elementsWorksheetScrollTop" class="elementsWorksheetScrollTop" style="display:none"><div id="elementsWorksheetScrollTopInner" class="elementsWorksheetScrollTopInner"></div></div><div class="elementsWorksheetShell" id="elementsWorksheetShell"><div id="elementsWorksheetTableHost"></div></div><div id="elementsWorksheetScrollDock" class="elementsWorksheetScrollDock"><div id="elementsWorksheetScrollDockInner" class="elementsWorksheetScrollDockInner"></div></div></div><div id="elementsPageRoot" class="elementsPage"><div class="elementsLibraryCard"><div style="display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap"><h2 style="margin:0">Element library</h2><span class="hint">Hover only the element name to quick-edit it.</span></div><div id="elementsList" class="elementsLibraryList"></div><div id="elementsEmpty" class="empty" style="display:none">No elements yet.</div></div><div class="elementsComposerWrap"><div class="card elementsComposer" style="box-shadow:none"><h2 style="margin-bottom:8px; text-align:center">Add element</h2><div class="label">Element name <span style="color:var(--danger)">*</span></div><input id="elementName" type="text" placeholder="e.g., September 2024 school email about anxiety" /><div class="label" style="margin-top:10px">Element date (optional)</div><input id="elementDate" type="text" placeholder="MM/DD/YYYY, 03/00/2024, or 00/00/2024" /><div class="label" style="margin-top:10px">Source</div><input id="elementSource" type="text" placeholder="e.g., School email, therapist notes, dad testimony" /><div class="label" style="margin-top:10px">Details</div><div class="elementToolbar"><button type="button" class="rtbtn" data-element-cmd="bold"><b>B</b></button><button type="button" class="rtbtn" data-element-cmd="underline"><u>U</u></button><button type="button" class="rtbtn" data-element-cmd="insertOrderedList">1. List</button><button type="button" class="rtbtn" data-element-cmd="insertUnorderedList">• List</button><button type="button" class="rtbtn" data-element-cmd="indent">Indent</button><button type="button" class="rtbtn" data-element-cmd="outdent">Outdent</button></div><div id="elementText" class="elementDetailsEditor elementRichText" contenteditable="true" data-placeholder="Facts, quotes, notes, arguments, impeachment points, etc."></div><label class="checkItem" style="margin-top:10px"><input id="elementIncludeInTimeline" type="checkbox" /> <span>Add to timeline now</span></label><div style="margin-top:10px; display:flex; gap:10px; flex-wrap:wrap; align-items:center; justify-content:center"><button id="elementsFromDocumentBtn" class="btnGhost" type="button">Elements from Document</button><button id="addElement" class="btnPrimary">Save element</button></div></div></div><div class="elementsWorkspace"><div class="elementsHoverSection" id="elementWitnessSection"><div class="elementsHoverHeader"><span>Witnesses</span><span class="elementsHoverSummary" id="elementWitnessSummary">Hover to choose</span></div><div class="elementsHoverBody"><input id="elementWitnessSearch" type="text" placeholder="Search witnesses / people" /><div id="elementWitnessList" class="elementsScrollList"></div><div class="hint">Choose from existing witnesses or click “Add new witness” on a person.</div></div></div><div class="elementsHoverSection" id="elementDocumentSection"><div class="elementsHoverHeader"><span>Documents</span><span class="elementsHoverSummary" id="elementDocumentSummary">Hover to choose</span></div><div class="elementsHoverBody"><input id="elementDocumentsSearch" type="text" placeholder="Search documents" /><div id="elementDocumentsList" class="elementsScrollList"></div></div></div><div class="elementsHoverSection" id="elementExhibitSection"><div class="elementsHoverHeader"><span>Exhibits</span><span class="elementsHoverSummary" id="elementExhibitSummary">Hover to choose</span></div><div class="elementsHoverBody"><input id="elementExhibitsSearch" type="text" placeholder="Search exhibits / docs" /><div id="elementExhibitList" class="elementsScrollList"></div><div class="hint">Pick an existing exhibit or click “Add as exhibit” on any document.</div></div></div><div class="elementsHoverSection" id="elementSourceSection"><div class="elementsHoverHeader"><span>Sources</span><span class="elementsHoverSummary" id="elementSourceSummary">Hover to choose</span></div><div class="elementsHoverBody"><div class="label">Source documents</div><input id="elementSourceDocumentsSearch" type="text" placeholder="Search source documents" /><div id="elementSourceDocumentsList" class="elementsScrollList"></div><div class="label" style="margin-top:10px">Source people</div><input id="elementSourcePeopleSearch" type="text" placeholder="Search source people" /><div id="elementSourcePeopleList" class="elementsScrollList"></div><div class="hint">Use this for where the element came from. If created from a document selection, that document is added here automatically.</div></div></div><div class="elementsHoverSection" id="elementTagSection"><div class="elementsHoverHeader"><span>Tags</span><span class="elementsHoverSummary" id="elementTagSummary">Hover to choose</span></div><div class="elementsHoverBody"><div class="elementsTagToolbar"><button type="button" id="elementTagsCollapseAllBtn" class="btnGhost">Collapse all</button><button type="button" id="elementTagsExpandAllBtn" class="btnGhost">Expand all</button></div><div id="elementCreateTagChoices" class="elementsTagTree"></div></div></div></div></div></div><div id="viewTimeline" class="card" style="display:none"><h2>Timeline</h2><div class="hint">Add events and map them by date and tag. Dated documents and dated outline headings also appear here. Events without dates can be dragged and dropped anywhere in the timeline display.</div><div class="timelineTopActionBar"><div class="timelineAddEventWrap" id="timelineAddEventWrap"><div class="timelineAddEventHover"><button id="timelineAddEventBtn" class="btnPrimary">+ Add event</button><button id="timelineAddElementBtn" class="btnGhost">+ Add element</button><button id="timelineAddTagBtn" class="btnGhost">Add tag</button><button id="timelineImportBtn" class="btnGhost">Import Excel</button></div><div id="timelineEventForm" class="timelineAddEventPanel"><div class="timelineInlineHeader"><h2 style="margin:0">Add timeline event</h2><div class="hint">Hover over Add event to open. After you save, this panel closes again.</div></div><div class="label">Event name <span style="color:var(--danger)">*</span></div><input id="timelineName" type="text" placeholder="e.g., Temporary orders hearing" /><div class="label">Event date</div><input id="timelineDate" type="text" placeholder="MM/DD/YYYY, 03/00/2024, or 00/00/2024" /><div class="label" style="margin-top:10px">Description</div><textarea id="timelineDesc" placeholder="What happened? Why does it matter?"></textarea><div class="label" style="margin-top:10px">Location</div><input id="timelineLocation" type="text" placeholder="e.g., DuPage County Courthouse" /><div class="label" style="margin-top:10px">Source</div><input id="timelineSource" type="text" placeholder="e.g., Trial notes, Excel import, Email from clerk" /><div class="label" style="margin-top:10px">Event image (optional)</div><input id="timelineImage" type="file" accept="image/*" /><div id="timelineImagePreview" class="timelineEventImagePreview"></div><div style="display:flex; justify-content:space-between; gap:10px; align-items:center; flex-wrap:wrap; margin-top:10px"><div class="label" style="margin:0">Tags</div><button id="timelineInlineAddTagBtn" type="button" class="btnGhost">+ New tag</button></div><div id="timelineTagChoices" class="checkGrid"></div><div style="display:flex; justify-content:space-between; gap:10px; align-items:center; flex-wrap:wrap; margin-top:10px"><div class="label" style="margin:0">Documents</div><button id="timelineToggleDocsBtn" type="button" class="btnGhost">Choose documents</button></div><div id="timelineDocChoicesWrap" style="display:none"><div id="timelineDocChoices" class="checkGrid"></div></div><div class="label" style="margin-top:10px">Witnesses</div><div id="timelineWitnessChoices" class="checkGrid"></div><div id="timelineWitnessTestimonyWrap" style="margin-top:10px"></div><div style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap"><button id="timelineSaveEvent" class="btnPrimary">Save event</button><button id="timelineCancelEvent" class="btnGhost">Cancel</button></div></div></div><div id="timelineImportBox" class="timelineImportBox"><div><div class="label">Import timeline events from Excel</div><div class="hint">Use the first five columns in this order: date, event title, description, location, source. A header row is allowed. Dates may be exact (03/14/2024) or approximate (03/00/2024 or 00/00/2024).</div></div><div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center"><input id="timelineImportFile" type="file" accept=".xlsx,.xls,.csv" /><button id="timelineImportRunBtn" type="button" class="btnPrimary">Import file</button></div></div><div id="timelineElementPicker" class="card" style="display:none; box-shadow:none; margin-top:12px"><div style="display:flex; justify-content:space-between; gap:10px; align-items:center; flex-wrap:wrap"><div><div class="label">Add existing element to timeline</div><div class="hint">Default view shows elements that are not already in the timeline.</div></div><div style="display:flex; gap:8px; flex-wrap:wrap"><select id="timelineElementFilterMode"><option value="not_timeline">Not yet in timeline</option><option value="timeline">Already in timeline</option><option value="all">All elements</option></select><input id="timelineElementSearch" type="text" placeholder="Search elements" /></div></div><div id="timelineElementPickerList" style="display:flex; flex-direction:column; gap:8px; margin-top:10px"></div></div><div class="hint" style="flex:1; min-width:280px">Undated events can be dropped between dated rows to help you place them where they make the most sense.</div></div><div class="card" style="box-shadow:none; margin-top:12px"><div style="display:flex; justify-content:space-between; gap:10px; align-items:center; flex-wrap:wrap"><h2 style="margin-bottom:8px">Timeline view</h2><div class="toolbar" style="margin:0"><span class="pill">Show columns</span><label class="checkItem" style="margin:0"><input id="timelineShowEventColumn" type="checkbox" checked /> <span>Event</span></label><label class="checkItem" style="margin:0"><input id="timelineShowDocumentColumn" type="checkbox" checked /> <span>Document</span></label><label class="checkItem" style="margin:0"><input id="timelineShowHeadlineColumn" type="checkbox" checked /> <span>Headline</span></label><div id="timelineTagFilterHost"></div></div></div><div class="hint" style="margin-top:8px">Use the Timeline tags filter to show tagged items or items with no tag.</div><div id="timelineEmpty" class="empty" style="display:none; margin-top:12px">No events, documents, or headings yet.</div><div id="timelineTableShell" class="timelineTableShell" style="margin-top:12px"><div id="timelineScrollTop" class="timelineScrollTop" style="display:none"><div id="timelineScrollTopInner" class="timelineScrollTopInner"></div></div><div id="timelineMatrixWrap" class="timelineTableWrap"></div></div><div id="timelineScrollDock" class="timelineScrollDock"><div id="timelineScrollDockInner" class="timelineScrollDockInner"></div></div></div></div>
     <div id="timelineImportReviewModal" class="structuredModal"><div class="structuredModalCard"><div style="display:flex; justify-content:space-between; gap:10px; align-items:center"><h3 style="margin:0">Review imported timeline events</h3><button type="button" id="timelineImportReviewClose" class="btnGhost">Close</button></div><div class="hint">Review each imported row before adding it to the timeline. You can fix dates, names, descriptions, locations, sources, tags, documents, and witnesses here.</div><div id="timelineImportReviewList" class="timelineImportReviewList"></div><div style="display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end"><button type="button" id="timelineImportReviewAddBlank" class="btnGhost">Add blank row</button><button type="button" id="timelineImportReviewConfirm" class="btnPrimary">Add reviewed events to timeline</button></div></div></div>
     <div id="timelineEventModal" class="structuredModal"><div class="structuredModalCard"><div style="display:flex; justify-content:space-between; gap:10px; align-items:center"><h3 id="timelineEventModalTitle" style="margin:0">Timeline event</h3><button type="button" id="timelineEventModalClose" class="btnGhost">Close</button></div><div class="timelineEventModalMeta"><div><div class="label">Date</div><div id="timelineEventModalDate" class="hint"></div></div><div><div class="label">Location</div><div id="timelineEventModalLocation" class="hint"></div></div><div><div class="label">Source</div><div id="timelineEventModalSource" class="hint"></div></div></div><div><div class="label">Tags</div><div id="timelineEventModalTags" class="hint"></div></div><div><div class="label">Description</div><div id="timelineEventModalDesc" class="hint"></div></div><div><div class="label">Image</div><div id="timelineEventModalImage" class="hint timelineModalImage"></div></div><div><div class="label">Documents</div><div id="timelineEventModalDocs" class="hint"></div></div><div><div class="label">Witnesses</div><div id="timelineEventModalWitnesses" class="hint"></div></div><div style="display:flex; gap:8px; flex-wrap:wrap"><button type="button" id="timelineEventModalEdit" class="btnPrimary">Edit</button><button type="button" id="timelineEventModalDelete" class="btnDanger">Delete</button></div></div></div>
     <div id="elementModal" class="structuredModal"><div class="structuredModalCard"><div style="display:flex; justify-content:space-between; gap:10px; align-items:center"><h3 id="elementModalTitle" style="margin:0">Element</h3><button type="button" id="elementModalClose" class="btnGhost">Close</button></div><div class="timelineEventModalMeta"><div><div class="label">Date</div><div id="elementModalDate" class="hint"></div></div><div><div class="label">Timeline</div><div id="elementModalTimeline" class="hint"></div></div></div><div><div class="label">Tags</div><div id="elementModalTags" class="hint"></div></div><div><div class="label">Linked witnesses</div><div id="elementModalPeople" class="hint"></div></div><div><div class="label">Linked documents</div><div id="elementModalDocs" class="hint"></div></div><div><div class="label">Details</div><div id="elementModalText" class="hint"></div></div><div style="display:flex; gap:8px; flex-wrap:wrap"><button type="button" id="elementModalOpenSource" class="btnGhost" style="display:none">Open source</button><button type="button" id="elementModalAddMoreFromDoc" class="btnGhost" style="display:none">Add more from this document</button><button type="button" id="elementModalAccept" class="btnGhost" style="display:none">Accept</button><button type="button" id="elementModalEdit" class="btnPrimary">Edit</button><button type="button" id="elementModalDelete" class="btnDanger">Delete</button></div></div></div>
@@ -1182,7 +1192,7 @@
 
     <div id="sourceDocModal" class="structuredModal"><div id="sourceDocModalCard" class="structuredModalCard sourceDocModalCard"><div style="display:flex; justify-content:space-between; gap:10px; align-items:center"><h3 id="sourceDocModalTitle" style="margin:0">Elements from Document</h3><div class="sourceDocHeaderActions"><button type="button" id="sourceDocModalMaxBtn" class="btnGhost">Maximize</button><button type="button" id="sourceDocModalClose" class="btnGhost">Close</button></div></div><div id="sourceDocPickerMode"><div class="sourceDocToolbar"><input id="sourceDocSearch" type="text" placeholder="Search documents" style="min-width:260px" /><div class="hint">Pick any uploaded document, then select text in the viewer or capture an image snippet.</div></div><div id="sourceDocPickerList" class="sourceDocPickerList"></div></div><div id="sourceDocStickyBar" class="sourceDocStickyBar"><div id="sourceDocStickyInfo" class="sourceDocStickyInfo">Highlight text in the document, then click Create element from selection or use image capture.</div><div class="sourceDocStickyActions"><button type="button" id="sourceDocBackToPicker" class="btnGhost" style="display:none">Choose another document</button><button type="button" id="sourceDocCreateElement" class="btnPrimary" disabled>Create element from selection</button><button type="button" id="sourceDocStartImageCapture" class="btnGhost" disabled>Create element from image capture</button><button type="button" id="sourceDocReturnToElement" class="btnGhost" style="display:none">Back to element</button></div></div><div id="sourceDocViewerShell" class="sourceDocViewerShell"><div id="sourceDocViewerInner" class="sourceDocViewerInner"><div class="sourceDocEmpty">Choose a document to open it here.</div></div></div><div style="display:flex; justify-content:space-between; gap:10px; align-items:center; flex-wrap:wrap"><div id="sourceDocSelectionInfo" class="hint">Highlight text in the document, then click Create element from selection or use image capture.</div></div></div></div>
     <div id="elementSourceModal" class="structuredModal"><div class="structuredModalCard sourceDocModalCard"><div style="display:flex; justify-content:space-between; gap:10px; align-items:center"><h3 id="elementSourceModalTitle" style="margin:0">Element source</h3><button type="button" id="elementSourceModalClose" class="btnGhost">Close</button></div><div id="elementSourceMeta" class="hint"></div><div id="elementSourceQuote" class="sourceQuotePreview" style="display:none"></div><div id="elementSourceViewerShell" class="sourceDocViewerShell"><div id="elementSourceViewerInner" class="sourceDocViewerInner"><div class="sourceDocEmpty">No source selected.</div></div></div></div></div>
-    <div id="documentTagModal" class="structuredModal"><div class="structuredModalCard"><div style="display:flex; justify-content:space-between; gap:10px; align-items:center"><h3 id="documentTagModalTitle" style="margin:0">Add tags to document</h3><button type="button" id="documentTagModalClose" class="btnGhost">Close</button></div><div class="hint">Select as many main tags, sub-tags, and sub-sub-tags as you want.</div><div id="documentTagModalSummary" class="docTagModalSummary"></div><div id="documentTagModalTree" class="docTagModalTree"></div><div style="display:flex; justify-content:flex-end; gap:8px; flex-wrap:wrap"><button type="button" id="documentTagModalCancel" class="btnGhost">Cancel</button><button type="button" id="documentTagModalSave" class="btnPrimary">Save tags</button></div></div></div>
+    <div id="documentTagModal" class="structuredModal"><div class="structuredModalCard"><div style="display:flex; justify-content:space-between; gap:10px; align-items:center"><h3 id="documentTagModalTitle" style="margin:0">Add tags to document</h3><button type="button" id="documentTagModalClose" class="btnGhost">Close</button></div><div class="hint">Select as many main tags, sub-tags, and sub-sub-tags as you want.</div><div style="display:flex; gap:8px; flex-wrap:wrap"><button type="button" id="documentTagModalCollapseAll" class="btnGhost">Collapse all</button><button type="button" id="documentTagModalExpandAll" class="btnGhost">Expand all</button></div><div id="documentTagModalSummary" class="docTagModalSummary"></div><div id="documentTagModalTree" class="docTagModalTree"></div><div style="display:flex; justify-content:flex-end; gap:8px; flex-wrap:wrap"><button type="button" id="documentTagModalCancel" class="btnGhost">Cancel</button><button type="button" id="documentTagModalSave" class="btnPrimary">Save tags</button></div></div></div>
     <div id="viewSettings" class="card" style="display:none"><div style="display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap"><h2 style="margin:0">Add Tag</h2><div style="display:flex;gap:8px;flex-wrap:wrap"><a class="btnGhost docOpenLink" data-view-link="tagindex" href="?view=tagindex">Tag Index</a></div></div><div class="hint">Create tags, sub-tags, and sub-sub-tags here. Everything is now saved in Supabase under the tags table, and the library below shows the full hierarchy.</div><div class="toolbar" style="margin-bottom:12px"><span class="pill" id="tagSelHint">Select a tag, then use these controls</span><button id="tagAddRootBtn" class="btnPrimary">+ Top-level tag</button><button id="tagAddSiblingBtn" class="btnGhost">+ Sibling</button><button id="tagAddChildBtn" class="btnGhost">+ Child</button><button id="tagRenameBtn" class="btnGhost">Rename</button><button id="tagDeleteBtn" class="btnDanger">Delete</button><button id="tagCollapseAllBtn" class="btnGhost">Collapse all</button><button id="tagExpandAllBtn" class="btnGhost">Expand all</button></div><div class="grid2"><div class="card" style="box-shadow:none"><h2 style="margin-bottom:8px">Create tag</h2><div class="label">Tag name</div><input id="tagName" type="text" placeholder="e.g., Financial, Parenting time, Credibility" /><div style="margin-top:10px; display:flex; gap:10px; align-items:center; flex-wrap:wrap"><button id="addTag" class="btnPrimary">Add tag</button><span class="pill">Names must be unique</span></div><div style="margin-top:18px; border-top:1px solid var(--border); padding-top:14px"><h2 style="margin-bottom:8px">Create child tag</h2><div class="label">Main tag</div><select id="subtagParent"></select><div class="label" style="margin-top:10px">Create under this sub-tag (optional)</div><select id="subtagParentSubtag"></select><div class="hint" style="margin-top:6px">Leave this as None to create a normal sub-tag. Choose a sub-tag here to create a sub-sub-tag under it.</div><div class="label" style="margin-top:10px">Child tag name</div><input id="subtagName" type="text" placeholder="e.g., Hearing, Motion, School, Medical" /><div class="label" style="margin-top:10px">Icon image (optional)</div><select id="subtagIconSelect"></select><div style="margin-top:10px; display:flex; gap:10px; align-items:center; flex-wrap:wrap"><button id="addSubtag" class="btnPrimary">Add child tag</button></div></div><div style="margin-top:18px; border-top:1px solid var(--border); padding-top:14px"><h2 style="margin-bottom:8px">Icon library</h2><div class="label">Upload new icon</div><input id="iconUploadFile" type="file" accept="image/*" /><div class="label" style="margin-top:10px">Icon name</div><input id="iconUploadName" type="text" placeholder="e.g., Court, School, Doctor" /><div style="margin-top:10px; display:flex; gap:10px; align-items:center; flex-wrap:wrap"><button id="addIconToLibrary" class="btnPrimary">Add icon</button></div><div id="iconLibraryList" style="display:flex; gap:10px; flex-wrap:wrap; margin-top:12px"></div></div></div><div class="card" style="box-shadow:none"><h2 style="margin-bottom:8px">Tag library</h2><div class="hint" style="margin-bottom:10px">Main tags, sub-tags, and sub-sub-tags are shown below in one hierarchy.</div><div id="tagList" style="display:flex; flex-direction:column; gap:10px"></div><div id="tagEmpty" class="empty" style="display:none">No tags yet.</div><div style="margin-top:18px"><h2 style="margin-bottom:8px">Child tag library</h2><div id="subtagList" style="display:flex; flex-direction:column; gap:10px"></div><div id="subtagEmpty" class="empty" style="display:none">No child tags yet.</div></div></div></div></div>
   </div>
   <div id="toast" class="toast"></div>
@@ -1194,7 +1204,7 @@
     const UI_STORAGE_KEY = 'murski_ui_prefs_v1';
     const LEGACY_STORAGE_KEY = 'murski_case_planner_v1';
     let state = { caseName: '', tags: [], people: [], documents: [], elements: [], outline: [], timelineEvents: [], subtags: [], iconLibrary: [] };
-    const ui = { selectedNodeId: null, selectedWitnessId: null, selectedDocId: null, selectedPersonId: null, selectedElementId: null, activeWitnessColumnId: null, expandedDocIds: {}, showDocDownloadList: false, showDocTagIndex: false, docTagFilterIds: [], docTagIndexExpandedIds: {}, docTagIndexShowUsedOnly: false, docTagNoTagsOnly: false, docTagHasTagsOnly: false, docExhibitFilter: 'all', outlineIndexFilterIds: [], outlineIndexExpandedIds: {}, outlineIndexShowUsedOnly: false, outlineIndexNoTagsOnly: false, outlineIndexHasTagsOnly: false, outlineIndexExhibitFilter: 'all', docSort: { field: 'file', dir: 'asc' }, docRepoSort: { field: 'date', dir: 'desc' }, docDownloadSelections: {}, docDownloadEligibilityFilter: 'all', docRepoEligibilityFilters: ['possible','not'], docRepoStatusFilters: ['exhibit','not_exhibit'], docRepoColWidths: { name: 340, date: 150, uploadDate: 160, timeline: 170, eligibility: 220, exhibitStatus: 190, file: 90 }, outlineCompact: false, outlineStructureView: false, outlinePaneWidth: 720, timelineSelectedId: null, timelineEditingId: null, timelineShowEventColumn: true, timelineShowDocumentColumn: true, timelineShowHeadlineColumn: true, timelineDocPickerOpen: false, timelineColumnOrder: ['date','event','document','headline'], timelineDraggingUndatedId: null, timelineFilterTagIds: [], timelineFilterTagOpen: false, elementsFilterMode: 'all', elementsSearch: '', currentView: INITIAL_VIEW, outlineFilterTagIds: [], outlineFilterWitnessIds: [], outlineFilterTagOpen: false, outlineFilterWitnessOpen: false, outlineIndexTagIds: [], outlineIndexWitnessIds: [], outlineIndexTagOpen: false, outlineIndexWitnessOpen: false, structuredOutlineWitnessFilterIds: [], structuredHeadingTagIds: [], structuredHeadingWitnessIds: [], structuredHeadingTagOpen: false, structuredHeadingWitnessOpen: false, structuredTraySearch: '', structuredTrayAssignmentFilter: 'all', structuredTrayPersonFilterId: 'any', structuredTrayTagFilterIds: [], structuredDocEditorId: null, structuredDragging: null, sourceDocSearch: '', sourceDocSelectedId: null, sourceDocSelection: null, sourceDocContext: 'create', sourceDocOpenFromElementId: null, sourceDocMaximized: false, sourceDocImageCapture: null, sourceDocCapturePointer: null, sourceDocScrollByDocumentId: {}, sourceDocAnchorByDocumentId: {}, elementsFilterTagIds: [], elementsFilterTagExcludeIds: [], elementsFilterTagNoneSelected: false, elementsFilterTagExcludeNoneSelected: true, elementsFilterWitnessIds: [], elementsFilterWitnessExcludeIds: [], elementsFilterWitnessNoneSelected: false, elementsFilterWitnessExcludeNoneSelected: true, elementsFilterDocumentIds: [], elementsFilterDocumentExcludeIds: [], elementsFilterDocumentNoneSelected: false, elementsFilterDocumentExcludeNoneSelected: true, elementsFilterExhibitIds: [], elementsFilterExhibitExcludeIds: [], elementsFilterExhibitNoneSelected: false, elementsFilterExhibitExcludeNoneSelected: true, elementsFilterSourceDocumentIds: [], elementsFilterSourceDocumentExcludeIds: [], elementsFilterSourceDocumentNoneSelected: false, elementsFilterSourceDocumentExcludeNoneSelected: true, elementsFilterSourcePersonIds: [], elementsFilterSourcePersonExcludeIds: [], elementsFilterSourcePersonNoneSelected: false, elementsFilterSourcePersonExcludeNoneSelected: true, elementsFilterPanelOpen: false, elementsCreatorFilter: 'all', elementsWorksheetOpen: false, elementsWorksheetPinnedTopIds: [], elementsWorksheetSort: { key: 'name', dir: 'asc' }, elementsWorksheetCollapsedTags: {}, elementsWorksheetCollapsedChildren: {}, newDocumentTagLinks: [], selectedTagNodeId: null, collapsedTagNodes: {}, collapsedElementTagNodes: {} };
+    const ui = { selectedNodeId: null, selectedWitnessId: null, selectedDocId: null, selectedPersonId: null, selectedElementId: null, activeWitnessColumnId: null, expandedDocIds: {}, showDocDownloadList: false, showDocTagIndex: false, docTagFilterIds: [], docTagIndexExpandedIds: {}, docTagIndexShowUsedOnly: false, docTagNoTagsOnly: false, docTagHasTagsOnly: false, docExhibitFilter: 'all', outlineIndexFilterIds: [], outlineIndexExpandedIds: {}, outlineIndexShowUsedOnly: false, outlineIndexNoTagsOnly: false, outlineIndexHasTagsOnly: false, outlineIndexExhibitFilter: 'all', docSort: { field: 'file', dir: 'asc' }, docRepoSort: { field: 'date', dir: 'desc' }, docDownloadSelections: {}, docDownloadEligibilityFilter: 'all', docRepoEligibilityFilters: ['possible','not'], docRepoStatusFilters: ['exhibit','not_exhibit'], docRepoColWidths: { name: 340, date: 150, uploadDate: 160, timeline: 170, eligibility: 220, exhibitStatus: 190, file: 90 }, outlineCompact: false, outlineStructureView: false, outlinePaneWidth: 720, timelineSelectedId: null, timelineEditingId: null, timelineShowEventColumn: true, timelineShowDocumentColumn: true, timelineShowHeadlineColumn: true, timelineDocPickerOpen: false, timelineColumnOrder: ['date','event','document','headline'], timelineDraggingUndatedId: null, timelineFilterTagIds: [], timelineFilterTagOpen: false, elementsFilterMode: 'all', elementsSearch: '', currentView: INITIAL_VIEW, outlineFilterTagIds: [], outlineFilterWitnessIds: [], outlineFilterTagOpen: false, outlineFilterWitnessOpen: false, outlineIndexTagIds: [], outlineIndexWitnessIds: [], outlineIndexTagOpen: false, outlineIndexWitnessOpen: false, structuredOutlineWitnessFilterIds: [], structuredHeadingTagIds: [], structuredHeadingWitnessIds: [], structuredHeadingTagOpen: false, structuredHeadingWitnessOpen: false, structuredTraySearch: '', structuredTrayAssignmentFilter: 'all', structuredTrayPersonFilterId: 'any', structuredTrayTagFilterIds: [], structuredDocEditorId: null, structuredDragging: null, sourceDocSearch: '', sourceDocSelectedId: null, sourceDocSelection: null, sourceDocContext: 'create', sourceDocOpenFromElementId: null, sourceDocMaximized: false, sourceDocImageCapture: null, sourceDocCapturePointer: null, sourceDocScrollByDocumentId: {}, sourceDocAnchorByDocumentId: {}, elementsFilterTagIds: [], elementsFilterTagExcludeIds: [], elementsFilterTagNoneSelected: false, elementsFilterTagExcludeNoneSelected: true, elementsFilterWitnessIds: [], elementsFilterWitnessExcludeIds: [], elementsFilterWitnessNoneSelected: false, elementsFilterWitnessExcludeNoneSelected: true, elementsFilterDocumentIds: [], elementsFilterDocumentExcludeIds: [], elementsFilterDocumentNoneSelected: false, elementsFilterDocumentExcludeNoneSelected: true, elementsFilterExhibitIds: [], elementsFilterExhibitExcludeIds: [], elementsFilterExhibitNoneSelected: false, elementsFilterExhibitExcludeNoneSelected: true, elementsFilterSourceDocumentIds: [], elementsFilterSourceDocumentExcludeIds: [], elementsFilterSourceDocumentNoneSelected: false, elementsFilterSourceDocumentExcludeNoneSelected: true, elementsFilterSourcePersonIds: [], elementsFilterSourcePersonExcludeIds: [], elementsFilterSourcePersonNoneSelected: false, elementsFilterSourcePersonExcludeNoneSelected: true, elementsFilterPanelOpen: false, elementsCreatorFilter: 'all', elementsWorksheetOpen: false, elementsWorksheetPinnedTopIds: [], elementsWorksheetSort: { key: 'name', dir: 'asc' }, elementsWorksheetCollapsedTags: {}, elementsWorksheetCollapsedChildren: {}, newDocumentTagLinks: [], bulkDocumentDrafts: [], bulkDocumentEditIndex: -1, bulkDocumentSelectedIds: [], bulkDocumentViewerId: '', bulkDocumentCancelRequested: false, bulkDocumentSaving: false, bulkDocumentStatus: '', selectedTagNodeId: null, collapsedTagNodes: {}, collapsedElementTagNodes: {}, documentTableSearch: '', documentTableFilterPanelOpen: false, documentTableTagIds: [], documentTableTagExcludeIds: [], documentTableTagNoneSelected: false, documentTableTagExcludeNoneSelected: true, documentTableExhibitIds: [], documentTableExhibitExcludeIds: [], documentTableExhibitNoneSelected: false, documentTableExhibitExcludeNoneSelected: true, documentTableTimelineIds: [], documentTableTimelineExcludeIds: [], documentTableTimelineNoneSelected: false, documentTableTimelineExcludeNoneSelected: true, documentTableFileIds: [], documentTableFileExcludeIds: [], documentTableFileNoneSelected: false, documentTableFileExcludeNoneSelected: true, documentTableSort: { key: 'name', dir: 'asc' }, docRepoTagIds: [], docRepoTagExcludeIds: [], docRepoTagNoneSelected: false, docRepoTagExcludeNoneSelected: true, docRepoCollapsedTagNodes: {}, documentTableCollapsedTagNodes: {} };
     const structuredUi = { headingFilterOpen: false, visibleHeadingIds: [], headingFilterInitialized: false, witnessColWidths: {}, resizingWitnessId: null, resizeStartX: 0, resizeStartWidth: 220 };
     const HEADING_EXHIBIT_KEY = '__heading__';
     const $ = (id) => document.getElementById(id);
@@ -1210,6 +1220,8 @@
     function storeSourceDocAnchor(documentId, pageNumber, excerpt=''){ if(!documentId) return; ui.sourceDocAnchorByDocumentId[documentId] = { pageNumber: pageNumber || null, excerpt: String(excerpt || '').trim() }; }
     function restoreSourceDocViewState(docId){ const shell = $('sourceDocViewerShell'); if(!shell || !docId) return; const savedTop = Number(ui.sourceDocScrollByDocumentId && ui.sourceDocScrollByDocumentId[docId]); const anchor = ui.sourceDocAnchorByDocumentId && ui.sourceDocAnchorByDocumentId[docId] ? ui.sourceDocAnchorByDocumentId[docId] : null; const apply = ()=>{ let restored = false; if(anchor && (anchor.pageNumber || anchor.excerpt)){ const pages = Array.from(document.querySelectorAll('#sourceDocViewerInner .sourceDocPage')); let targetPage = null; if(anchor.pageNumber != null){ targetPage = pages.find(page => String(page.getAttribute('data-page-number') || '') === String(anchor.pageNumber || '')) || null; } if(!targetPage && anchor.excerpt){ targetPage = pages.find(page => (page.textContent || '').includes(anchor.excerpt)) || null; } if(targetPage){ targetPage.classList.add('activeSourcePage'); targetPage.scrollIntoView({ block:'center' }); restored = true; } } if(Number.isFinite(savedTop) && savedTop > 0){ shell.scrollTop = savedTop; restored = true; } if(!restored) shell.scrollTop = 0; }; requestAnimationFrame(()=> requestAnimationFrame(apply)); }
     function uid(){ return Math.random().toString(16).slice(2) + Date.now().toString(16); }
+    const BULK_UPLOAD_MAX_FILE_SIZE = 50 * 1024 * 1024;
+    function formatFileSize(bytes){ const n = Number(bytes || 0); if(!n) return '0 B'; const units = ['B','KB','MB','GB']; let value = n; let unitIndex = 0; while(value >= 1024 && unitIndex < units.length - 1){ value /= 1024; unitIndex += 1; } return `${value >= 10 || unitIndex === 0 ? Math.round(value) : value.toFixed(1)} ${units[unitIndex]}`; }
     function toast(msg){ const el = $('toast'); el.textContent = msg; el.classList.add('show'); clearTimeout(toast._t); toast._t = setTimeout(()=> el.classList.remove('show'), 2200); }
     function applyOutlinePaneWidth(){
       const matrix = $('matrix');
@@ -1259,6 +1271,12 @@
         docRepoSort: ui.docRepoSort || { field: 'date', dir: 'desc' },
         elementsFilterMode: ui.elementsFilterMode || 'all',
         elementsWorksheetOpen: !!ui.elementsWorksheetOpen,
+        docTagLinksLocal: Array.isArray(state.documents) ? Object.fromEntries(state.documents.filter(doc => Array.isArray(doc.tagLinks) && doc.tagLinks.length).map(doc => [doc.id, doc.tagLinks])) : {},
+        localAssociations: {
+          documents: Array.isArray(state.documents) ? Object.fromEntries(state.documents.filter(doc => doc && doc.id).map(doc => [doc.id, { tags: Array.isArray(doc.tags) ? doc.tags : [], tagLinks: Array.isArray(doc.tagLinks) ? doc.tagLinks : [] }])) : {},
+          outline: Array.isArray(state.outline) ? Object.fromEntries(state.outline.filter(row => row && row.id).map(row => [row.id, { tags: Array.isArray(row.tags) ? row.tags : [], witnessIds: Array.isArray(row.witnessIds) ? row.witnessIds : [], elementIds: Array.isArray(row.elementIds) ? row.elementIds : [], witnessData: row && row.witnessData && typeof row.witnessData === 'object' ? cloneJson(row.witnessData, {}) : {} }])) : {},
+          elements: Array.isArray(state.elements) ? Object.fromEntries(state.elements.filter(el => el && el.id).map(el => [el.id, { tags: Array.isArray(el.tags) ? el.tags : [], tagLinks: Array.isArray(el.tagLinks) ? el.tagLinks : [], witnessIds: Array.isArray(el.witnessIds) ? el.witnessIds : [], documentIds: Array.isArray(el.documentIds) ? el.documentIds : [], exhibitDocIds: Array.isArray(el.exhibitDocIds) ? el.exhibitDocIds : [], sourceRefs: Array.isArray(el.sourceRefs) ? el.sourceRefs : [] }])) : {}
+        },
         localOutlineCache: Array.isArray(state.outline) ? state.outline.map(row => ({
           id: row.id,
           collapsed: !!row.collapsed,
@@ -1278,6 +1296,8 @@
       if(snapshot.docRepoSort && typeof snapshot.docRepoSort === 'object') ui.docRepoSort = snapshot.docRepoSort;
       if(typeof snapshot.elementsFilterMode === 'string') ui.elementsFilterMode = snapshot.elementsFilterMode;
       ui.elementsWorksheetOpen = !!snapshot.elementsWorksheetOpen || INITIAL_WORKSHEET_OPEN;
+      const docTagLinksLocal = snapshot.docTagLinksLocal && typeof snapshot.docTagLinksLocal === 'object' ? snapshot.docTagLinksLocal : {};
+      state.documents = (state.documents || []).map(doc => ({ ...doc, tagLinks: Array.isArray(docTagLinksLocal[doc.id]) ? docTagLinksLocal[doc.id] : doc.tagLinks }));
       const outlineLocal = new Map((Array.isArray(snapshot.localOutlineCache) ? snapshot.localOutlineCache : []).map(item => [item.id, item]));
       state.outline = (state.outline || []).map(row => {
         const local = outlineLocal.get(row.id);
@@ -1297,6 +1317,87 @@
         });
         return row;
       });
+    }
+
+    function mergeAssociationArrays(primary, fallback){
+      const first = Array.isArray(primary) ? primary.filter(Boolean) : [];
+      const second = Array.isArray(fallback) ? fallback.filter(Boolean) : [];
+      return Array.from(new Set(first.concat(second)));
+    }
+    function getLegacyAssociationSnapshot(){
+      const parseSnapshot = (raw, label)=>{
+        try{
+          if(!raw) return null;
+          const parsed = JSON.parse(raw);
+          if(!parsed || typeof parsed !== 'object') return null;
+          const hasUiAssociations = parsed.localAssociations && typeof parsed.localAssociations === 'object';
+          const hasStateArrays = Array.isArray(parsed.documents) || Array.isArray(parsed.outline) || Array.isArray(parsed.elements);
+          if(!hasUiAssociations && !hasStateArrays) return null;
+          return parsed;
+        }catch(e){
+          console.warn(`Could not read ${label}:`, e);
+          return null;
+        }
+      };
+      return parseSnapshot(localStorage.getItem(UI_STORAGE_KEY), 'ui local case state') || parseSnapshot(localStorage.getItem(LEGACY_STORAGE_KEY), 'legacy local case state');
+    }
+    function mergeAssociationSnapshotIntoState(snapshot){
+      if(!snapshot || typeof snapshot !== 'object') return;
+      const localAssociations = snapshot.localAssociations && typeof snapshot.localAssociations === 'object' ? snapshot.localAssociations : {};
+      const legacyDocs = Array.isArray(snapshot.documents) ? snapshot.documents : [];
+      const legacyOutline = Array.isArray(snapshot.outline) ? snapshot.outline : [];
+      const legacyElements = Array.isArray(snapshot.elements) ? snapshot.elements : [];
+      const docAssoc = new Map();
+      legacyDocs.forEach(doc => { if(doc && doc.id) docAssoc.set(doc.id, { tags: Array.isArray(doc.tags) ? doc.tags : [], tagLinks: Array.isArray(doc.tagLinks) ? doc.tagLinks : [] }); });
+      if(localAssociations.documents && typeof localAssociations.documents === 'object') Object.entries(localAssociations.documents).forEach(([id, value]) => { if(id) docAssoc.set(id, value || {}); });
+      state.documents = (state.documents || []).map(doc => {
+        const extra = docAssoc.get(doc.id) || {};
+        const nextTagLinks = mergeAssociationArrays(doc.tagLinks, extra.tagLinks).map(link => typeof link === 'string' ? { tagId: link, subtagId: '' } : { tagId: link.tagId || '', subtagId: link.subtagId || '' }).filter(link => link.tagId);
+        const nextTags = mergeAssociationArrays(doc.tags, extra.tags).concat(nextTagLinks.map(link => link.tagId));
+        return { ...doc, tagLinks: nextTagLinks, tags: Array.from(new Set(nextTags.filter(Boolean))) };
+      });
+      const outlineAssoc = new Map();
+      legacyOutline.forEach(row => { if(row && row.id) outlineAssoc.set(row.id, row); });
+      if(localAssociations.outline && typeof localAssociations.outline === 'object') Object.entries(localAssociations.outline).forEach(([id, value]) => { if(id) outlineAssoc.set(id, { ...(outlineAssoc.get(id) || {}), ...(value || {}) }); });
+      state.outline = (state.outline || []).map(row => {
+        const extra = outlineAssoc.get(row.id) || {};
+        const nextWitnessData = { ...(row.witnessData && typeof row.witnessData === 'object' ? row.witnessData : {}) };
+        const extraWitnessData = extra.witnessData && typeof extra.witnessData === 'object' ? extra.witnessData : {};
+        Object.entries(extraWitnessData).forEach(([wid, cell]) => {
+          const currentCell = nextWitnessData[wid] && typeof nextWitnessData[wid] === 'object' ? nextWitnessData[wid] : {};
+          nextWitnessData[wid] = {
+            ...currentCell,
+            ...cell,
+            exhibits: mergeAssociationArrays(currentCell.exhibits, cell && cell.exhibits),
+            elementIds: mergeAssociationArrays(currentCell.elementIds, cell && cell.elementIds)
+          };
+        });
+        return {
+          ...row,
+          tags: mergeAssociationArrays(row.tags, extra.tags),
+          witnessIds: mergeAssociationArrays(row.witnessIds, extra.witnessIds),
+          elementIds: mergeAssociationArrays(row.elementIds, extra.elementIds),
+          witnessData: nextWitnessData
+        };
+      });
+      const elementAssoc = new Map();
+      legacyElements.forEach(el => { if(el && el.id) elementAssoc.set(el.id, el); });
+      if(localAssociations.elements && typeof localAssociations.elements === 'object') Object.entries(localAssociations.elements).forEach(([id, value]) => { if(id) elementAssoc.set(id, { ...(elementAssoc.get(id) || {}), ...(value || {}) }); });
+      state.elements = (state.elements || []).map(el => {
+        const extra = elementAssoc.get(el.id) || {};
+        const nextTagLinks = mergeAssociationArrays(el.tagLinks, extra.tagLinks).map(link => typeof link === 'string' ? { tagId: link, subtagId: '' } : { tagId: link.tagId || '', subtagId: link.subtagId || '' }).filter(link => link.tagId);
+        const nextTags = mergeAssociationArrays(el.tags, extra.tags).concat(nextTagLinks.map(link => link.tagId));
+        return {
+          ...el,
+          tagLinks: nextTagLinks,
+          tags: Array.from(new Set(nextTags.filter(Boolean))),
+          witnessIds: mergeAssociationArrays(el.witnessIds, extra.witnessIds),
+          documentIds: mergeAssociationArrays(el.documentIds, extra.documentIds),
+          exhibitDocIds: mergeAssociationArrays(el.exhibitDocIds, extra.exhibitDocIds),
+          sourceRefs: mergeAssociationArrays(el.sourceRefs, extra.sourceRefs)
+        };
+      });
+      state.elements.forEach(syncElementDerivedSourceFields);
     }
     function safeSave(){
       try{
@@ -1356,8 +1457,11 @@
           console.warn('Failed to parse saved local UI cache', e);
         }
       }
+      const legacySnapshot = getLegacyAssociationSnapshot();
+      if(legacySnapshot) mergeAssociationSnapshotIntoState(legacySnapshot);
       if(INITIAL_WORKSHEET_OPEN){ ui.currentView = 'elements'; ui.elementsWorksheetOpen = true; }
       $('caseName').value = state.caseName || '';
+      if($('documentTableSearch')) $('documentTableSearch').value = ui.documentTableSearch || '';
       applyCaseRoleVisibility();
     }
     function getCurrentUserId(){ return String(getActiveSessionUser?.()?.id || ''); }
@@ -1418,9 +1522,9 @@
     var activeOutlineEdit = null;
     function syncPeopleFromSupabase(){ if (!Array.isArray(window.loadedPeople)) return; const previousById = new Map((state.people || []).map(p => [p.id, p])); state.people = window.loadedPeople.map((p) => { const prev = previousById.get(p.id); return { id: p.id, name: p.name || '', description: p.description || '', tags: prev?.tags || [] }; }); safeSave(); renderElements(); }
     window.syncPeopleFromSupabase = syncPeopleFromSupabase;
-    function syncOutlineFromSupabase(){ if (!Array.isArray(window.loadedRows)) return; const previousById = new Map((state.outline || []).map(row => [row.id, row])); state.outline = window.loadedRows.map((r) => { const prev = previousById.get(r.id); const row = { id: r.id, parentId: r.parent_row_id, order: Number(r.sort_order) || 0, title: r.heading || '', description: r.description || '', rowDate: r.row_date || prev?.rowDate || '', tags: prev?.tags || [], collapsed: prev?.collapsed || false, detailsOpen: prev?.detailsOpen || false, witnessIds: prev?.witnessIds || [], elementIds: prev?.elementIds || [], witnessData: prev?.witnessData || {} }; if (activeOutlineEdit && activeOutlineEdit.nodeId === r.id && prev) { if (activeOutlineEdit.field === 'title') row.title = prev.title || ''; if (activeOutlineEdit.field === 'description') row.description = prev.description || ''; } return row; }); safeSave(); }
+    function syncOutlineFromSupabase(){ if (!Array.isArray(window.loadedRows)) return; const previousById = new Map((state.outline || []).map(row => [row.id, row])); state.outline = window.loadedRows.map((r) => { const prev = previousById.get(r.id); const row = { id: r.id, parentId: r.parent_row_id, order: Number(r.sort_order) || 0, title: r.heading || '', description: r.description || '', rowDate: r.row_date || prev?.rowDate || '', tags: prev?.tags || [], collapsed: prev?.collapsed || false, detailsOpen: prev?.detailsOpen || false, witnessIds: prev?.witnessIds || [], elementIds: prev?.elementIds || [], witnessData: prev?.witnessData || {} }; if (activeOutlineEdit && activeOutlineEdit.nodeId === r.id && prev) { if (activeOutlineEdit.field === 'title') row.title = prev.title || ''; if (activeOutlineEdit.field === 'description') row.description = prev.description || ''; } return row; }); mergeAssociationSnapshotIntoState(getLegacyAssociationSnapshot()); safeSave(); }
     window.syncOutlineFromSupabase = syncOutlineFromSupabase;
-    function syncDocumentsFromSupabase(){ if (!Array.isArray(window.loadedDocuments)) return; const previousById = new Map((state.documents || []).map(doc => [doc.id, doc])); state.documents = window.loadedDocuments.map((d) => { const prev = previousById.get(d.id); const filePath = d.file_path || d.filePath || d.path || prev?.filePath || prev?.file_path || ''; const originalFileName = d.original_file_name || d.originalFileName || d.filename || d.file_name || prev?.originalFileName || prev?.filename || ''; return { id: d.id, name: d.name || '', date: d.doc_date || d.date || '', description: d.description || '', tags: prev?.tags || [], tagLinks: Array.isArray(prev?.tagLinks) ? prev.tagLinks : [], filename: originalFileName || prev?.filename || '', originalFileName, filePath, mimeType: d.mime_type || d.mimeType || prev?.mimeType || '', fileSize: Number(d.file_size || d.fileSize || prev?.fileSize || 0) || 0, hasFile: !!(filePath || d.has_file || d.hasFile || prev?.hasFile), dataUrl: prev?.dataUrl || '', exhibitLabel: prev?.exhibitLabel || '', createdAt: d.created_at || d.createdAt || prev?.createdAt || '', exhibitEligibility: prev?.exhibitEligibility === 'not' ? 'not' : 'possible', includeInTimeline: prev?.includeInTimeline !== false }; }); safeSave(); }
+    function syncDocumentsFromSupabase(){ if (!Array.isArray(window.loadedDocuments)) return; const previousById = new Map((state.documents || []).map(doc => [doc.id, doc])); state.documents = window.loadedDocuments.map((d) => { const prev = previousById.get(d.id); const filePath = d.file_path || d.filePath || d.path || prev?.filePath || prev?.file_path || ''; const originalFileName = d.original_file_name || d.originalFileName || d.filename || d.file_name || prev?.originalFileName || prev?.filename || ''; return { id: d.id, name: d.name || '', date: d.doc_date || d.date || '', description: d.description || '', tags: prev?.tags || [], tagLinks: Array.isArray(prev?.tagLinks) ? prev.tagLinks : [], filename: originalFileName || prev?.filename || '', originalFileName, filePath, mimeType: d.mime_type || d.mimeType || prev?.mimeType || '', fileSize: Number(d.file_size || d.fileSize || prev?.fileSize || 0) || 0, hasFile: !!(filePath || d.has_file || d.hasFile || prev?.hasFile), dataUrl: prev?.dataUrl || '', exhibitLabel: prev?.exhibitLabel || '', createdAt: d.created_at || d.createdAt || prev?.createdAt || '', exhibitEligibility: prev?.exhibitEligibility === 'not' ? 'not' : 'possible', includeInTimeline: prev?.includeInTimeline !== false }; }); mergeAssociationSnapshotIntoState(getLegacyAssociationSnapshot()); safeSave(); }
     window.syncDocumentsFromSupabase = syncDocumentsFromSupabase;
     function syncTagsFromSupabase(){
       if (!Array.isArray(window.loadedTags)) return;
@@ -1479,16 +1583,17 @@
         if (!personMap.has(item.person_id)) personMap.set(item.person_id, []);
         personMap.get(item.person_id).push(item.tag_id);
       }
-      state.outline = (state.outline || []).map((n) => ({ ...n, tags: Array.from(new Set(rowMap.get(n.id) || [])) }));
-      state.documents = (state.documents || []).map((d) => { const nextTags = Array.from(new Set(docMap.get(d.id) || [])); const keptLinks = Array.isArray(d.tagLinks) ? d.tagLinks.filter(link => nextTags.includes(link.tagId)) : []; return { ...d, tags: nextTags, tagLinks: keptLinks.length ? keptLinks : nextTags.map(tagId => ({ tagId, subtagId: '' })) }; });
-      state.people = (state.people || []).map((p) => ({ ...p, tags: Array.from(new Set(personMap.get(p.id) || [])) }));
+      state.outline = (state.outline || []).map((n) => ({ ...n, tags: Array.from(new Set((rowMap.get(n.id) || []).concat(Array.isArray(n.tags) ? n.tags : []))) }));
+      state.documents = (state.documents || []).map((d) => { const nextTags = Array.from(new Set((docMap.get(d.id) || []).concat(Array.isArray(d.tags) ? d.tags : []))); const keptLinks = Array.isArray(d.tagLinks) ? d.tagLinks.filter(link => nextTags.includes(link.tagId)) : []; return { ...d, tags: nextTags, tagLinks: keptLinks.length ? keptLinks : nextTags.map(tagId => ({ tagId, subtagId: '' })) }; });
+      state.people = (state.people || []).map((p) => ({ ...p, tags: Array.from(new Set((personMap.get(p.id) || []).concat(Array.isArray(p.tags) ? p.tags : []))) }));
+      mergeAssociationSnapshotIntoState(getLegacyAssociationSnapshot());
       safeSave();
     }
     window.syncTagAssignmentsFromSupabase = syncTagAssignmentsFromSupabase;
     function syncWitnessCellsFromSupabase(){ if (!Array.isArray(window.loadedWitnessCells)) return; const cellsByRow = new Map(); for (const cell of window.loadedWitnessCells) { if (!cell || !cell.row_id || !cell.person_id) continue; if (!cellsByRow.has(cell.row_id)) cellsByRow.set(cell.row_id, []); cellsByRow.get(cell.row_id).push(cell); } state.outline = (state.outline || []).map((node) => { const rowCells = cellsByRow.get(node.id) || []; const nextWitnessData = {}; const nextWitnessIds = []; for (const cell of rowCells) { nextWitnessIds.push(cell.person_id); const cellKey = testimonyCellKey(cell.row_id, cell.person_id); const localCell = node.witnessData && node.witnessData[cell.person_id] ? node.witnessData[cell.person_id] : null; const testimonyHtml = activeTestimonyEditKey === cellKey && localCell ? (localCell.testimonyHtml || '') : (cell.testimony_html || ''); nextWitnessData[cell.person_id] = { exhibits: Array.isArray(cell.exhibits) ? cell.exhibits : [], testimonyHtml, testimony: testimonyHtml.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim() }; } const localHeadingCell = node.witnessData && node.witnessData[HEADING_EXHIBIT_KEY] ? node.witnessData[HEADING_EXHIBIT_KEY] : null; if(localHeadingCell){ nextWitnessData[HEADING_EXHIBIT_KEY] = { exhibits: Array.isArray(localHeadingCell.exhibits) ? Array.from(new Set(localHeadingCell.exhibits)) : [], testimonyHtml: '', testimony: '' }; } return { ...node, witnessIds: Array.from(new Set(nextWitnessIds)), witnessData: nextWitnessData }; }); safeSave(); }
     window.syncWitnessCellsFromSupabase = syncWitnessCellsFromSupabase;
     window.addEventListener('storage', async (event) => { if (event.key !== window.LOCAL_SYNC_KEY || !event.newValue) return; let payload = null; try { payload = JSON.parse(event.newValue); } catch (e) { console.warn('Bad sync payload:', e); } console.log('Local sync event received:', payload); if (!payload || !payload.type) return; if (payload.type === 'witness_cells_changed') { await window.loadWitnessCells(); return; } if (payload.type === 'rows_changed') { await window.loadOutlineRows(); await window.loadWitnessCells(); return; } if (payload.type === 'people_changed') { await window.loadPeople(); await window.loadWitnessCells(); return; } if (payload.type === 'documents_changed') { await window.loadDocuments(); await window.loadWitnessCells(); return; } if (payload.type === 'tags_changed') { await window.loadTags(); return; } if (payload.type === 'row_tags_changed') { await window.loadRowTags(); return; } if (payload.type === 'document_tags_changed') { await window.loadDocumentTags(); return; } if (payload.type === 'person_tags_changed') { await window.loadPersonTags(); return; } });
-    const views = { outline: { tab: 'tabOutline', view:'viewOutline' }, documents: { tab: 'tabDocuments', view:'viewDocuments' }, tagindex: { tab: 'tabTagIndex', view:'viewTagIndex' }, outlineindex: { tab: 'tabOutlineIndex', view:'viewOutlineIndex' }, structuredoutline: { tab: 'tabStructuredOutline', view:'viewStructuredOutline' }, exhibits: { tab: 'tabExhibits', view:'viewExhibits' }, people: { tab: 'tabPeople', view:'viewPeople' }, elements: { tab: 'tabElements', view:'viewElements' }, timeline: { tab: 'tabTimeline', view:'viewTimeline' }, settings: { tab: 'tabSettings', view:'viewSettings' } };
+    const views = { outline: { tab: 'tabOutline', view:'viewOutline' }, documents: { tab: 'tabDocuments', view:'viewDocuments' }, documenttable: { tab: 'tabDocumentTable', view:'viewDocumentTable' }, tagindex: { tab: 'tabTagIndex', view:'viewTagIndex' }, outlineindex: { tab: 'tabOutlineIndex', view:'viewOutlineIndex' }, structuredoutline: { tab: 'tabStructuredOutline', view:'viewStructuredOutline' }, exhibits: { tab: 'tabExhibits', view:'viewExhibits' }, people: { tab: 'tabPeople', view:'viewPeople' }, elements: { tab: 'tabElements', view:'viewElements' }, timeline: { tab: 'tabTimeline', view:'viewTimeline' }, settings: { tab: 'tabSettings', view:'viewSettings' } };
     function getInitialViewFromUrl(){
       try {
         const params = new URLSearchParams(window.location.search || '');
@@ -1519,8 +1624,8 @@
         el.setAttribute('href', buildViewHref(viewName));
       });
     }
-    function setTab(which, opts={}){ const target = views[which] ? which : 'outline'; ui.currentView = target; document.body.classList.toggle('tagindex-active', target === 'tagindex'); document.body.classList.toggle('outlineindex-active', target === 'outlineindex'); document.body.classList.toggle('outline-screen-wide', target === 'outline'); for(const k of Object.keys(views)){ const on = k === target; const tabEl = $(views[k].tab); const viewEl = $(views[k].view); if(tabEl) tabEl.classList.toggle('active', on); if(viewEl) viewEl.style.display = on ? 'block' : 'none'; } $('viewOutlineIndex') && ( $('viewOutlineIndex').style.display = target === 'outlineindex' ? 'block' : 'none'); $('viewStructuredOutline') && ( $('viewStructuredOutline').style.display = target === 'structuredoutline' ? 'block' : 'none'); updateViewLinks(target); if(opts.pushState !== false){ const params = new URLSearchParams(window.location.search); const caseId = getCaseId(); if(caseId) params.set('case', caseId); else params.delete('case'); params.set('view', target); history.replaceState(null, '', '?' + params.toString()); } if(target==='documents') renderDocuments(); if(target==='exhibits') renderExhibits(); if(target==='elements') renderElements(); if(target==='timeline') renderTimeline(); if(target==='tagindex') renderDocumentTagIndex(); if(target==='outlineindex') renderOutlineIndex(); if(target==='structuredoutline') renderStructuredOutline(); }
-    $('tabOutline')?.addEventListener('click', (e)=>{ e.preventDefault(); setTab('outline'); }); $('tabDocuments')?.addEventListener('click', (e)=>{ e.preventDefault(); setTab('documents'); }); $('tabTagIndex')?.addEventListener('click', (e)=>{ e.preventDefault(); setTab('tagindex'); }); $('tabOutlineIndex')?.addEventListener('click', (e)=>{ e.preventDefault(); setTab('outlineindex'); }); $('tabStructuredOutline')?.addEventListener('click', (e)=>{ e.preventDefault(); setTab('structuredoutline'); }); $('tabExhibits')?.addEventListener('click', (e)=>{ e.preventDefault(); setTab('exhibits'); }); $('tabPeople')?.addEventListener('click', (e)=>{ e.preventDefault(); setTab('people'); }); $('tabElements')?.addEventListener('click', (e)=>{ e.preventDefault(); ui.elementsWorksheetOpen = false; setTab('elements'); }); $('tabTimeline')?.addEventListener('click', (e)=>{ e.preventDefault(); setTab('timeline'); }); $('tabSettings')?.addEventListener('click', (e)=>{ e.preventDefault(); setTab('settings'); }); $('timelineAddTagBtn')?.addEventListener('click', ()=> setTab('settings')); $('timelineInlineAddTagBtn')?.addEventListener('click', ()=> setTab('settings'));
+    function setTab(which, opts={}){ const target = views[which] ? which : 'outline'; ui.currentView = target; document.body.classList.toggle('tagindex-active', target === 'tagindex'); document.body.classList.toggle('outlineindex-active', target === 'outlineindex'); document.body.classList.toggle('outline-screen-wide', target === 'outline'); for(const k of Object.keys(views)){ const on = k === target; const tabEl = $(views[k].tab); const viewEl = $(views[k].view); if(tabEl) tabEl.classList.toggle('active', on); if(viewEl) viewEl.style.display = on ? 'block' : 'none'; } $('viewOutlineIndex') && ( $('viewOutlineIndex').style.display = target === 'outlineindex' ? 'block' : 'none'); $('viewStructuredOutline') && ( $('viewStructuredOutline').style.display = target === 'structuredoutline' ? 'block' : 'none'); updateViewLinks(target); if(opts.pushState !== false){ const params = new URLSearchParams(window.location.search); const caseId = getCaseId(); if(caseId) params.set('case', caseId); else params.delete('case'); params.set('view', target); history.replaceState(null, '', '?' + params.toString()); } if(target==='documents') renderDocuments(); if(target==='documenttable') renderDocumentTable(); if(target==='exhibits') renderExhibits(); if(target==='elements') renderElements(); if(target==='timeline') renderTimeline(); if(target==='tagindex') renderDocumentTagIndex(); if(target==='outlineindex') renderOutlineIndex(); if(target==='structuredoutline') renderStructuredOutline(); }
+    $('tabOutline')?.addEventListener('click', (e)=>{ e.preventDefault(); setTab('outline'); }); $('tabDocuments')?.addEventListener('click', (e)=>{ e.preventDefault(); setTab('documents'); }); $('tabTagIndex')?.addEventListener('click', (e)=>{ e.preventDefault(); setTab('tagindex'); }); $('tabOutlineIndex')?.addEventListener('click', (e)=>{ e.preventDefault(); setTab('outlineindex'); }); $('tabStructuredOutline')?.addEventListener('click', (e)=>{ e.preventDefault(); setTab('structuredoutline'); }); $('tabExhibits')?.addEventListener('click', (e)=>{ e.preventDefault(); setTab('exhibits'); }); $('tabPeople')?.addEventListener('click', (e)=>{ e.preventDefault(); setTab('people'); }); $('tabElements')?.addEventListener('click', (e)=>{ e.preventDefault(); ui.elementsWorksheetOpen = false; setTab('elements'); }); $('tabTimeline')?.addEventListener('click', (e)=>{ e.preventDefault(); setTab('timeline'); }); $('tabSettings')?.addEventListener('click', (e)=>{ e.preventDefault(); setTab('settings'); }); $('timelineAddTagBtn')?.addEventListener('click', ()=> setTab('settings')); $('timelineInlineAddTagBtn')?.addEventListener('click', ()=> setTab('settings')); document.addEventListener('click', (e)=>{ const link = e.target.closest('[data-view-link="documenttable"]'); if(!link) return; e.preventDefault(); setTab('documenttable'); });
     function escapeHtml(str){ return (str||'').replace(/[&<>\"']/g, (c)=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c])); }
     function sortByName(a,b){ return (a.name||'').localeCompare(b.name||''); }
     function safeIsoDate(value){ const v = String(value || '').trim(); return /^\d{4}-\d{2}-\d{2}$/.test(v) ? v : ''; }
@@ -1589,13 +1694,28 @@
       renderDocuments();
     }
     function renderDocumentRepositoryFilters(){
+      ensureCollapsedTagMapDefaults('docRepoCollapsedTagNodes');
       const host = $('docRepoFilterBar');
       if(!host) return;
       const elig = Array.isArray(ui.docRepoEligibilityFilters) && ui.docRepoEligibilityFilters.length ? ui.docRepoEligibilityFilters : ['possible','not'];
       const status = Array.isArray(ui.docRepoStatusFilters) && ui.docRepoStatusFilters.length ? ui.docRepoStatusFilters : ['exhibit','not_exhibit'];
       ui.docRepoEligibilityFilters = elig.slice();
       ui.docRepoStatusFilters = status.slice();
-      host.innerHTML = `<div class="card" style="box-shadow:none; padding:12px 14px"><div style="display:flex; gap:18px; flex-wrap:wrap; align-items:flex-start"><div><div class="label">Exhibit category filter</div><div class="checkGrid" style="margin-top:6px"><label class="checkItem"><input type="checkbox" data-doc-filter-eligibility="possible" ${elig.includes('possible') ? 'checked' : ''} /> <span>Can be used</span></label><label class="checkItem"><input type="checkbox" data-doc-filter-eligibility="not" ${elig.includes('not') ? 'checked' : ''} /> <span>Cannot be used / none</span></label></div></div><div><div class="label">Exhibit status filter</div><div class="checkGrid" style="margin-top:6px"><label class="checkItem"><input type="checkbox" data-doc-filter-status="exhibit" ${status.includes('exhibit') ? 'checked' : ''} /> <span>Exhibit</span></label><label class="checkItem"><input type="checkbox" data-doc-filter-status="not_exhibit" ${status.includes('not_exhibit') ? 'checked' : ''} /> <span>Not an exhibit</span></label></div></div></div></div>`;
+      host.innerHTML = `<div class="card" style="box-shadow:none; padding:12px 14px"><div style="display:flex; gap:18px; flex-wrap:wrap; align-items:flex-start"><div><div class="label">Exhibit category filter</div><div class="checkGrid" style="margin-top:6px"><label class="checkItem"><input type="checkbox" data-doc-filter-eligibility="possible" ${elig.includes('possible') ? 'checked' : ''} /> <span>Can be used</span></label><label class="checkItem"><input type="checkbox" data-doc-filter-eligibility="not" ${elig.includes('not') ? 'checked' : ''} /> <span>Cannot be used / none</span></label></div></div><div><div class="label">Exhibit status filter</div><div class="checkGrid" style="margin-top:6px"><label class="checkItem"><input type="checkbox" data-doc-filter-status="exhibit" ${status.includes('exhibit') ? 'checked' : ''} /> <span>Exhibit</span></label><label class="checkItem"><input type="checkbox" data-doc-filter-status="not_exhibit" ${status.includes('not_exhibit') ? 'checked' : ''} /> <span>Not an exhibit</span></label></div></div><div style="min-width:340px; flex:1 1 340px"><div class="label">Tags / subtags</div><div id="docRepoFilterTagTree"></div></div></div></div>`;
+      renderHierarchicalTagFilterPanel('docRepoFilterTagTree', {
+        includeIds: ui.docRepoTagIds || [],
+        excludeIds: ui.docRepoTagExcludeIds || [],
+        includeNoneSelected: !!ui.docRepoTagNoneSelected,
+        excludeNoneSelected: ui.docRepoTagExcludeNoneSelected !== false,
+        collapsedMap: ui.docRepoCollapsedTagNodes || {},
+        onChange: (stateObj)=>{
+          ui.docRepoTagIds = stateObj.includeIds;
+          ui.docRepoTagExcludeIds = stateObj.excludeIds;
+          ui.docRepoTagNoneSelected = !!stateObj.includeNoneSelected;
+          ui.docRepoTagExcludeNoneSelected = !!stateObj.excludeNoneSelected;
+          renderDocuments();
+        }
+      });
       host.querySelectorAll('[data-doc-filter-eligibility]').forEach(cb => cb.addEventListener('change', ()=>{
         ui.docRepoEligibilityFilters = Array.from(host.querySelectorAll('[data-doc-filter-eligibility]:checked')).map(x => x.getAttribute('data-doc-filter-eligibility'));
         renderDocuments();
@@ -1981,7 +2101,7 @@
       const rootClass = config.rootClass || '';
       const emptyMessage = config.emptyMessage || 'No tags yet.';
       const checked = new Set((selectedLinks || []).map(link => `${link.tagId}::${link.subtagId || ''}`));
-      const collapsedMap = ui.collapsedElementTagNodes || {};
+      const collapsedMap = config.collapsedMap || ui.collapsedElementTagNodes || {};
       const rootTags = (state.tags || []).slice().sort(sortByName);
       if(!rootTags.length) return `<div class="hint">${escapeHtml(emptyMessage)}</div>`;
       function renderChildren(parentTagId, parentSubtagId=''){
@@ -2005,11 +2125,60 @@
     }
     function renderHierarchicalTagTree(hostId, selectedLinks=[], options={}){
       const host = $(hostId); if(!host) return;
-      host.innerHTML = renderTagTreeMarkup(selectedLinks, { inputAttr:'data-hier-tag-link', rootClass: options.rootClass || '', emptyMessage: options.emptyMessage || 'No tags yet.' });
+      const collapsedMap = options.collapsedMap || ui.collapsedElementTagNodes || {};
+      host.innerHTML = renderTagTreeMarkup(selectedLinks, { inputAttr:'data-hier-tag-link', rootClass: options.rootClass || '', emptyMessage: options.emptyMessage || 'No tags yet.', collapsedMap });
+      host.querySelectorAll('[data-element-tag-collapse]').forEach(btn => btn.addEventListener('click', (e)=>{
+        e.preventDefault();
+        e.stopPropagation();
+        const id = btn.getAttribute('data-element-tag-collapse') || '';
+        if(!id) return;
+        collapsedMap[id] = !collapsedMap[id];
+        renderHierarchicalTagTree(hostId, collectHierarchicalTagLinks(hostId), options);
+        if(typeof options.onTreeChange === 'function') options.onTreeChange();
+      }));
     }
     function renderElementCreateTagChoices(selectedLinks=[]){ const host = $('elementCreateTagChoices'); if(!host) return; host.innerHTML = renderTagTreeMarkup(selectedLinks, { inputAttr:'data-element-tag-link', rootClass:'elementTagRoot', emptyMessage:'No tags yet. Add tags first.' }); host.querySelectorAll('[data-element-tag-collapse]').forEach(btn => btn.addEventListener('click', (e)=>{ e.preventDefault(); e.stopPropagation(); const id = btn.getAttribute('data-element-tag-collapse'); ui.collapsedElementTagNodes[id] = !ui.collapsedElementTagNodes[id]; renderElementCreateTagChoices(getElementFormSelectedTagLinks()); })); host.querySelectorAll('input[data-element-tag-link]').forEach(cb => cb.addEventListener('change', ()=> updateElementHoverSummaries())); updateElementHoverSummaries(); }
     function collectHierarchicalTagLinks(hostId){
       return Array.from(document.querySelectorAll(`#${hostId} input[data-hier-tag-link]:checked`)).map(x => ({ tagId: x.getAttribute('data-tag-id') || '', subtagId: x.getAttribute('data-subtag-id') || '' })).filter(link => link.tagId);
+    }
+    function getAllTagTreeNodeIds(){
+      const ids = [];
+      (state.tags || []).forEach(tag => {
+        ids.push(tag.id);
+        (state.subtags || []).filter(st => st.parentTagId === tag.id).forEach(st => ids.push(st.id))
+      });
+      return ids;
+    }
+    function getAllHierarchicalNodeIds(){
+      const ids = [];
+      (state.tags || []).forEach(tag => ids.push(tag.id));
+      (state.subtags || []).forEach(st => ids.push(st.id));
+      return ids;
+    }
+    function setCollapsedMapAll(collapsedMap, collapsed){
+      getAllHierarchicalNodeIds().forEach(id => { collapsedMap[id] = !!collapsed; });
+    }
+    function bindDocumentTagModalTreeInteractions(){
+      const host = $('documentTagModalTree');
+      if(!host) return;
+      host.querySelectorAll('input[data-hier-tag-link]').forEach(input => input.addEventListener('change', ()=> renderDocumentTagModalSummary(collectHierarchicalTagLinks('documentTagModalTree'))));
+      host.querySelectorAll('.elementTagNode').forEach(node => {
+        const toggleBtn = node.querySelector('[data-element-tag-collapse]');
+        if(!toggleBtn) return;
+        let timer = null;
+        node.addEventListener('mouseenter', ()=>{
+          const id = toggleBtn.getAttribute('data-element-tag-collapse') || '';
+          if(!id) return;
+          timer = setTimeout(()=>{
+            if(ui.documentTagModalCollapsedNodes && ui.documentTagModalCollapsedNodes[id]){
+              ui.documentTagModalCollapsedNodes[id] = false;
+              renderHierarchicalTagTree('documentTagModalTree', collectHierarchicalTagLinks('documentTagModalTree'), { collapsedMap: ui.documentTagModalCollapsedNodes });
+              bindDocumentTagModalTreeInteractions();
+            }
+          }, 500);
+        });
+        node.addEventListener('mouseleave', ()=>{ if(timer){ clearTimeout(timer); timer = null; } });
+      });
     }
     function renderDocumentTagModalSummary(links){
       const host = $('documentTagModalSummary');
@@ -2017,21 +2186,31 @@
     }
     function openDocumentTagModal(docId=null){
       ui.documentTagModalDocId = docId || '';
+      ui.documentTagModalCollapsedNodes = ui.documentTagModalCollapsedNodes || {};
       const title = $('documentTagModalTitle');
       if(title) title.textContent = docId ? 'Add tags to document' : 'Choose tags for new document';
       const doc = docId ? (state.documents || []).find(d => d.id === docId) : null;
       const links = doc ? getDocumentTagLinks(doc) : (ui.newDocumentTagLinks || []);
-      renderHierarchicalTagTree('documentTagModalTree', links);
+      renderHierarchicalTagTree('documentTagModalTree', links, { collapsedMap: ui.documentTagModalCollapsedNodes });
       renderDocumentTagModalSummary(links);
       $('documentTagModal')?.classList.add('open');
-      document.querySelectorAll('#documentTagModalTree input[data-hier-tag-link]').forEach(input => input.addEventListener('change', ()=> renderDocumentTagModalSummary(collectHierarchicalTagLinks('documentTagModalTree'))));
+      bindDocumentTagModalTreeInteractions();
     }
-    function closeDocumentTagModal(){ $('documentTagModal')?.classList.remove('open'); }
+    function closeDocumentTagModal(){ $('documentTagModal')?.classList.remove('open'); ui.bulkDocumentEditIndex = -1; }
     async function saveDocumentTagModal(){
       const links = collectHierarchicalTagLinks('documentTagModalTree');
       const mainTagIds = Array.from(new Set(links.map(link => link.tagId).filter(Boolean)));
       const docId = ui.documentTagModalDocId || '';
-      if(!docId){ setDraftDocumentTagLinks(links); closeDocumentTagModal(); return; }
+      if(!docId){
+        if(Number.isInteger(ui.bulkDocumentEditIndex) && ui.bulkDocumentEditIndex >= 0 && ui.bulkDocumentDrafts[ui.bulkDocumentEditIndex]){
+          ui.bulkDocumentDrafts[ui.bulkDocumentEditIndex].tagLinks = links;
+          ui.bulkDocumentEditIndex = -1;
+          closeDocumentTagModal();
+          renderBulkDocumentUpload();
+          return;
+        }
+        setDraftDocumentTagLinks(links); closeDocumentTagModal(); return;
+      }
       const doc = (state.documents || []).find(d => d.id === docId);
       if(!doc) return;
       const current = new Set(doc.tags || []);
@@ -2084,19 +2263,26 @@
         'data-elements-filter-document': ['elementsFilterDocumentIds','elementsFilterDocumentExcludeIds','elementsFilterDocumentNoneSelected','elementsFilterDocumentExcludeNoneSelected'],
         'data-elements-filter-exhibit': ['elementsFilterExhibitIds','elementsFilterExhibitExcludeIds','elementsFilterExhibitNoneSelected','elementsFilterExhibitExcludeNoneSelected'],
         'data-elements-filter-source-document': ['elementsFilterSourceDocumentIds','elementsFilterSourceDocumentExcludeIds','elementsFilterSourceDocumentNoneSelected','elementsFilterSourceDocumentExcludeNoneSelected'],
-        'data-elements-filter-source-person': ['elementsFilterSourcePersonIds','elementsFilterSourcePersonExcludeIds','elementsFilterSourcePersonNoneSelected','elementsFilterSourcePersonExcludeNoneSelected']
+        'data-elements-filter-source-person': ['elementsFilterSourcePersonIds','elementsFilterSourcePersonExcludeIds','elementsFilterSourcePersonNoneSelected','elementsFilterSourcePersonExcludeNoneSelected'],
+        'data-document-table-exhibit': ['documentTableExhibitIds','documentTableExhibitExcludeIds','documentTableExhibitNoneSelected','documentTableExhibitExcludeNoneSelected'],
+        'data-document-table-timeline': ['documentTableTimelineIds','documentTableTimelineExcludeIds','documentTableTimelineNoneSelected','documentTableTimelineExcludeNoneSelected'],
+        'data-document-table-file': ['documentTableFileIds','documentTableFileExcludeIds','documentTableFileNoneSelected','documentTableFileExcludeNoneSelected']
       };
       const keys = keyMap[attr] || [];
+      const rerender = ()=>{
+        if(String(attr || '').startsWith('data-document-table-')) renderDocumentTable();
+        else renderElements();
+      };
       host.querySelectorAll(`input[${attr}]`).forEach(input => input.addEventListener('change', ()=>{
         if(keys[0]) ui[keys[0]] = Array.from(host.querySelectorAll(`input[${attr}]:checked`)).map(x => x.value).filter(Boolean);
-        renderElements();
+        rerender();
       }));
       host.querySelectorAll(`input[data-elements-filter-exclude="${attr}"]`).forEach(input => input.addEventListener('change', ()=>{
         if(keys[1]) ui[keys[1]] = Array.from(host.querySelectorAll(`input[data-elements-filter-exclude="${attr}"]:not(:checked)`)).map(x => x.value).filter(Boolean);
-        renderElements();
+        rerender();
       }));
-      host.querySelector(`input[data-elements-filter-none-include="${attr}"]`)?.addEventListener('change', (ev)=>{ if(keys[2]) ui[keys[2]] = !!ev.target.checked; renderElements(); });
-      host.querySelector(`input[data-elements-filter-none-exclude="${attr}"]`)?.addEventListener('change', (ev)=>{ if(keys[3]) ui[keys[3]] = !!ev.target.checked; renderElements(); });
+      host.querySelector(`input[data-elements-filter-none-include="${attr}"]`)?.addEventListener('change', (ev)=>{ if(keys[2]) ui[keys[2]] = !!ev.target.checked; rerender(); });
+      host.querySelector(`input[data-elements-filter-none-exclude="${attr}"]`)?.addEventListener('change', (ev)=>{ if(keys[3]) ui[keys[3]] = !!ev.target.checked; rerender(); });
     }
     function getElementFilterOptionSets(){
       const witnessIds = new Set();
@@ -2113,84 +2299,302 @@
       });
       return { witnessIds, documentIds, exhibitIds, sourceDocumentIds, sourcePersonIds };
     }
-    function renderElementsAdvancedFilters(){
-      const optionSets = getElementFilterOptionSets();
-      renderElementsFilterTagTree();
-      const witnessItems = (state.people || []).filter(p => optionSets.witnessIds.has(p.id)).slice().sort(sortByName);
-      const documentItems = (state.documents || []).filter(d => optionSets.documentIds.has(d.id)).slice().sort(sortByName);
-      const exhibitItems = (state.documents || []).filter(d => optionSets.exhibitIds.has(d.id)).slice().sort(sortByName);
-      const sourceDocumentItems = (state.documents || []).filter(d => optionSets.sourceDocumentIds.has(d.id)).slice().sort(sortByName);
-      const sourcePersonItems = (state.people || []).filter(p => optionSets.sourcePersonIds.has(p.id)).slice().sort(sortByName);
-      renderElementSimpleFilter('elementsFilterWitnesses', witnessItems, (ui.elementsFilterWitnessIds || []).filter(id => optionSets.witnessIds.has(id)), (ui.elementsFilterWitnessExcludeIds || []).filter(id => optionSets.witnessIds.has(id)), !!ui.elementsFilterWitnessNoneSelected, ui.elementsFilterWitnessExcludeNoneSelected !== false, 'data-elements-filter-witness');
-      renderElementSimpleFilter('elementsFilterDocuments', documentItems, (ui.elementsFilterDocumentIds || []).filter(id => optionSets.documentIds.has(id)), (ui.elementsFilterDocumentExcludeIds || []).filter(id => optionSets.documentIds.has(id)), !!ui.elementsFilterDocumentNoneSelected, ui.elementsFilterDocumentExcludeNoneSelected !== false, 'data-elements-filter-document');
-      renderElementSimpleFilter('elementsFilterExhibits', exhibitItems, (ui.elementsFilterExhibitIds || []).filter(id => optionSets.exhibitIds.has(id)), (ui.elementsFilterExhibitExcludeIds || []).filter(id => optionSets.exhibitIds.has(id)), !!ui.elementsFilterExhibitNoneSelected, ui.elementsFilterExhibitExcludeNoneSelected !== false, 'data-elements-filter-exhibit');
-      renderElementSimpleFilter('elementsFilterSourceDocuments', sourceDocumentItems, (ui.elementsFilterSourceDocumentIds || []).filter(id => optionSets.sourceDocumentIds.has(id)), (ui.elementsFilterSourceDocumentExcludeIds || []).filter(id => optionSets.sourceDocumentIds.has(id)), !!ui.elementsFilterSourceDocumentNoneSelected, ui.elementsFilterSourceDocumentExcludeNoneSelected !== false, 'data-elements-filter-source-document');
-      renderElementSimpleFilter('elementsFilterSourcePeople', sourcePersonItems, (ui.elementsFilterSourcePersonIds || []).filter(id => optionSets.sourcePersonIds.has(id)), (ui.elementsFilterSourcePersonExcludeIds || []).filter(id => optionSets.sourcePersonIds.has(id)), !!ui.elementsFilterSourcePersonNoneSelected, ui.elementsFilterSourcePersonExcludeNoneSelected !== false, 'data-elements-filter-source-person');
-      ui.elementsFilterWitnessIds = (ui.elementsFilterWitnessIds || []).filter(id => optionSets.witnessIds.has(id));
-      ui.elementsFilterWitnessExcludeIds = (ui.elementsFilterWitnessExcludeIds || []).filter(id => optionSets.witnessIds.has(id));
-      ui.elementsFilterDocumentIds = (ui.elementsFilterDocumentIds || []).filter(id => optionSets.documentIds.has(id));
-      ui.elementsFilterDocumentExcludeIds = (ui.elementsFilterDocumentExcludeIds || []).filter(id => optionSets.documentIds.has(id));
-      ui.elementsFilterExhibitIds = (ui.elementsFilterExhibitIds || []).filter(id => optionSets.exhibitIds.has(id));
-      ui.elementsFilterExhibitExcludeIds = (ui.elementsFilterExhibitExcludeIds || []).filter(id => optionSets.exhibitIds.has(id));
-      ui.elementsFilterSourceDocumentIds = (ui.elementsFilterSourceDocumentIds || []).filter(id => optionSets.sourceDocumentIds.has(id));
-      ui.elementsFilterSourceDocumentExcludeIds = (ui.elementsFilterSourceDocumentExcludeIds || []).filter(id => optionSets.sourceDocumentIds.has(id));
-      ui.elementsFilterSourcePersonIds = (ui.elementsFilterSourcePersonIds || []).filter(id => optionSets.sourcePersonIds.has(id));
-      ui.elementsFilterSourcePersonExcludeIds = (ui.elementsFilterSourcePersonExcludeIds || []).filter(id => optionSets.sourcePersonIds.has(id));
+    function renderDocumentTableFilterTagTree(){
+      renderHierarchicalTagFilterPanel('documentTableFilterTagTree', {
+        includeIds: ui.documentTableTagIds || [],
+        excludeIds: ui.documentTableTagExcludeIds || [],
+        includeNoneSelected: !!ui.documentTableTagNoneSelected,
+        excludeNoneSelected: ui.documentTableTagExcludeNoneSelected !== false,
+        collapsedMap: ui.documentTableCollapsedTagNodes || {},
+        onChange: (stateObj)=>{
+          ui.documentTableTagIds = stateObj.includeIds;
+          ui.documentTableTagExcludeIds = stateObj.excludeIds;
+          ui.documentTableTagNoneSelected = !!stateObj.includeNoneSelected;
+          ui.documentTableTagExcludeNoneSelected = !!stateObj.excludeNoneSelected;
+          renderDocumentTable();
+        }
+      });
     }
-    function elementTagFilterLinksMatch(filterLinks, ownLinks){
-      if(!Array.isArray(filterLinks) || !filterLinks.length) return false;
-      const own = Array.isArray(ownLinks) ? ownLinks : [];
-      return filterLinks.some(sel => own.some(link => link.tagId === sel.tagId && (!sel.subtagId || sel.subtagId === link.subtagId)));
+    function getDocumentTableFilterItems(){
+      return {
+        exhibitItems: [{ id:'is_exhibit', name:'Is exhibit' }, { id:'not_exhibit', name:'Not exhibit' }],
+        timelineItems: [{ id:'in_timeline', name:'Shown in timeline' }, { id:'not_in_timeline', name:'Hidden from timeline' }],
+        fileItems: [{ id:'has_file', name:'Has file' }, { id:'no_file', name:'No file' }]
+      };
     }
-    function elementTagFilterLinksMatch(filterLinks, ownLinks){
-      if(!Array.isArray(filterLinks) || !filterLinks.length) return false;
-      const own = Array.isArray(ownLinks) ? ownLinks : [];
-      return filterLinks.some(sel => own.some(link => link.tagId === sel.tagId && (!sel.subtagId || sel.subtagId === link.subtagId)));
+    function renderDocumentTableFilters(){
+      renderDocumentTableFilterTagTree();
+      const items = getDocumentTableFilterItems();
+      renderElementSimpleFilter('documentTableFilterExhibit', items.exhibitItems, ui.documentTableExhibitIds || [], ui.documentTableExhibitExcludeIds || [], !!ui.documentTableExhibitNoneSelected, ui.documentTableExhibitExcludeNoneSelected !== false, 'data-document-table-exhibit');
+      renderElementSimpleFilter('documentTableFilterTimeline', items.timelineItems, ui.documentTableTimelineIds || [], ui.documentTableTimelineExcludeIds || [], !!ui.documentTableTimelineNoneSelected, ui.documentTableTimelineExcludeNoneSelected !== false, 'data-document-table-timeline');
+      renderElementSimpleFilter('documentTableFilterFile', items.fileItems, ui.documentTableFileIds || [], ui.documentTableFileExcludeIds || [], !!ui.documentTableFileNoneSelected, ui.documentTableFileExcludeNoneSelected !== false, 'data-document-table-file');
     }
-    function elementMatchesHierFilter(el){
-      const selected = Array.isArray(ui.elementsFilterTagIds) ? ui.elementsFilterTagIds : [];
-      const excluded = Array.isArray(ui.elementsFilterTagExcludeIds) ? ui.elementsFilterTagExcludeIds : [];
-      const includeNone = !!ui.elementsFilterTagNoneSelected;
-      const excludeNone = ui.elementsFilterTagExcludeNoneSelected !== false;
-      const own = Array.isArray(el?.tagLinks) ? el.tagLinks : Array.from(new Set((el?.tags || []).filter(Boolean))).map(tagId => ({ tagId, subtagId:'' }));
+
+    function renderHierarchicalTagFilterPanel(hostId, config={}){
+      const host = $(hostId); if(!host) return;
+      const collapsedMap = config.collapsedMap || {};
+      host.innerHTML = `
+        <div class="elementsFilterDual">
+          <div>
+            <div class="label">Filter-inclusion</div>
+            <label class="checkItem" style="margin:6px 0"><input type="checkbox" data-hier-none="include" ${config.includeNoneSelected ? 'checked' : ''} /> <span>None selected</span></label>
+            <div id="${hostId}Include"></div>
+          </div>
+          <div>
+            <div class="label">Filter exclusion</div>
+            <label class="checkItem" style="margin:6px 0"><input type="checkbox" data-hier-none="exclude" ${config.excludeNoneSelected !== false ? 'checked' : ''} /> <span>None selected</span></label>
+            <div id="${hostId}Exclude"></div>
+          </div>
+        </div>`;
+      renderHierarchicalTagTree(`${hostId}Include`, config.includeIds || [], { rootClass:'elementsFilterTagTree', collapsedMap, onTreeChange: ()=>{} });
+      renderHierarchicalTagTree(`${hostId}Exclude`, config.excludeIds || [], { rootClass:'elementsFilterTagTree', collapsedMap, onTreeChange: ()=>{} });
+      const trigger = ()=>{
+        const stateObj = {
+          includeIds: collectHierarchicalTagLinks(`${hostId}Include`),
+          excludeIds: collectHierarchicalTagLinks(`${hostId}Exclude`),
+          includeNoneSelected: !!host.querySelector('[data-hier-none="include"]')?.checked,
+          excludeNoneSelected: !!host.querySelector('[data-hier-none="exclude"]')?.checked
+        };
+        if(typeof config.onChange === 'function') config.onChange(stateObj);
+      };
+      host.querySelectorAll('input[data-hier-tag-link], input[data-hier-none]').forEach(input => input.addEventListener('change', trigger));
+      host.querySelectorAll('[data-element-tag-collapse]').forEach(btn => btn.addEventListener('click', ()=> setTimeout(trigger,0)));
+    }
+
+    function elementTagFilterLinksMatch(selectedLinks, ownLinks){
+      const selected = Array.isArray(selectedLinks) ? selectedLinks.filter(link => link && link.tagId) : [];
+      if(!selected.length) return true;
+      const own = Array.isArray(ownLinks) ? ownLinks.filter(link => link && link.tagId) : [];
+      if(!own.length) return false;
+      return selected.some(sel => {
+        return own.some(link => {
+          if(String(link.tagId || '') !== String(sel.tagId || '')) return false;
+          const selSub = String(sel.subtagId || '');
+          const ownSub = String(link.subtagId || '');
+          if(!selSub) return true;
+          if(ownSub === selSub) return true;
+          const ownPath = ownSub ? getSubtagPath(ownSub) : '';
+          const selPath = getSubtagPath(selSub);
+          return !!ownPath && !!selPath && ownPath.startsWith(selPath);
+        });
+      });
+    }
+
+    function elementMatchesIdFilter(ownIds, includeIds, excludeIds, includeNoneSelected, excludeNoneSelected){
+      const own = Array.isArray(ownIds) ? ownIds.filter(Boolean) : [];
       const hasOwn = own.length > 0;
-      if((selected.length || includeNone) && !(includeNone && !hasOwn) && !elementTagFilterLinksMatch(selected, own)) return false;
-      if(!hasOwn && !excludeNone) return false;
-      if(hasOwn && elementTagFilterLinksMatch(excluded, own)) return false;
-      return true;
-    }
-    function elementMatchesIdFilter(ids, selected, excluded, includeNoneSelected, excludeNoneSelected){
-      const used = Array.from(new Set((ids || []).filter(Boolean)));
-      if((Array.isArray(selected) && selected.length) || includeNoneSelected){
-        const selectedSet = new Set((selected || []).filter(Boolean));
-        const includeMatch = used.some(id => selectedSet.has(id));
-        if(!(includeMatch || (includeNoneSelected && !used.length))) return false;
+      const include = Array.isArray(includeIds) ? includeIds.filter(Boolean) : [];
+      const exclude = Array.isArray(excludeIds) ? excludeIds.filter(Boolean) : [];
+      if((include.length || includeNoneSelected) && !(includeNoneSelected && !hasOwn)){
+        if(!include.some(id => own.includes(id))) return false;
       }
-      if(!used.length) return excludeNoneSelected !== false;
-      const excludedSet = new Set((excluded || []).filter(Boolean));
-      if(used.some(id => excludedSet.has(id))) return false;
+      if(!hasOwn && !excludeNoneSelected) return false;
+      if(hasOwn && exclude.some(id => own.includes(id))) return false;
       return true;
     }
+
     function getFilteredElements(){
+      const mode = String(ui.elementsFilterMode || 'all');
       const search = String(ui.elementsSearch || '').trim().toLowerCase();
-      const mode = ui.elementsFilterMode || 'all';
+      const creator = String(ui.elementsCreatorFilter || 'all');
       return (state.elements || []).filter(el => {
         if(mode === 'timeline' && !el.includeInTimeline) return false;
         if(mode === 'not_timeline' && el.includeInTimeline) return false;
+        if(creator !== 'all' && getElementCreatorLabel(el) !== creator) return false;
         if(search){
-          const hay = [el.name, getElementSourceText(el), (el.text || '').replace(/<[^>]+>/g, ' '), ...(el.tags || []).map(tagId => state.tags.find(t=>t.id===tagId)?.name || ''), ...getElementLinkedWitnesses(el).map(p => p.name || ''), ...getElementLinkedDocuments(el).map(d => d.name || ''), ...getElementLinkedExhibits(el).map(d => d.name || ''), ...getElementSourceDocumentIds(el).map(id => getDocumentById(id)?.name || ''), ...getElementSourcePersonIds(el).map(id => getPersonById(id)?.name || '')].join(' ').toLowerCase();
+          const hay = [
+            el.name,
+            el.text,
+            el.source,
+            formatTimelineDateDisplay(el.date || ''),
+            ...(el.documentIds || []).map(id => getDocumentById(id)?.name || ''),
+            ...(el.witnessIds || []).map(id => getPersonById(id)?.name || ''),
+            ...(el.exhibitDocIds || []).map(id => getDocumentById(id)?.name || ''),
+            ...getElementSourceDocumentIds(el).map(id => getDocumentById(id)?.name || ''),
+            ...getElementSourcePersonIds(el).map(id => getPersonById(id)?.name || ''),
+            ...getEventTagLinks(el).map(link => {
+              const tag = (state.tags || []).find(t => t.id === link.tagId)?.name || '';
+              const sub = link.subtagId ? getSubtagPath(link.subtagId) : '';
+              return [tag, sub].filter(Boolean).join(' ');
+            })
+          ].join(' ').toLowerCase();
           if(!hay.includes(search)) return false;
         }
-        if(!elementMatchesHierFilter(el)) return false;
-        if(!elementMatchesIdFilter(el.witnessIds || [], ui.elementsFilterWitnessIds, ui.elementsFilterWitnessExcludeIds, !!ui.elementsFilterWitnessNoneSelected, ui.elementsFilterWitnessExcludeNoneSelected !== false)) return false;
-        if(!elementMatchesIdFilter(el.documentIds || [], ui.elementsFilterDocumentIds, ui.elementsFilterDocumentExcludeIds, !!ui.elementsFilterDocumentNoneSelected, ui.elementsFilterDocumentExcludeNoneSelected !== false)) return false;
-        if(!elementMatchesIdFilter(el.exhibitDocIds || [], ui.elementsFilterExhibitIds, ui.elementsFilterExhibitExcludeIds, !!ui.elementsFilterExhibitNoneSelected, ui.elementsFilterExhibitExcludeNoneSelected !== false)) return false;
-        if(!elementMatchesIdFilter(getElementSourceDocumentIds(el), ui.elementsFilterSourceDocumentIds, ui.elementsFilterSourceDocumentExcludeIds, !!ui.elementsFilterSourceDocumentNoneSelected, ui.elementsFilterSourceDocumentExcludeNoneSelected !== false)) return false;
-        if(!elementMatchesIdFilter(getElementSourcePersonIds(el), ui.elementsFilterSourcePersonIds, ui.elementsFilterSourcePersonExcludeIds, !!ui.elementsFilterSourcePersonNoneSelected, ui.elementsFilterSourcePersonExcludeNoneSelected !== false)) return false;
-        if((ui.elementsCreatorFilter || 'all') !== 'all' && getElementCreatorLabel(el) !== ui.elementsCreatorFilter) return false;
+        const ownTagLinks = getEventTagLinks(el);
+        const hasTags = ownTagLinks.length > 0;
+        if(((ui.elementsFilterTagIds || []).length || ui.elementsFilterTagNoneSelected) && !(ui.elementsFilterTagNoneSelected && !hasTags) && !elementTagFilterLinksMatch(ui.elementsFilterTagIds || [], ownTagLinks)) return false;
+        if(!hasTags && ui.elementsFilterTagExcludeNoneSelected === false) return false;
+        if(hasTags && elementTagFilterLinksMatch(ui.elementsFilterTagExcludeIds || [], ownTagLinks)) return false;
+        if(!elementMatchesIdFilter(el.witnessIds || [], ui.elementsFilterWitnessIds || [], ui.elementsFilterWitnessExcludeIds || [], !!ui.elementsFilterWitnessNoneSelected, ui.elementsFilterWitnessExcludeNoneSelected !== false)) return false;
+        if(!elementMatchesIdFilter(el.documentIds || [], ui.elementsFilterDocumentIds || [], ui.elementsFilterDocumentExcludeIds || [], !!ui.elementsFilterDocumentNoneSelected, ui.elementsFilterDocumentExcludeNoneSelected !== false)) return false;
+        if(!elementMatchesIdFilter(el.exhibitDocIds || [], ui.elementsFilterExhibitIds || [], ui.elementsFilterExhibitExcludeIds || [], !!ui.elementsFilterExhibitNoneSelected, ui.elementsFilterExhibitExcludeNoneSelected !== false)) return false;
+        if(!elementMatchesIdFilter(getElementSourceDocumentIds(el), ui.elementsFilterSourceDocumentIds || [], ui.elementsFilterSourceDocumentExcludeIds || [], !!ui.elementsFilterSourceDocumentNoneSelected, ui.elementsFilterSourceDocumentExcludeNoneSelected !== false)) return false;
+        if(!elementMatchesIdFilter(getElementSourcePersonIds(el), ui.elementsFilterSourcePersonIds || [], ui.elementsFilterSourcePersonExcludeIds || [], !!ui.elementsFilterSourcePersonNoneSelected, ui.elementsFilterSourcePersonExcludeNoneSelected !== false)) return false;
+        return true;
+      }).sort((a,b)=> (a.name || '').localeCompare(b.name || ''));
+    }
+
+    function documentMatchesHierFilterWithState(doc, selected, excluded, includeNone, excludeNone){
+      const own = getDocumentTagLinks(doc);
+      const hasOwn = own.length > 0;
+      if(((selected || []).length || includeNone) && !(includeNone && !hasOwn) && !elementTagFilterLinksMatch(selected || [], own)) return false;
+      if(!hasOwn && !excludeNone) return false;
+      if(hasOwn && elementTagFilterLinksMatch(excluded || [], own)) return false;
+      return true;
+    }
+
+    function documentMatchesHierFilter(doc){
+      return documentMatchesHierFilterWithState(doc, ui.documentTableTagIds || [], ui.documentTableTagExcludeIds || [], !!ui.documentTableTagNoneSelected, ui.documentTableTagExcludeNoneSelected !== false);
+    }
+    function documentMatchesSimpleFilter(doc, kind){
+      if(kind === 'exhibit'){ const meta = getDocumentExhibitMeta(doc.id); return meta.isExhibit ? ['is_exhibit'] : ['not_exhibit']; }
+      if(kind === 'timeline'){ return doc.includeInTimeline !== false ? ['in_timeline'] : ['not_in_timeline']; }
+      if(kind === 'file'){ return (doc.filePath || doc.dataUrl || doc.hasFile) ? ['has_file'] : ['no_file']; }
+      return [];
+    }
+    function getFilteredDocumentsForTable(){
+      const search = String(ui.documentTableSearch || '').trim().toLowerCase();
+      return (state.documents || []).filter(doc => {
+        if(search){
+          const hay = [doc.name, doc.description, doc.originalFileName, doc.filename, formatTimelineDateDisplay(doc.date || ''), ...getDocumentTagLinks(doc).map(link => { const parts = []; const tag = state.tags.find(t => t.id === link.tagId); if(tag) parts.push(tag.name || ''); if(link.subtagId){ const sub = getSubtagById(link.subtagId); if(sub) parts.push(getSubtagPath(sub.id)); } return parts.join(' '); })].join(' ').toLowerCase();
+          if(!hay.includes(search)) return false;
+        }
+        if(!documentMatchesHierFilter(doc)) return false;
+        if(!elementMatchesIdFilter(documentMatchesSimpleFilter(doc, 'exhibit'), ui.documentTableExhibitIds, ui.documentTableExhibitExcludeIds, !!ui.documentTableExhibitNoneSelected, ui.documentTableExhibitExcludeNoneSelected !== false)) return false;
+        if(!elementMatchesIdFilter(documentMatchesSimpleFilter(doc, 'timeline'), ui.documentTableTimelineIds, ui.documentTableTimelineExcludeIds, !!ui.documentTableTimelineNoneSelected, ui.documentTableTimelineExcludeNoneSelected !== false)) return false;
+        if(!elementMatchesIdFilter(documentMatchesSimpleFilter(doc, 'file'), ui.documentTableFileIds, ui.documentTableFileExcludeIds, !!ui.documentTableFileNoneSelected, ui.documentTableFileExcludeNoneSelected !== false)) return false;
         return true;
       }).sort((a,b)=> (a.name||'').localeCompare(b.name||''));
     }
+
+    function ensureCollapsedTagMapDefaults(mapName){
+      ui[mapName] = ui[mapName] && typeof ui[mapName] === 'object' ? ui[mapName] : {};
+      const map = ui[mapName];
+      let changed = false;
+      const tagIds = [];
+      (state.tags || []).forEach(tag => { if(tag?.id) tagIds.push(tag.id); });
+      (state.subtags || []).forEach(subtag => { if(subtag?.id) tagIds.push(subtag.id); });
+      tagIds.forEach(id => {
+        if(typeof map[id] === 'undefined'){
+          map[id] = true;
+          changed = true;
+        }
+      });
+      if(changed) safeSave();
+      return map;
+    }
+
+    function getSortedDocumentsForTable(){
+      const docs = getFilteredDocumentsForTable();
+      const sort = ui.documentTableSort || { key:'name', dir:'asc' };
+      const dir = sort.dir === 'desc' ? -1 : 1;
+      return docs.slice().sort((a,b)=>{
+        let cmp = 0;
+        if(sort.key === 'date') cmp = (getTimelineDateSortKey(a.date || '') || '').localeCompare(getTimelineDateSortKey(b.date || '') || '');
+        else if(sort.key === 'uploadDate') cmp = (getDocumentUploadDate(a) || '').localeCompare(getDocumentUploadDate(b) || '');
+        else if(sort.key === 'fileSize') cmp = Number(a.fileSize || 0) - Number(b.fileSize || 0);
+        else if(sort.key === 'file') cmp = getDocumentFileName(a).localeCompare(getDocumentFileName(b));
+        else cmp = (a.name || '').localeCompare(b.name || '');
+        if(cmp) return cmp * dir;
+        return (a.name || '').localeCompare(b.name || '');
+      });
+    }
+
+    function toggleDocumentTableSort(key){
+      const current = ui.documentTableSort || { key:'name', dir:'asc' };
+      if(current.key === key) ui.documentTableSort = { key, dir: current.dir === 'asc' ? 'desc' : 'asc' };
+      else ui.documentTableSort = { key, dir: key === 'name' || key === 'file' ? 'asc' : 'desc' };
+      renderDocumentTable();
+    }
+
+    function bindDocumentTableTagControls(root){
+      const scope = root || document;
+      scope.querySelectorAll('.tagPicker').forEach(sel => {
+        if(sel.dataset.bound === '1') return;
+        sel.dataset.bound = '1';
+        sel.addEventListener('change', async ()=>{
+          await handleTagPickerChange(sel);
+          renderDocumentTable();
+          renderDocuments();
+          if(ui.currentView === 'tagindex') renderDocumentTagIndex();
+          if(ui.currentView === 'outlineindex') renderOutlineIndex();
+          renderTimeline();
+        });
+      });
+      scope.querySelectorAll('.tagRemoveBtn').forEach(btn => {
+        if(btn.dataset.bound === '1') return;
+        btn.dataset.bound = '1';
+        btn.addEventListener('click', async (ev)=>{
+          ev.stopPropagation();
+          const itemId = btn.getAttribute('data-item-id');
+          const tagId = btn.getAttribute('data-tag-id');
+          const ok = await window.removeDocumentTag(itemId, tagId);
+          if(ok){
+            await window.loadDocumentTags();
+            renderDocumentTable();
+            renderDocuments();
+            if(ui.currentView === 'tagindex') renderDocumentTagIndex();
+            if(ui.currentView === 'outlineindex') renderOutlineIndex();
+            renderTimeline();
+          }
+        });
+      });
+    }
+
+    function renderDocumentTable(){
+      ensureCollapsedTagMapDefaults('documentTableCollapsedTagNodes');
+      const panel = $('documentTableFilterPanel');
+      if(panel) panel.style.display = ui.documentTableFilterPanelOpen ? 'block' : 'none';
+      renderDocumentTableFilters();
+      const host = $('documentTableHost');
+      const empty = $('documentTableEmpty');
+      if(!host || !empty) return;
+      const docs = getSortedDocumentsForTable();
+      if(!docs.length){
+        host.innerHTML = '';
+        empty.style.display = '';
+        return;
+      }
+      empty.style.display = 'none';
+      const sort = ui.documentTableSort || { key:'name', dir:'asc' };
+      const arrow = (key)=> sort.key === key ? (sort.dir === 'asc' ? '↑' : '↓') : '';
+      host.innerHTML = `
+        <div style="overflow:auto; border:1px solid var(--border); border-radius:12px; background:#fff">
+          <table class="docRepoTable" style="min-width:1180px">
+            <thead>
+              <tr>
+                <th><button type="button" data-document-table-sort="name">Document ${arrow('name')}</button></th>
+                <th><button type="button" data-document-table-sort="date">Date ${arrow('date')}</button></th>
+                <th><button type="button" data-document-table-sort="uploadDate">Upload date ${arrow('uploadDate')}</button></th>
+                <th><button type="button" data-document-table-sort="fileSize">File size ${arrow('fileSize')}</button></th>
+                <th>Tags</th>
+                <th><button type="button" data-document-table-sort="file">File ${arrow('file')}</button></th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${docs.map(doc => {
+                const fileName = getDocumentFileName(doc);
+                return `<tr>
+                  <td><b>${escapeHtml(doc.name || 'Untitled')}</b><div class="hint" style="margin-top:4px">${escapeHtml(doc.description || '')}</div></td>
+                  <td>${escapeHtml(formatTimelineDateDisplay(doc.date || '') || '')}</td>
+                  <td>${escapeHtml(formatDateForDisplay(getDocumentUploadDate(doc)) || '')}</td>
+                  <td>${escapeHtml(formatFileSize(doc.fileSize || 0))}</td>
+                  <td style="white-space:normal; min-width:280px"><div>${renderAssignedTagPills(doc.tags || [], 'document', doc.id)}${renderTagPicker('document', doc.id, doc.tags || [])}</div></td>
+                  <td>${fileName ? escapeHtml(fileName) : '<span class="hint">No file</span>'}</td>
+                  <td><div style="display:flex; gap:8px; flex-wrap:wrap"><button type="button" class="mini" data-document-table-edit="${doc.id}">Edit</button><button type="button" class="mini" data-document-table-download="${doc.id}">Download</button><button type="button" class="mini" data-document-table-source="${doc.id}">Elements from document</button></div></td>
+                </tr>`;
+              }).join('')}
+            </tbody>
+          </table>
+        </div>`;
+      host.querySelectorAll('[data-document-table-sort]').forEach(btn => btn.addEventListener('click', ()=> toggleDocumentTableSort(btn.getAttribute('data-document-table-sort') || 'name')));
+      host.querySelectorAll('[data-document-table-edit]').forEach(btn => btn.addEventListener('click', ()=> openDocumentEditModal(btn.getAttribute('data-document-table-edit'))));
+      host.querySelectorAll('[data-document-table-download]').forEach(btn => btn.addEventListener('click', ()=> downloadDocument(btn.getAttribute('data-document-table-download'))));
+      host.querySelectorAll('[data-document-table-source]').forEach(btn => btn.addEventListener('click', ()=> openSourceDocModalForDocument(btn.getAttribute('data-document-table-source'))));
+      bindDocumentTableTagControls(host);
+    }
+
     function getWorksheetTagBranchCount(tagId, parentSubtagId=''){
       const children = (state.subtags || []).filter(st => st.parentTagId === tagId && String(st.parentSubtagId || '') === String(parentSubtagId || ''));
       if(!children.length) return parentSubtagId ? 1 : 1;
@@ -2600,6 +3004,20 @@
       });
       bindElementsFilterTagTreeInteractions(includeRoot);
       bindElementsFilterTagTreeInteractions(excludeRoot);
+    }
+    function renderElementsAdvancedFilters(){
+      renderElementsFilterTagTree();
+      const optionSets = getElementFilterOptionSets();
+      const witnessItems = Array.from(optionSets.witnessIds || []).map(id => ({ id, name: getPersonById(id)?.name || 'Unknown person' })).sort((a,b)=> (a.name || '').localeCompare(b.name || ''));
+      const documentItems = Array.from(optionSets.documentIds || []).map(id => ({ id, name: getDocumentById(id)?.name || 'Unknown document' })).sort((a,b)=> (a.name || '').localeCompare(b.name || ''));
+      const exhibitItems = Array.from(optionSets.exhibitIds || []).map(id => ({ id, name: getDocumentById(id)?.name || 'Unknown exhibit' })).sort((a,b)=> (a.name || '').localeCompare(b.name || ''));
+      const sourceDocumentItems = Array.from(optionSets.sourceDocumentIds || []).map(id => ({ id, name: getDocumentById(id)?.name || 'Unknown document' })).sort((a,b)=> (a.name || '').localeCompare(b.name || ''));
+      const sourcePersonItems = Array.from(optionSets.sourcePersonIds || []).map(id => ({ id, name: getPersonById(id)?.name || 'Unknown person' })).sort((a,b)=> (a.name || '').localeCompare(b.name || ''));
+      renderElementSimpleFilter('elementsFilterWitnesses', witnessItems, ui.elementsFilterWitnessIds || [], ui.elementsFilterWitnessExcludeIds || [], !!ui.elementsFilterWitnessNoneSelected, ui.elementsFilterWitnessExcludeNoneSelected !== false, 'data-elements-filter-witness');
+      renderElementSimpleFilter('elementsFilterDocuments', documentItems, ui.elementsFilterDocumentIds || [], ui.elementsFilterDocumentExcludeIds || [], !!ui.elementsFilterDocumentNoneSelected, ui.elementsFilterDocumentExcludeNoneSelected !== false, 'data-elements-filter-document');
+      renderElementSimpleFilter('elementsFilterExhibits', exhibitItems, ui.elementsFilterExhibitIds || [], ui.elementsFilterExhibitExcludeIds || [], !!ui.elementsFilterExhibitNoneSelected, ui.elementsFilterExhibitExcludeNoneSelected !== false, 'data-elements-filter-exhibit');
+      renderElementSimpleFilter('elementsFilterSourceDocuments', sourceDocumentItems, ui.elementsFilterSourceDocumentIds || [], ui.elementsFilterSourceDocumentExcludeIds || [], !!ui.elementsFilterSourceDocumentNoneSelected, ui.elementsFilterSourceDocumentExcludeNoneSelected !== false, 'data-elements-filter-source-document');
+      renderElementSimpleFilter('elementsFilterSourcePeople', sourcePersonItems, ui.elementsFilterSourcePersonIds || [], ui.elementsFilterSourcePersonExcludeIds || [], !!ui.elementsFilterSourcePersonNoneSelected, ui.elementsFilterSourcePersonExcludeNoneSelected !== false, 'data-elements-filter-source-person');
     }
     function collectElementForm(){ const name = ($('elementName')?.value || '').trim(); if(!name){ alert('Element name is required.'); return null; } const date = normalizeFlexibleDateInput($('elementDate')?.value || ''); const textValue = $('elementText')?.innerHTML?.trim() || ''; const tagLinks = getElementFormSelectedTagLinks(); const tags = Array.from(new Set(tagLinks.map(link => link.tagId).filter(Boolean))); const documentIds = getElementFormSelectedDocumentIds(); const witnessIds = getElementFormSelectedWitnessIds(); const exhibitDocIds = getElementFormSelectedExhibitIds(); const existing = ui.selectedElementId ? getElementById(ui.selectedElementId) : null; const source = String($('elementSource')?.value || '').trim(); const sourceDocumentIds = getElementFormSelectedSourceDocumentIds(); const sourcePersonIds = getElementFormSelectedSourcePersonIds(); const sourceRefs = buildElementSourceRefs(Array.isArray(existing?.sourceRefs) ? existing.sourceRefs.slice() : [], source, sourceDocumentIds, sourcePersonIds, ui.sourceDocSelection); return finalizeElementSystemMeta({ name, addedAt: existing?.addedAt || new Date().toISOString(), type: 'text', date, text: textValue, documentIds, witnessIds, exhibitDocIds, tags, tagLinks, includeInTimeline: !!$('elementIncludeInTimeline')?.checked, source, sourceDocumentIds, sourcePersonIds, sourceRefs }); }
     function resetElementForm(){ if($('elementName')) $('elementName').value = ''; if($('elementDate')) $('elementDate').value = ''; if($('elementSource')) $('elementSource').value = ''; if($('elementText')) $('elementText').innerHTML = ''; if($('elementIncludeInTimeline')) $('elementIncludeInTimeline').checked = false; if($('elementWitnessSearch')) $('elementWitnessSearch').value = ''; if($('elementDocumentsSearch')) $('elementDocumentsSearch').value = ''; if($('elementExhibitsSearch')) $('elementExhibitsSearch').value = ''; if($('elementSourceDocumentsSearch')) $('elementSourceDocumentsSearch').value = ''; if($('elementSourcePeopleSearch')) $('elementSourcePeopleSearch').value = ''; renderElementWitnessList([]); renderElementDocumentList([]); renderElementExhibitList([]); renderElementSourceDocumentList([]); renderElementSourcePeopleList([]); renderElementCreateTagChoices([]); ui.selectedElementId = null; ui.sourceDocSelection = null; }
@@ -3035,7 +3453,7 @@ async function renderDocumentInSourceViewer(doc, targetId, opts={}){
       const captureBlob = await new Promise(resolve => crop.toBlob(resolve, 'image/png'));
       if(!captureBlob){ toast('Could not capture that image.'); return; }
       const filePageLabel = capture.pageNumber && capture.endPageNumber && capture.pageNumber !== capture.endPageNumber ? `${capture.pageNumber}-${capture.endPageNumber}` : (capture.pageNumber || 'page');
-      const uploadedImage = await window.uploadCaseAsset(captureBlob, `element_capture_${filePageLabel}.png`, 'element-images');
+      const uploadedImage = await uploadCaseAsset(captureBlob, `element_capture_${filePageLabel}.png`, 'element-images');
       if(!uploadedImage?.url) return;
       const imageDataUrl = uploadedImage.url;
       const citation = capture.pageNumber && capture.endPageNumber && capture.pageNumber !== capture.endPageNumber ? `${doc.name}, pp. ${capture.pageNumber}-${capture.endPageNumber}` : `${doc.name}${capture.pageNumber ? ', p. ' + capture.pageNumber : ''}`;
@@ -4653,7 +5071,7 @@ function openStructuredDocEditor(docId){
     const status = Array.isArray(ui.docRepoStatusFilters) ? ui.docRepoStatusFilters : ['exhibit','not_exhibit'];
     const docElig = d.exhibitEligibility === 'not' ? 'not' : 'possible';
     const docStatus = meta.isExhibit ? 'exhibit' : 'not_exhibit';
-    return elig.includes(docElig) && status.includes(docStatus);
+    return elig.includes(docElig) && status.includes(docStatus) && documentMatchesHierFilterWithState(d, ui.docRepoTagIds || [], ui.docRepoTagExcludeIds || [], !!ui.docRepoTagNoneSelected, ui.docRepoTagExcludeNoneSelected !== false);
   }));
   const widths = {
     name: getDocRepoColWidth('name', 340),
@@ -4772,7 +5190,187 @@ function openStructuredDocEditor(docId){
   list.querySelectorAll('[data-doc-open-modal]').forEach(el=>el.addEventListener('click', (ev)=>{ ev.preventDefault(); ev.stopPropagation(); const id = el.getAttribute('data-doc-open-modal'); ui.selectedDocId = id; openDocumentEditModal(id); }));
   renderOutline();
   renderStructuredOutline();
+  if(ui.currentView === 'documenttable') renderDocumentTable();
 }
+
+
+
+    function makeBulkDocumentDraft(file){
+      const rawName = String(file?.name || '');
+      return { id: uid(), file, name: rawName || 'Untitled document', date: '', description: '', tagLinks: [] };
+    }
+    function getBulkDocumentDraftById(draftId){
+      return (ui.bulkDocumentDrafts || []).find(draft => draft && draft.id === draftId) || null;
+    }
+    function getBulkDocumentDraftPreviewUrl(draft){
+      if(!draft || !draft.file) return '';
+      if(!draft.previewUrl){
+        try{ draft.previewUrl = URL.createObjectURL(draft.file); }catch(err){ console.warn('Bulk preview URL failed', err); draft.previewUrl = ''; }
+      }
+      return draft.previewUrl || '';
+    }
+    function toggleBulkDocumentSelection(draftId, checked){
+      const ids = new Set(Array.isArray(ui.bulkDocumentSelectedIds) ? ui.bulkDocumentSelectedIds : []);
+      if(checked) ids.add(draftId);
+      else ids.delete(draftId);
+      ui.bulkDocumentSelectedIds = Array.from(ids);
+    }
+    function setAllBulkDocumentSelections(checked){
+      ui.bulkDocumentSelectedIds = checked ? (ui.bulkDocumentDrafts || []).map(draft => draft.id) : [];
+      renderBulkDocumentUpload();
+    }
+    function applyBulkDocumentTagsToSelected(sourceDraftId){
+      const sourceDraft = getBulkDocumentDraftById(sourceDraftId);
+      if(!sourceDraft) return;
+      const targetIds = (ui.bulkDocumentSelectedIds || []).filter(id => id && id !== sourceDraftId);
+      if(!targetIds.length){ alert('Select one or more other bulk-upload rows first.'); return; }
+      const links = Array.isArray(sourceDraft.tagLinks) ? sourceDraft.tagLinks.map(link => ({ tagId: link.tagId || '', subtagId: link.subtagId || '' })).filter(link => link.tagId) : [];
+      (ui.bulkDocumentDrafts || []).forEach(draft => { if(targetIds.includes(draft.id)) draft.tagLinks = links.map(link => ({ ...link })); });
+      renderBulkDocumentUpload();
+      toast(targetIds.length === 1 ? 'Tags copied to 1 selected document' : `Tags copied to ${targetIds.length} selected documents`);
+    }
+    function renderBulkDocumentUpload(){
+      const wrap = $('docBulkUploadWrap');
+      if(!wrap) return;
+      const drafts = Array.isArray(ui.bulkDocumentDrafts) ? ui.bulkDocumentDrafts : [];
+      if(!drafts.length){ wrap.style.display = 'none'; wrap.innerHTML = ''; return; }
+      wrap.style.display = '';
+      const selectedIds = new Set(ui.bulkDocumentSelectedIds || []);
+      const statusHtml = ui.bulkDocumentStatus ? `<div class="hint" style="margin-top:8px">${escapeHtml(ui.bulkDocumentStatus)}</div>` : '';
+      wrap.innerHTML = `<div class="card" style="box-shadow:none; padding:12px 14px"><div style="display:flex; justify-content:space-between; gap:10px; align-items:center; flex-wrap:wrap"><div><div class="label">Bulk upload review</div><div class="hint">Edit names, add dates, descriptions, and tags, preview each file, then save everything together. Check multiple rows if you want to copy one row's tags to the others.</div>${statusHtml}</div><div style="display:flex; gap:8px; flex-wrap:wrap"><button type="button" id="docBulkAddMoreBtn" class="btnGhost" ${ui.bulkDocumentSaving ? 'disabled' : ''}>Add more files</button><button type="button" id="docBulkClearBtn" class="btnGhost" ${ui.bulkDocumentSaving ? 'disabled' : ''}>Clear list</button></div></div><div class="bulkDocActionsBar" style="margin-top:12px"><label class="checkItem" style="margin:0"><input type="checkbox" id="docBulkSelectAll" ${drafts.length && drafts.every(draft => selectedIds.has(draft.id)) ? 'checked' : ''} ${ui.bulkDocumentSaving ? 'disabled' : ''} /> <span>Select all rows</span></label><div class="hint">${selectedIds.size} selected for bulk tag copy</div></div><div class="bulkDocTableWrap"><table class="bulkDocTable"><thead><tr><th style="width:64px">Pick</th><th style="width:250px">File</th><th style="width:220px">Document name</th><th style="width:140px">Date</th><th>Description</th><th style="width:280px">Tags</th><th style="width:110px">Preview</th><th style="width:90px">Remove</th></tr></thead><tbody>${drafts.map((draft, idx) => { const previewOpen = ui.bulkDocumentViewerId === draft.id; const previewUrl = previewOpen ? getBulkDocumentDraftPreviewUrl(draft) : ''; const tooLarge = draft.file && Number(draft.file.size || 0) > BULK_UPLOAD_MAX_FILE_SIZE; const fileMeta = draft.file ? `${formatFileSize(draft.file.size || 0)}${tooLarge ? ' • too large for current upload limit' : ''}` : ''; const rowStatus = draft.error ? `<div class="hint" style="color:#991b1b; margin-top:6px">${escapeHtml(draft.error)}</div>` : (draft.success ? `<div class="hint" style="color:#166534; margin-top:6px">Uploaded</div>` : ''); return `<tr><td><label class="checkItem" style="margin:0; padding:6px 8px"><input type="checkbox" data-bulk-doc-select="${draft.id}" ${selectedIds.has(draft.id) ? 'checked' : ''} ${ui.bulkDocumentSaving ? 'disabled' : ''} /><span>Row</span></label></td><td><div><b>${escapeHtml(String(draft.file?.name || ''))}</b></div><div class="hint">${escapeHtml(fileMeta)}</div>${rowStatus}</td><td><input class="bulkDocNameInput" data-bulk-doc-name="${idx}" type="text" value="${escapeHtml(draft.name || '')}" ${ui.bulkDocumentSaving ? 'disabled' : ''} /></td><td><input class="bulkDocDateInput" data-bulk-doc-date="${idx}" type="date" value="${escapeHtml(draft.date || '')}" ${ui.bulkDocumentSaving ? 'disabled' : ''} /></td><td><textarea class="bulkDocDescInput" data-bulk-doc-desc="${idx}" placeholder="Optional description" ${ui.bulkDocumentSaving ? 'disabled' : ''}>${escapeHtml(draft.description || '')}</textarea></td><td class="bulkDocTagsCell"><div class="bulkDocTagSummary">${renderTagLinkPills(draft.tagLinks || [])}</div><div style="margin-top:8px; display:flex; gap:8px; flex-wrap:wrap"><button type="button" class="btnGhost" data-bulk-doc-tags="${idx}" ${ui.bulkDocumentSaving ? 'disabled' : ''}>Add tags</button><button type="button" class="btnGhost" data-bulk-doc-copy-tags="${draft.id}" ${ui.bulkDocumentSaving ? 'disabled' : ''}>Copy tags to selected</button></div></td><td><button type="button" class="btnGhost" data-bulk-doc-preview="${draft.id}">${previewOpen ? 'Hide' : 'View'}</button></td><td><button type="button" class="btnDanger" data-bulk-doc-remove="${idx}" ${ui.bulkDocumentSaving ? 'disabled' : ''}>Remove</button></td></tr>${previewOpen ? `<tr><td colspan="8"><div style="padding:8px 0">${previewUrl ? `<div class="label">Document viewer</div><iframe class="docViewerFrame" src="${previewUrl}"></iframe>` : '<div class="hint">Preview is not available for this file.</div>'}</div></td></tr>` : ''}`; }).join('')}</tbody></table></div><div class="bulkDocActionsBar"><div class="hint">${drafts.length} file${drafts.length===1?'':'s'} ready</div><div style="display:flex; gap:8px; flex-wrap:wrap">${ui.bulkDocumentSaving ? '<button type="button" id="docBulkCancelBtn" class="btnDanger">Cancel upload</button>' : ''}<button type="button" id="docBulkSaveBtn" class="btnPrimary" ${ui.bulkDocumentSaving ? 'disabled' : ''}>Save all documents</button></div></div></div>`;
+      wrap.querySelectorAll('[data-bulk-doc-name]').forEach(input => input.addEventListener('input', ()=>{ const idx = Number(input.getAttribute('data-bulk-doc-name')); if(ui.bulkDocumentDrafts[idx]) ui.bulkDocumentDrafts[idx].name = input.value; }));
+      wrap.querySelectorAll('[data-bulk-doc-date]').forEach(input => input.addEventListener('input', ()=>{ const idx = Number(input.getAttribute('data-bulk-doc-date')); if(ui.bulkDocumentDrafts[idx]) ui.bulkDocumentDrafts[idx].date = input.value; }));
+      wrap.querySelectorAll('[data-bulk-doc-desc]').forEach(input => input.addEventListener('input', ()=>{ const idx = Number(input.getAttribute('data-bulk-doc-desc')); if(ui.bulkDocumentDrafts[idx]) ui.bulkDocumentDrafts[idx].description = input.value; }));
+      wrap.querySelectorAll('[data-bulk-doc-tags]').forEach(btn => btn.addEventListener('click', ()=> openBulkDocumentTagModal(Number(btn.getAttribute('data-bulk-doc-tags')))));
+      wrap.querySelectorAll('[data-bulk-doc-select]').forEach(input => input.addEventListener('change', ()=> toggleBulkDocumentSelection(input.getAttribute('data-bulk-doc-select'), !!input.checked)));
+      wrap.querySelectorAll('[data-bulk-doc-copy-tags]').forEach(btn => btn.addEventListener('click', ()=> applyBulkDocumentTagsToSelected(btn.getAttribute('data-bulk-doc-copy-tags'))));
+      wrap.querySelectorAll('[data-bulk-doc-preview]').forEach(btn => btn.addEventListener('click', ()=>{ const draftId = btn.getAttribute('data-bulk-doc-preview') || ''; ui.bulkDocumentViewerId = ui.bulkDocumentViewerId === draftId ? '' : draftId; renderBulkDocumentUpload(); }));
+      wrap.querySelectorAll('[data-bulk-doc-remove]').forEach(btn => btn.addEventListener('click', ()=>{ const idx = Number(btn.getAttribute('data-bulk-doc-remove')); const removed = ui.bulkDocumentDrafts[idx]; if(removed){ ui.bulkDocumentSelectedIds = (ui.bulkDocumentSelectedIds || []).filter(id => id !== removed.id); if(ui.bulkDocumentViewerId === removed.id) ui.bulkDocumentViewerId = ''; if(removed.previewUrl){ try{ URL.revokeObjectURL(removed.previewUrl); }catch(err){} } } ui.bulkDocumentDrafts.splice(idx, 1); renderBulkDocumentUpload(); }));
+      $('docBulkAddMoreBtn')?.addEventListener('click', ()=> $('docBulkFiles')?.click());
+      $('docBulkClearBtn')?.addEventListener('click', ()=>{ (ui.bulkDocumentDrafts || []).forEach(draft => { if(draft && draft.previewUrl){ try{ URL.revokeObjectURL(draft.previewUrl); }catch(err){} } }); ui.bulkDocumentDrafts = []; ui.bulkDocumentEditIndex = -1; ui.bulkDocumentSelectedIds = []; ui.bulkDocumentViewerId = ''; ui.bulkDocumentCancelRequested = false; ui.bulkDocumentSaving = false; ui.bulkDocumentStatus = ''; renderBulkDocumentUpload(); });
+      $('docBulkSelectAll')?.addEventListener('change', ()=> setAllBulkDocumentSelections(!!$('docBulkSelectAll')?.checked));
+      $('docBulkSaveBtn')?.addEventListener('click', saveBulkDocuments);
+      $('docBulkCancelBtn')?.addEventListener('click', ()=>{ ui.bulkDocumentCancelRequested = true; ui.bulkDocumentStatus = 'Stopping after the current file finishes…'; renderBulkDocumentUpload(); });
+    }
+    function queueBulkDocumentFiles(fileList){
+      const files = Array.from(fileList || []).filter(Boolean);
+      if(!files.length) return;
+      ui.bulkDocumentDrafts = (ui.bulkDocumentDrafts || []).concat(files.map(makeBulkDocumentDraft));
+      ui.bulkDocumentSelectedIds = ui.bulkDocumentDrafts.map(draft => draft.id);
+      ui.bulkDocumentStatus = '';
+      ui.bulkDocumentCancelRequested = false;
+      if($('docBulkFiles')) $('docBulkFiles').value = '';
+      renderBulkDocumentUpload();
+    }
+    function openBulkDocumentTagModal(index){
+      if(!Array.isArray(ui.bulkDocumentDrafts) || !ui.bulkDocumentDrafts[index]) return;
+      ui.bulkDocumentEditIndex = index;
+      ui.documentTagModalDocId = '';
+      const draft = ui.bulkDocumentDrafts[index];
+      const title = $('documentTagModalTitle');
+      if(title) title.textContent = `Choose tags for ${draft.name || 'bulk document'}`;
+      renderHierarchicalTagTree('documentTagModalTree', draft.tagLinks || []);
+      renderDocumentTagModalSummary(draft.tagLinks || []);
+      $('documentTagModal')?.classList.add('open');
+      document.querySelectorAll('#documentTagModalTree input[data-hier-tag-link]').forEach(input => input.addEventListener('change', ()=> renderDocumentTagModalSummary(collectHierarchicalTagLinks('documentTagModalTree'))));
+    }
+    async function saveBulkDocuments(){
+      const drafts = Array.isArray(ui.bulkDocumentDrafts) ? ui.bulkDocumentDrafts : [];
+      if(!drafts.length) return;
+      for(const draft of drafts){
+        const name = String(draft.name || '').trim();
+        draft.error = '';
+        draft.success = false;
+        if(!name){ alert('Every bulk-upload document needs a name.'); return; }
+      }
+      ui.bulkDocumentCancelRequested = false;
+      ui.bulkDocumentSaving = true;
+      ui.bulkDocumentStatus = `Uploading 0 of ${drafts.length}…`;
+      renderBulkDocumentUpload();
+      let savedCount = 0;
+      let failedCount = 0;
+      let processedCount = 0;
+      try{
+        for(const draft of drafts){
+          if(ui.bulkDocumentCancelRequested){
+            ui.bulkDocumentStatus = `Stopped after ${processedCount} of ${drafts.length} file${drafts.length===1?'':'s'}.`;
+            break;
+          }
+          const name = String(draft.name || '').trim();
+          const date = draft.date || null;
+          const description = String(draft.description || '').trim();
+          const file = draft.file || null;
+          ui.bulkDocumentStatus = `Uploading ${processedCount + 1} of ${drafts.length}: ${name}`;
+          renderBulkDocumentUpload();
+          if(file && Number(file.size || 0) > BULK_UPLOAD_MAX_FILE_SIZE){
+            draft.error = `Skipped: file is ${formatFileSize(file.size || 0)}, which is larger than the current upload limit of ${formatFileSize(BULK_UPLOAD_MAX_FILE_SIZE)}.`;
+            failedCount += 1;
+            processedCount += 1;
+            renderBulkDocumentUpload();
+            continue;
+          }
+          let created = null;
+          let finalDoc = null;
+          try{
+            created = await window.createDocument({ name, docDate: date, description });
+            if(!created) throw new Error('Could not create document row.');
+            finalDoc = created;
+            if(file){
+              const path = await window.uploadDocumentFile(created.id, file);
+              if(!path) throw new Error('File upload failed.');
+              const updated = await window.updateDocumentRow(created.id, { file_path: path, original_file_name: file.name || '', mime_type: file.type || '', file_size: Number(file.size || 0) || 0 });
+              if(updated) finalDoc = updated;
+            }
+            const tagLinks = Array.isArray(draft.tagLinks) ? draft.tagLinks.slice() : [];
+            const tagIds = Array.from(new Set(tagLinks.map(link => link.tagId).filter(Boolean)));
+            const localDoc = { id: finalDoc.id, name: finalDoc.name || name, date: finalDoc.doc_date || date || '', description: finalDoc.description || description, tags: tagIds, tagLinks, filename: finalDoc.original_file_name || '', originalFileName: finalDoc.original_file_name || '', filePath: finalDoc.file_path || '', mimeType: finalDoc.mime_type || '', fileSize: Number(finalDoc.file_size || 0) || 0, hasFile: !!finalDoc.file_path, dataUrl: '', exhibitLabel: '', createdAt: finalDoc.created_at || new Date().toISOString(), exhibitEligibility: 'possible', includeInTimeline: true };
+            const i = state.documents.findIndex(d=>d.id===finalDoc.id);
+            if(i >= 0) state.documents[i] = { ...state.documents[i], ...localDoc };
+            else state.documents.push(localDoc);
+            for(const tagId of tagIds){
+              try{ await window.assignDocumentTag(finalDoc.id, tagId); }catch(err){ console.warn('Bulk tag assign failed', err); }
+            }
+            draft.success = true;
+            draft.error = '';
+            savedCount += 1;
+          }catch(err){
+            console.error('Bulk document upload failed:', err);
+            draft.success = false;
+            draft.error = String(err && err.message ? err.message : err || 'Upload failed');
+            failedCount += 1;
+            if(created && created.id){
+              try{ await window.deleteDocumentRow(created.id); }catch(cleanErr){ console.warn('Cleanup after failed bulk upload failed', cleanErr); }
+              state.documents = state.documents.filter(d=>d.id !== created.id);
+            }
+          }
+          processedCount += 1;
+          renderBulkDocumentUpload();
+        }
+      }finally{
+        ui.bulkDocumentSaving = false;
+      }
+      safeSave();
+      await window.loadDocuments();
+      renderDocuments();
+      if(ui.currentView === 'documenttable') renderDocumentTable();
+      const remainingDrafts = (ui.bulkDocumentDrafts || []).filter(draft => !draft.success);
+      (ui.bulkDocumentDrafts || []).filter(draft => draft && draft.success).forEach(draft => { if(draft.previewUrl){ try{ URL.revokeObjectURL(draft.previewUrl); }catch(err){} } });
+      ui.bulkDocumentDrafts = remainingDrafts;
+      ui.bulkDocumentEditIndex = -1;
+      ui.bulkDocumentSelectedIds = remainingDrafts.map(draft => draft.id);
+      if(!remainingDrafts.some(draft => draft.id === ui.bulkDocumentViewerId)) ui.bulkDocumentViewerId = '';
+      if($('docBulkFiles')) $('docBulkFiles').value='';
+      if(ui.bulkDocumentCancelRequested && remainingDrafts.length){
+        ui.bulkDocumentStatus = `Stopped. ${savedCount} uploaded, ${failedCount} not uploaded.`;
+      }else if(remainingDrafts.length){
+        ui.bulkDocumentStatus = `${savedCount} uploaded, ${failedCount} not uploaded. Failed rows were left in the table so you can fix them and try again.`;
+      }else{
+        ui.bulkDocumentStatus = savedCount === 1 ? '1 document uploaded.' : `${savedCount} documents uploaded.`;
+      }
+      ui.bulkDocumentCancelRequested = false;
+      renderBulkDocumentUpload();
+      if(savedCount){ toast(savedCount === 1 ? '1 document uploaded' : `${savedCount} documents uploaded`); }
+    }
 
 
     async function addDocument(){
@@ -4843,7 +5441,7 @@ function openStructuredDocEditor(docId){
       setDraftDocumentTagLinks([]);
       toast(file ? 'Document and file saved' : 'Document saved');
     }
-    async function deleteDocument(id){ const doc = state.documents.find(d=>d.id===id); if(!doc) return; if(!confirm(`Delete document “${doc.name}”?`)) return; if(doc.filePath){ await window.deleteDocumentFile(doc.filePath); } const ok = await window.deleteDocumentRow(id); if (!ok) return; try{ await idbDeleteFile(id); }catch(err){ console.warn('Local file delete failed:', err); } state.documents = state.documents.filter(d=>d.id!==id); for(const n of state.outline){ if(!n.witnessData) continue; for(const wid of Object.keys(n.witnessData)){ n.witnessData[wid].exhibits = (n.witnessData[wid].exhibits||[]).filter(eid=>eid!==id); } } safeSave(); renderDocuments(); renderOutline(); toast('Document deleted'); }
+    async function deleteDocument(id, options={}){ const doc = state.documents.find(d=>d.id===id); if(!doc) return false; if(options.skipConfirm !== true && !confirm(`Delete document “${doc.name}”?`)) return false; if(doc.filePath){ await window.deleteDocumentFile(doc.filePath); } const ok = await window.deleteDocumentRow(id); if (!ok) return false; try{ await idbDeleteFile(id); }catch(err){ console.warn('Local file delete failed:', err); } state.documents = state.documents.filter(d=>d.id!==id); for(const n of state.outline){ if(!n.witnessData) continue; for(const wid of Object.keys(n.witnessData)){ n.witnessData[wid].exhibits = (n.witnessData[wid].exhibits||[]).filter(eid=>eid!==id); } } safeSave(); renderDocuments(); renderDocumentTable(); renderOutline(); renderOutlineIndex(); renderDocumentTagIndex(); renderStructuredOutline(); renderTimeline(); toast('Document deleted'); return true; }
     async function getDocumentBlob(doc){
       if(!doc) return null;
       try{
@@ -4979,6 +5577,8 @@ function openStructuredDocEditor(docId){
       }
     }
     $('addDoc').addEventListener('click', addDocument);
+    $('docBulkSelectBtn')?.addEventListener('click', ()=> $('docBulkFiles')?.click());
+    $('docBulkFiles')?.addEventListener('change', ()=> queueBulkDocumentFiles(($('docBulkFiles').files || [])));
     $('collapseAllDocs')?.addEventListener('click', ()=>{ ui.expandedDocIds = {}; renderDocuments(); });
     $('toggleDownloadList')?.addEventListener('click', ()=>{ ui.showDocDownloadList = !ui.showDocDownloadList; renderDocuments(); });
     $('toggleDocTagIndex')?.addEventListener('click', (ev)=>{ ev.preventDefault(); setTab('tagindex'); });
@@ -5006,12 +5606,64 @@ function openStructuredDocEditor(docId){
     $('documentTagModalClose')?.addEventListener('click', closeDocumentTagModal);
     $('documentTagModalCancel')?.addEventListener('click', closeDocumentTagModal);
     $('documentTagModalSave')?.addEventListener('click', saveDocumentTagModal);
+    $('documentTagModalCollapseAll')?.addEventListener('click', ()=>{ ui.documentTagModalCollapsedNodes = ui.documentTagModalCollapsedNodes || {}; setCollapsedMapAll(ui.documentTagModalCollapsedNodes, true); renderHierarchicalTagTree('documentTagModalTree', collectHierarchicalTagLinks('documentTagModalTree'), { collapsedMap: ui.documentTagModalCollapsedNodes }); bindDocumentTagModalTreeInteractions(); });
+    $('documentTagModalExpandAll')?.addEventListener('click', ()=>{ ui.documentTagModalCollapsedNodes = ui.documentTagModalCollapsedNodes || {}; setCollapsedMapAll(ui.documentTagModalCollapsedNodes, false); renderHierarchicalTagTree('documentTagModalTree', collectHierarchicalTagLinks('documentTagModalTree'), { collapsedMap: ui.documentTagModalCollapsedNodes }); bindDocumentTagModalTreeInteractions(); });
     $('sourceDocBackToPicker')?.addEventListener('click', ()=>{ resetSourceDocImageCapture(); ui.sourceDocSelectedId = null; ui.sourceDocSelection = null; $('sourceDocViewerInner').innerHTML = '<div class="sourceDocEmpty">Choose a document to open it here.</div>'; $('sourceDocCreateElement').disabled = true; if($('sourceDocStartImageCapture')) $('sourceDocStartImageCapture').disabled = true; refreshSourceDocActionButtons(); setSourceDocSelectionMessage(getSourceDocTargetElement() ? 'Choose a document, then highlight text or capture an image to add more to this element.' : 'Highlight text in the document, then click Create element from selection or use image capture.'); $('sourceDocBackToPicker').style.display = 'none'; renderSourceDocPicker(); });
     $('sourceDocCreateElement')?.addEventListener('click', createElementFromSourceSelection); $('sourceDocStartImageCapture')?.addEventListener('click', startSourceDocImageCapture); $('sourceDocReturnToElement')?.addEventListener('click', ()=>{ const target = getSourceDocTargetElement(); if(!target) return; closeSourceDocModal(); openElementModal(target.id); }); bindSourceDocImageCapture();
     $('sourceDocViewerShell')?.addEventListener('mouseup', ()=> setTimeout(handleSourceSelectionChange, 0));
     $('sourceDocViewerShell')?.addEventListener('keyup', ()=> setTimeout(handleSourceSelectionChange, 0));
     $('sourceDocViewerShell')?.addEventListener('scroll', ()=>{ if(ui.sourceDocSelectedId){ ui.sourceDocScrollByDocumentId[ui.sourceDocSelectedId] = $('sourceDocViewerShell')?.scrollTop || 0; } });
     $('elementSourceModalClose')?.addEventListener('click', closeElementSourceModal);
+
+    async function deleteDocumentTableDuplicates(){
+      const docs = Array.isArray(state.documents) ? state.documents.slice() : [];
+      const groups = new Map();
+      docs.forEach(doc => {
+        const name = String(doc?.name || '').trim().toLowerCase();
+        const size = Number(doc?.fileSize || 0);
+        if(!name) return;
+        const key = `${name}__${size}`;
+        if(!groups.has(key)) groups.set(key, []);
+        groups.get(key).push(doc);
+      });
+      const duplicateGroups = Array.from(groups.values()).filter(group => group.length > 1);
+      if(!duplicateGroups.length){
+        toast('No duplicate documents found');
+        return;
+      }
+      const toDelete = [];
+      duplicateGroups.forEach(group => {
+        const ordered = group.slice().sort((a,b)=>{
+          const aDate = String(a?.createdAt || '');
+          const bDate = String(b?.createdAt || '');
+          if(aDate && bDate && aDate !== bDate) return aDate.localeCompare(bDate);
+          if(aDate && !bDate) return -1;
+          if(!aDate && bDate) return 1;
+          return String(a?.id || '').localeCompare(String(b?.id || ''));
+        });
+        ordered.slice(1).forEach(doc => toDelete.push(doc));
+      });
+      const preview = duplicateGroups.slice(0,3).map(group => {
+        const sample = group[0];
+        return `${sample?.name || 'Untitled'} (${formatFileSize(sample?.fileSize || 0)}) x${group.length}`;
+      }).join('\n');
+      const message = `Delete ${toDelete.length} duplicate document${toDelete.length === 1 ? '' : 's'}?\n\nKeeping one copy from each duplicate set (same name and same file size).${preview ? `\n\nExamples:\n${preview}` : ''}`;
+      if(!confirm(message)) return;
+      let deleted = 0;
+      for(const doc of toDelete){
+        const ok = await deleteDocument(doc.id, { skipConfirm:true });
+        if(ok) deleted += 1;
+      }
+      if(deleted){
+        renderDocumentTable();
+        renderDocuments();
+      }
+      toast(deleted ? `Deleted ${deleted} duplicate document${deleted === 1 ? '' : 's'}` : 'No duplicate documents deleted');
+    }
+
+    $('documentTableSearch')?.addEventListener('input', (ev)=>{ ui.documentTableSearch = ev.target.value || ''; renderDocumentTable(); });
+    $('documentTableFilterToggle')?.addEventListener('click', ()=>{ ui.documentTableFilterPanelOpen = !ui.documentTableFilterPanelOpen; renderDocumentTable(); });
+    $('documentTableDeleteDuplicates')?.addEventListener('click', deleteDocumentTableDuplicates);
     $('elementsFilterMode')?.addEventListener('change', (ev)=>{ ui.elementsFilterMode = ev.target.value || 'all'; renderElements(); });
     $('elementsSearch')?.addEventListener('input', (ev)=>{ ui.elementsSearch = ev.target.value || ''; renderElements(); });
     $('elementWitnessSearch')?.addEventListener('input', ()=> renderElementWitnessList(ui.selectedElementId ? (getElementById(ui.selectedElementId)?.witnessIds || []) : getElementFormSelectedWitnessIds()));
@@ -5867,6 +6519,7 @@ function openStructuredDocEditor(docId){
     async function bootAuthStartup(){
       await waitForSupabaseReady();
       load();
+    renderBulkDocumentUpload();
       syncOutlineFromSupabase();
       syncDocumentsFromSupabase();
       syncPeopleFromSupabase();
@@ -5943,8 +6596,6 @@ function openStructuredDocEditor(docId){
     if(!/^data:/i.test(value)) return { path:'', url:value };
     return uploadCaseAsset(dataUrlToBlob(value), fileName, folder);
   }
-  window.uploadCaseAsset = uploadCaseAsset;
-  window.uploadDataUrlAsCaseAsset = uploadDataUrlAsCaseAsset;
 
   async function loadElementsFromSupabase(options){
     if(!sb() || !cid()) return;
@@ -5954,27 +6605,38 @@ function openStructuredDocEditor(docId){
     const query = sb().from('elements').select('*').eq('case_id', cid()).order('timeline_order', { ascending:true }).order('updated_at', { ascending:true });
     const { data, error } = await query;
     if(error){ console.error('Load elements error:', error); return; }
-    const remoteElements = (data || []).map((row, idx) => ({
-      id: row.id,
-      name: row.name || '',
-      addedAt: row.created_at || row.added_at || '',
-      date: row.element_date || '',
-      type: row.element_type || 'text',
-      text: row.text_html || '',
-      tags: Array.from(new Set(((row.tag_links || []) || []).map(link => link && link.tagId).filter(Boolean))),
-      tagLinks: Array.isArray(row.tag_links) ? row.tag_links.filter(link => link && link.tagId).map(link => ({ tagId: link.tagId || '', subtagId: link.subtagId || '' })) : [],
-      documentIds: Array.isArray(row.document_ids) ? row.document_ids.filter(Boolean) : [],
-      witnessIds: Array.isArray(row.witness_ids) ? row.witness_ids.filter(Boolean) : [],
-      exhibitDocIds: Array.isArray(row.exhibit_doc_ids) ? row.exhibit_doc_ids.filter(Boolean) : [],
-      includeInTimeline: row.include_in_timeline !== false,
-      timelineOrder: Number.isFinite(Number(row.timeline_order)) ? Number(row.timeline_order) : idx,
-      sourceRefs: Array.isArray(row.source_refs) ? row.source_refs : [],
-      source: '',
-      sourceDocumentIds: [],
-      sourcePersonIds: []
-    }));
+    const previousById = new Map((state.elements || []).filter(el => el && el.id).map(el => [el.id, el]));
+    const legacySnapshot = getLegacyAssociationSnapshot();
+    const legacyElementsById = new Map((Array.isArray(legacySnapshot?.elements) ? legacySnapshot.elements : []).filter(el => el && el.id).map(el => [el.id, el]));
+    const remoteElements = (data || []).map((row, idx) => {
+      const prev = previousById.get(row.id) || legacyElementsById.get(row.id) || {};
+      const nextTagLinks = (Array.isArray(row.tag_links) ? row.tag_links.filter(link => link && link.tagId).map(link => ({ tagId: link.tagId || '', subtagId: link.subtagId || '' })) : []).concat(Array.isArray(prev.tagLinks) ? prev.tagLinks : []);
+      const nextWitnessIds = mergeAssociationArrays(Array.isArray(row.witness_ids) ? row.witness_ids.filter(Boolean) : [], Array.isArray(prev.witnessIds) ? prev.witnessIds : []);
+      const nextDocumentIds = mergeAssociationArrays(Array.isArray(row.document_ids) ? row.document_ids.filter(Boolean) : [], Array.isArray(prev.documentIds) ? prev.documentIds : []);
+      const nextExhibitDocIds = mergeAssociationArrays(Array.isArray(row.exhibit_doc_ids) ? row.exhibit_doc_ids.filter(Boolean) : [], Array.isArray(prev.exhibitDocIds) ? prev.exhibitDocIds : []);
+      return {
+        id: row.id,
+        name: row.name || '',
+        addedAt: row.created_at || row.added_at || prev.addedAt || '',
+        date: row.element_date || prev.date || '',
+        type: row.element_type || prev.type || 'text',
+        text: row.text_html || prev.text || '',
+        tags: Array.from(new Set(nextTagLinks.map(link => link && link.tagId).filter(Boolean).concat(Array.isArray(prev.tags) ? prev.tags : []))),
+        tagLinks: nextTagLinks.filter(link => link && link.tagId).map(link => ({ tagId: link.tagId || '', subtagId: link.subtagId || '' })),
+        documentIds: nextDocumentIds,
+        witnessIds: nextWitnessIds,
+        exhibitDocIds: nextExhibitDocIds,
+        includeInTimeline: row.include_in_timeline !== false,
+        timelineOrder: Number.isFinite(Number(row.timeline_order)) ? Number(row.timeline_order) : idx,
+        sourceRefs: mergeAssociationArrays(Array.isArray(row.source_refs) ? row.source_refs : [], Array.isArray(prev.sourceRefs) ? prev.sourceRefs : []),
+        source: '',
+        sourceDocumentIds: [],
+        sourcePersonIds: []
+      };
+    });
     remoteElements.forEach(el => finalizeElementSystemMeta(el));
     state.elements = remoteElements.concat(localOnly.filter(el => !remoteElements.some(remote => remote.id === el.id)));
+    mergeAssociationSnapshotIntoState(legacySnapshot);
     state.elements.forEach(syncElementDerivedSourceFields);
     console.log('Loaded elements from Supabase:', remoteElements.length, 'remote,', localOnly.length, 'local-only retained');
     if(opts.replaceLocal && typeof resetElementUiState === 'function') resetElementUiState();
@@ -6404,12 +7066,12 @@ function openStructuredDocEditor(docId){
     let timelineImageUrl = timelineImageDraft.dataUrl || '';
     let timelineImagePath = timelineImageDraft.uploadedPath || (existing?.imagePath || '');
     if(timelineImageDraft.file){
-      const uploadedImage = await window.uploadCaseAsset(timelineImageDraft.file, timelineImageDraft.name || 'timeline_image.png', 'timeline-images');
+      const uploadedImage = await uploadCaseAsset(timelineImageDraft.file, timelineImageDraft.name || 'timeline_image.png', 'timeline-images');
       if(!uploadedImage?.url) return;
       timelineImageUrl = uploadedImage.url;
       timelineImagePath = uploadedImage.path || '';
     }else if(/^data:/i.test(timelineImageUrl)){
-      const uploadedImage = await window.uploadDataUrlAsCaseAsset(timelineImageUrl, timelineImageDraft.name || 'timeline_image.png', 'timeline-images');
+      const uploadedImage = await uploadDataUrlAsCaseAsset(timelineImageUrl, timelineImageDraft.name || 'timeline_image.png', 'timeline-images');
       if(!uploadedImage?.url) return;
       timelineImageUrl = uploadedImage.url;
       timelineImagePath = uploadedImage.path || '';
