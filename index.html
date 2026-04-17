@@ -1605,6 +1605,7 @@
       renderDocuments();
     }
     function renderDocumentRepositoryFilters(){
+      ensureCollapsedTagMapDefaults('docRepoCollapsedTagNodes');
       const host = $('docRepoFilterBar');
       if(!host) return;
       const elig = Array.isArray(ui.docRepoEligibilityFilters) && ui.docRepoEligibilityFilters.length ? ui.docRepoEligibilityFilters : ['possible','not'];
@@ -2179,16 +2180,20 @@
         'data-document-table-file': ['documentTableFileIds','documentTableFileExcludeIds','documentTableFileNoneSelected','documentTableFileExcludeNoneSelected']
       };
       const keys = keyMap[attr] || [];
+      const rerender = ()=>{
+        if(String(attr || '').startsWith('data-document-table-')) renderDocumentTable();
+        else renderElements();
+      };
       host.querySelectorAll(`input[${attr}]`).forEach(input => input.addEventListener('change', ()=>{
         if(keys[0]) ui[keys[0]] = Array.from(host.querySelectorAll(`input[${attr}]:checked`)).map(x => x.value).filter(Boolean);
-        renderElements();
+        rerender();
       }));
       host.querySelectorAll(`input[data-elements-filter-exclude="${attr}"]`).forEach(input => input.addEventListener('change', ()=>{
         if(keys[1]) ui[keys[1]] = Array.from(host.querySelectorAll(`input[data-elements-filter-exclude="${attr}"]:not(:checked)`)).map(x => x.value).filter(Boolean);
-        renderElements();
+        rerender();
       }));
-      host.querySelector(`input[data-elements-filter-none-include="${attr}"]`)?.addEventListener('change', (ev)=>{ if(keys[2]) ui[keys[2]] = !!ev.target.checked; renderElements(); });
-      host.querySelector(`input[data-elements-filter-none-exclude="${attr}"]`)?.addEventListener('change', (ev)=>{ if(keys[3]) ui[keys[3]] = !!ev.target.checked; renderElements(); });
+      host.querySelector(`input[data-elements-filter-none-include="${attr}"]`)?.addEventListener('change', (ev)=>{ if(keys[2]) ui[keys[2]] = !!ev.target.checked; rerender(); });
+      host.querySelector(`input[data-elements-filter-none-exclude="${attr}"]`)?.addEventListener('change', (ev)=>{ if(keys[3]) ui[keys[3]] = !!ev.target.checked; rerender(); });
     }
     function getElementFilterOptionSets(){
       const witnessIds = new Set();
@@ -2372,6 +2377,135 @@
         return true;
       }).sort((a,b)=> (a.name||'').localeCompare(b.name||''));
     }
+
+    function ensureCollapsedTagMapDefaults(mapName){
+      ui[mapName] = ui[mapName] && typeof ui[mapName] === 'object' ? ui[mapName] : {};
+      const map = ui[mapName];
+      let changed = false;
+      const tagIds = [];
+      (state.tags || []).forEach(tag => { if(tag?.id) tagIds.push(tag.id); });
+      (state.subtags || []).forEach(subtag => { if(subtag?.id) tagIds.push(subtag.id); });
+      tagIds.forEach(id => {
+        if(typeof map[id] === 'undefined'){
+          map[id] = true;
+          changed = true;
+        }
+      });
+      if(changed) safeSave();
+      return map;
+    }
+
+    function getSortedDocumentsForTable(){
+      const docs = getFilteredDocumentsForTable();
+      const sort = ui.documentTableSort || { key:'name', dir:'asc' };
+      const dir = sort.dir === 'desc' ? -1 : 1;
+      return docs.slice().sort((a,b)=>{
+        let cmp = 0;
+        if(sort.key === 'date') cmp = (getTimelineDateSortKey(a.date || '') || '').localeCompare(getTimelineDateSortKey(b.date || '') || '');
+        else if(sort.key === 'uploadDate') cmp = (getDocumentUploadDate(a) || '').localeCompare(getDocumentUploadDate(b) || '');
+        else if(sort.key === 'fileSize') cmp = Number(a.fileSize || 0) - Number(b.fileSize || 0);
+        else if(sort.key === 'file') cmp = getDocumentFileName(a).localeCompare(getDocumentFileName(b));
+        else cmp = (a.name || '').localeCompare(b.name || '');
+        if(cmp) return cmp * dir;
+        return (a.name || '').localeCompare(b.name || '');
+      });
+    }
+
+    function toggleDocumentTableSort(key){
+      const current = ui.documentTableSort || { key:'name', dir:'asc' };
+      if(current.key === key) ui.documentTableSort = { key, dir: current.dir === 'asc' ? 'desc' : 'asc' };
+      else ui.documentTableSort = { key, dir: key === 'name' || key === 'file' ? 'asc' : 'desc' };
+      renderDocumentTable();
+    }
+
+    function bindDocumentTableTagControls(root){
+      const scope = root || document;
+      scope.querySelectorAll('.tagPicker').forEach(sel => {
+        if(sel.dataset.bound === '1') return;
+        sel.dataset.bound = '1';
+        sel.addEventListener('change', async ()=>{
+          await handleTagPickerChange(sel);
+          renderDocumentTable();
+          renderDocuments();
+          if(ui.currentView === 'tagindex') renderDocumentTagIndex();
+          if(ui.currentView === 'outlineindex') renderOutlineIndex();
+          renderTimeline();
+        });
+      });
+      scope.querySelectorAll('.tagRemoveBtn').forEach(btn => {
+        if(btn.dataset.bound === '1') return;
+        btn.dataset.bound = '1';
+        btn.addEventListener('click', async (ev)=>{
+          ev.stopPropagation();
+          const itemId = btn.getAttribute('data-item-id');
+          const tagId = btn.getAttribute('data-tag-id');
+          const ok = await window.removeDocumentTag(itemId, tagId);
+          if(ok){
+            await window.loadDocumentTags();
+            renderDocumentTable();
+            renderDocuments();
+            if(ui.currentView === 'tagindex') renderDocumentTagIndex();
+            if(ui.currentView === 'outlineindex') renderOutlineIndex();
+            renderTimeline();
+          }
+        });
+      });
+    }
+
+    function renderDocumentTable(){
+      ensureCollapsedTagMapDefaults('documentTableCollapsedTagNodes');
+      const panel = $('documentTableFilterPanel');
+      if(panel) panel.style.display = ui.documentTableFilterPanelOpen ? 'block' : 'none';
+      renderDocumentTableFilters();
+      const host = $('documentTableHost');
+      const empty = $('documentTableEmpty');
+      if(!host || !empty) return;
+      const docs = getSortedDocumentsForTable();
+      if(!docs.length){
+        host.innerHTML = '';
+        empty.style.display = '';
+        return;
+      }
+      empty.style.display = 'none';
+      const sort = ui.documentTableSort || { key:'name', dir:'asc' };
+      const arrow = (key)=> sort.key === key ? (sort.dir === 'asc' ? '↑' : '↓') : '';
+      host.innerHTML = `
+        <div style="overflow:auto; border:1px solid var(--border); border-radius:12px; background:#fff">
+          <table class="docRepoTable" style="min-width:1180px">
+            <thead>
+              <tr>
+                <th><button type="button" data-document-table-sort="name">Document ${arrow('name')}</button></th>
+                <th><button type="button" data-document-table-sort="date">Date ${arrow('date')}</button></th>
+                <th><button type="button" data-document-table-sort="uploadDate">Upload date ${arrow('uploadDate')}</button></th>
+                <th><button type="button" data-document-table-sort="fileSize">File size ${arrow('fileSize')}</button></th>
+                <th>Tags</th>
+                <th><button type="button" data-document-table-sort="file">File ${arrow('file')}</button></th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${docs.map(doc => {
+                const fileName = getDocumentFileName(doc);
+                return `<tr>
+                  <td><b>${escapeHtml(doc.name || 'Untitled')}</b><div class="hint" style="margin-top:4px">${escapeHtml(doc.description || '')}</div></td>
+                  <td>${escapeHtml(formatTimelineDateDisplay(doc.date || '') || '')}</td>
+                  <td>${escapeHtml(formatDateForDisplay(getDocumentUploadDate(doc)) || '')}</td>
+                  <td>${escapeHtml(formatFileSize(doc.fileSize || 0))}</td>
+                  <td style="white-space:normal; min-width:280px"><div>${renderAssignedTagPills(doc.tags || [], 'document', doc.id)}${renderTagPicker('document', doc.id, doc.tags || [])}</div></td>
+                  <td>${fileName ? escapeHtml(fileName) : '<span class="hint">No file</span>'}</td>
+                  <td><div style="display:flex; gap:8px; flex-wrap:wrap"><button type="button" class="mini" data-document-table-edit="${doc.id}">Edit</button><button type="button" class="mini" data-document-table-download="${doc.id}">Download</button><button type="button" class="mini" data-document-table-source="${doc.id}">Elements from document</button></div></td>
+                </tr>`;
+              }).join('')}
+            </tbody>
+          </table>
+        </div>`;
+      host.querySelectorAll('[data-document-table-sort]').forEach(btn => btn.addEventListener('click', ()=> toggleDocumentTableSort(btn.getAttribute('data-document-table-sort') || 'name')));
+      host.querySelectorAll('[data-document-table-edit]').forEach(btn => btn.addEventListener('click', ()=> openDocumentEditModal(btn.getAttribute('data-document-table-edit'))));
+      host.querySelectorAll('[data-document-table-download]').forEach(btn => btn.addEventListener('click', ()=> downloadDocument(btn.getAttribute('data-document-table-download'))));
+      host.querySelectorAll('[data-document-table-source]').forEach(btn => btn.addEventListener('click', ()=> openSourceDocModalForDocument(btn.getAttribute('data-document-table-source'))));
+      bindDocumentTableTagControls(host);
+    }
+
     function getWorksheetTagBranchCount(tagId, parentSubtagId=''){
       const children = (state.subtags || []).filter(st => st.parentTagId === tagId && String(st.parentSubtagId || '') === String(parentSubtagId || ''));
       if(!children.length) return parentSubtagId ? 1 : 1;
