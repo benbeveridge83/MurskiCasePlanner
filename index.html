@@ -2267,6 +2267,79 @@
       host.querySelectorAll('[data-element-tag-collapse]').forEach(btn => btn.addEventListener('click', ()=> setTimeout(trigger,0)));
     }
 
+    function elementTagFilterLinksMatch(selectedLinks, ownLinks){
+      const selected = Array.isArray(selectedLinks) ? selectedLinks.filter(link => link && link.tagId) : [];
+      if(!selected.length) return true;
+      const own = Array.isArray(ownLinks) ? ownLinks.filter(link => link && link.tagId) : [];
+      if(!own.length) return false;
+      return selected.some(sel => {
+        return own.some(link => {
+          if(String(link.tagId || '') !== String(sel.tagId || '')) return false;
+          const selSub = String(sel.subtagId || '');
+          const ownSub = String(link.subtagId || '');
+          if(!selSub) return true;
+          if(ownSub === selSub) return true;
+          const ownPath = ownSub ? getSubtagPath(ownSub) : '';
+          const selPath = getSubtagPath(selSub);
+          return !!ownPath && !!selPath && ownPath.startsWith(selPath);
+        });
+      });
+    }
+
+    function elementMatchesIdFilter(ownIds, includeIds, excludeIds, includeNoneSelected, excludeNoneSelected){
+      const own = Array.isArray(ownIds) ? ownIds.filter(Boolean) : [];
+      const hasOwn = own.length > 0;
+      const include = Array.isArray(includeIds) ? includeIds.filter(Boolean) : [];
+      const exclude = Array.isArray(excludeIds) ? excludeIds.filter(Boolean) : [];
+      if((include.length || includeNoneSelected) && !(includeNoneSelected && !hasOwn)){
+        if(!include.some(id => own.includes(id))) return false;
+      }
+      if(!hasOwn && !excludeNoneSelected) return false;
+      if(hasOwn && exclude.some(id => own.includes(id))) return false;
+      return true;
+    }
+
+    function getFilteredElements(){
+      const mode = String(ui.elementsFilterMode || 'all');
+      const search = String(ui.elementsSearch || '').trim().toLowerCase();
+      const creator = String(ui.elementsCreatorFilter || 'all');
+      return (state.elements || []).filter(el => {
+        if(mode === 'timeline' && !el.includeInTimeline) return false;
+        if(mode === 'not_timeline' && el.includeInTimeline) return false;
+        if(creator !== 'all' && getElementCreatorLabel(el) !== creator) return false;
+        if(search){
+          const hay = [
+            el.name,
+            el.text,
+            el.source,
+            formatTimelineDateDisplay(el.date || ''),
+            ...(el.documentIds || []).map(id => getDocumentById(id)?.name || ''),
+            ...(el.witnessIds || []).map(id => getPersonById(id)?.name || ''),
+            ...(el.exhibitDocIds || []).map(id => getDocumentById(id)?.name || ''),
+            ...getElementSourceDocumentIds(el).map(id => getDocumentById(id)?.name || ''),
+            ...getElementSourcePersonIds(el).map(id => getPersonById(id)?.name || ''),
+            ...getEventTagLinks(el).map(link => {
+              const tag = (state.tags || []).find(t => t.id === link.tagId)?.name || '';
+              const sub = link.subtagId ? getSubtagPath(link.subtagId) : '';
+              return [tag, sub].filter(Boolean).join(' ');
+            })
+          ].join(' ').toLowerCase();
+          if(!hay.includes(search)) return false;
+        }
+        const ownTagLinks = getEventTagLinks(el);
+        const hasTags = ownTagLinks.length > 0;
+        if(((ui.elementsFilterTagIds || []).length || ui.elementsFilterTagNoneSelected) && !(ui.elementsFilterTagNoneSelected && !hasTags) && !elementTagFilterLinksMatch(ui.elementsFilterTagIds || [], ownTagLinks)) return false;
+        if(!hasTags && ui.elementsFilterTagExcludeNoneSelected === false) return false;
+        if(hasTags && elementTagFilterLinksMatch(ui.elementsFilterTagExcludeIds || [], ownTagLinks)) return false;
+        if(!elementMatchesIdFilter(el.witnessIds || [], ui.elementsFilterWitnessIds || [], ui.elementsFilterWitnessExcludeIds || [], !!ui.elementsFilterWitnessNoneSelected, ui.elementsFilterWitnessExcludeNoneSelected !== false)) return false;
+        if(!elementMatchesIdFilter(el.documentIds || [], ui.elementsFilterDocumentIds || [], ui.elementsFilterDocumentExcludeIds || [], !!ui.elementsFilterDocumentNoneSelected, ui.elementsFilterDocumentExcludeNoneSelected !== false)) return false;
+        if(!elementMatchesIdFilter(el.exhibitDocIds || [], ui.elementsFilterExhibitIds || [], ui.elementsFilterExhibitExcludeIds || [], !!ui.elementsFilterExhibitNoneSelected, ui.elementsFilterExhibitExcludeNoneSelected !== false)) return false;
+        if(!elementMatchesIdFilter(getElementSourceDocumentIds(el), ui.elementsFilterSourceDocumentIds || [], ui.elementsFilterSourceDocumentExcludeIds || [], !!ui.elementsFilterSourceDocumentNoneSelected, ui.elementsFilterSourceDocumentExcludeNoneSelected !== false)) return false;
+        if(!elementMatchesIdFilter(getElementSourcePersonIds(el), ui.elementsFilterSourcePersonIds || [], ui.elementsFilterSourcePersonExcludeIds || [], !!ui.elementsFilterSourcePersonNoneSelected, ui.elementsFilterSourcePersonExcludeNoneSelected !== false)) return false;
+        return true;
+      }).sort((a,b)=> (a.name || '').localeCompare(b.name || ''));
+    }
+
     function documentMatchesHierFilterWithState(doc, selected, excluded, includeNone, excludeNone){
       const own = getDocumentTagLinks(doc);
       const hasOwn = own.length > 0;
