@@ -1204,7 +1204,7 @@
     const UI_STORAGE_KEY = 'murski_ui_prefs_v1';
     const LEGACY_STORAGE_KEY = 'murski_case_planner_v1';
     let state = { caseName: '', tags: [], people: [], documents: [], elements: [], outline: [], timelineEvents: [], subtags: [], iconLibrary: [] };
-    const ui = { selectedNodeId: null, selectedWitnessId: null, selectedDocId: null, selectedPersonId: null, selectedElementId: null, activeWitnessColumnId: null, expandedDocIds: {}, showDocDownloadList: false, showDocTagIndex: false, docTagFilterIds: [], docTagIndexExpandedIds: {}, docTagIndexShowUsedOnly: false, docTagNoTagsOnly: false, docTagHasTagsOnly: false, docExhibitFilter: 'all', outlineIndexFilterIds: [], outlineIndexExpandedIds: {}, outlineIndexShowUsedOnly: false, outlineIndexNoTagsOnly: false, outlineIndexHasTagsOnly: false, outlineIndexExhibitFilter: 'all', docSort: { field: 'file', dir: 'asc' }, docRepoSort: { field: 'date', dir: 'desc' }, docDownloadSelections: {}, docDownloadEligibilityFilter: 'all', docRepoEligibilityFilters: ['possible','not'], docRepoStatusFilters: ['exhibit','not_exhibit'], docRepoColWidths: { name: 340, date: 150, uploadDate: 160, timeline: 170, eligibility: 220, exhibitStatus: 190, file: 90 }, outlineCompact: false, outlineStructureView: false, outlinePaneWidth: 720, timelineSelectedId: null, timelineEditingId: null, timelineShowEventColumn: true, timelineShowDocumentColumn: true, timelineShowHeadlineColumn: true, timelineDocPickerOpen: false, timelineColumnOrder: ['date','event','document','headline'], timelineDraggingUndatedId: null, timelineFilterTagIds: [], timelineFilterTagOpen: false, elementsFilterMode: 'all', elementsSearch: '', currentView: INITIAL_VIEW, outlineFilterTagIds: [], outlineFilterWitnessIds: [], outlineFilterTagOpen: false, outlineFilterWitnessOpen: false, outlineIndexTagIds: [], outlineIndexWitnessIds: [], outlineIndexTagOpen: false, outlineIndexWitnessOpen: false, structuredOutlineWitnessFilterIds: [], structuredHeadingTagIds: [], structuredHeadingWitnessIds: [], structuredHeadingTagOpen: false, structuredHeadingWitnessOpen: false, structuredTraySearch: '', structuredTrayAssignmentFilter: 'all', structuredTrayPersonFilterId: 'any', structuredTrayTagFilterIds: [], structuredDocEditorId: null, structuredDragging: null, sourceDocSearch: '', sourceDocSelectedId: null, sourceDocSelection: null, sourceDocContext: 'create', sourceDocOpenFromElementId: null, sourceDocMaximized: false, sourceDocImageCapture: null, sourceDocCapturePointer: null, sourceDocScrollByDocumentId: {}, sourceDocAnchorByDocumentId: {}, elementsFilterTagIds: [], elementsFilterTagExcludeIds: [], elementsFilterTagNoneSelected: false, elementsFilterTagExcludeNoneSelected: true, elementsFilterWitnessIds: [], elementsFilterWitnessExcludeIds: [], elementsFilterWitnessNoneSelected: false, elementsFilterWitnessExcludeNoneSelected: true, elementsFilterDocumentIds: [], elementsFilterDocumentExcludeIds: [], elementsFilterDocumentNoneSelected: false, elementsFilterDocumentExcludeNoneSelected: true, elementsFilterExhibitIds: [], elementsFilterExhibitExcludeIds: [], elementsFilterExhibitNoneSelected: false, elementsFilterExhibitExcludeNoneSelected: true, elementsFilterSourceDocumentIds: [], elementsFilterSourceDocumentExcludeIds: [], elementsFilterSourceDocumentNoneSelected: false, elementsFilterSourceDocumentExcludeNoneSelected: true, elementsFilterSourcePersonIds: [], elementsFilterSourcePersonExcludeIds: [], elementsFilterSourcePersonNoneSelected: false, elementsFilterSourcePersonExcludeNoneSelected: true, elementsFilterPanelOpen: false, elementsCreatorFilter: 'all', elementsWorksheetOpen: false, elementsWorksheetPinnedTopIds: [], elementsWorksheetSort: { key: 'name', dir: 'asc' }, elementsWorksheetCollapsedTags: {}, elementsWorksheetCollapsedChildren: {}, newDocumentTagLinks: [], bulkDocumentDrafts: [], bulkDocumentEditIndex: -1, bulkDocumentSelectedIds: [], bulkDocumentViewerId: '', selectedTagNodeId: null, collapsedTagNodes: {}, collapsedElementTagNodes: {}, documentTableSearch: '', documentTableFilterPanelOpen: false, documentTableTagIds: [], documentTableTagExcludeIds: [], documentTableTagNoneSelected: false, documentTableTagExcludeNoneSelected: true, documentTableExhibitIds: [], documentTableExhibitExcludeIds: [], documentTableExhibitNoneSelected: false, documentTableExhibitExcludeNoneSelected: true, documentTableTimelineIds: [], documentTableTimelineExcludeIds: [], documentTableTimelineNoneSelected: false, documentTableTimelineExcludeNoneSelected: true, documentTableFileIds: [], documentTableFileExcludeIds: [], documentTableFileNoneSelected: false, documentTableFileExcludeNoneSelected: true };
+    const ui = { selectedNodeId: null, selectedWitnessId: null, selectedDocId: null, selectedPersonId: null, selectedElementId: null, activeWitnessColumnId: null, expandedDocIds: {}, showDocDownloadList: false, showDocTagIndex: false, docTagFilterIds: [], docTagIndexExpandedIds: {}, docTagIndexShowUsedOnly: false, docTagNoTagsOnly: false, docTagHasTagsOnly: false, docExhibitFilter: 'all', outlineIndexFilterIds: [], outlineIndexExpandedIds: {}, outlineIndexShowUsedOnly: false, outlineIndexNoTagsOnly: false, outlineIndexHasTagsOnly: false, outlineIndexExhibitFilter: 'all', docSort: { field: 'file', dir: 'asc' }, docRepoSort: { field: 'date', dir: 'desc' }, docDownloadSelections: {}, docDownloadEligibilityFilter: 'all', docRepoEligibilityFilters: ['possible','not'], docRepoStatusFilters: ['exhibit','not_exhibit'], docRepoColWidths: { name: 340, date: 150, uploadDate: 160, timeline: 170, eligibility: 220, exhibitStatus: 190, file: 90 }, outlineCompact: false, outlineStructureView: false, outlinePaneWidth: 720, timelineSelectedId: null, timelineEditingId: null, timelineShowEventColumn: true, timelineShowDocumentColumn: true, timelineShowHeadlineColumn: true, timelineDocPickerOpen: false, timelineColumnOrder: ['date','event','document','headline'], timelineDraggingUndatedId: null, timelineFilterTagIds: [], timelineFilterTagOpen: false, elementsFilterMode: 'all', elementsSearch: '', currentView: INITIAL_VIEW, outlineFilterTagIds: [], outlineFilterWitnessIds: [], outlineFilterTagOpen: false, outlineFilterWitnessOpen: false, outlineIndexTagIds: [], outlineIndexWitnessIds: [], outlineIndexTagOpen: false, outlineIndexWitnessOpen: false, structuredOutlineWitnessFilterIds: [], structuredHeadingTagIds: [], structuredHeadingWitnessIds: [], structuredHeadingTagOpen: false, structuredHeadingWitnessOpen: false, structuredTraySearch: '', structuredTrayAssignmentFilter: 'all', structuredTrayPersonFilterId: 'any', structuredTrayTagFilterIds: [], structuredDocEditorId: null, structuredDragging: null, sourceDocSearch: '', sourceDocSelectedId: null, sourceDocSelection: null, sourceDocContext: 'create', sourceDocOpenFromElementId: null, sourceDocMaximized: false, sourceDocImageCapture: null, sourceDocCapturePointer: null, sourceDocScrollByDocumentId: {}, sourceDocAnchorByDocumentId: {}, elementsFilterTagIds: [], elementsFilterTagExcludeIds: [], elementsFilterTagNoneSelected: false, elementsFilterTagExcludeNoneSelected: true, elementsFilterWitnessIds: [], elementsFilterWitnessExcludeIds: [], elementsFilterWitnessNoneSelected: false, elementsFilterWitnessExcludeNoneSelected: true, elementsFilterDocumentIds: [], elementsFilterDocumentExcludeIds: [], elementsFilterDocumentNoneSelected: false, elementsFilterDocumentExcludeNoneSelected: true, elementsFilterExhibitIds: [], elementsFilterExhibitExcludeIds: [], elementsFilterExhibitNoneSelected: false, elementsFilterExhibitExcludeNoneSelected: true, elementsFilterSourceDocumentIds: [], elementsFilterSourceDocumentExcludeIds: [], elementsFilterSourceDocumentNoneSelected: false, elementsFilterSourceDocumentExcludeNoneSelected: true, elementsFilterSourcePersonIds: [], elementsFilterSourcePersonExcludeIds: [], elementsFilterSourcePersonNoneSelected: false, elementsFilterSourcePersonExcludeNoneSelected: true, elementsFilterPanelOpen: false, elementsCreatorFilter: 'all', elementsWorksheetOpen: false, elementsWorksheetPinnedTopIds: [], elementsWorksheetSort: { key: 'name', dir: 'asc' }, elementsWorksheetCollapsedTags: {}, elementsWorksheetCollapsedChildren: {}, newDocumentTagLinks: [], bulkDocumentDrafts: [], bulkDocumentEditIndex: -1, bulkDocumentSelectedIds: [], bulkDocumentViewerId: '', bulkDocumentCancelRequested: false, bulkDocumentSaving: false, bulkDocumentStatus: '', documentTableCollapsedTagNodes: {}, selectedTagNodeId: null, collapsedTagNodes: {}, collapsedElementTagNodes: {}, documentTableSearch: '', documentTableFilterPanelOpen: false, documentTableTagIds: [], documentTableTagExcludeIds: [], documentTableTagNoneSelected: false, documentTableTagExcludeNoneSelected: true, documentTableExhibitIds: [], documentTableExhibitExcludeIds: [], documentTableExhibitNoneSelected: false, documentTableExhibitExcludeNoneSelected: true, documentTableTimelineIds: [], documentTableTimelineExcludeIds: [], documentTableTimelineNoneSelected: false, documentTableTimelineExcludeNoneSelected: true, documentTableFileIds: [], documentTableFileExcludeIds: [], documentTableFileNoneSelected: false, documentTableFileExcludeNoneSelected: true };
     const structuredUi = { headingFilterOpen: false, visibleHeadingIds: [], headingFilterInitialized: false, witnessColWidths: {}, resizingWitnessId: null, resizeStartX: 0, resizeStartWidth: 220 };
     const HEADING_EXHIBIT_KEY = '__heading__';
     const $ = (id) => document.getElementById(id);
@@ -1220,6 +1220,8 @@
     function storeSourceDocAnchor(documentId, pageNumber, excerpt=''){ if(!documentId) return; ui.sourceDocAnchorByDocumentId[documentId] = { pageNumber: pageNumber || null, excerpt: String(excerpt || '').trim() }; }
     function restoreSourceDocViewState(docId){ const shell = $('sourceDocViewerShell'); if(!shell || !docId) return; const savedTop = Number(ui.sourceDocScrollByDocumentId && ui.sourceDocScrollByDocumentId[docId]); const anchor = ui.sourceDocAnchorByDocumentId && ui.sourceDocAnchorByDocumentId[docId] ? ui.sourceDocAnchorByDocumentId[docId] : null; const apply = ()=>{ let restored = false; if(anchor && (anchor.pageNumber || anchor.excerpt)){ const pages = Array.from(document.querySelectorAll('#sourceDocViewerInner .sourceDocPage')); let targetPage = null; if(anchor.pageNumber != null){ targetPage = pages.find(page => String(page.getAttribute('data-page-number') || '') === String(anchor.pageNumber || '')) || null; } if(!targetPage && anchor.excerpt){ targetPage = pages.find(page => (page.textContent || '').includes(anchor.excerpt)) || null; } if(targetPage){ targetPage.classList.add('activeSourcePage'); targetPage.scrollIntoView({ block:'center' }); restored = true; } } if(Number.isFinite(savedTop) && savedTop > 0){ shell.scrollTop = savedTop; restored = true; } if(!restored) shell.scrollTop = 0; }; requestAnimationFrame(()=> requestAnimationFrame(apply)); }
     function uid(){ return Math.random().toString(16).slice(2) + Date.now().toString(16); }
+    const BULK_UPLOAD_MAX_FILE_SIZE = 50 * 1024 * 1024;
+    function formatFileSize(bytes){ const n = Number(bytes || 0); if(!n) return '0 B'; const units = ['B','KB','MB','GB']; let value = n; let unitIndex = 0; while(value >= 1024 && unitIndex < units.length - 1){ value /= 1024; unitIndex += 1; } return `${value >= 10 || unitIndex === 0 ? Math.round(value) : value.toFixed(1)} ${units[unitIndex]}`; }
     function toast(msg){ const el = $('toast'); el.textContent = msg; el.classList.add('show'); clearTimeout(toast._t); toast._t = setTimeout(()=> el.classList.remove('show'), 2200); }
     function applyOutlinePaneWidth(){
       const matrix = $('matrix');
@@ -1992,7 +1994,7 @@
       const rootClass = config.rootClass || '';
       const emptyMessage = config.emptyMessage || 'No tags yet.';
       const checked = new Set((selectedLinks || []).map(link => `${link.tagId}::${link.subtagId || ''}`));
-      const collapsedMap = ui.collapsedElementTagNodes || {};
+      const collapsedMap = config.collapsedMap || ui.collapsedElementTagNodes || {};
       const rootTags = (state.tags || []).slice().sort(sortByName);
       if(!rootTags.length) return `<div class="hint">${escapeHtml(emptyMessage)}</div>`;
       function renderChildren(parentTagId, parentSubtagId=''){
@@ -2016,7 +2018,17 @@
     }
     function renderHierarchicalTagTree(hostId, selectedLinks=[], options={}){
       const host = $(hostId); if(!host) return;
-      host.innerHTML = renderTagTreeMarkup(selectedLinks, { inputAttr:'data-hier-tag-link', rootClass: options.rootClass || '', emptyMessage: options.emptyMessage || 'No tags yet.' });
+      const collapsedMap = options.collapsedMap || ui.collapsedElementTagNodes || {};
+      host.innerHTML = renderTagTreeMarkup(selectedLinks, { inputAttr:'data-hier-tag-link', rootClass: options.rootClass || '', emptyMessage: options.emptyMessage || 'No tags yet.', collapsedMap });
+      host.querySelectorAll('[data-element-tag-collapse]').forEach(btn => btn.addEventListener('click', (e)=>{
+        e.preventDefault();
+        e.stopPropagation();
+        const id = btn.getAttribute('data-element-tag-collapse') || '';
+        if(!id) return;
+        collapsedMap[id] = !collapsedMap[id];
+        renderHierarchicalTagTree(hostId, collectHierarchicalTagLinks(hostId), options);
+        if(typeof options.onTreeChange === 'function') options.onTreeChange();
+      }));
     }
     function renderElementCreateTagChoices(selectedLinks=[]){ const host = $('elementCreateTagChoices'); if(!host) return; host.innerHTML = renderTagTreeMarkup(selectedLinks, { inputAttr:'data-element-tag-link', rootClass:'elementTagRoot', emptyMessage:'No tags yet. Add tags first.' }); host.querySelectorAll('[data-element-tag-collapse]').forEach(btn => btn.addEventListener('click', (e)=>{ e.preventDefault(); e.stopPropagation(); const id = btn.getAttribute('data-element-tag-collapse'); ui.collapsedElementTagNodes[id] = !ui.collapsedElementTagNodes[id]; renderElementCreateTagChoices(getElementFormSelectedTagLinks()); })); host.querySelectorAll('input[data-element-tag-link]').forEach(cb => cb.addEventListener('change', ()=> updateElementHoverSummaries())); updateElementHoverSummaries(); }
     function collectHierarchicalTagLinks(hostId){
@@ -2155,8 +2167,8 @@
           <div id="documentTableFilterTagTreeExclude"></div>
         </div>
       </div>`;
-      renderHierarchicalTagTree('documentTableFilterTagTreeInclude', ui.documentTableTagIds || [], { rootClass:'elementsFilterTagTree' });
-      renderHierarchicalTagTree('documentTableFilterTagTreeExclude', ui.documentTableTagExcludeIds || [], { rootClass:'elementsFilterTagTree' });
+      renderHierarchicalTagTree('documentTableFilterTagTreeInclude', ui.documentTableTagIds || [], { rootClass:'elementsFilterTagTree', collapsedMap: ui.documentTableCollapsedTagNodes, onTreeChange: renderDocumentTable });
+      renderHierarchicalTagTree('documentTableFilterTagTreeExclude', ui.documentTableTagExcludeIds || [], { rootClass:'elementsFilterTagTree', collapsedMap: ui.documentTableCollapsedTagNodes, onTreeChange: renderDocumentTable });
       host.querySelector('#documentTableTagNoneInclude')?.addEventListener('change', (ev)=>{ ui.documentTableTagNoneSelected = !!ev.target.checked; renderDocumentTable(); });
       host.querySelector('#documentTableTagNoneExclude')?.addEventListener('change', (ev)=>{ ui.documentTableTagExcludeNoneSelected = !!ev.target.checked; renderDocumentTable(); });
       host.querySelectorAll('#documentTableFilterTagTreeInclude input[type="checkbox"]').forEach(input => {
@@ -2227,18 +2239,20 @@
       const docs = getFilteredDocumentsForTable();
       empty.style.display = docs.length ? 'none' : '';
       if(!docs.length){ host.innerHTML = ''; return; }
-      host.innerHTML = `<div class="bulkDocTableWrap"><table class="bulkDocTable"><thead><tr><th>Document</th><th>Date</th><th>Tags</th><th>View</th><th>Download</th><th>Elements from Document</th></tr></thead><tbody>${docs.map(doc => { const meta = getDocumentExhibitMeta(doc.id); return `<tr>
+      host.innerHTML = `<div class="bulkDocTableWrap"><table class="bulkDocTable"><thead><tr><th>Document</th><th>Date</th><th>Tags</th><th>View</th><th>Download</th><th>Elements from Document</th><th>Delete</th></tr></thead><tbody>${docs.map(doc => { const meta = getDocumentExhibitMeta(doc.id); return `<tr>
         <td><div><b>${escapeHtml(doc.name || '')}</b></div><div class="hint">${escapeHtml(formatTimelineDateDisplay(doc.date || '') || 'No date')} ${meta.isExhibit ? '• ' + escapeHtml(meta.label || 'Exhibit') : ''} ${(doc.filePath || doc.dataUrl || doc.hasFile) ? '• Has file' : '• No file'} ${(doc.includeInTimeline !== false) ? '• In timeline' : '• Hidden from timeline'}</div></td>
         <td>${escapeHtml(formatTimelineDateDisplay(doc.date || '') || '')}</td>
         <td class="bulkDocTagsCell">${renderTagLinkPills(getDocumentTagLinks(doc), 'document', doc.id)}<div style="margin-top:8px"><button type="button" class="mini" data-document-table-tags="${doc.id}">Edit tags</button></div></td>
         <td><button type="button" class="mini" data-document-table-view="${doc.id}">View</button></td>
         <td><button type="button" class="mini" data-document-table-download="${doc.id}">Download</button></td>
         <td><button type="button" class="mini btnPrimary" data-document-table-elements="${doc.id}">Elements from Document</button></td>
+        <td><button type="button" class="mini btnDanger" data-document-table-delete="${doc.id}">Delete</button></td>
       </tr>`; }).join('')}</tbody></table></div>`;
       host.querySelectorAll('[data-document-table-tags]').forEach(btn => btn.addEventListener('click', (ev)=>{ ev.preventDefault(); ev.stopPropagation(); openDocumentTagModal(btn.getAttribute('data-document-table-tags')); }));
       host.querySelectorAll('[data-document-table-view]').forEach(btn => btn.addEventListener('click', (ev)=>{ ev.preventDefault(); ev.stopPropagation(); openDocumentEditModal(btn.getAttribute('data-document-table-view')); }));
       host.querySelectorAll('[data-document-table-download]').forEach(btn => btn.addEventListener('click', (ev)=>{ ev.preventDefault(); ev.stopPropagation(); downloadDocument(btn.getAttribute('data-document-table-download')); }));
       host.querySelectorAll('[data-document-table-elements]').forEach(btn => btn.addEventListener('click', async (ev)=>{ ev.preventDefault(); ev.stopPropagation(); await openSourceDocumentDirect(btn.getAttribute('data-document-table-elements')); }));
+      host.querySelectorAll('[data-document-table-delete]').forEach(btn => btn.addEventListener('click', async (ev)=>{ ev.preventDefault(); ev.stopPropagation(); await deleteDocument(btn.getAttribute('data-document-table-delete')); }));
     }
     function renderElementsAdvancedFilters(){
       const optionSets = getElementFilterOptionSets();
@@ -4943,9 +4957,10 @@ function openStructuredDocEditor(docId){
       if(!wrap) return;
       const drafts = Array.isArray(ui.bulkDocumentDrafts) ? ui.bulkDocumentDrafts : [];
       if(!drafts.length){ wrap.style.display = 'none'; wrap.innerHTML = ''; return; }
-      const selectedIds = new Set(Array.isArray(ui.bulkDocumentSelectedIds) ? ui.bulkDocumentSelectedIds : []);
       wrap.style.display = '';
-      wrap.innerHTML = `<div class="card" style="box-shadow:none; padding:12px 14px"><div style="display:flex; justify-content:space-between; gap:10px; align-items:center; flex-wrap:wrap"><div><div class="label">Bulk upload review</div><div class="hint">Edit names, add dates, descriptions, and tags, preview each file, then save everything together. Check multiple rows if you want to copy one row's tags to the others.</div></div><div style="display:flex; gap:8px; flex-wrap:wrap"><button type="button" id="docBulkAddMoreBtn" class="btnGhost">Add more files</button><button type="button" id="docBulkClearBtn" class="btnGhost">Clear list</button></div></div><div class="bulkDocActionsBar" style="margin-top:12px"><label class="checkItem" style="margin:0"><input type="checkbox" id="docBulkSelectAll" ${drafts.length && drafts.every(draft => selectedIds.has(draft.id)) ? 'checked' : ''} /> <span>Select all rows</span></label><div class="hint">${selectedIds.size} selected for bulk tag copy</div></div><div class="bulkDocTableWrap"><table class="bulkDocTable"><thead><tr><th style="width:64px">Pick</th><th style="width:250px">File</th><th style="width:220px">Document name</th><th style="width:140px">Date</th><th>Description</th><th style="width:280px">Tags</th><th style="width:110px">Preview</th><th style="width:90px">Remove</th></tr></thead><tbody>${drafts.map((draft, idx) => { const previewOpen = ui.bulkDocumentViewerId === draft.id; const previewUrl = previewOpen ? getBulkDocumentDraftPreviewUrl(draft) : ''; return `<tr><td><label class="checkItem" style="margin:0; padding:6px 8px"><input type="checkbox" data-bulk-doc-select="${draft.id}" ${selectedIds.has(draft.id) ? 'checked' : ''} /><span>Row</span></label></td><td><div><b>${escapeHtml(String(draft.file?.name || ''))}</b></div><div class="hint">${draft.file ? Math.round((Number(draft.file.size || 0) / 1024)) + ' KB' : ''}</div></td><td><input class="bulkDocNameInput" data-bulk-doc-name="${idx}" type="text" value="${escapeHtml(draft.name || '')}" /></td><td><input class="bulkDocDateInput" data-bulk-doc-date="${idx}" type="date" value="${escapeHtml(draft.date || '')}" /></td><td><textarea class="bulkDocDescInput" data-bulk-doc-desc="${idx}" placeholder="Optional description">${escapeHtml(draft.description || '')}</textarea></td><td class="bulkDocTagsCell"><div class="bulkDocTagSummary">${renderTagLinkPills(draft.tagLinks || [])}</div><div style="margin-top:8px; display:flex; gap:8px; flex-wrap:wrap"><button type="button" class="btnGhost" data-bulk-doc-tags="${idx}">Add tags</button><button type="button" class="btnGhost" data-bulk-doc-copy-tags="${draft.id}">Copy tags to selected</button></div></td><td><button type="button" class="btnGhost" data-bulk-doc-preview="${draft.id}">${previewOpen ? 'Hide' : 'View'}</button></td><td><button type="button" class="btnDanger" data-bulk-doc-remove="${idx}">Remove</button></td></tr>${previewOpen ? `<tr><td colspan="8"><div style="padding:8px 0">${previewUrl ? `<div class="label">Document viewer</div><iframe class="docViewerFrame" src="${previewUrl}"></iframe>` : '<div class="hint">Preview is not available for this file.</div>'}</div></td></tr>` : ''}`; }).join('')}</tbody></table></div><div class="bulkDocActionsBar"><div class="hint">${drafts.length} file${drafts.length===1?'':'s'} ready</div><div style="display:flex; gap:8px; flex-wrap:wrap"><button type="button" id="docBulkSaveBtn" class="btnPrimary">Save all documents</button></div></div></div>`;
+      const selectedIds = new Set(ui.bulkDocumentSelectedIds || []);
+      const statusHtml = ui.bulkDocumentStatus ? `<div class="hint" style="margin-top:8px">${escapeHtml(ui.bulkDocumentStatus)}</div>` : '';
+      wrap.innerHTML = `<div class="card" style="box-shadow:none; padding:12px 14px"><div style="display:flex; justify-content:space-between; gap:10px; align-items:center; flex-wrap:wrap"><div><div class="label">Bulk upload review</div><div class="hint">Edit names, add dates, descriptions, and tags, preview each file, then save everything together. Check multiple rows if you want to copy one row's tags to the others.</div>${statusHtml}</div><div style="display:flex; gap:8px; flex-wrap:wrap"><button type="button" id="docBulkAddMoreBtn" class="btnGhost" ${ui.bulkDocumentSaving ? 'disabled' : ''}>Add more files</button><button type="button" id="docBulkClearBtn" class="btnGhost" ${ui.bulkDocumentSaving ? 'disabled' : ''}>Clear list</button></div></div><div class="bulkDocActionsBar" style="margin-top:12px"><label class="checkItem" style="margin:0"><input type="checkbox" id="docBulkSelectAll" ${drafts.length && drafts.every(draft => selectedIds.has(draft.id)) ? 'checked' : ''} ${ui.bulkDocumentSaving ? 'disabled' : ''} /> <span>Select all rows</span></label><div class="hint">${selectedIds.size} selected for bulk tag copy</div></div><div class="bulkDocTableWrap"><table class="bulkDocTable"><thead><tr><th style="width:64px">Pick</th><th style="width:250px">File</th><th style="width:220px">Document name</th><th style="width:140px">Date</th><th>Description</th><th style="width:280px">Tags</th><th style="width:110px">Preview</th><th style="width:90px">Remove</th></tr></thead><tbody>${drafts.map((draft, idx) => { const previewOpen = ui.bulkDocumentViewerId === draft.id; const previewUrl = previewOpen ? getBulkDocumentDraftPreviewUrl(draft) : ''; const tooLarge = draft.file && Number(draft.file.size || 0) > BULK_UPLOAD_MAX_FILE_SIZE; const fileMeta = draft.file ? `${formatFileSize(draft.file.size || 0)}${tooLarge ? ' • too large for current upload limit' : ''}` : ''; const rowStatus = draft.error ? `<div class="hint" style="color:#991b1b; margin-top:6px">${escapeHtml(draft.error)}</div>` : (draft.success ? `<div class="hint" style="color:#166534; margin-top:6px">Uploaded</div>` : ''); return `<tr><td><label class="checkItem" style="margin:0; padding:6px 8px"><input type="checkbox" data-bulk-doc-select="${draft.id}" ${selectedIds.has(draft.id) ? 'checked' : ''} ${ui.bulkDocumentSaving ? 'disabled' : ''} /><span>Row</span></label></td><td><div><b>${escapeHtml(String(draft.file?.name || ''))}</b></div><div class="hint">${escapeHtml(fileMeta)}</div>${rowStatus}</td><td><input class="bulkDocNameInput" data-bulk-doc-name="${idx}" type="text" value="${escapeHtml(draft.name || '')}" ${ui.bulkDocumentSaving ? 'disabled' : ''} /></td><td><input class="bulkDocDateInput" data-bulk-doc-date="${idx}" type="date" value="${escapeHtml(draft.date || '')}" ${ui.bulkDocumentSaving ? 'disabled' : ''} /></td><td><textarea class="bulkDocDescInput" data-bulk-doc-desc="${idx}" placeholder="Optional description" ${ui.bulkDocumentSaving ? 'disabled' : ''}>${escapeHtml(draft.description || '')}</textarea></td><td class="bulkDocTagsCell"><div class="bulkDocTagSummary">${renderTagLinkPills(draft.tagLinks || [])}</div><div style="margin-top:8px; display:flex; gap:8px; flex-wrap:wrap"><button type="button" class="btnGhost" data-bulk-doc-tags="${idx}" ${ui.bulkDocumentSaving ? 'disabled' : ''}>Add tags</button><button type="button" class="btnGhost" data-bulk-doc-copy-tags="${draft.id}" ${ui.bulkDocumentSaving ? 'disabled' : ''}>Copy tags to selected</button></div></td><td><button type="button" class="btnGhost" data-bulk-doc-preview="${draft.id}">${previewOpen ? 'Hide' : 'View'}</button></td><td><button type="button" class="btnDanger" data-bulk-doc-remove="${idx}" ${ui.bulkDocumentSaving ? 'disabled' : ''}>Remove</button></td></tr>${previewOpen ? `<tr><td colspan="8"><div style="padding:8px 0">${previewUrl ? `<div class="label">Document viewer</div><iframe class="docViewerFrame" src="${previewUrl}"></iframe>` : '<div class="hint">Preview is not available for this file.</div>'}</div></td></tr>` : ''}`; }).join('')}</tbody></table></div><div class="bulkDocActionsBar"><div class="hint">${drafts.length} file${drafts.length===1?'':'s'} ready</div><div style="display:flex; gap:8px; flex-wrap:wrap">${ui.bulkDocumentSaving ? '<button type="button" id="docBulkCancelBtn" class="btnDanger">Cancel upload</button>' : ''}<button type="button" id="docBulkSaveBtn" class="btnPrimary" ${ui.bulkDocumentSaving ? 'disabled' : ''}>Save all documents</button></div></div></div>`;
       wrap.querySelectorAll('[data-bulk-doc-name]').forEach(input => input.addEventListener('input', ()=>{ const idx = Number(input.getAttribute('data-bulk-doc-name')); if(ui.bulkDocumentDrafts[idx]) ui.bulkDocumentDrafts[idx].name = input.value; }));
       wrap.querySelectorAll('[data-bulk-doc-date]').forEach(input => input.addEventListener('input', ()=>{ const idx = Number(input.getAttribute('data-bulk-doc-date')); if(ui.bulkDocumentDrafts[idx]) ui.bulkDocumentDrafts[idx].date = input.value; }));
       wrap.querySelectorAll('[data-bulk-doc-desc]').forEach(input => input.addEventListener('input', ()=>{ const idx = Number(input.getAttribute('data-bulk-doc-desc')); if(ui.bulkDocumentDrafts[idx]) ui.bulkDocumentDrafts[idx].description = input.value; }));
@@ -4955,15 +4970,18 @@ function openStructuredDocEditor(docId){
       wrap.querySelectorAll('[data-bulk-doc-preview]').forEach(btn => btn.addEventListener('click', ()=>{ const draftId = btn.getAttribute('data-bulk-doc-preview') || ''; ui.bulkDocumentViewerId = ui.bulkDocumentViewerId === draftId ? '' : draftId; renderBulkDocumentUpload(); }));
       wrap.querySelectorAll('[data-bulk-doc-remove]').forEach(btn => btn.addEventListener('click', ()=>{ const idx = Number(btn.getAttribute('data-bulk-doc-remove')); const removed = ui.bulkDocumentDrafts[idx]; if(removed){ ui.bulkDocumentSelectedIds = (ui.bulkDocumentSelectedIds || []).filter(id => id !== removed.id); if(ui.bulkDocumentViewerId === removed.id) ui.bulkDocumentViewerId = ''; if(removed.previewUrl){ try{ URL.revokeObjectURL(removed.previewUrl); }catch(err){} } } ui.bulkDocumentDrafts.splice(idx, 1); renderBulkDocumentUpload(); }));
       $('docBulkAddMoreBtn')?.addEventListener('click', ()=> $('docBulkFiles')?.click());
-      $('docBulkClearBtn')?.addEventListener('click', ()=>{ (ui.bulkDocumentDrafts || []).forEach(draft => { if(draft && draft.previewUrl){ try{ URL.revokeObjectURL(draft.previewUrl); }catch(err){} } }); ui.bulkDocumentDrafts = []; ui.bulkDocumentEditIndex = -1; ui.bulkDocumentSelectedIds = []; ui.bulkDocumentViewerId = ''; renderBulkDocumentUpload(); });
+      $('docBulkClearBtn')?.addEventListener('click', ()=>{ (ui.bulkDocumentDrafts || []).forEach(draft => { if(draft && draft.previewUrl){ try{ URL.revokeObjectURL(draft.previewUrl); }catch(err){} } }); ui.bulkDocumentDrafts = []; ui.bulkDocumentEditIndex = -1; ui.bulkDocumentSelectedIds = []; ui.bulkDocumentViewerId = ''; ui.bulkDocumentCancelRequested = false; ui.bulkDocumentSaving = false; ui.bulkDocumentStatus = ''; renderBulkDocumentUpload(); });
       $('docBulkSelectAll')?.addEventListener('change', ()=> setAllBulkDocumentSelections(!!$('docBulkSelectAll')?.checked));
       $('docBulkSaveBtn')?.addEventListener('click', saveBulkDocuments);
+      $('docBulkCancelBtn')?.addEventListener('click', ()=>{ ui.bulkDocumentCancelRequested = true; ui.bulkDocumentStatus = 'Stopping after the current file finishes…'; renderBulkDocumentUpload(); });
     }
     function queueBulkDocumentFiles(fileList){
       const files = Array.from(fileList || []).filter(Boolean);
       if(!files.length) return;
       ui.bulkDocumentDrafts = (ui.bulkDocumentDrafts || []).concat(files.map(makeBulkDocumentDraft));
       ui.bulkDocumentSelectedIds = ui.bulkDocumentDrafts.map(draft => draft.id);
+      ui.bulkDocumentStatus = '';
+      ui.bulkDocumentCancelRequested = false;
       if($('docBulkFiles')) $('docBulkFiles').value = '';
       renderBulkDocumentUpload();
     }
@@ -4980,50 +4998,103 @@ function openStructuredDocEditor(docId){
       document.querySelectorAll('#documentTagModalTree input[data-hier-tag-link]').forEach(input => input.addEventListener('change', ()=> renderDocumentTagModalSummary(collectHierarchicalTagLinks('documentTagModalTree'))));
     }
     async function saveBulkDocuments(){
-      const drafts = Array.isArray(ui.bulkDocumentDrafts) ? ui.bulkDocumentDrafts.slice() : [];
+      const drafts = Array.isArray(ui.bulkDocumentDrafts) ? ui.bulkDocumentDrafts : [];
       if(!drafts.length) return;
       for(const draft of drafts){
         const name = String(draft.name || '').trim();
+        draft.error = '';
+        draft.success = false;
         if(!name){ alert('Every bulk-upload document needs a name.'); return; }
       }
+      ui.bulkDocumentCancelRequested = false;
+      ui.bulkDocumentSaving = true;
+      ui.bulkDocumentStatus = `Uploading 0 of ${drafts.length}…`;
+      renderBulkDocumentUpload();
       let savedCount = 0;
-      for(const draft of drafts){
-        const name = String(draft.name || '').trim();
-        const date = draft.date || null;
-        const description = String(draft.description || '').trim();
-        const file = draft.file || null;
-        const created = await window.createDocument({ name, docDate: date, description });
-        if(!created){ alert(`Failed to save document: ${name}`); return; }
-        let finalDoc = created;
-        if(file){
-          const path = await window.uploadDocumentFile(created.id, file);
-          if(!path){ alert(`Document was created, but file upload failed: ${name}`); }
-          else {
-            const updated = await window.updateDocumentRow(created.id, { file_path: path, original_file_name: file.name || '', mime_type: file.type || '', file_size: Number(file.size || 0) || 0 });
-            if(updated) finalDoc = updated;
+      let failedCount = 0;
+      let processedCount = 0;
+      try{
+        for(const draft of drafts){
+          if(ui.bulkDocumentCancelRequested){
+            ui.bulkDocumentStatus = `Stopped after ${processedCount} of ${drafts.length} file${drafts.length===1?'':'s'}.`;
+            break;
           }
+          const name = String(draft.name || '').trim();
+          const date = draft.date || null;
+          const description = String(draft.description || '').trim();
+          const file = draft.file || null;
+          ui.bulkDocumentStatus = `Uploading ${processedCount + 1} of ${drafts.length}: ${name}`;
+          renderBulkDocumentUpload();
+          if(file && Number(file.size || 0) > BULK_UPLOAD_MAX_FILE_SIZE){
+            draft.error = `Skipped: file is ${formatFileSize(file.size || 0)}, which is larger than the current upload limit of ${formatFileSize(BULK_UPLOAD_MAX_FILE_SIZE)}.`;
+            failedCount += 1;
+            processedCount += 1;
+            renderBulkDocumentUpload();
+            continue;
+          }
+          let created = null;
+          let finalDoc = null;
+          try{
+            created = await window.createDocument({ name, docDate: date, description });
+            if(!created) throw new Error('Could not create document row.');
+            finalDoc = created;
+            if(file){
+              const path = await window.uploadDocumentFile(created.id, file);
+              if(!path) throw new Error('File upload failed.');
+              const updated = await window.updateDocumentRow(created.id, { file_path: path, original_file_name: file.name || '', mime_type: file.type || '', file_size: Number(file.size || 0) || 0 });
+              if(updated) finalDoc = updated;
+            }
+            const tagLinks = Array.isArray(draft.tagLinks) ? draft.tagLinks.slice() : [];
+            const tagIds = Array.from(new Set(tagLinks.map(link => link.tagId).filter(Boolean)));
+            const localDoc = { id: finalDoc.id, name: finalDoc.name || name, date: finalDoc.doc_date || date || '', description: finalDoc.description || description, tags: tagIds, tagLinks, filename: finalDoc.original_file_name || '', originalFileName: finalDoc.original_file_name || '', filePath: finalDoc.file_path || '', mimeType: finalDoc.mime_type || '', fileSize: Number(finalDoc.file_size || 0) || 0, hasFile: !!finalDoc.file_path, dataUrl: '', exhibitLabel: '', createdAt: finalDoc.created_at || new Date().toISOString(), exhibitEligibility: 'possible', includeInTimeline: true };
+            const i = state.documents.findIndex(d=>d.id===finalDoc.id);
+            if(i >= 0) state.documents[i] = { ...state.documents[i], ...localDoc };
+            else state.documents.push(localDoc);
+            for(const tagId of tagIds){
+              try{ await window.assignDocumentTag(finalDoc.id, tagId); }catch(err){ console.warn('Bulk tag assign failed', err); }
+            }
+            draft.success = true;
+            draft.error = '';
+            savedCount += 1;
+          }catch(err){
+            console.error('Bulk document upload failed:', err);
+            draft.success = false;
+            draft.error = String(err && err.message ? err.message : err || 'Upload failed');
+            failedCount += 1;
+            if(created && created.id){
+              try{ await window.deleteDocumentRow(created.id); }catch(cleanErr){ console.warn('Cleanup after failed bulk upload failed', cleanErr); }
+              state.documents = state.documents.filter(d=>d.id !== created.id);
+            }
+          }
+          processedCount += 1;
+          renderBulkDocumentUpload();
         }
-        const tagLinks = Array.isArray(draft.tagLinks) ? draft.tagLinks.slice() : [];
-        const tagIds = Array.from(new Set(tagLinks.map(link => link.tagId).filter(Boolean)));
-        const localDoc = { id: finalDoc.id, name: finalDoc.name || name, date: finalDoc.doc_date || date || '', description: finalDoc.description || description, tags: tagIds, tagLinks, filename: finalDoc.original_file_name || '', originalFileName: finalDoc.original_file_name || '', filePath: finalDoc.file_path || '', mimeType: finalDoc.mime_type || '', fileSize: Number(finalDoc.file_size || 0) || 0, hasFile: !!finalDoc.file_path, dataUrl: '', exhibitLabel: '', createdAt: finalDoc.created_at || new Date().toISOString(), exhibitEligibility: 'possible', includeInTimeline: true };
-        const i = state.documents.findIndex(d=>d.id===finalDoc.id);
-        if(i >= 0) state.documents[i] = { ...state.documents[i], ...localDoc };
-        else state.documents.push(localDoc);
-        for(const tagId of tagIds){ try{ await window.assignDocumentTag(finalDoc.id, tagId); }catch(err){ console.warn('Bulk tag assign failed', err); } }
-        savedCount += 1;
+      }finally{
+        ui.bulkDocumentSaving = false;
       }
       safeSave();
       await window.loadDocuments();
       renderDocuments();
-      (ui.bulkDocumentDrafts || []).forEach(draft => { if(draft && draft.previewUrl){ try{ URL.revokeObjectURL(draft.previewUrl); }catch(err){} } });
-      ui.bulkDocumentDrafts = [];
+      if(ui.currentView === 'documenttable') renderDocumentTable();
+      const remainingDrafts = (ui.bulkDocumentDrafts || []).filter(draft => !draft.success);
+      (ui.bulkDocumentDrafts || []).filter(draft => draft && draft.success).forEach(draft => { if(draft.previewUrl){ try{ URL.revokeObjectURL(draft.previewUrl); }catch(err){} } });
+      ui.bulkDocumentDrafts = remainingDrafts;
       ui.bulkDocumentEditIndex = -1;
-      ui.bulkDocumentSelectedIds = [];
-      ui.bulkDocumentViewerId = '';
+      ui.bulkDocumentSelectedIds = remainingDrafts.map(draft => draft.id);
+      if(!remainingDrafts.some(draft => draft.id === ui.bulkDocumentViewerId)) ui.bulkDocumentViewerId = '';
       if($('docBulkFiles')) $('docBulkFiles').value='';
+      if(ui.bulkDocumentCancelRequested && remainingDrafts.length){
+        ui.bulkDocumentStatus = `Stopped. ${savedCount} uploaded, ${failedCount} not uploaded.`;
+      }else if(remainingDrafts.length){
+        ui.bulkDocumentStatus = `${savedCount} uploaded, ${failedCount} not uploaded. Failed rows were left in the table so you can fix them and try again.`;
+      }else{
+        ui.bulkDocumentStatus = savedCount === 1 ? '1 document uploaded.' : `${savedCount} documents uploaded.`;
+      }
+      ui.bulkDocumentCancelRequested = false;
       renderBulkDocumentUpload();
-      toast(savedCount === 1 ? '1 document uploaded' : `${savedCount} documents uploaded`);
+      if(savedCount){ toast(savedCount === 1 ? '1 document uploaded' : `${savedCount} documents uploaded`); }
     }
+
 
     async function addDocument(){
       const name = ($('docName').value || '').trim();
