@@ -4970,6 +4970,7 @@ function openStructuredDocEditor(docId){
   if(outlineIndexView && ui.currentView !== 'outlineindex') outlineIndexView.style.display = 'none';
   const list = $('docList');
   list.innerHTML = '';
+  if($('docRepoSearchInput') && $('docRepoSearchInput').value !== String(ui.docRepoSearchDraft || '')) $('docRepoSearchInput').value = String(ui.docRepoSearchDraft || '');
   $('docEmpty').style.display = state.documents.length ? 'none' : '';
   renderDocumentRepositoryFilters();
   renderDocumentDownloadList();
@@ -5553,6 +5554,25 @@ function openStructuredDocEditor(docId){
     $('collapseAllDocs')?.addEventListener('click', ()=>{ ui.expandedDocIds = {}; renderDocuments(); });
     $('toggleDownloadList')?.addEventListener('click', ()=>{ ui.showDocDownloadList = !ui.showDocDownloadList; renderDocuments(); });
     $('docRepoFilterToggle')?.addEventListener('click', ()=>{ ui.docRepoFilterPanelOpen = !ui.docRepoFilterPanelOpen; renderDocuments(); });
+    $('docRepoSearchInput')?.addEventListener('input', (ev)=>{
+      const value = ev.target.value || '';
+      ui.docRepoSearchDraft = value;
+      ui.docRepoSearchCommitted = value;
+      renderDocuments();
+    });
+    $('docRepoSearchInput')?.addEventListener('focus', ()=> updateDocumentRepositorySuggestions());
+    $('docRepoSearchInput')?.addEventListener('keydown', (ev)=>{
+      if(ev.key === 'Escape'){
+        ev.preventDefault();
+        ui.docRepoSearchDraft = '';
+        ui.docRepoSearchCommitted = '';
+        if($('docRepoSearchInput')) $('docRepoSearchInput').value = '';
+        renderDocuments();
+      }
+    });
+    $('docRepoSearchInput')?.addEventListener('blur', ()=>{
+      setTimeout(()=> $('docRepoSearchSuggestions')?.classList.remove('open'), 120);
+    });
     $('toggleDocTagIndex')?.addEventListener('click', (ev)=>{ ev.preventDefault(); setTab('tagindex'); });
     $('docTagShowUsedOnly')?.addEventListener('change', (ev)=>{ ui.docTagIndexShowUsedOnly = !!ev.target.checked; renderDocumentTagIndex(); });
     $('docTagNoTagsOnly')?.addEventListener('change', (ev)=>{ ui.docTagNoTagsOnly = !!ev.target.checked; if(ui.docTagNoTagsOnly) ui.docTagHasTagsOnly = false; renderDocumentTagIndex(); });
