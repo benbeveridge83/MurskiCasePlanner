@@ -1457,7 +1457,7 @@
     window.syncPeopleFromSupabase = syncPeopleFromSupabase;
     function syncOutlineFromSupabase(){ if (!Array.isArray(window.loadedRows)) return; const previousById = new Map((state.outline || []).map(row => [row.id, row])); state.outline = window.loadedRows.map((r) => { const prev = previousById.get(r.id); const row = { id: r.id, parentId: r.parent_row_id, order: Number(r.sort_order) || 0, title: r.heading || '', description: r.description || '', rowDate: r.row_date || prev?.rowDate || '', tags: prev?.tags || [], collapsed: prev?.collapsed || false, detailsOpen: prev?.detailsOpen || false, witnessIds: prev?.witnessIds || [], elementIds: prev?.elementIds || [], witnessData: prev?.witnessData || {} }; if (activeOutlineEdit && activeOutlineEdit.nodeId === r.id && prev) { if (activeOutlineEdit.field === 'title') row.title = prev.title || ''; if (activeOutlineEdit.field === 'description') row.description = prev.description || ''; } return row; }); safeSave(); }
     window.syncOutlineFromSupabase = syncOutlineFromSupabase;
-    function syncDocumentsFromSupabase(){ if (!Array.isArray(window.loadedDocuments)) return; const previousById = new Map((state.documents || []).map(doc => [doc.id, doc])); state.documents = window.loadedDocuments.map((d) => { const prev = previousById.get(d.id); const filePath = d.file_path || d.filePath || d.path || prev?.filePath || prev?.file_path || ''; const originalFileName = d.original_file_name || d.originalFileName || d.filename || d.file_name || prev?.originalFileName || prev?.filename || ''; const remoteTagLinks = Array.isArray(d.tag_links) ? d.tag_links.filter(link => link && link.tagId).map(link => ({ tagId: link.tagId || '', subtagId: link.subtagId || '' })) : []; const fallbackTagLinks = Array.isArray(prev?.tagLinks) ? prev.tagLinks : []; const tagLinks = remoteTagLinks.length ? remoteTagLinks : fallbackTagLinks; return { id: d.id, name: d.name || '', date: d.doc_date || d.date || '', description: d.description || '', tags: Array.from(new Set(tagLinks.map(link => link.tagId).filter(Boolean))).length ? Array.from(new Set(tagLinks.map(link => link.tagId).filter(Boolean))) : (prev?.tags || []), tagLinks, filename: originalFileName || prev?.filename || '', originalFileName, filePath, mimeType: d.mime_type || d.mimeType || prev?.mimeType || '', fileSize: Number(d.file_size || d.fileSize || prev?.fileSize || 0) || 0, hasFile: !!(filePath || d.has_file || d.hasFile || prev?.hasFile), dataUrl: prev?.dataUrl || '', exhibitLabel: prev?.exhibitLabel || '', createdAt: d.created_at || d.createdAt || prev?.createdAt || '', exhibitEligibility: prev?.exhibitEligibility === 'not' ? 'not' : 'possible', includeInTimeline: prev?.includeInTimeline !== false }; }); safeSave(); }
+    function syncDocumentsFromSupabase(){ if (!Array.isArray(window.loadedDocuments)) return; const previousById = new Map((state.documents || []).map(doc => [doc.id, doc])); state.documents = window.loadedDocuments.map((d) => { const prev = previousById.get(d.id); const filePath = d.file_path || d.filePath || d.path || prev?.filePath || prev?.file_path || ''; const originalFileName = d.original_file_name || d.originalFileName || d.filename || d.file_name || prev?.originalFileName || prev?.filename || ''; const remoteTagLinks = Array.isArray(d.tag_links) ? d.tag_links.filter(link => link && link.tagId).map(link => ({ tagId: link.tagId || '', subtagId: link.subtagId || '' })) : []; const remoteTagIds = Array.from(new Set(remoteTagLinks.map(link => link.tagId).filter(Boolean))); return { id: d.id, name: d.name || '', date: d.doc_date || d.date || '', description: d.description || '', tags: remoteTagIds, tagLinks: remoteTagLinks, filename: originalFileName || prev?.filename || '', originalFileName, filePath, mimeType: d.mime_type || d.mimeType || prev?.mimeType || '', fileSize: Number(d.file_size || d.fileSize || prev?.fileSize || 0) || 0, hasFile: !!(filePath || d.has_file || d.hasFile || prev?.hasFile), dataUrl: prev?.dataUrl || '', exhibitLabel: prev?.exhibitLabel || '', createdAt: d.created_at || d.createdAt || prev?.createdAt || '', exhibitEligibility: prev?.exhibitEligibility === 'not' ? 'not' : 'possible', includeInTimeline: prev?.includeInTimeline !== false }; }); safeSave(); }
     window.syncDocumentsFromSupabase = syncDocumentsFromSupabase;
     function syncTagsFromSupabase(){
       if (!Array.isArray(window.loadedTags)) return;
@@ -2234,35 +2234,33 @@
     function closeDocumentTagModal(){ $('documentTagModal')?.classList.remove('open'); ui.bulkDocumentEditIndex = -1; ui.documentTagModalDocIds = []; }
     async function saveDocumentTagModal(){
       const links = collectHierarchicalTagLinks('documentTagModalTree');
-      const mainTagIds = Array.from(new Set(links.map(link => link.tagId).filter(Boolean)));
+      const normalizedLinks = links.map(link => ({ tagId: link.tagId || '', subtagId: link.subtagId || '' })).filter(link => link.tagId);
+      const mainTagIds = Array.from(new Set(normalizedLinks.map(link => link.tagId).filter(Boolean)));
       const docId = ui.documentTagModalDocId || '';
       const docIds = Array.isArray(ui.documentTagModalDocIds) ? Array.from(new Set(ui.documentTagModalDocIds.filter(Boolean))) : [];
       if(!docId && !docIds.length){
         if(Number.isInteger(ui.bulkDocumentEditIndex) && ui.bulkDocumentEditIndex >= 0 && ui.bulkDocumentDrafts[ui.bulkDocumentEditIndex]){
-          ui.bulkDocumentDrafts[ui.bulkDocumentEditIndex].tagLinks = links;
+          ui.bulkDocumentDrafts[ui.bulkDocumentEditIndex].tagLinks = normalizedLinks;
           ui.bulkDocumentEditIndex = -1;
           closeDocumentTagModal();
           renderBulkDocumentUpload();
           return;
         }
-        setDraftDocumentTagLinks(links); closeDocumentTagModal(); return;
+        setDraftDocumentTagLinks(normalizedLinks); closeDocumentTagModal(); return;
       }
       const targetDocIds = docIds.length ? docIds : [docId];
       for(const targetDocId of targetDocIds){
         const doc = (state.documents || []).find(d => d.id === targetDocId);
-        if(!doc) continue;
-        const current = new Set(doc.tags || []);
+        const current = new Set(doc && Array.isArray(doc.tags) ? doc.tags : []);
         const next = new Set(mainTagIds);
         for(const tagId of next){ if(!current.has(tagId)) await window.assignDocumentTag(targetDocId, tagId); }
         for(const tagId of current){ if(!next.has(tagId)) await window.removeDocumentTag(targetDocId, tagId); }
-        doc.tags = mainTagIds.slice();
-        doc.tagLinks = links.map(link => ({ tagId: link.tagId || '', subtagId: link.subtagId || '' }));
-        const tagLinksSaved = await window.updateDocumentRow(targetDocId, { tag_links: doc.tagLinks });
+        const tagLinksSaved = await window.updateDocumentRow(targetDocId, { tag_links: normalizedLinks });
         if(!tagLinksSaved){
           alert('Main tags were saved, but multi-level tag links could not be saved to the documents table in Supabase. Add a JSON/JSONB tag_links column to documents, then try again.');
         }
       }
-      safeSave();
+      if(window.loadDocuments) await window.loadDocuments();
       if(window.loadDocumentTags) await window.loadDocumentTags();
       renderDocuments();
       renderDocumentTable();
@@ -5186,6 +5184,7 @@ function openStructuredDocEditor(docId){
       const updated = await window.updateDocumentRow(id, { doc_date: value });
       if(!updated) alert('Failed to save document date.');
       await window.loadDocuments();
+      if(window.loadDocumentTags) await window.loadDocumentTags();
       renderDocuments();
       renderTimeline();
     };
@@ -5502,33 +5501,9 @@ function openStructuredDocEditor(docId){
         }
       }
 
-      const localDoc = {
-        id: finalDoc.id,
-        name: finalDoc.name || name,
-        date: finalDoc.doc_date || date || '',
-        description: finalDoc.description || description,
-        tags: Array.from(new Set((ui.newDocumentTagLinks || []).map(link => link.tagId).filter(Boolean))),
-        tagLinks: Array.isArray(ui.newDocumentTagLinks) ? ui.newDocumentTagLinks.slice() : [],
-        filename: finalDoc.original_file_name || '',
-        originalFileName: finalDoc.original_file_name || '',
-        filePath: finalDoc.file_path || '',
-        mimeType: finalDoc.mime_type || '',
-        fileSize: Number(finalDoc.file_size || 0) || 0,
-        hasFile: !!finalDoc.file_path,
-        dataUrl: '',
-        exhibitLabel: '',
-        createdAt: finalDoc.created_at || new Date().toISOString(),
-        exhibitEligibility: 'possible',
-        includeInTimeline: true
-      };
-
-      const i = state.documents.findIndex(d=>d.id===finalDoc.id);
-      if(i >= 0) state.documents[i] = { ...state.documents[i], ...localDoc };
-      else state.documents.push(localDoc);
-
       for(const tagId of Array.from(new Set((ui.newDocumentTagLinks || []).map(link => link.tagId).filter(Boolean)))){ try{ await window.assignDocumentTag(finalDoc.id, tagId); }catch(err){ console.warn('Tag assign failed', err); } }
-      safeSave();
       await window.loadDocuments();
+      if(window.loadDocumentTags) await window.loadDocumentTags();
       renderDocuments();
       $('docName').value='';
       $('docDate').value='';
