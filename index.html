@@ -5304,6 +5304,53 @@ function openStructuredDocEditor(docId){
     $('sourceDocViewerShell')?.addEventListener('keyup', ()=> setTimeout(handleSourceSelectionChange, 0));
     $('sourceDocViewerShell')?.addEventListener('scroll', ()=>{ if(ui.sourceDocSelectedId){ ui.sourceDocScrollByDocumentId[ui.sourceDocSelectedId] = $('sourceDocViewerShell')?.scrollTop || 0; } });
     $('elementSourceModalClose')?.addEventListener('click', closeElementSourceModal);
+
+    async function deleteDocumentTableDuplicates(){
+      const docs = Array.isArray(state.documents) ? state.documents.slice() : [];
+      const groups = new Map();
+      docs.forEach(doc => {
+        const name = String(doc?.name || '').trim().toLowerCase();
+        const size = Number(doc?.fileSize || 0);
+        if(!name) return;
+        const key = `${name}__${size}`;
+        if(!groups.has(key)) groups.set(key, []);
+        groups.get(key).push(doc);
+      });
+      const duplicateGroups = Array.from(groups.values()).filter(group => group.length > 1);
+      if(!duplicateGroups.length){
+        toast('No duplicate documents found');
+        return;
+      }
+      const toDelete = [];
+      duplicateGroups.forEach(group => {
+        const ordered = group.slice().sort((a,b)=>{
+          const aDate = String(a?.createdAt || '');
+          const bDate = String(b?.createdAt || '');
+          if(aDate && bDate && aDate !== bDate) return aDate.localeCompare(bDate);
+          if(aDate && !bDate) return -1;
+          if(!aDate && bDate) return 1;
+          return String(a?.id || '').localeCompare(String(b?.id || ''));
+        });
+        ordered.slice(1).forEach(doc => toDelete.push(doc));
+      });
+      const preview = duplicateGroups.slice(0,3).map(group => {
+        const sample = group[0];
+        return `${sample?.name || 'Untitled'} (${formatFileSize(sample?.fileSize || 0)}) x${group.length}`;
+      }).join('\n');
+      const message = `Delete ${toDelete.length} duplicate document${toDelete.length === 1 ? '' : 's'}?\n\nKeeping one copy from each duplicate set (same name and same file size).${preview ? `\n\nExamples:\n${preview}` : ''}`;
+      if(!confirm(message)) return;
+      let deleted = 0;
+      for(const doc of toDelete){
+        const ok = await deleteDocument(doc.id, { skipConfirm:true });
+        if(ok) deleted += 1;
+      }
+      if(deleted){
+        renderDocumentTable();
+        renderDocuments();
+      }
+      toast(deleted ? `Deleted ${deleted} duplicate document${deleted === 1 ? '' : 's'}` : 'No duplicate documents deleted');
+    }
+
     $('documentTableSearch')?.addEventListener('input', (ev)=>{ ui.documentTableSearch = ev.target.value || ''; renderDocumentTable(); });
     $('documentTableFilterToggle')?.addEventListener('click', ()=>{ ui.documentTableFilterPanelOpen = !ui.documentTableFilterPanelOpen; renderDocumentTable(); });
     $('documentTableDeleteDuplicates')?.addEventListener('click', deleteDocumentTableDuplicates);
