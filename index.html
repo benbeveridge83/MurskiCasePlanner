@@ -1790,6 +1790,86 @@
     let timelineImageDraft = { dataUrl: '', name: '', file: null, uploadedPath: '' };
     let timelineImportDrafts = [];
     function closeElementSourceModal(){ $('elementSourceModal').classList.remove('open'); }
+    function getElementPrimaryViewableSourceRef(el){
+      const refs = Array.isArray(el?.sourceRefs) ? el.sourceRefs : [];
+      return refs.find(ref => ref && ref.documentId && (ref.sourceType === 'document' || ref.sourceType === 'image_capture' || ref.sourceType === 'document_link')) || null;
+    }
+    function clearElementSourceOverlays(root){
+      if(!root) return;
+      root.querySelectorAll('.elementSourceCaptureOverlay').forEach(el => el.remove());
+    }
+    function renderElementSourceCaptureOverlay(holder, sourceRef){
+      if(!holder || !sourceRef || sourceRef.sourceType !== 'image_capture') return false;
+      const left = Number(sourceRef.left);
+      const top = Number(sourceRef.top);
+      const width = Number(sourceRef.width);
+      const height = Number(sourceRef.height);
+      if(!(width > 0 && height > 0)) return false;
+      const pageNumber = sourceRef.pageNumber == null ? '' : String(sourceRef.pageNumber);
+      const page = holder.querySelector(`.sourceDocPage[data-page-number="${pageNumber}"]`) || holder.querySelector('.sourceDocPage');
+      if(!page) return false;
+      const stage = page.querySelector('.sourcePdfStage') || page;
+      if(!stage) return false;
+      page.classList.add('activeSourcePage');
+      const box = document.createElement('div');
+      box.className = 'sourceDocCaptureBox elementSourceCaptureOverlay';
+      box.style.left = left + 'px';
+      box.style.top = top + 'px';
+      box.style.width = width + 'px';
+      box.style.height = height + 'px';
+      stage.appendChild(box);
+      page.scrollIntoView({ block:'center' });
+      return true;
+    }
+    async function openElementSourceModal(elementId){
+      const el = getElementById(elementId);
+      if(!el){ toast('Element was not found.'); return; }
+      const sourceRef = getElementPrimaryViewableSourceRef(el);
+      const quoteEl = $('elementSourceQuote');
+      const metaEl = $('elementSourceMeta');
+      const titleEl = $('elementSourceModalTitle');
+      const viewerEl = $('elementSourceViewerInner');
+      if(titleEl) titleEl.textContent = `Element source${el.name ? ': ' + el.name : ''}`;
+      if(viewerEl) viewerEl.innerHTML = '<div class="sourceDocEmpty">Loading source…</div>';
+      if(quoteEl){
+        const quote = String(sourceRef?.excerpt || '').replace(/\s+/g, ' ').trim();
+        if(quote){
+          quoteEl.textContent = quote;
+          quoteEl.style.display = '';
+        } else {
+          quoteEl.textContent = '';
+          quoteEl.style.display = 'none';
+        }
+      }
+      const metaBits = [];
+      const sourceText = getElementSourceText(el);
+      if(sourceText) metaBits.push(`Source: ${sourceText}`);
+      if(sourceRef?.pageNumber && sourceRef?.endPageNumber && Number(sourceRef.endPageNumber) !== Number(sourceRef.pageNumber)) metaBits.push(`Pages ${sourceRef.pageNumber}-${sourceRef.endPageNumber}`);
+      else if(sourceRef?.pageNumber) metaBits.push(`Page ${sourceRef.pageNumber}`);
+      if(metaEl) metaEl.textContent = metaBits.join(' • ');
+      if(!sourceRef?.documentId){
+        if(viewerEl) viewerEl.innerHTML = '<div class="sourceDocEmpty">This element does not have an openable document source yet.</div>';
+        $('elementSourceModal').classList.add('open');
+        return;
+      }
+      const doc = getDocumentById(sourceRef.documentId);
+      if(!doc){
+        if(viewerEl) viewerEl.innerHTML = '<div class="sourceDocEmpty">The source document could not be found.</div>';
+        $('elementSourceModal').classList.add('open');
+        return;
+      }
+      if(metaEl){
+        const bits = [doc.name || 'Document'];
+        if(sourceText) bits.push(`Source: ${sourceText}`);
+        if(sourceRef?.pageNumber && sourceRef?.endPageNumber && Number(sourceRef.endPageNumber) !== Number(sourceRef.pageNumber)) bits.push(`Pages ${sourceRef.pageNumber}-${sourceRef.endPageNumber}`);
+        else if(sourceRef?.pageNumber) bits.push(`Page ${sourceRef.pageNumber}`);
+        metaEl.textContent = bits.join(' • ');
+      }
+      await renderDocumentInSourceViewer(doc, 'elementSourceViewerInner', { sourceRef });
+      clearElementSourceOverlays($('elementSourceViewerInner'));
+      renderElementSourceCaptureOverlay($('elementSourceViewerInner'), sourceRef);
+      $('elementSourceModal').classList.add('open');
+    }
     function getElementSourceText(el){ if(typeof el?.source === 'string' && el.source.trim()) return el.source.trim(); const manual = (Array.isArray(el?.sourceRefs) ? el.sourceRefs : []).find(ref => ref && ref.sourceType === 'manual_text' && String(ref.text || '').trim()); return manual ? String(manual.text || '').trim() : ''; }
     function getElementSourceDocumentIds(el){ const direct = Array.isArray(el?.sourceDocumentIds) ? el.sourceDocumentIds.filter(Boolean) : []; const refs = (Array.isArray(el?.sourceRefs) ? el.sourceRefs : []).filter(ref => ref && (ref.sourceType === 'document_link' || ref.sourceType === 'document' || ref.sourceType === 'image_capture') && ref.documentId).map(ref => ref.documentId).filter(Boolean); return Array.from(new Set(direct.concat(refs))); }
     function getElementSourcePersonIds(el){ const direct = Array.isArray(el?.sourcePersonIds) ? el.sourcePersonIds.filter(Boolean) : []; const refs = (Array.isArray(el?.sourceRefs) ? el.sourceRefs : []).filter(ref => ref && ref.sourceType === 'person_link' && ref.personId).map(ref => ref.personId).filter(Boolean); return Array.from(new Set(direct.concat(refs))); }
@@ -3421,7 +3501,7 @@ async function renderDocumentInSourceViewer(doc, targetId, opts={}){
       if(!uploadedImage?.url) return;
       const imageDataUrl = uploadedImage.url;
       const citation = capture.pageNumber && capture.endPageNumber && capture.pageNumber !== capture.endPageNumber ? `${doc.name}, pp. ${capture.pageNumber}-${capture.endPageNumber}` : `${doc.name}${capture.pageNumber ? ', p. ' + capture.pageNumber : ''}`;
-      const imageRef = { sourceType:'image_capture', documentId:doc.id, pageNumber:capture.pageNumber, endPageNumber:capture.endPageNumber || capture.pageNumber, pageLabel:capture.pageLabel, imageDataUrl, imageName:'capture.png', imagePath: uploadedImage.path || '', excerpt:'Image capture' };
+      const imageRef = { sourceType:'image_capture', documentId:doc.id, pageNumber:capture.pageNumber, endPageNumber:capture.endPageNumber || capture.pageNumber, pageLabel:capture.pageLabel, imageDataUrl, imageName:'capture.png', imagePath: uploadedImage.path || '', excerpt:'Image capture', left:capture.left, top:capture.top, width:capture.width, height:capture.height };
       const appendTarget = getSourceDocTargetElement();
       if(appendTarget){
         const imageHtml = `<div style="margin-top:10px"><div class="label">Captured image</div><div class="elementImagePreview"><img src="${imageDataUrl}" alt="Captured element image" /><span class="hint">${escapeHtml(capture.pageLabel || (capture.pageNumber ? ('Page ' + capture.pageNumber) : 'Document image'))}</span></div></div>`;
