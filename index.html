@@ -1009,8 +1009,8 @@
     .elementsPaneSectionGrow{min-height:0;display:grid;gap:8px;align-content:start;}
     .elementsScrollList{border:1px solid var(--border);border-radius:14px;background:#fff;overflow:auto;min-height:180px;max-height:44vh;padding:8px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;align-content:start;}
     .elementsTagTree{border:1px solid var(--border);border-radius:14px;background:#fff;overflow:auto;min-height:240px;max-height:46vh;padding:10px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;align-content:start;}
-    .elementsLibraryList{display:flex;flex-direction:column;gap:6px;max-height:none;overflow:visible;padding-right:2px;}
-    .elementLibraryRowCompact{border:1px solid var(--border);border-radius:12px;background:#fff;padding:7px 9px;position:relative;overflow:visible;}
+    .elementsLibraryList{display:flex;flex-direction:column;gap:6px;max-height:none;overflow:visible;padding-right:2px;width:100%;min-width:0;}
+    .elementLibraryRowCompact{border:1px solid var(--border);border-radius:12px;background:#fff;padding:7px 9px;position:relative;overflow:visible;width:100%;max-width:100%;min-width:0;}
     .elementLibraryRowCompact:focus-within{border-color:rgba(37,99,235,.28);box-shadow:0 0 0 3px rgba(37,99,235,.08);}
     .elementLibraryRowNameTrigger{display:inline-flex;align-items:center;max-width:100%;padding:2px 0;cursor:pointer;}.elementLibraryRowName{font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
     .elementLibraryHoverPanel{display:none;position:absolute;left:0;right:auto;transform:none;width:min(88vw,1280px);min-width:900px;top:calc(100% + 6px);bottom:auto;z-index:220;border:1px solid var(--border);border-radius:14px;background:#fff;box-shadow:var(--shadow2);padding:12px;gap:10px;max-height:min(68vh,640px);overflow:auto;}
