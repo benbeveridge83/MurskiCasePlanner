@@ -3386,6 +3386,62 @@ function getTimelineColumnValueHtml(col, row){
   if(docMatches.length) parts.push(docMatches.map(doc=>`<div><a href="#" data-timeline-doc-open="${doc.id}">${escapeHtml(doc.name || 'Document')}</a></div>`).join(''));
   return parts.length ? parts.join('') : '<span class="timelineEmptyCell">—</span>';
 }
+function syncDocTagIndexScrollbars(){
+  const top = $('docTagIndexScrollTop');
+  const topInner = $('docTagIndexScrollTopInner');
+  const wrap = $('docTagIndexTableWrap');
+  if(!top || !topInner || !wrap) return;
+  const table = wrap.querySelector('table');
+  const needsScroll = !!table && table.scrollWidth > wrap.clientWidth + 2;
+  const width = needsScroll ? (table.scrollWidth + 'px') : '1px';
+  top.style.display = needsScroll ? '' : 'none';
+  topInner.style.width = width;
+  if(!top._syncBound){
+    let syncing = false;
+    top.addEventListener('scroll', ()=>{
+      if(syncing) return;
+      syncing = true;
+      wrap.scrollLeft = top.scrollLeft;
+      syncing = false;
+    });
+    wrap.addEventListener('scroll', ()=>{
+      if(syncing) return;
+      syncing = true;
+      top.scrollLeft = wrap.scrollLeft;
+      syncing = false;
+    });
+    top._syncBound = true;
+  }
+  if(needsScroll && Math.abs(top.scrollLeft - wrap.scrollLeft) > 1) top.scrollLeft = wrap.scrollLeft;
+}
+function syncOutlineIndexScrollbars(){
+  const top = $('outlineIndexScrollTop');
+  const topInner = $('outlineIndexScrollTopInner');
+  const wrap = $('outlineIndexTableWrap');
+  if(!top || !topInner || !wrap) return;
+  const table = wrap.querySelector('table');
+  const needsScroll = !!table && table.scrollWidth > wrap.clientWidth + 2;
+  const width = needsScroll ? (table.scrollWidth + 'px') : '1px';
+  top.style.display = needsScroll ? '' : 'none';
+  topInner.style.width = width;
+  if(!top._syncBound){
+    let syncing = false;
+    top.addEventListener('scroll', ()=>{
+      if(syncing) return;
+      syncing = true;
+      wrap.scrollLeft = top.scrollLeft;
+      syncing = false;
+    });
+    wrap.addEventListener('scroll', ()=>{
+      if(syncing) return;
+      syncing = true;
+      top.scrollLeft = wrap.scrollLeft;
+      syncing = false;
+    });
+    top._syncBound = true;
+  }
+  if(needsScroll && Math.abs(top.scrollLeft - wrap.scrollLeft) > 1) top.scrollLeft = wrap.scrollLeft;
+}
 function syncTimelineScrollbars(){
   const top = $('timelineScrollTop');
   const topInner = $('timelineScrollTopInner');
