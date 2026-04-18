@@ -1204,7 +1204,7 @@
     const UI_STORAGE_KEY = 'murski_ui_prefs_v1';
     const LEGACY_STORAGE_KEY = 'murski_case_planner_v1';
     let state = { caseName: '', tags: [], people: [], documents: [], elements: [], outline: [], timelineEvents: [], subtags: [], iconLibrary: [] };
-    const ui = { selectedNodeId: null, selectedWitnessId: null, selectedDocId: null, selectedPersonId: null, selectedElementId: null, activeWitnessColumnId: null, expandedDocIds: {}, showDocDownloadList: false, showDocTagIndex: false, docTagFilterIds: [], docTagIndexExpandedIds: {}, docTagIndexShowUsedOnly: false, docTagNoTagsOnly: false, docTagHasTagsOnly: false, docExhibitFilter: 'all', outlineIndexFilterIds: [], outlineIndexExpandedIds: {}, outlineIndexShowUsedOnly: false, outlineIndexNoTagsOnly: false, outlineIndexHasTagsOnly: false, outlineIndexExhibitFilter: 'all', docSort: { field: 'file', dir: 'asc' }, docRepoSort: { field: 'date', dir: 'desc' }, docDownloadSelections: {}, docDownloadEligibilityFilter: 'all', docRepoEligibilityFilters: ['possible','not'], docRepoStatusFilters: ['exhibit','not_exhibit'], docRepoColWidths: { name: 340, date: 150, uploadDate: 160, timeline: 170, eligibility: 220, exhibitStatus: 190, file: 90 }, outlineCompact: false, outlineStructureView: false, outlinePaneWidth: 720, timelineSelectedId: null, timelineEditingId: null, timelineShowEventColumn: true, timelineShowDocumentColumn: true, timelineShowHeadlineColumn: true, timelineDocPickerOpen: false, timelineColumnOrder: ['date','event','document','headline'], timelineDraggingUndatedId: null, timelineFilterTagIds: [], timelineFilterTagOpen: false, elementsFilterMode: 'all', elementsSearch: '', currentView: INITIAL_VIEW, outlineFilterTagIds: [], outlineFilterWitnessIds: [], outlineFilterTagOpen: false, outlineFilterWitnessOpen: false, outlineIndexTagIds: [], outlineIndexWitnessIds: [], outlineIndexTagOpen: false, outlineIndexWitnessOpen: false, structuredOutlineWitnessFilterIds: [], structuredHeadingTagIds: [], structuredHeadingWitnessIds: [], structuredHeadingTagOpen: false, structuredHeadingWitnessOpen: false, structuredTraySearch: '', structuredTrayAssignmentFilter: 'all', structuredTrayPersonFilterId: 'any', structuredTrayTagFilterIds: [], structuredDocEditorId: null, structuredDragging: null, sourceDocSearch: '', sourceDocSelectedId: null, sourceDocSelection: null, sourceDocContext: 'create', sourceDocOpenFromElementId: null, sourceDocMaximized: false, sourceDocImageCapture: null, sourceDocCapturePointer: null, sourceDocScrollByDocumentId: {}, sourceDocAnchorByDocumentId: {}, elementsFilterTagIds: [], elementsFilterTagExcludeIds: [], elementsFilterTagNoneSelected: false, elementsFilterTagExcludeNoneSelected: true, elementsFilterWitnessIds: [], elementsFilterWitnessExcludeIds: [], elementsFilterWitnessNoneSelected: false, elementsFilterWitnessExcludeNoneSelected: true, elementsFilterDocumentIds: [], elementsFilterDocumentExcludeIds: [], elementsFilterDocumentNoneSelected: false, elementsFilterDocumentExcludeNoneSelected: true, elementsFilterExhibitIds: [], elementsFilterExhibitExcludeIds: [], elementsFilterExhibitNoneSelected: false, elementsFilterExhibitExcludeNoneSelected: true, elementsFilterSourceDocumentIds: [], elementsFilterSourceDocumentExcludeIds: [], elementsFilterSourceDocumentNoneSelected: false, elementsFilterSourceDocumentExcludeNoneSelected: true, elementsFilterSourcePersonIds: [], elementsFilterSourcePersonExcludeIds: [], elementsFilterSourcePersonNoneSelected: false, elementsFilterSourcePersonExcludeNoneSelected: true, elementsFilterPanelOpen: false, elementsCreatorFilter: 'all', elementsWorksheetOpen: false, elementsWorksheetPinnedTopIds: [], elementsWorksheetSort: { key: 'name', dir: 'asc' }, elementsWorksheetCollapsedTags: {}, elementsWorksheetCollapsedChildren: {}, newDocumentTagLinks: [], bulkDocumentDrafts: [], bulkDocumentEditIndex: -1, bulkDocumentSelectedIds: [], bulkDocumentViewerId: '', bulkDocumentCancelRequested: false, bulkDocumentSaving: false, bulkDocumentStatus: '', documentTableCollapsedTagNodes: {}, selectedTagNodeId: null, collapsedTagNodes: {}, collapsedElementTagNodes: {}, documentTableSearch: '', documentTableFilterPanelOpen: false, documentTableTagIds: [], documentTableTagExcludeIds: [], documentTableTagNoneSelected: false, documentTableTagExcludeNoneSelected: true, documentTableExhibitIds: [], documentTableExhibitExcludeIds: [], documentTableExhibitNoneSelected: false, documentTableExhibitExcludeNoneSelected: true, documentTableTimelineIds: [], documentTableTimelineExcludeIds: [], documentTableTimelineNoneSelected: false, documentTableTimelineExcludeNoneSelected: true, documentTableFileIds: [], documentTableFileExcludeIds: [], documentTableFileNoneSelected: false, documentTableFileExcludeNoneSelected: true };
+    const ui = { selectedNodeId: null, selectedWitnessId: null, selectedDocId: null, selectedPersonId: null, selectedElementId: null, activeWitnessColumnId: null, expandedDocIds: {}, showDocDownloadList: false, showDocTagIndex: false, docTagFilterIds: [], docTagIndexExpandedIds: {}, docTagIndexShowUsedOnly: false, docTagNoTagsOnly: false, docTagHasTagsOnly: false, docExhibitFilter: 'all', outlineIndexFilterIds: [], outlineIndexExpandedIds: {}, outlineIndexShowUsedOnly: false, outlineIndexNoTagsOnly: false, outlineIndexHasTagsOnly: false, outlineIndexExhibitFilter: 'all', docSort: { field: 'file', dir: 'asc' }, docRepoSort: { field: 'date', dir: 'desc' }, docDownloadSelections: {}, docDownloadEligibilityFilter: 'all', docRepoEligibilityFilters: ['possible','not'], docRepoStatusFilters: ['exhibit','not_exhibit'], docRepoColWidths: { name: 340, date: 150, uploadDate: 160, size: 120, timeline: 170, eligibility: 220, exhibitStatus: 190, file: 90 }, outlineCompact: false, outlineStructureView: false, outlinePaneWidth: 720, timelineSelectedId: null, timelineEditingId: null, timelineShowEventColumn: true, timelineShowDocumentColumn: true, timelineShowHeadlineColumn: true, timelineDocPickerOpen: false, timelineColumnOrder: ['date','event','document','headline'], timelineDraggingUndatedId: null, timelineFilterTagIds: [], timelineFilterTagOpen: false, elementsFilterMode: 'all', elementsSearch: '', currentView: INITIAL_VIEW, outlineFilterTagIds: [], outlineFilterWitnessIds: [], outlineFilterTagOpen: false, outlineFilterWitnessOpen: false, outlineIndexTagIds: [], outlineIndexWitnessIds: [], outlineIndexTagOpen: false, outlineIndexWitnessOpen: false, structuredOutlineWitnessFilterIds: [], structuredHeadingTagIds: [], structuredHeadingWitnessIds: [], structuredHeadingTagOpen: false, structuredHeadingWitnessOpen: false, structuredTraySearch: '', structuredTrayAssignmentFilter: 'all', structuredTrayPersonFilterId: 'any', structuredTrayTagFilterIds: [], structuredDocEditorId: null, structuredDragging: null, sourceDocSearch: '', sourceDocSelectedId: null, sourceDocSelection: null, sourceDocContext: 'create', sourceDocOpenFromElementId: null, sourceDocMaximized: false, sourceDocImageCapture: null, sourceDocCapturePointer: null, sourceDocScrollByDocumentId: {}, sourceDocAnchorByDocumentId: {}, elementsFilterTagIds: [], elementsFilterTagExcludeIds: [], elementsFilterTagNoneSelected: false, elementsFilterTagExcludeNoneSelected: true, elementsFilterWitnessIds: [], elementsFilterWitnessExcludeIds: [], elementsFilterWitnessNoneSelected: false, elementsFilterWitnessExcludeNoneSelected: true, elementsFilterDocumentIds: [], elementsFilterDocumentExcludeIds: [], elementsFilterDocumentNoneSelected: false, elementsFilterDocumentExcludeNoneSelected: true, elementsFilterExhibitIds: [], elementsFilterExhibitExcludeIds: [], elementsFilterExhibitNoneSelected: false, elementsFilterExhibitExcludeNoneSelected: true, elementsFilterSourceDocumentIds: [], elementsFilterSourceDocumentExcludeIds: [], elementsFilterSourceDocumentNoneSelected: false, elementsFilterSourceDocumentExcludeNoneSelected: true, elementsFilterSourcePersonIds: [], elementsFilterSourcePersonExcludeIds: [], elementsFilterSourcePersonNoneSelected: false, elementsFilterSourcePersonExcludeNoneSelected: true, elementsFilterPanelOpen: false, elementsCreatorFilter: 'all', elementsWorksheetOpen: false, elementsWorksheetPinnedTopIds: [], elementsWorksheetSort: { key: 'name', dir: 'asc' }, elementsWorksheetCollapsedTags: {}, elementsWorksheetCollapsedChildren: {}, newDocumentTagLinks: [], bulkDocumentDrafts: [], bulkDocumentEditIndex: -1, bulkDocumentSelectedIds: [], bulkDocumentViewerId: '', bulkDocumentCancelRequested: false, bulkDocumentSaving: false, bulkDocumentStatus: '', documentTableCollapsedTagNodes: {}, selectedTagNodeId: null, collapsedTagNodes: {}, collapsedElementTagNodes: {}, documentTableSearch: '', documentTableFilterPanelOpen: false, documentTableTagIds: [], documentTableTagExcludeIds: [], documentTableTagNoneSelected: false, documentTableTagExcludeNoneSelected: true, documentTableExhibitIds: [], documentTableExhibitExcludeIds: [], documentTableExhibitNoneSelected: false, documentTableExhibitExcludeNoneSelected: true, documentTableTimelineIds: [], documentTableTimelineExcludeIds: [], documentTableTimelineNoneSelected: false, documentTableTimelineExcludeNoneSelected: true, documentTableFileIds: [], documentTableFileExcludeIds: [], documentTableFileNoneSelected: false, documentTableFileExcludeNoneSelected: true, documentTableSort: { field: 'name', dir: 'asc' }, documentRepoTagIds: [], documentRepoTagExcludeIds: [], documentRepoTagNoneSelected: false, documentRepoTagExcludeNoneSelected: true };
     const structuredUi = { headingFilterOpen: false, visibleHeadingIds: [], headingFilterInitialized: false, witnessColWidths: {}, resizingWitnessId: null, resizeStartX: 0, resizeStartWidth: 220 };
     const HEADING_EXHIBIT_KEY = '__heading__';
     const $ = (id) => document.getElementById(id);
@@ -1577,6 +1577,7 @@
       if(field === 'name') return (a.name||'').localeCompare(b.name||'');
       if(field === 'date') return (safeIsoDate(a.date) || '').localeCompare(safeIsoDate(b.date) || '');
       if(field === 'uploadDate') return (getDocumentUploadDate(a) || '').localeCompare(getDocumentUploadDate(b) || '');
+      if(field === 'size') return Number(a.fileSize || 0) - Number(b.fileSize || 0);
       if(field === 'eligibility') return docExhibitEligibilityLabel(a.exhibitEligibility).localeCompare(docExhibitEligibilityLabel(b.exhibitEligibility));
       if(field === 'exhibitStatus'){
         const aMeta = getDocumentExhibitMeta(a.id);
@@ -1601,6 +1602,48 @@
       else ui.docRepoSort = { field, dir: field === 'name' || field === 'eligibility' || field === 'exhibitStatus' ? 'asc' : 'desc' };
       renderDocuments();
     }
+    function renderDocumentRepositoryTagTree(){
+      const host = $('documentRepoFilterTagTree');
+      if(!host) return;
+      host.innerHTML = `<div class="elementsFilterDual">
+        <div>
+          <div class="label" style="margin-bottom:6px">Filter-inclusion</div>
+          <div class="elementsFilterChecklist">
+            <label class="checkItem" style="margin:0"><input type="checkbox" id="documentRepoTagNoneInclude" ${ui.documentRepoTagNoneSelected ? 'checked' : ''} /> <span>none selected</span></label>
+          </div>
+          <div id="documentRepoFilterTagTreeInclude"></div>
+        </div>
+        <div>
+          <div class="label" style="margin-bottom:6px">Filter exclusion</div>
+          <div class="elementsFilterChecklist">
+            <label class="checkItem" style="margin:0"><input type="checkbox" id="documentRepoTagNoneExclude" ${ui.documentRepoTagExcludeNoneSelected !== false ? 'checked' : ''} /> <span>none selected</span></label>
+          </div>
+          <div id="documentRepoFilterTagTreeExclude"></div>
+        </div>
+      </div>`;
+      renderHierarchicalTagTree('documentRepoFilterTagTreeInclude', ui.documentRepoTagIds || [], { rootClass:'elementsFilterTagTree', collapsedMap: ui.documentTableCollapsedTagNodes, onTreeChange: renderDocuments });
+      renderHierarchicalTagTree('documentRepoFilterTagTreeExclude', ui.documentRepoTagExcludeIds || [], { rootClass:'elementsFilterTagTree', collapsedMap: ui.documentTableCollapsedTagNodes, onTreeChange: renderDocuments });
+      host.querySelector('#documentRepoTagNoneInclude')?.addEventListener('change', (ev)=>{ ui.documentRepoTagNoneSelected = !!ev.target.checked; renderDocuments(); });
+      host.querySelector('#documentRepoTagNoneExclude')?.addEventListener('change', (ev)=>{ ui.documentRepoTagExcludeNoneSelected = !!ev.target.checked; renderDocuments(); });
+      host.querySelectorAll('#documentRepoFilterTagTreeInclude input[type="checkbox"]').forEach(input => {
+        input.onchange = ()=>{ ui.documentRepoTagIds = collectHierarchicalTagLinks('documentRepoFilterTagTreeInclude'); renderDocuments(); };
+      });
+      host.querySelectorAll('#documentRepoFilterTagTreeExclude input[type="checkbox"]').forEach(input => {
+        input.onchange = ()=>{ ui.documentRepoTagExcludeIds = collectHierarchicalTagLinks('documentRepoFilterTagTreeExclude'); renderDocuments(); };
+      });
+    }
+    function documentMatchesRepoTagFilter(doc){
+      const selected = Array.isArray(ui.documentRepoTagIds) ? ui.documentRepoTagIds : [];
+      const excluded = Array.isArray(ui.documentRepoTagExcludeIds) ? ui.documentRepoTagExcludeIds : [];
+      const includeNone = !!ui.documentRepoTagNoneSelected;
+      const excludeNone = ui.documentRepoTagExcludeNoneSelected !== false;
+      const own = getDocumentTagLinks(doc);
+      const hasOwn = own.length > 0;
+      if((selected.length || includeNone) && !(includeNone && !hasOwn) && !elementTagFilterLinksMatch(selected, own)) return false;
+      if(!hasOwn && !excludeNone) return false;
+      if(hasOwn && elementTagFilterLinksMatch(excluded, own)) return false;
+      return true;
+    }
     function renderDocumentRepositoryFilters(){
       const host = $('docRepoFilterBar');
       if(!host) return;
@@ -1608,7 +1651,8 @@
       const status = Array.isArray(ui.docRepoStatusFilters) && ui.docRepoStatusFilters.length ? ui.docRepoStatusFilters : ['exhibit','not_exhibit'];
       ui.docRepoEligibilityFilters = elig.slice();
       ui.docRepoStatusFilters = status.slice();
-      host.innerHTML = `<div class="card" style="box-shadow:none; padding:12px 14px"><div style="display:flex; gap:18px; flex-wrap:wrap; align-items:flex-start"><div><div class="label">Exhibit category filter</div><div class="checkGrid" style="margin-top:6px"><label class="checkItem"><input type="checkbox" data-doc-filter-eligibility="possible" ${elig.includes('possible') ? 'checked' : ''} /> <span>Can be used</span></label><label class="checkItem"><input type="checkbox" data-doc-filter-eligibility="not" ${elig.includes('not') ? 'checked' : ''} /> <span>Cannot be used / none</span></label></div></div><div><div class="label">Exhibit status filter</div><div class="checkGrid" style="margin-top:6px"><label class="checkItem"><input type="checkbox" data-doc-filter-status="exhibit" ${status.includes('exhibit') ? 'checked' : ''} /> <span>Exhibit</span></label><label class="checkItem"><input type="checkbox" data-doc-filter-status="not_exhibit" ${status.includes('not_exhibit') ? 'checked' : ''} /> <span>Not an exhibit</span></label></div></div></div></div>`;
+      host.innerHTML = `<div class="card" style="box-shadow:none; padding:12px 14px"><div class="elementsFilterGrid"><div><div class="label">Tags / subtags</div><div id="documentRepoFilterTagTree"></div></div><div><div class="label">Exhibit category filter</div><div class="checkGrid" style="margin-top:6px"><label class="checkItem"><input type="checkbox" data-doc-filter-eligibility="possible" ${elig.includes('possible') ? 'checked' : ''} /> <span>Can be used</span></label><label class="checkItem"><input type="checkbox" data-doc-filter-eligibility="not" ${elig.includes('not') ? 'checked' : ''} /> <span>Cannot be used / none</span></label></div></div><div><div class="label">Exhibit status filter</div><div class="checkGrid" style="margin-top:6px"><label class="checkItem"><input type="checkbox" data-doc-filter-status="exhibit" ${status.includes('exhibit') ? 'checked' : ''} /> <span>Exhibit</span></label><label class="checkItem"><input type="checkbox" data-doc-filter-status="not_exhibit" ${status.includes('not_exhibit') ? 'checked' : ''} /> <span>Not an exhibit</span></label></div></div></div></div>`;
+      renderDocumentRepositoryTagTree();
       host.querySelectorAll('[data-doc-filter-eligibility]').forEach(cb => cb.addEventListener('change', ()=>{
         ui.docRepoEligibilityFilters = Array.from(host.querySelectorAll('[data-doc-filter-eligibility]:checked')).map(x => x.getAttribute('data-doc-filter-eligibility'));
         renderDocuments();
@@ -2213,6 +2257,7 @@
     function getFilteredDocumentsForTable(){
       const search = String(ui.documentTableSearch || '').trim().toLowerCase();
       return (state.documents || []).filter(doc => {
+        if(!documentMatchesRepoTagFilter(doc)) return false;
         if(search){
           const hay = [doc.name, doc.description, doc.originalFileName, doc.filename, formatTimelineDateDisplay(doc.date || ''), ...getDocumentTagLinks(doc).map(link => { const parts = []; const tag = state.tags.find(t => t.id === link.tagId); if(tag) parts.push(tag.name || ''); if(link.subtagId){ const sub = getSubtagById(link.subtagId); if(sub) parts.push(getSubtagPath(sub.id)); } return parts.join(' '); })].join(' ').toLowerCase();
           if(!hay.includes(search)) return false;
@@ -2222,7 +2267,21 @@
         if(!elementMatchesIdFilter(documentMatchesSimpleFilter(doc, 'timeline'), ui.documentTableTimelineIds, ui.documentTableTimelineExcludeIds, !!ui.documentTableTimelineNoneSelected, ui.documentTableTimelineExcludeNoneSelected !== false)) return false;
         if(!elementMatchesIdFilter(documentMatchesSimpleFilter(doc, 'file'), ui.documentTableFileIds, ui.documentTableFileExcludeIds, !!ui.documentTableFileNoneSelected, ui.documentTableFileExcludeNoneSelected !== false)) return false;
         return true;
-      }).sort((a,b)=> (a.name||'').localeCompare(b.name||''));
+      }).sort((a,b)=> { const sort = ui.documentTableSort || { field:'name', dir:'asc' }; const cmp = compareDocumentTableValues(a,b,sort.field); return cmp ? (sort.dir === 'asc' ? cmp : -cmp) : (a.name||'').localeCompare(b.name||''); });
+    }
+    function toggleDocumentTableSort(field){
+      if((ui.documentTableSort || {}).field === field) ui.documentTableSort.dir = ui.documentTableSort.dir === 'asc' ? 'desc' : 'asc';
+      else ui.documentTableSort = { field, dir: field === 'date' || field === 'uploadDate' || field === 'size' ? 'desc' : 'asc' };
+      renderDocumentTable();
+    }
+    function compareDocumentTableValues(a, b, field){
+      if(field === 'name') return (a.name||'').localeCompare(b.name||'');
+      if(field === 'date') return getTimelineDateSortKey(a.date||'').localeCompare(getTimelineDateSortKey(b.date||''));
+      if(field === 'uploadDate') return (getDocumentUploadDate(a) || '').localeCompare(getDocumentUploadDate(b) || '');
+      if(field === 'size') return Number(a.fileSize || 0) - Number(b.fileSize || 0);
+      if(field === 'tags') return renderTagLinkPills(getDocumentTagLinks(a)).localeCompare(renderTagLinkPills(getDocumentTagLinks(b)));
+      if(field === 'file') return getDocumentFileName(a).localeCompare(getDocumentFileName(b));
+      return 0;
     }
     async function openSourceDocumentDirect(docId){
       if(!docId) return;
@@ -2239,15 +2298,19 @@
       const docs = getFilteredDocumentsForTable();
       empty.style.display = docs.length ? 'none' : '';
       if(!docs.length){ host.innerHTML = ''; return; }
-      host.innerHTML = `<div class="bulkDocTableWrap"><table class="bulkDocTable"><thead><tr><th>Document</th><th>Date</th><th>Tags</th><th>View</th><th>Download</th><th>Elements from Document</th><th>Delete</th></tr></thead><tbody>${docs.map(doc => { const meta = getDocumentExhibitMeta(doc.id); return `<tr>
+      host.innerHTML = `<div class="bulkDocTableWrap"><table class="bulkDocTable"><thead><tr><th><button type="button" class="mini" data-document-table-sort="name">Document ${(ui.documentTableSort||{}).field==='name' ? ((ui.documentTableSort||{}).dir==='asc' ? '↑' : '↓') : ''}</button></th><th><button type="button" class="mini" data-document-table-sort="date">Date ${(ui.documentTableSort||{}).field==='date' ? ((ui.documentTableSort||{}).dir==='asc' ? '↑' : '↓') : ''}</button></th><th><button type="button" class="mini" data-document-table-sort="size">Size ${(ui.documentTableSort||{}).field==='size' ? ((ui.documentTableSort||{}).dir==='asc' ? '↑' : '↓') : ''}</button></th><th><button type="button" class="mini" data-document-table-sort="tags">Tags ${(ui.documentTableSort||{}).field==='tags' ? ((ui.documentTableSort||{}).dir==='asc' ? '↑' : '↓') : ''}</button></th><th><button type="button" class="mini" data-document-table-sort="file">File ${(ui.documentTableSort||{}).field==='file' ? ((ui.documentTableSort||{}).dir==='asc' ? '↑' : '↓') : ''}</button></th><th><button type="button" class="mini" data-document-table-sort="uploadDate">Upload date ${(ui.documentTableSort||{}).field==='uploadDate' ? ((ui.documentTableSort||{}).dir==='asc' ? '↑' : '↓') : ''}</button></th><th>View</th><th>Download</th><th>Elements from Document</th><th>Delete</th></tr></thead><tbody>${docs.map(doc => { const meta = getDocumentExhibitMeta(doc.id); return `<tr>
         <td><div><b>${escapeHtml(doc.name || '')}</b></div><div class="hint">${escapeHtml(formatTimelineDateDisplay(doc.date || '') || 'No date')} ${meta.isExhibit ? '• ' + escapeHtml(meta.label || 'Exhibit') : ''} ${(doc.filePath || doc.dataUrl || doc.hasFile) ? '• Has file' : '• No file'} ${(doc.includeInTimeline !== false) ? '• In timeline' : '• Hidden from timeline'}</div></td>
         <td>${escapeHtml(formatTimelineDateDisplay(doc.date || '') || '')}</td>
+        <td>${escapeHtml(formatFileSize(doc.fileSize || 0))}</td>
         <td class="bulkDocTagsCell">${renderTagLinkPills(getDocumentTagLinks(doc), 'document', doc.id)}<div style="margin-top:8px"><button type="button" class="mini" data-document-table-tags="${doc.id}">Edit tags</button></div></td>
+        <td>${escapeHtml(getDocumentFileName(doc) || '') || '<span class="hint">No file</span>'}</td>
+        <td>${escapeHtml(formatDateForDisplay(getDocumentUploadDate(doc)) || '')}</td>
         <td><button type="button" class="mini" data-document-table-view="${doc.id}">View</button></td>
         <td><button type="button" class="mini" data-document-table-download="${doc.id}">Download</button></td>
         <td><button type="button" class="mini btnPrimary" data-document-table-elements="${doc.id}">Elements from Document</button></td>
         <td><button type="button" class="mini btnDanger" data-document-table-delete="${doc.id}">Delete</button></td>
       </tr>`; }).join('')}</tbody></table></div>`;
+      host.querySelectorAll('[data-document-table-sort]').forEach(btn => btn.addEventListener('click', ()=> toggleDocumentTableSort(btn.getAttribute('data-document-table-sort') || 'name')));
       host.querySelectorAll('[data-document-table-tags]').forEach(btn => btn.addEventListener('click', (ev)=>{ ev.preventDefault(); ev.stopPropagation(); openDocumentTagModal(btn.getAttribute('data-document-table-tags')); }));
       host.querySelectorAll('[data-document-table-view]').forEach(btn => btn.addEventListener('click', (ev)=>{ ev.preventDefault(); ev.stopPropagation(); openDocumentEditModal(btn.getAttribute('data-document-table-view')); }));
       host.querySelectorAll('[data-document-table-download]').forEach(btn => btn.addEventListener('click', (ev)=>{ ev.preventDefault(); ev.stopPropagation(); downloadDocument(btn.getAttribute('data-document-table-download')); }));
@@ -2330,7 +2393,7 @@
         if(!elementMatchesIdFilter(getElementSourcePersonIds(el), ui.elementsFilterSourcePersonIds, ui.elementsFilterSourcePersonExcludeIds, !!ui.elementsFilterSourcePersonNoneSelected, ui.elementsFilterSourcePersonExcludeNoneSelected !== false)) return false;
         if((ui.elementsCreatorFilter || 'all') !== 'all' && getElementCreatorLabel(el) !== ui.elementsCreatorFilter) return false;
         return true;
-      }).sort((a,b)=> (a.name||'').localeCompare(b.name||''));
+      }).sort((a,b)=> { const sort = ui.documentTableSort || { field:'name', dir:'asc' }; const cmp = compareDocumentTableValues(a,b,sort.field); return cmp ? (sort.dir === 'asc' ? cmp : -cmp) : (a.name||'').localeCompare(b.name||''); });
     }
     function getWorksheetTagBranchCount(tagId, parentSubtagId=''){
       const children = (state.subtags || []).filter(st => st.parentTagId === tagId && String(st.parentSubtagId || '') === String(parentSubtagId || ''));
@@ -3466,1492 +3529,8 @@ function renderTimeline(){
     e.preventDefault();
     openDocumentEditModal(a.getAttribute('data-timeline-doc-open'));
   }));
-
-  let draggingColId = null;
-  function getHeaderInsertBefore(clientX){
-    const headers = Array.from(wrap.querySelectorAll('th[data-timeline-col]')).filter(th => th.getAttribute('data-timeline-col') !== 'date' && th.getAttribute('data-timeline-col') !== draggingColId);
-    let candidate = null;
-    let best = Number.NEGATIVE_INFINITY;
-    for(const header of headers){
-      const rect = header.getBoundingClientRect();
-      const offset = clientX - rect.left - rect.width / 2;
-      if(offset < 0 && offset > best){ best = offset; candidate = header; }
-    }
-    return candidate;
-  }
-  wrap.querySelectorAll('th[data-timeline-col]').forEach(th => {
-    const colId = th.getAttribute('data-timeline-col') || '';
-    if(colId === 'date') return;
-    const startDrag = (ev) => {
-      draggingColId = colId;
-      th.classList.add('dragging');
-      try{ ev.dataTransfer.effectAllowed = 'move'; ev.dataTransfer.setData('text/plain', colId); }catch(err){}
-    };
-    th.addEventListener('dragstart', startDrag);
-    const handle = th.querySelector('[data-timeline-col-handle]');
-    if(handle) handle.addEventListener('dragstart', startDrag);
-    th.addEventListener('dragend', ()=>{ draggingColId = null; wrap.querySelectorAll('th.timelineDragHeader').forEach(x=>x.classList.remove('dragging')); });
-    th.addEventListener('dragover', (ev)=>{ if(!draggingColId) return; ev.preventDefault(); });
-    th.addEventListener('drop', (ev)=>{
-      if(!draggingColId) return;
-      ev.preventDefault();
-      moveTimelineColumn(draggingColId, colId === draggingColId ? null : colId);
-      draggingColId = null;
-    });
-  });
-  const headerRow = wrap.querySelector('thead tr');
-  headerRow?.addEventListener('dragover', (ev)=>{ if(!draggingColId) return; ev.preventDefault(); });
-  headerRow?.addEventListener('drop', (ev)=>{
-    if(!draggingColId) return;
-    ev.preventDefault();
-    const before = getHeaderInsertBefore(ev.clientX);
-    moveTimelineColumn(draggingColId, before?.getAttribute('data-timeline-col') || null);
-    draggingColId = null;
-  });
-  wrap.querySelectorAll('[data-timeline-col-handle]').forEach(handle => handle.addEventListener('mousedown', (ev)=>{
-    ev.preventDefault();
-    ev.stopPropagation();
-    const colId = handle.getAttribute('data-timeline-col-handle') || '';
-    const th = handle.closest('th[data-timeline-col]');
-    th?.classList.add('pointer-dragging');
-    const onMove = (moveEv)=>{
-      wrap.querySelectorAll('th.timelineDragHeader').forEach(x=>x.classList.remove('drag-target'));
-      const before = getHeaderInsertBefore(moveEv.clientX);
-      if(before) before.classList.add('drag-target');
-    };
-    const onUp = (upEv)=>{
-      document.removeEventListener('mousemove', onMove);
-      document.removeEventListener('mouseup', onUp);
-      const before = getHeaderInsertBefore(upEv.clientX);
-      wrap.querySelectorAll('th.timelineDragHeader').forEach(x=>x.classList.remove('drag-target','pointer-dragging'));
-      moveTimelineColumn(colId, before?.getAttribute('data-timeline-col') || null);
-    };
-    document.addEventListener('mousemove', onMove);
-    document.addEventListener('mouseup', onUp);
-  }));
-
-  wrap.querySelectorAll('[data-undated-handle]').forEach(handle => handle.addEventListener('mousedown', (ev)=>{
-    ev.preventDefault();
-    ev.stopPropagation();
-    const draggedId = handle.getAttribute('data-undated-handle') || '';
-    ui.timelineDraggingUndatedId = draggedId;
-    const sourceRow = handle.closest('[data-undated-event-row]');
-    sourceRow?.classList.add('pointer-dragging');
-    const getInsertIndexFromPoint = (clientY)=>{
-      const rows = Array.from(wrap.querySelectorAll('[data-timeline-display-row]'));
-      for(const row of rows){
-        const rect = row.getBoundingClientRect();
-        const idx = Number(row.getAttribute('data-timeline-display-row')) || 0;
-        if(clientY < rect.top + rect.height / 2) return idx;
-        if(clientY <= rect.bottom) return idx + 1;
-      }
-      return rows.length;
-    };
-    const onMove = (moveEv)=>{ markTimelineDropIndex(getInsertIndexFromPoint(moveEv.clientY)); };
-    const onUp = (upEv)=>{
-      document.removeEventListener('mousemove', onMove);
-      document.removeEventListener('mouseup', onUp);
-      sourceRow?.classList.remove('pointer-dragging');
-      const insertIndex = getInsertIndexFromPoint(upEv.clientY);
-      clearTimelineDropMarkers();
-      ui.timelineDraggingUndatedId = null;
-      moveUndatedTimelineEvent(draggedId, insertIndex);
-    };
-    document.addEventListener('mousemove', onMove);
-    document.addEventListener('mouseup', onUp);
-  }));
-  function clearTimelineDropMarkers(){ wrap.querySelectorAll('.timelineDropSlot').forEach(el=>el.classList.remove('drop-before')); }
-  function markTimelineDropIndex(index){ clearTimelineDropMarkers(); const slot = wrap.querySelector(`.timelineDropSlot[data-undated-insert="${index}"]`); if(slot) slot.classList.add('drop-before'); }
-  function getDraggedUndatedId(ev){ return (ev.dataTransfer && ev.dataTransfer.getData('text/plain')) || ui.timelineDraggingUndatedId || ''; }
-
-  wrap.querySelectorAll('[data-undated-handle]').forEach(handle => {
-    handle.addEventListener('dragstart', (ev)=>{
-      const id = handle.getAttribute('data-undated-handle') || '';
-      ui.timelineDraggingUndatedId = id;
-      try{ ev.dataTransfer.effectAllowed = 'move'; ev.dataTransfer.setData('text/plain', id); }catch(err){}
-      handle.closest('[data-undated-event-row]')?.classList.add('isDragSource');
-    });
-    handle.addEventListener('dragend', ()=>{
-      ui.timelineDraggingUndatedId = null;
-      handle.closest('[data-undated-event-row]')?.classList.remove('isDragSource');
-      clearTimelineDropMarkers();
-    });
-  });
-  wrap.querySelectorAll('[data-undated-event-row]').forEach(row=>{
-    row.addEventListener('dragstart', (ev)=>{ const id = row.getAttribute('data-undated-event-row') || ''; ui.timelineDraggingUndatedId = id; row.classList.add('isDragSource'); try{ ev.dataTransfer.effectAllowed = 'move'; ev.dataTransfer.setData('text/plain', id); }catch(err){} });
-    row.addEventListener('dragend', ()=>{ ui.timelineDraggingUndatedId = null; row.classList.remove('isDragSource'); clearTimelineDropMarkers(); });
-    row.addEventListener('dragover', (ev)=>{
-      ev.preventDefault();
-      const idx = Number(row.getAttribute('data-undated-index')) || 0;
-      const rect = row.getBoundingClientRect();
-      const insertIndex = (ev.clientY - rect.top) < rect.height / 2 ? idx : idx + 1;
-      markTimelineDropIndex(insertIndex);
-    });
-    row.addEventListener('drop', (ev)=>{
-      ev.preventDefault();
-      const idx = Number(row.getAttribute('data-undated-index')) || 0;
-      const rect = row.getBoundingClientRect();
-      const insertIndex = (ev.clientY - rect.top) < rect.height / 2 ? idx : idx + 1;
-      const draggedId = getDraggedUndatedId(ev);
-      clearTimelineDropMarkers();
-      ui.timelineDraggingUndatedId = null;
-      moveUndatedTimelineEvent(draggedId, insertIndex);
-    });
-  });
-  wrap.querySelectorAll('.timelineDropSlot').forEach(slot=>{
-    slot.addEventListener('dragover', (ev)=>{ ev.preventDefault(); markTimelineDropIndex(Number(slot.getAttribute('data-undated-insert'))); });
-    slot.addEventListener('dragleave', ()=> slot.classList.remove('drop-before'));
-    slot.addEventListener('drop', (ev)=>{ ev.preventDefault(); const draggedId = getDraggedUndatedId(ev); const insertIndex = Number(slot.getAttribute('data-undated-insert')); clearTimelineDropMarkers(); ui.timelineDraggingUndatedId = null; moveUndatedTimelineEvent(draggedId, insertIndex); });
-  });
-  wrap.querySelectorAll('tr').forEach(row=>{
-    if(row.classList.contains('timelineUndatedRow') || row.classList.contains('timelineDropSlot')) return;
-    row.addEventListener('dragover', (ev)=>{ ev.preventDefault(); const rect = row.getBoundingClientRect(); const displayIndex = Number(row.getAttribute('data-timeline-display-row')) || rows.length; const insertIndex = (ev.clientY - rect.top) < rect.height / 2 ? displayIndex : displayIndex + 1; markTimelineDropIndex(insertIndex); });
-    row.addEventListener('drop', (ev)=>{ ev.preventDefault(); const rect = row.getBoundingClientRect(); const displayIndex = Number(row.getAttribute('data-timeline-display-row')) || rows.length; const insertIndex = (ev.clientY - rect.top) < rect.height / 2 ? displayIndex : displayIndex + 1; const draggedId = getDraggedUndatedId(ev); clearTimelineDropMarkers(); ui.timelineDraggingUndatedId = null; moveUndatedTimelineEvent(draggedId, insertIndex); });
-  });
-
-  if(eventToggle && !eventToggle.dataset.bound){
-    eventToggle.dataset.bound = '1';
-    eventToggle.addEventListener('change', ()=>{ ui.timelineShowEventColumn = !!eventToggle.checked; renderTimeline(); });
-  }
-  if(docToggle && !docToggle.dataset.bound){
-    docToggle.dataset.bound = '1';
-    docToggle.addEventListener('change', ()=>{ ui.timelineShowDocumentColumn = !!docToggle.checked; renderTimeline(); });
-  }
-  if(headlineToggle && !headlineToggle.dataset.bound){
-    headlineToggle.dataset.bound = '1';
-    headlineToggle.addEventListener('change', ()=>{ ui.timelineShowHeadlineColumn = !!headlineToggle.checked; renderTimeline(); });
-  }
-}
-    $('timelineAddEventBtn')?.addEventListener('click', (e)=>{ e.preventDefault(); openTimelineForm(); });
-    $('timelineAddElementBtn')?.addEventListener('click', ()=>{ const box = $('timelineElementPicker'); if(box){ box.style.display = box.style.display === 'none' || !box.style.display ? '' : 'none'; renderTimelineElementPicker(); } });
-    
-    function closeTimelineEventModal(){ $('timelineEventModal')?.classList.remove('open'); }
-    function deleteTimelineEvent(id){
-      const ev = (state.timelineEvents || []).find(x => x.id === id);
-      if(!ev) return;
-      if(!confirm(`Delete event “${ev.name || 'Untitled event'}”?`)) return;
-      state.timelineEvents = (state.timelineEvents || []).filter(x => x.id !== id);
-      if(ui.timelineSelectedId === id) ui.timelineSelectedId = null;
-      safeSave();
-      closeTimelineEventModal();
-      renderTimeline();
-      renderStructuredOutline?.();
-    }
-    function openTimelineEventModal(id){
-      const ev = (state.timelineEvents || []).find(x => x.id === id);
-      if(!ev) return;
-      ui.timelineSelectedId = id;
-      const docs = (ev.documents||[]).map(docId => (state.documents||[]).find(d => d.id === docId)).filter(Boolean);
-      const witnesses = (ev.witnesses||[]).map(w => ({ person: (state.people||[]).find(p => p.id === w.personId), testimony: w.testimony || '' })).filter(x => x.person);
-      $('timelineEventModalTitle').textContent = ev.name || 'Timeline event';
-      $('timelineEventModalDate').textContent = formatTimelineDateDisplay(ev.date || '');
-      $('timelineEventModalLocation').textContent = ev.location || 'No location';
-      $('timelineEventModalSource').textContent = ev.source || 'No source';
-      $('timelineEventModalTags').textContent = getEventTagLinks(ev).map(link => {
-        const tagName = (state.tags||[]).find(t=>t.id===link.tagId)?.name || 'Tag';
-        const subName = getEventSubtagDisplay(link);
-        return `${tagName} > ${subName}`;
-      }).join(' • ') || 'No tags';
-      $('timelineEventModalDesc').textContent = ev.description || 'No description';
-      $('timelineEventModalImage').innerHTML = ev.imageDataUrl ? `<img src="${ev.imageDataUrl}" alt="${escapeHtml(ev.imageName || ev.name || 'Event image')}" />` : '<span class="hint">No image attached.</span>';
-      $('timelineEventModalDocs').innerHTML = docs.length ? docs.map(d=>`<div><a href="#" data-timeline-modal-doc="${d.id}">${escapeHtml(d.name || 'Document')}</a></div>`).join('') : '<span class="hint">No documents attached.</span>';
-      $('timelineEventModalWitnesses').innerHTML = witnesses.length ? witnesses.map(w=>`<div class="timelineWitnessBlock"><div><b>${escapeHtml(w.person.name)}</b></div><div style="margin-top:6px">${escapeHtml(w.testimony || 'No testimony added.')}</div></div>`).join('') : '<span class="hint">No witnesses attached.</span>';
-      $('timelineEventModal').classList.add('open');
-      $('timelineEventModalEdit').onclick = ()=>{ closeTimelineEventModal(); openTimelineForm(id); };
-      $('timelineEventModalDelete').onclick = ()=> deleteTimelineEvent(id);
-      document.querySelectorAll('[data-timeline-modal-doc]').forEach(a => a.addEventListener('click', (e)=>{ e.preventDefault(); openDocumentEditModal(a.getAttribute('data-timeline-modal-doc')); }));
-    }
-
-    $('timelineCancelEvent')?.addEventListener('click', ()=>closeTimelineForm());
-    $('timelineSaveEvent')?.addEventListener('click', ()=>saveTimelineEvent());
-    $('timelineInlineAddTagBtn')?.addEventListener('click', ()=> setTab('settings'));
-    $('timelineImportBtn')?.addEventListener('click', ()=> $('timelineImportBox')?.classList.toggle('open'));
-    $('timelineEventModalClose')?.addEventListener('click', closeTimelineEventModal);
-    $('timelineEventModal')?.addEventListener('click', (e)=>{ if(e.target?.id === 'timelineEventModal') closeTimelineEventModal(); });
-    $('elementModalClose')?.addEventListener('click', closeElementModal);
-    $('elementDescriptionModalClose')?.addEventListener('click', ()=> $('elementDescriptionModal')?.classList.remove('open'));
-    $('elementModal')?.addEventListener('click', (e)=>{ if(e.target?.id === 'elementModal') closeElementModal(); });
-
-    function timelineImportCellToDate(value){
-      if(value == null || value === '') return '';
-      if(typeof value === 'number' && window.XLSX && XLSX.SSF){
-        const parsed = XLSX.SSF.parse_date_code(value);
-        if(parsed && parsed.y && parsed.m && parsed.d){
-          return `${String(parsed.y).padStart(4,'0')}-${String(parsed.m).padStart(2,'0')}-${String(parsed.d).padStart(2,'0')}`;
-        }
-      }
-      if(value instanceof Date && !isNaN(value)){
-        const y = value.getFullYear(), m = String(value.getMonth()+1).padStart(2,'0'), d = String(value.getDate()).padStart(2,'0');
-        return `${y}-${m}-${d}`;
-      }
-      const raw = String(value).trim();
-      if(!raw) return '';
-      if(/^\d{4}-\d{2}-\d{2}$/.test(raw)) return raw;
-      const parsed = new Date(raw);
-      if(!isNaN(parsed)){
-        const y = parsed.getFullYear(), m = String(parsed.getMonth()+1).padStart(2,'0'), d = String(parsed.getDate()).padStart(2,'0');
-        return `${y}-${m}-${d}`;
-      }
-      const mm = raw.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/);
-      if(mm){
-        let year = Number(mm[3]);
-        if(year < 100) year += 2000;
-        return `${String(year).padStart(4,'0')}-${String(Number(mm[1])).padStart(2,'0')}-${String(Number(mm[2])).padStart(2,'0')}`;
-      }
-      return '';
-    }
-    function renderTimelineImportReviewModal(){ const host = $('timelineImportReviewList'); if(!host) return; host.innerHTML = timelineImportDrafts.length ? timelineImportDrafts.map((item, idx)=>`<div class="timelineImportReviewCard" data-import-draft-row="${idx}"><div class="timelineImportReviewTop"><b>Imported row ${idx + 1}</b><button type="button" class="btnGhost" data-import-remove="${idx}">Remove</button></div><div class="timelineImportReviewGrid"><div><div class="label">Date</div><input type="text" data-import-field="date" data-import-index="${idx}" value="${escapeHtml(item.date || '')}" placeholder="MM/DD/YYYY, 03/00/2024, or 00/00/2024" /></div><div><div class="label">Event name</div><input type="text" data-import-field="name" data-import-index="${idx}" value="${escapeHtml(item.name || '')}" /></div><div><div class="label">Location</div><input type="text" data-import-field="location" data-import-index="${idx}" value="${escapeHtml(item.location || '')}" /></div><div><div class="label">Source</div><input type="text" data-import-field="source" data-import-index="${idx}" value="${escapeHtml(item.source || '')}" /></div></div><div><div class="label">Description</div><textarea data-import-field="description" data-import-index="${idx}">${escapeHtml(item.description || '')}</textarea></div><div><div class="label">Tags</div><select multiple data-import-tags="${idx}">${(state.tags || []).slice().sort(sortByName).map(t=>`<option value="${t.id}" ${((item.tags || []).includes(t.id)) ? 'selected' : ''}>${escapeHtml(t.name || '')}</option>`).join('')}</select></div><div><div class="label">Documents</div><select multiple data-import-docs="${idx}">${(state.documents || []).slice().sort(sortByName).map(d=>`<option value="${d.id}" ${((item.documents || []).includes(d.id)) ? 'selected' : ''}>${escapeHtml(d.name || '')}</option>`).join('')}</select></div><div><div class="label">Witnesses</div><select multiple data-import-witnesses="${idx}">${(state.people || []).slice().sort(sortByName).map(p=>`<option value="${p.id}" ${((item.witnessIds || []).includes(p.id)) ? 'selected' : ''}>${escapeHtml(p.name || '')}</option>`).join('')}</select><div class="hint" style="margin-top:6px">Witnesses imported here will be added with blank testimony so you can fill testimony in later.</div></div></div>`).join('') : '<div class="hint">No rows loaded.</div>'; host.querySelectorAll('[data-import-field]').forEach(el=>el.addEventListener('input', ()=>{ const idx = Number(el.getAttribute('data-import-index')); const field = el.getAttribute('data-import-field'); if(!timelineImportDrafts[idx]) return; timelineImportDrafts[idx][field] = el.value || ''; })); host.querySelectorAll('[data-import-tags]').forEach(el=>el.addEventListener('change', ()=>{ const idx = Number(el.getAttribute('data-import-tags')); if(!timelineImportDrafts[idx]) return; timelineImportDrafts[idx].tags = Array.from(el.selectedOptions).map(o=>o.value).filter(Boolean); })); host.querySelectorAll('[data-import-docs]').forEach(el=>el.addEventListener('change', ()=>{ const idx = Number(el.getAttribute('data-import-docs')); if(!timelineImportDrafts[idx]) return; timelineImportDrafts[idx].documents = Array.from(el.selectedOptions).map(o=>o.value).filter(Boolean); })); host.querySelectorAll('[data-import-witnesses]').forEach(el=>el.addEventListener('change', ()=>{ const idx = Number(el.getAttribute('data-import-witnesses')); if(!timelineImportDrafts[idx]) return; timelineImportDrafts[idx].witnessIds = Array.from(el.selectedOptions).map(o=>o.value).filter(Boolean); })); host.querySelectorAll('[data-import-remove]').forEach(btn=>btn.addEventListener('click', ()=>{ const idx = Number(btn.getAttribute('data-import-remove')); timelineImportDrafts.splice(idx,1); renderTimelineImportReviewModal(); })); $('timelineImportReviewModal')?.classList.add('open'); }
-    function closeTimelineImportReviewModal(){ $('timelineImportReviewModal')?.classList.remove('open'); }
-    async function importTimelineExcel(){
-      const file = $('timelineImportFile')?.files?.[0];
-      if(!file){ alert('Choose an Excel file first.'); return; }
-      if(!(window.XLSX && XLSX.read)){ alert('Excel import library did not load. Refresh the page and try again.'); return; }
-      try{
-        const buffer = await file.arrayBuffer();
-        const wb = XLSX.read(buffer, { type:'array', cellDates:true });
-        const ws = wb.Sheets[wb.SheetNames[0]];
-        const rows = XLSX.utils.sheet_to_json(ws, { header:1, defval:'' });
-        if(!rows.length){ alert('That file looks empty.'); return; }
-        timelineImportDrafts = [];
-        for(const [idx,row] of rows.entries()){
-          const dateVal = row[0], titleVal = row[1], descVal = row[2], locationVal = row[3], sourceVal = row[4];
-          const title = String(titleVal || '').trim();
-          const maybeHeader = idx === 0 && String(dateVal || '').trim().toLowerCase() === 'date' && /title|event/i.test(String(titleVal || '').trim().toLowerCase());
-          if(maybeHeader || !title) continue;
-          timelineImportDrafts.push({ name:title, date: normalizeFlexibleDateInput(timelineImportCellToDate(dateVal)), description:String(descVal || '').trim(), location:String(locationVal || '').trim(), source:String(sourceVal || '').trim(), tags:[], documents:[], witnessIds:[] });
-        }
-        if(!timelineImportDrafts.length){ alert('No events were imported. Make sure the first five columns are date, title, description, location, and source.'); return; }
-        renderTimelineImportReviewModal();
-      }catch(err){
-        console.error(err);
-        alert('Could not import that spreadsheet.');
-      }
-    }
-    function confirmTimelineImportReview(){
-      const cleaned = timelineImportDrafts.map(item => ({
-        id: uid(),
-        timelineOrder: getNextTimelineOrder(),
-        name: String(item.name || '').trim(),
-        date: normalizeFlexibleDateInput(item.date || ''),
-        description: String(item.description || '').trim(),
-        location: String(item.location || '').trim(),
-        source: String(item.source || '').trim(),
-        tags: Array.from(new Set((item.tags || []).filter(Boolean))),
-        tagLinks: Array.from(new Set((item.tags || []).filter(Boolean))).map(tagId => ({ tagId, subtagId:'' })),
-        documents: Array.from(new Set((item.documents || []).filter(Boolean))),
-        witnesses: Array.from(new Set((item.witnessIds || []).filter(Boolean))).map(personId => ({ personId, testimony:'' })),
-        imageDataUrl: '', imageName: ''
-      })).filter(item => item.name);
-      if(!cleaned.length){ alert('There are no valid events to import.'); return; }
-      state.timelineEvents.push(...cleaned);
-      safeSave();
-      closeTimelineImportReviewModal();
-      $('timelineImportBox')?.classList.remove('open');
-      if($('timelineImportFile')) $('timelineImportFile').value = '';
-      timelineImportDrafts = [];
-      renderTimeline();
-      toast(`${cleaned.length} timeline event${cleaned.length === 1 ? '' : 's'} imported`);
-    }
-    function renderTimelineElementPicker(){ const host = $('timelineElementPickerList'); if(!host) return; const mode = $('timelineElementFilterMode')?.value || 'not_timeline'; const search = String($('timelineElementSearch')?.value || '').trim().toLowerCase(); ui.elementsFilterMode = mode; ui.elementsSearch = $('timelineElementSearch')?.value || ''; const items = (state.elements || []).filter(el => { if(mode === 'not_timeline' && el.includeInTimeline) return false; if(mode === 'timeline' && !el.includeInTimeline) return false; if(!search) return true; return [el.name, el.text].join(' ').toLowerCase().includes(search); }).sort((a,b)=> (a.name||'').localeCompare(b.name||'')); host.innerHTML = items.length ? items.map(el => `<div class="itemRow"><div style="flex:1"><b>${escapeHtml(el.name || '')}</b><small>${escapeHtml(el.text || '')}</small></div><div style="display:flex; gap:8px; flex-wrap:wrap"><button type="button" class="mini" data-pick-element-open="${el.id}">Open</button><button type="button" class="btnPrimary" data-pick-element-toggle="${el.id}">${el.includeInTimeline ? 'Remove' : 'Add'}</button></div></div>`).join('') : '<div class="hint">No elements match that filter.</div>'; host.querySelectorAll('[data-pick-element-open]').forEach(btn => btn.addEventListener('click', ()=> openElementModal(btn.getAttribute('data-pick-element-open')))); host.querySelectorAll('[data-pick-element-toggle]').forEach(btn => btn.addEventListener('click', ()=>{ const id = btn.getAttribute('data-pick-element-toggle'); const el = getElementById(id); if(!el) return; toggleElementInTimeline(id, !el.includeInTimeline); renderTimelineElementPicker(); })); }
-    $('timelineElementFilterMode')?.addEventListener('change', renderTimelineElementPicker);
-    $('timelineElementSearch')?.addEventListener('input', renderTimelineElementPicker);
-    $('timelineImportRunBtn')?.addEventListener('click', importTimelineExcel);
-    $('timelineImportReviewClose')?.addEventListener('click', closeTimelineImportReviewModal);
-    $('timelineImportReviewModal')?.addEventListener('click', (e)=>{ if(e.target?.id === 'timelineImportReviewModal') closeTimelineImportReviewModal(); });
-    $('timelineImportReviewConfirm')?.addEventListener('click', confirmTimelineImportReview);
-    $('timelineImportReviewAddBlank')?.addEventListener('click', ()=>{ timelineImportDrafts.push({ name:'', date:'', description:'', location:'', source:'', tags:[], documents:[], witnessIds:[] }); renderTimelineImportReviewModal(); });
-function getAllTagNodes(){ const roots = (state.tags || []).map(t => ({ id:t.id, name:t.name || '', parentId:'', rootTagId:t.id, iconId:t.iconId || '', isRoot:true })); const kids = (state.subtags || []).map(st => ({ id:st.id, name:st.name || '', parentId:st.parentSubtagId || st.parentTagId || '', rootTagId:st.parentTagId || '', iconId:st.iconId || '', isRoot:false })); return roots.concat(kids); }
-    function getTagNodeById(id){ return getAllTagNodes().find(n => n.id === id) || null; }
-    function getTagNodeChildren(id){ return getAllTagNodes().filter(n => String(n.parentId || '') === String(id || '')).sort((a,b)=>(a.name||'').localeCompare(b.name||'')); }
-    function updateTagSelectionHint(){ const el = $('tagSelHint'); const node = getTagNodeById(ui.selectedTagNodeId || ''); if(el) el.textContent = node ? `Selected tag: ${node.name}` : 'Select a tag, then use these controls'; }
-    async function promptCreateTagNode(parentNodeId='', siblingNodeId=''){ const raw = prompt('Tag name:'); if(raw === null) return; const name = String(raw || '').trim(); if(!name){ alert('Name cannot be blank.'); return; } let parentId = null; if(parentNodeId) parentId = parentNodeId; else if(siblingNodeId){ const sib = getTagNodeById(siblingNodeId); parentId = sib ? (sib.parentId || null) : null; } const created = await window.createTagRow({ name, parentId: parentId || null }); if(!created) return; ui.selectedTagNodeId = created.id; await window.loadTags(); renderSubtagSettings(); }
-    async function addChildTagFromSelection(){ if(!ui.selectedTagNodeId){ alert('Select a tag first.'); return; } await promptCreateTagNode(ui.selectedTagNodeId, ''); }
-    async function addSiblingTagFromSelection(){ if(!ui.selectedTagNodeId){ alert('Select a tag first.'); return; } await promptCreateTagNode('', ui.selectedTagNodeId); }
-    async function renameSelectedTagNode(){ const node = getTagNodeById(ui.selectedTagNodeId || ''); if(!node){ alert('Select a tag first.'); return; } const raw = prompt('Tag name:', node.name || ''); if(raw === null) return; const name = String(raw || '').trim(); if(!name){ alert('Name cannot be blank.'); return; } const saved = await window.updateTagRow(node.id, { name }); if(!saved) return; await window.loadTags(); }
-    async function deleteSelectedTagNode(){ const node = getTagNodeById(ui.selectedTagNodeId || ''); if(!node){ alert('Select a tag first.'); return; } if(!confirm(`Delete tag “${node.name}”?`)) return; const ok = await window.deleteTagRow(node.id); if(!ok) return; ui.selectedTagNodeId = null; await window.loadTags(); await window.loadRowTags(); await window.loadDocumentTags(); await window.loadPersonTags(); }
-    function renderTagLibraryTree(containerId, rootIds){ const host = $(containerId); if(!host) return; const renderNode = (node) => { const kids = getTagNodeChildren(node.id); const collapsed = !!ui.collapsedTagNodes[node.id]; const icon = getIconAsset(node.iconId); const meta = node.isRoot ? 'Main tag' : (node.parentId === (node.rootTagId || '') ? 'Sub-tag' : 'Sub-sub-tag'); return `<div class="tagTreeNode"><div class="tagTreeRow ${ui.selectedTagNodeId===node.id ? 'selected' : ''}" data-tag-node="${node.id}"><div class="tagTreeLabel">${kids.length ? `<button type="button" class="tagTreeCaret" data-tag-toggle="${node.id}">${collapsed ? '+' : '−'}</button>` : '<span style="width:22px;display:inline-block"></span>'}${icon ? `<img src="${icon.dataUrl}" alt="" class="timelineTinyIcon" />` : ''}<span class="tagTreeName">${escapeHtml(node.name || '')}</span><span class="tagTreeMeta">${escapeHtml(meta)}</span></div><div style="display:flex;gap:8px;align-items:center"><button type="button" class="mini" data-tag-quick-child="${node.id}">+ Child</button></div></div>${kids.length ? `<div class="tagTreeChildren ${collapsed ? 'collapsed' : ''}">${kids.map(renderNode).join('')}</div>` : ''}</div>`; }; const roots = (rootIds || (state.tags || []).map(t=>t.id)).map(getTagNodeById).filter(Boolean); host.innerHTML = roots.length ? roots.map(renderNode).join('') : '<div class="hint">No tags yet.</div>'; host.querySelectorAll('[data-tag-node]').forEach(row => row.addEventListener('click', (e)=>{ if(e.target.closest('button')) return; ui.selectedTagNodeId = row.getAttribute('data-tag-node'); updateTagSelectionHint(); renderTags(); })); host.querySelectorAll('[data-tag-toggle]').forEach(btn => btn.addEventListener('click', (e)=>{ e.preventDefault(); e.stopPropagation(); const id = btn.getAttribute('data-tag-toggle'); ui.collapsedTagNodes[id] = !ui.collapsedTagNodes[id]; renderTags(); })); host.querySelectorAll('[data-tag-quick-child]').forEach(btn => btn.addEventListener('click', async (e)=>{ e.preventDefault(); e.stopPropagation(); ui.selectedTagNodeId = btn.getAttribute('data-tag-quick-child'); await addChildTagFromSelection(); })); }
-    function renderTags(){ updateTagSelectionHint(); renderTagLibraryTree('tagList'); renderTagLibraryTree('subtagList', (state.subtags || []).filter(st => !(st.parentSubtagId || '')).map(st => st.id)); $('tagEmpty').style.display = state.tags.length ? 'none' : ''; $('subtagEmpty').style.display = state.subtags.length ? 'none' : ''; renderSubtagSettings(); renderDocuments(); if(ui.currentView==='tagindex') renderDocumentTagIndex(); renderPeople(); renderOutline(); syncEventTagArrays(); renderTimelineTagFilterControl(); renderTimeline(); renderStructuredOutline(); renderElements(); }
-    async function addTag(){ const name = ($('tagName').value || '').trim(); if(!name){ toast('Tag name required'); return; } const exists = state.tags.some(t => t.name.toLowerCase() === name.toLowerCase()); if(exists){ alert('That tag name already exists.'); return; } const created = await window.createTagRow({ name }); if(!created) return; await window.loadTags(); $('tagName').value = ''; toast('Tag added'); }
-    async function deleteTag(id){ const tag = state.tags.find(t=>t.id===id); if(!tag) return; if(!confirm(`Delete tag “${tag.name}”? This will remove it everywhere.`)) return; const ok = await window.deleteTagRow(id); if(!ok) return; state.subtags = (state.subtags || []).filter(st => st.parentTagId !== id); (state.timelineEvents || []).forEach(ev => { ev.tagLinks = getEventTagLinks(ev).filter(link => link.tagId !== id); ev.tags = ev.tagLinks.map(link => link.tagId); }); await window.loadTags(); await window.loadRowTags(); await window.loadDocumentTags(); await window.loadPersonTags(); safeSave(); toast('Tag deleted'); }
-    async function editTag(id){ const tag = state.tags.find(t=>t.id===id); if(!tag) return; const newName = prompt('Tag name:', tag.name); if(newName === null) return; const name = newName.trim(); if(!name){ alert('Name cannot be blank.'); return; } const conflict = state.tags.some(t => t.id !== id && t.name.toLowerCase() === name.toLowerCase()); if(conflict){ alert('Another tag already has that name.'); return; } const saved = await window.updateTagRow(id, { name }); if(!saved) return; await window.loadTags(); toast('Tag updated'); }
-    $('addTag').addEventListener('click', addTag); $('tagAddRootBtn')?.addEventListener('click', ()=> promptCreateTagNode('', '')); $('tagAddSiblingBtn')?.addEventListener('click', addSiblingTagFromSelection); $('tagAddChildBtn')?.addEventListener('click', addChildTagFromSelection); $('tagRenameBtn')?.addEventListener('click', renameSelectedTagNode); $('tagDeleteBtn')?.addEventListener('click', deleteSelectedTagNode); $('tagCollapseAllBtn')?.addEventListener('click', ()=>{ for(const n of getAllTagNodes()) ui.collapsedTagNodes[n.id] = true; renderTags(); }); $('tagExpandAllBtn')?.addEventListener('click', ()=>{ ui.collapsedTagNodes = {}; renderTags(); });
-    $('addSubtag')?.addEventListener('click', async ()=>{ const parentTagId = $('subtagParent')?.value || ''; const parentSubtagId = $('subtagParentSubtag')?.value || ''; const name = ($('subtagName')?.value || '').trim(); const iconId = $('subtagIconSelect')?.value || ''; if(!parentTagId || !name){ alert('Choose a main tag and enter a child tag name.'); return; } state.subtags = state.subtags || []; const siblingConflict = state.subtags.some(st => { const sameRoot = st.parentTagId === parentTagId; const sameImmediateParent = (st.parentSubtagId || '') === parentSubtagId; return sameRoot && sameImmediateParent && (st.name || '').toLowerCase() === name.toLowerCase(); }); if(siblingConflict){ alert(parentSubtagId ? 'That sub-sub-tag already exists under that sub-tag.' : 'That sub-tag already exists under that main tag.'); return; } const actualParentId = parentSubtagId || parentTagId; const created = await window.createTagRow({ name, parentId: actualParentId, iconId }); if(!created) return; $('subtagName').value=''; if($('subtagIconSelect')) $('subtagIconSelect').value=''; await window.loadTags(); if($('subtagParent')) $('subtagParent').value = parentTagId; renderSubtagSettings(); if($('subtagParentSubtag')) $('subtagParentSubtag').value = ''; toast(parentSubtagId ? 'Sub-sub-tag added' : 'Sub-tag added'); });
-    $('addIconToLibrary')?.addEventListener('click', async ()=>{ const file = $('iconUploadFile')?.files?.[0]; const name = ($('iconUploadName')?.value || file?.name || '').trim(); if(!file || !name){ alert('Choose an image and give it a name.'); return; } const dataUrl = await fileToDataUrl(file); state.iconLibrary = state.iconLibrary || []; state.iconLibrary.push({ id: uid(), name, dataUrl }); safeSave(); $('iconUploadFile').value=''; $('iconUploadName').value=''; renderTags(); toast('Icon added'); });
-
-    function parseTagNames(value){ return String(value||'').split(',').map(s=>s.trim()).filter(Boolean); }
-    function tagNamesFromIds(ids){ return (ids||[]).map(tid => state.tags.find(t=>t.id===tid)?.name).filter(Boolean); }
-    function ensureTagsByNames(names){ return (names||[]).map(name => state.tags.find(t => (t.name||'').toLowerCase() === String(name||'').trim().toLowerCase())?.id).filter(Boolean); }
-    function availableTagsForIds(ids){ const used = new Set(ids || []); return state.tags.filter(t => !used.has(t.id)).sort(sortByName); }
-    function renderAssignedTagPills(ids, kind, itemId){ const tagIds = Array.from(new Set(ids || [])); if(!tagIds.length) return '<div class="hint">No tags assigned.</div>'; return `<div style="margin-top:6px; display:flex; gap:6px; flex-wrap:wrap">${tagIds.map(tid=>{ const t = state.tags.find(x=>x.id===tid); if(!t) return ''; return `<span class="pill">${escapeHtml(t.name)} <button type="button" class="tagRemoveBtn" data-kind="${kind}" data-item-id="${itemId}" data-tag-id="${tid}">×</button></span>`; }).join('')}</div>`; }
-    function renderTagPicker(kind, itemId, assignedIds){ const options = availableTagsForIds(assignedIds); return `<div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-top:8px"><select class="tagPicker" data-kind="${kind}" data-item-id="${itemId}"><option value="">+ Add tag…</option><option value="__new__">+ Add new tag…</option>${options.map(t=>`<option value="${t.id}">${escapeHtml(t.name)}</option>`).join('')}</select></div>`; }
-    async function createTagFromPicker(kind, itemId){
-      const rawName = prompt('New tag name:');
-      if(rawName === null) return null;
-      const name = rawName.trim();
-      if(!name){ alert('Tag name cannot be blank.'); return null; }
-      const existing = state.tags.find(t => (t.name || '').trim().toLowerCase() === name.toLowerCase());
-      if(existing){
-        alert('That tag already exists. It will be assigned now.');
-        return existing.id;
-      }
-      const created = await window.createTagRow({ name });
-      if(!created) return null;
-      await window.loadTags();
-      renderTags();
-      toast('Tag added');
-      const newTag = state.tags.find(t => (t.name || '').trim().toLowerCase() === name.toLowerCase()) || created;
-      return newTag?.id || null;
-    }
-    async function assignTagByKind(kind, itemId, tagId){
-      if(kind === 'document'){
-        const saved = await window.assignDocumentTag(itemId, tagId);
-        if(saved) await window.loadDocumentTags();
-        return;
-      }
-      if(kind === 'person'){
-        const saved = await window.assignPersonTag(itemId, tagId);
-        if(saved) await window.loadPersonTags();
-        return;
-      }
-      if(kind === 'row'){
-        const saved = await window.assignRowTag(itemId, tagId);
-        if(saved) await window.loadRowTags();
-        return;
-      }
-      if(kind === 'element'){
-        const el = getElementById(itemId);
-        if(!el) return;
-        el.tags = Array.from(new Set([...(el.tags || []), tagId]));
-        el.tagLinks = Array.from(new Set(el.tags)).map(tid => ({ tagId: tid, subtagId: '' }));
-        safeSave();
-        return;
-      }
-    }
-    async function handleTagPickerChange(sel){
-      const itemId = sel.getAttribute('data-item-id');
-      const kind = sel.getAttribute('data-kind');
-      let tagId = sel.value;
-      if(!itemId || !tagId) return;
-      if(tagId === '__new__'){
-        tagId = await createTagFromPicker(kind, itemId);
-        if(!tagId){ sel.value = ''; return; }
-      }
-      await assignTagByKind(kind, itemId, tagId);
-      sel.value = '';
-    }
-    function populateTagSelectors(){}
-    function getDocumentFileName(doc){ return doc ? (doc.originalFileName || doc.filename || doc.original_file_name || doc.file_name || '') : ''; }
-    async function getDocumentPreviewUrl(doc){
-      if(!doc) return '';
-      try{ const blob = await getDocumentBlob(doc); if(blob) return URL.createObjectURL(blob); }catch(err){ console.warn('Preview load failed', err); }
-      const remotePath = doc.filePath || doc.file_path || doc.path || '';
-      if(remotePath && window.getDocumentPublicUrl){
-        const publicUrl = window.getDocumentPublicUrl(remotePath);
-        if(publicUrl) return publicUrl;
-      }
-      return doc.dataUrl || '';
-    }
-    async function renderDocumentDownloadList(){
-      const wrap = $('docDownloadListWrap'); if(!wrap) return;
-      if(!ui.showDocDownloadList){ wrap.style.display = 'none'; wrap.innerHTML=''; return; }
-      wrap.style.display = '';
-      const allDocs = sortDocumentsForRepository(state.documents || []).filter(d => !!(d.filePath || d.dataUrl || d.hasFile));
-      const eligibilityFilter = ui.docDownloadEligibilityFilter || 'all';
-      const docs = allDocs.filter(d => {
-        if(eligibilityFilter === 'possible') return canDocumentBeExhibit(d);
-        if(eligibilityFilter === 'not') return !canDocumentBeExhibit(d);
-        return true;
-      });
-      const selections = ui.docDownloadSelections || {};
-      docs.forEach(d=>{ if(typeof selections[d.id] !== 'boolean') selections[d.id] = true; });
-      const selectedCount = docs.filter(d => selections[d.id] !== false).length;
-      wrap.innerHTML = `<div class="card" style="box-shadow:none; padding:0"><div style="padding:12px 14px 0 14px; display:flex; gap:8px; flex-wrap:wrap; align-items:flex-end; justify-content:space-between"><div><div class="hint">Choose which files to download, then click Download ZIP to save them together in one file.</div><div class="hint" style="margin-top:4px">${selectedCount} of ${docs.length} selected${eligibilityFilter !== 'all' ? ` • filtered by ${escapeHtml(docExhibitEligibilityLabel(eligibilityFilter === 'not' ? 'not' : 'possible'))}` : ''}</div></div><div style="display:flex; gap:8px; flex-wrap:wrap; align-items:flex-end"><div><div class="label">Exhibit category</div><select id="docDownloadEligibilityFilter"><option value="all">All documents</option><option value="possible" ${eligibilityFilter === 'possible' ? 'selected' : ''}>For possible use as exhibit</option><option value="not" ${eligibilityFilter === 'not' ? 'selected' : ''}>Not for use as exhibit</option></select></div><button type="button" class="mini" id="docDownloadSelectAll">Select all</button><button type="button" class="mini" id="docDownloadSelectNone">Select none</button><button type="button" class="btnPrimary" id="downloadSelectedDocs" ${selectedCount ? '' : 'disabled'}>Download ZIP</button><button type="button" class="btnGhost" id="saveSelectedDocsToFolder" ${selectedCount ? '' : 'disabled'}>Save individual files to folder</button></div></div><div class="hint" style="padding:8px 14px 0 14px">Download ZIP saves everything together in one archive. “Save individual files to folder” works in Chrome/Edge browsers that support the File System Access API.</div><div style="overflow:auto"><table class="docDownloadTable" style="width:100%; border-collapse:collapse"><thead><tr><th style="width:48px"></th><th><button type="button" data-doc-repo-sort="file">File name ${(ui.docRepoSort||{}).field==='file' ? ((ui.docRepoSort||{}).dir==='asc' ? '↑' : '↓') : ''}</button></th><th><button type="button" data-doc-repo-sort="name">Document name ${(ui.docRepoSort||{}).field==='name' ? ((ui.docRepoSort||{}).dir==='asc' ? '↑' : '↓') : ''}</button></th><th>Exhibit category</th><th><button type="button" data-doc-repo-sort="uploadDate">Upload date ${(ui.docRepoSort||{}).field==='uploadDate' ? ((ui.docRepoSort||{}).dir==='asc' ? '↑' : '↓') : ''}</button></th></tr></thead><tbody>${docs.map(d=>`<tr><td><input type="checkbox" data-doc-download-check="${d.id}" ${selections[d.id] !== false ? 'checked' : ''}></td><td>${escapeHtml(getDocumentFileName(d) || '') || '<span class="hint">No file</span>'}</td><td>${escapeHtml(d.name||'')}</td><td>${escapeHtml(docExhibitEligibilityLabel(d.exhibitEligibility))}</td><td>${escapeHtml(formatDateForDisplay(getDocumentUploadDate(d)) || '')}</td></tr>`).join('')}</tbody></table></div></div>`;
-      wrap.querySelectorAll('[data-doc-repo-sort]').forEach(btn=>btn.addEventListener('click', ()=> toggleDocRepoSort(btn.getAttribute('data-doc-repo-sort'))));
-      wrap.querySelector('#docDownloadEligibilityFilter')?.addEventListener('change', (ev)=>{ ui.docDownloadEligibilityFilter = ev.target.value || 'all'; renderDocumentDownloadList(); });
-      wrap.querySelectorAll('[data-doc-download-check]').forEach(cb=>cb.addEventListener('change', ()=>{ ui.docDownloadSelections[cb.getAttribute('data-doc-download-check')] = cb.checked; renderDocumentDownloadList(); }));
-      $('docDownloadSelectAll')?.addEventListener('click', ()=>{ docs.forEach(d=>{ ui.docDownloadSelections[d.id] = true; }); renderDocumentDownloadList(); });
-      $('docDownloadSelectNone')?.addEventListener('click', ()=>{ docs.forEach(d=>{ ui.docDownloadSelections[d.id] = false; }); renderDocumentDownloadList(); });
-      $('downloadSelectedDocs')?.addEventListener('click', async ()=>{ const chosen = docs.filter(d => ui.docDownloadSelections[d.id] !== false); await downloadDocumentsAsZip(chosen); });
-      $('saveSelectedDocsToFolder')?.addEventListener('click', async ()=>{ const chosen = docs.filter(d => ui.docDownloadSelections[d.id] !== false); await saveDocumentsToChosenFolder(chosen); });
-    }
-   function getRowTitlePath(rowId){ const parts = []; let cur = state.outline.find(n=>n.id===rowId); const seen = new Set(); while(cur && !seen.has(cur.id)){ seen.add(cur.id); parts.unshift((cur.title || 'Untitled heading').trim()); cur = cur.parentId ? state.outline.find(n=>n.id===cur.parentId) : null; } return parts.filter(Boolean).join(' > ') || 'Untitled heading'; }
-    function getDocumentExhibitMeta(docId){ rebuildExhibitsFromOutline(); syncExhibitOrderWithUsage(); const exhibit = (state.exhibits || []).find(ex => ex && ex.docId === docId) || null; const assignments = []; for(const n of state.outline || []){ if(!n || !n.witnessData) continue; for(const wid of Object.keys(n.witnessData)){ const wd = n.witnessData[wid] || {}; if(!(wd.exhibits || []).includes(docId)) continue; const isHeadingOnly = wid === HEADING_EXHIBIT_KEY; const person = isHeadingOnly ? null : (state.people || []).find(p=>p.id===wid); assignments.push({ rowId: n.id, rowTitle: n.title || 'Untitled heading', rowPath: getRowTitlePath(n.id), witnessId: wid, witnessName: person?.name || '', isHeadingOnly }); } } const headingNames = Array.from(new Set(assignments.map(a=>a.rowPath).filter(Boolean))); const tooltip = exhibit ? `Added as ${exhibit.label || 'an exhibit'}
-${headingNames.length ? 'Headings: ' + headingNames.join(' | ') : 'Heading not found'}` : 'Not added as an exhibit'; return { isExhibit: !!exhibit, label: exhibit?.label || '', assignments, headingNames, tooltip }; }
-    function getAvailableHeadingOptions(){
-      return (state.outline || []).slice().sort((a,b)=> getRowTitlePath(a.id).localeCompare(getRowTitlePath(b.id))).map(row => ({ id: row.id, label: getRowTitlePath(row.id) }));
-    }
-    function getWitnessOptionsForRow(rowId){
-      const node = (state.outline || []).find(n=>n.id===rowId);
-      if(!node) return [];
-      const witnessIds = Array.from(new Set((node.witnessIds || []).filter(Boolean)));
-      return witnessIds.map(wid => {
-        const person = (state.people || []).find(p => p.id === wid);
-        return { id: wid, label: person?.name || 'Unknown witness' };
-      }).filter(opt => opt.id);
-    }
-    function addDocumentToHeading(docId, rowId, witnessId){
-      if(!docId || !rowId) return false;
-      const doc = (state.documents || []).find(d=>d.id===docId);
-      if(!canDocumentBeExhibit(doc)){
-        alert('That document is marked “Not for use as exhibit.” Change it in the Documents repository first.');
-        return false;
-      }
-      const node = (state.outline || []).find(n=>n.id===rowId);
-      if(!node) return false;
-      const targetWitnessId = witnessId || HEADING_EXHIBIT_KEY;
-      if(!node.witnessData) node.witnessData = {};
-      if(!node.witnessData[targetWitnessId]) node.witnessData[targetWitnessId] = { exhibits: [], testimonyHtml: '', testimony: '' };
-      const exhibits = node.witnessData[targetWitnessId].exhibits || [];
-      if(exhibits.includes(docId)) return false;
-      exhibits.push(docId);
-      node.witnessData[targetWitnessId].exhibits = exhibits;
-      if(targetWitnessId !== HEADING_EXHIBIT_KEY){
-        node.witnessIds = Array.from(new Set([...(node.witnessIds || []), targetWitnessId]));
-      }
-      getOrCreateExhibitForDoc(docId, true);
-      safeSave();
-      return true;
-    }
-
-
-    const NO_WITNESS_FILTER_VALUE = '__NO_WITNESS__';
-    const NO_TAG_FILTER_VALUE = '__NO_TAG__';
-    const filterSelectionInitialized = {};
-    function getUsedWitnessPeople(){
-      const ids = allWitnessIds();
-      return ids.map(id => state.people.find(p=>p.id===id)).filter(Boolean).sort(sortByName);
-    }
-    function getHeadingTagOptions(){
-      const used = new Set();
-      for(const row of (state.outline || [])) for(const tagId of (row.tags || [])) if(tagId) used.add(tagId);
-      return (state.tags || []).filter(t => used.has(t.id)).slice().sort(sortByName);
-    }
-    function getHeadingWitnessOptions(){
-      return getUsedWitnessPeople().map(p => ({ id: p.id, name: p.name || 'Unnamed witness' }));
-    }
-    function ensureMultiFilterDefaults(selectedKey, options){
-      if(!filterSelectionInitialized[selectedKey]){
-        if(!Array.isArray(ui[selectedKey])) ui[selectedKey] = [];
-        filterSelectionInitialized[selectedKey] = true;
-      }
-      if(!Array.isArray(ui[selectedKey])) ui[selectedKey] = [];
-      const allowed = new Set(options.map(opt => opt.id));
-      ui[selectedKey] = ui[selectedKey].filter(id => allowed.has(id));
-    }
-    function rowMatchesTagFilter(row, selectedIds, allTagOptions){
-      const allIds = allTagOptions.map(opt => opt.id);
-      if(!allIds.length) return true;
-      if(!(selectedIds || []).length || (selectedIds || []).length === allIds.length) return true;
-      const rowTags = row && Array.isArray(row.tags) ? row.tags.filter(Boolean) : [];
-      if(!rowTags.length) return (selectedIds || []).includes(NO_TAG_FILTER_VALUE);
-      return rowTags.some(tagId => (selectedIds || []).includes(tagId));
-    }
-    function rowMatchesWitnessFilter(row, selectedIds, allWitnessOptions){
-      const allIds = allWitnessOptions.map(opt => opt.id);
-      if(!allIds.length) return true;
-      if(!(selectedIds || []).length || (selectedIds || []).length === allIds.length) return true;
-      const witnessIds = Array.isArray(row?.witnessIds) ? row.witnessIds.filter(Boolean) : [];
-      if(!witnessIds.length) return (selectedIds || []).includes(NO_WITNESS_FILTER_VALUE);
-      return witnessIds.some(wid => (selectedIds || []).includes(wid));
-    }
-    function getMatchedHeadingRowIds(tagIds, witnessIds){
-      const tagOptions = getHeadingTagOptions();
-      const witnessOptions = [{ id: NO_WITNESS_FILTER_VALUE, name: 'No witness' }].concat(getHeadingWitnessOptions());
-      const matched = new Set();
-      for(const row of (state.outline || [])){
-        if(rowMatchesTagFilter(row, tagIds || [], tagOptions) && rowMatchesWitnessFilter(row, witnessIds || [], witnessOptions)) matched.add(row.id);
-      }
-      return matched;
-    }
-    function addAncestorHeadingIds(idSet){
-      const byId = new Map((state.outline || []).map(r => [r.id, r]));
-      const out = new Set(idSet || []);
-      for(const id of Array.from(idSet || [])){
-        let cur = byId.get(id);
-        while(cur && cur.parentId){
-          out.add(cur.parentId);
-          cur = byId.get(cur.parentId);
-        }
-      }
-      return out;
-    }
-    function getFilteredVisibleRows(tagIds, witnessIds){
-      const matched = getMatchedHeadingRowIds(tagIds, witnessIds);
-      const allowed = addAncestorHeadingIds(matched);
-      const rows = [];
-      function walk(parentId){
-        const kids = childrenOf(parentId);
-        for(const kid of kids){
-          if(!allowed.has(kid.id)) continue;
-          rows.push(kid);
-          if(!kid.collapsed) walk(kid.id);
-        }
-      }
-      walk(null);
-      return rows;
-    }
-    function summarizeFilterSelection(selectedIds, options, noun){
-      const total = options.length;
-      const count = (selectedIds || []).length;
-      if(!total) return 'No ' + noun.toLowerCase() + 's';
-      if(count === 0 || count === total) return 'All ' + noun.toLowerCase() + 's';
-      return count + ' ' + noun.toLowerCase() + (count === 1 ? '' : 's');
-    }
-    function renderCheckboxDropdown(hostId, cfg){
-      const host = $(hostId);
-      if(!host) return;
-      const options = cfg.options || [];
-      ensureMultiFilterDefaults(cfg.selectedKey, options);
-      const selected = ui[cfg.selectedKey] || [];
-      const summaryText = cfg.label + ': ' + summarizeFilterSelection(selected, options, cfg.noun || cfg.label);
-      host.innerHTML = `<div class="filterDropdown"><div class="filterDropdownSummary" data-filter-summary="${cfg.key}"><span>${escapeHtml(summaryText)}</span><span>${ui[cfg.openKey] ? '▲' : '▼'}</span></div><div class="filterDropdownPanel ${ui[cfg.openKey] ? 'open' : ''}" data-filter-panel="${cfg.key}"><div class="filterDropdownToolbar"><button type="button" class="mini" data-filter-select-all="${cfg.key}">Select all</button><button type="button" class="mini" data-filter-select-none="${cfg.key}">Select none</button></div><div class="filterDropdownList">${options.map(opt => `<label class="filterDropdownItem"><input type="checkbox" value="${opt.id}" ${selected.includes(opt.id) ? 'checked' : ''}> <span>${escapeHtml(opt.name)}</span></label>`).join('') || '<div class="hint">Nothing to filter yet.</div>'}</div></div></div>`;
-      host.querySelector('[data-filter-summary]')?.addEventListener('click', (ev)=>{ ev.stopPropagation(); ui[cfg.openKey] = !ui[cfg.openKey]; renderCheckboxDropdown(hostId, cfg); });
-      host.querySelector('[data-filter-select-all]')?.addEventListener('click', (ev)=>{ ev.preventDefault(); ev.stopPropagation(); ui[cfg.selectedKey] = options.map(opt => opt.id); cfg.onChange(); });
-      host.querySelector('[data-filter-select-none]')?.addEventListener('click', (ev)=>{ ev.preventDefault(); ev.stopPropagation(); ui[cfg.selectedKey] = []; cfg.onChange(); });
-      host.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.addEventListener('change', ()=>{ ui[cfg.selectedKey] = Array.from(host.querySelectorAll('input[type="checkbox"]:checked')).map(x => x.value); cfg.onChange(); }));
-    }
-    function closeAllFilterDropdowns(){
-      ['outlineFilterTagOpen','outlineFilterWitnessOpen','outlineIndexTagOpen','outlineIndexWitnessOpen','structuredHeadingTagOpen','structuredHeadingWitnessOpen','timelineFilterTagOpen'].forEach(key => ui[key] = false);
-    }
-    document.addEventListener('click', (ev)=>{
-      if(ev.target && ev.target.closest && ev.target.closest('.filterDropdown')) return;
-      let changed = false;
-      ['outlineFilterTagOpen','outlineFilterWitnessOpen','outlineIndexTagOpen','outlineIndexWitnessOpen','structuredHeadingTagOpen','structuredHeadingWitnessOpen','timelineFilterTagOpen'].forEach(key => { if(ui[key]){ ui[key] = false; changed = true; } });
-      if(changed){ renderOutline(); renderOutlineIndex(); renderStructuredOutline(); renderTimeline(); }
-    });
-    function renderOutlineFilterControls(){
-      const tagOptions = [{ id: NO_TAG_FILTER_VALUE, name: 'No tag' }].concat(getHeadingTagOptions().map(t => ({ id: t.id, name: t.name || 'Untitled tag' })));
-      const witnessOptions = [{ id: NO_WITNESS_FILTER_VALUE, name: 'No witness' }].concat(getHeadingWitnessOptions());
-      renderCheckboxDropdown('outlineTagFilterHost', { key:'outlineTag', label:'Tags', noun:'Tag', openKey:'outlineFilterTagOpen', selectedKey:'outlineFilterTagIds', options:tagOptions, onChange:()=>renderOutline() });
-      renderCheckboxDropdown('outlineWitnessFilterHost', { key:'outlineWitness', label:'Heading witnesses', noun:'Witness', openKey:'outlineFilterWitnessOpen', selectedKey:'outlineFilterWitnessIds', options:witnessOptions, onChange:()=>renderOutline() });
-    }
-    function renderOutlineIndexFilterControls(){
-      const tagOptions = [{ id: NO_TAG_FILTER_VALUE, name: 'No tag' }].concat(getHeadingTagOptions().map(t => ({ id: t.id, name: t.name || 'Untitled tag' })));
-      const witnessOptions = [{ id: NO_WITNESS_FILTER_VALUE, name: 'No witness' }].concat(getHeadingWitnessOptions());
-      renderCheckboxDropdown('outlineIndexTagFilterHost', { key:'outlineIndexTag', label:'Heading tags', noun:'Tag', openKey:'outlineIndexTagOpen', selectedKey:'outlineIndexTagIds', options:tagOptions, onChange:()=>renderOutlineIndex() });
-      renderCheckboxDropdown('outlineIndexWitnessFilterHost', { key:'outlineIndexWitness', label:'Heading witnesses', noun:'Witness', openKey:'outlineIndexWitnessOpen', selectedKey:'outlineIndexWitnessIds', options:witnessOptions, onChange:()=>renderOutlineIndex() });
-    }
-    function renderStructuredHeadingExtraFilters(){
-      const tagOptions = [{ id: NO_TAG_FILTER_VALUE, name: 'No tag' }].concat(getHeadingTagOptions().map(t => ({ id: t.id, name: t.name || 'Untitled tag' })));
-      const witnessOptions = [{ id: NO_WITNESS_FILTER_VALUE, name: 'No witness' }].concat(getHeadingWitnessOptions());
-      renderCheckboxDropdown('structuredHeadingTagFilterHost', { key:'structuredHeadingTag', label:'Heading tags', noun:'Tag', openKey:'structuredHeadingTagOpen', selectedKey:'structuredHeadingTagIds', options:tagOptions, onChange:()=>renderStructuredOutline() });
-      renderCheckboxDropdown('structuredHeadingWitnessFilterHost', { key:'structuredHeadingWitness', label:'Heading witnesses', noun:'Witness', openKey:'structuredHeadingWitnessOpen', selectedKey:'structuredHeadingWitnessIds', options:witnessOptions, onChange:()=>renderStructuredOutline() });
-    }
-
-    function getOutlineColumnData(){
-      const byId = new Map((state.outline || []).map(n => [n.id, n]));
-      const roots = (state.outline || []).filter(n => !n.parentId).slice().sort((a,b)=>(a.order||0)-(b.order||0) || (a.title||'').localeCompare(b.title||''));
-      const columns = [];
-      function collectLeafColumns(root){
-        const rootTitle = (root.title || 'Untitled heading').trim() || 'Untitled heading';
-        const directAssignments = (state.documents || []).some(d => (getDocumentExhibitMeta(d.id).assignments || []).some(a => a.rowId === root.id));
-        const children = (state.outline || []).filter(n => n.parentId === root.id).slice().sort((a,b)=>(a.order||0)-(b.order||0) || (a.title||'').localeCompare(b.title||''));
-        const leaves = [];
-        if(directAssignments || !children.length){
-          leaves.push({ id: root.id + '::self', rowId: root.id, rootId: root.id, rootTitle, childTitle: children.length ? '(main heading)' : rootTitle, rowPath: getRowTitlePath(root.id) });
-        }
-        for(const child of children){
-          leaves.push({ id: child.id, rowId: child.id, rootId: root.id, rootTitle, childTitle: (child.title || 'Untitled heading').trim() || 'Untitled heading', rowPath: getRowTitlePath(child.id) });
-        }
-        return leaves;
-      }
-      for(const root of roots) columns.push(...collectLeafColumns(root));
-      return columns;
-    }
-    function getDocumentOutlineHeadingMap(){
-      const map = new Map();
-      const byId = new Map((state.outline || []).map(n => [n.id, n]));
-      for(const d of (state.documents || [])){
-        const set = new Set();
-        const meta = getDocumentExhibitMeta(d.id);
-        for(const a of (meta.assignments || [])){
-          const row = byId.get(a.rowId);
-          if(!row) continue;
-          if(row.parentId){ set.add(row.id); }
-          else { set.add(row.id + '::self'); }
-        }
-        map.set(d.id, set);
-      }
-      return map;
-    }
-    function updateOutlineIndexDocCount(visibleCount, totalCount){
-      const el = $('outlineIndexDocCount');
-      if(!el) return;
-      el.innerHTML = `Showing <b>${visibleCount}</b> of <b>${totalCount}</b> documents`;
-    }
-
-    function syncOutlineIndexScrollbars(){
-      const top = $('outlineIndexScrollTop');
-      const topInner = $('outlineIndexScrollTopInner');
-      const wrap = $('outlineIndexTableWrap');
-      if(!top || !topInner || !wrap) return;
-      const table = wrap.querySelector('table');
-      const contentWidth = table ? Math.max(table.scrollWidth, wrap.scrollWidth, wrap.clientWidth) : wrap.scrollWidth;
-      topInner.style.width = contentWidth + 'px';
-      const needsScroll = contentWidth > wrap.clientWidth + 1;
-      top.style.display = needsScroll ? 'block' : 'none';
-      if(top._boundWrap !== wrap){
-        let syncing = false;
-        top.addEventListener('scroll', ()=>{ if(syncing) return; syncing = true; wrap.scrollLeft = top.scrollLeft; syncing = false; });
-        wrap.addEventListener('scroll', ()=>{ if(syncing) return; syncing = true; top.scrollLeft = wrap.scrollLeft; syncing = false; });
-        top._boundWrap = wrap;
-      }
-      if(needsScroll && Math.abs(top.scrollLeft - wrap.scrollLeft) > 1) top.scrollLeft = wrap.scrollLeft;
-    }
-    function renderOutlineIndex(){
-      const wrap = $('viewOutlineIndex');
-      if(!wrap) return;
-      if(ui.currentView !== 'outlineindex'){
-        wrap.style.display = 'none';
-        return;
-      }
-      wrap.style.display = 'block';
-      const tableWrap = $('outlineIndexTableWrap');
-      const empty = $('outlineIndexEmpty');
-      const exSel = $('outlineIndexExhibitFilter');
-      const filterBoxWrap = $('outlineIndexFilterBoxes');
-      const usedOnly = $('outlineIndexShowUsedOnly');
-      const noTagsOnly = $('outlineIndexNoTagsOnly');
-      const hasTagsOnly = $('outlineIndexHasTagsOnly');
-      if(!tableWrap || !empty || !exSel || !filterBoxWrap || !usedOnly || !noTagsOnly || !hasTagsOnly) return;
-      renderOutlineIndexFilterControls();
-      exSel.value = ui.outlineIndexExhibitFilter || 'all';
-      usedOnly.checked = !!ui.outlineIndexShowUsedOnly;
-      noTagsOnly.checked = !!ui.outlineIndexNoTagsOnly;
-      hasTagsOnly.checked = !!ui.outlineIndexHasTagsOnly;
-      const allColumns = getOutlineColumnData();
-      const docs = state.documents.slice().sort((a,b)=>(b.date||'').localeCompare(a.date||'') || (a.name||'').localeCompare(b.name||''));
-      const docHeadingMap = getDocumentOutlineHeadingMap();
-      const useCounts = new Map(allColumns.map(c=>[c.id, 0]));
-      for(const d of docs){
-        for(const colId of Array.from(docHeadingMap.get(d.id) || [])){
-          if(useCounts.has(colId)) useCounts.set(colId, (useCounts.get(colId) || 0) + 1);
-        }
-      }
-      filterBoxWrap.innerHTML = allColumns.length ? allColumns.map(c=>`<label class="checkItem"><input type="checkbox" value="${c.id}" ${ui.outlineIndexFilterIds.includes(c.id) ? 'checked' : ''} /> <span>${escapeHtml(c.rootTitle)} → ${escapeHtml(c.childTitle)}</span></label>`).join('') : '<div class="hint">No outline headings yet.</div>';
-      let visibleColumns = allColumns.slice();
-      const matchedHeadingIds = getMatchedHeadingRowIds(ui.outlineIndexTagIds || [], ui.outlineIndexWitnessIds || []);
-      visibleColumns = visibleColumns.filter(c => matchedHeadingIds.has(c.rowId));
-      if(ui.outlineIndexShowUsedOnly) visibleColumns = visibleColumns.filter(c => (useCounts.get(c.id) || 0) > 0);
-      if((ui.outlineIndexFilterIds || []).length){ const chosen = new Set(ui.outlineIndexFilterIds); visibleColumns = visibleColumns.filter(c => chosen.has(c.id)); }
-      const filteredDocs = docs.filter(d=>{
-        const meta = getDocumentExhibitMeta(d.id);
-        const headingCount = (docHeadingMap.get(d.id) || new Set()).size;
-        const hasHeading = headingCount > 0;
-        if((ui.outlineIndexExhibitFilter || 'all') === 'exhibit' && !meta.isExhibit) return false;
-        if((ui.outlineIndexExhibitFilter || 'all') === 'not_exhibit' && meta.isExhibit) return false;
-        if(ui.outlineIndexNoTagsOnly && hasHeading) return false;
-        if(ui.outlineIndexHasTagsOnly && !hasHeading) return false;
-        return true;
-      });
-      updateOutlineIndexDocCount(filteredDocs.length, docs.length);
-      tableWrap.innerHTML = '';
-      empty.style.display = filteredDocs.length ? 'none' : '';
-      if(!filteredDocs.length){ syncOutlineIndexScrollbars(); return; }
-      const groups = [];
-      for(const col of visibleColumns){
-        let g = groups.find(x=>x.rootId === col.rootId);
-        if(!g){ g = { rootId: col.rootId, rootTitle: col.rootTitle, cols: [] }; groups.push(g); }
-        g.cols.push(col);
-      }
-      const table = document.createElement('table');
-      table.id = 'outlineIndexTable';
-      table.className = 'docRepoTable docTagMatrixTable';
-      const thead = document.createElement('thead');
-      const row1 = document.createElement('tr');
-      row1.innerHTML = `<th rowspan="2" style="min-width:280px">Document</th><th rowspan="2" style="min-width:170px">Exhibit status</th><th rowspan="2" style="min-width:120px">Date</th>${groups.map(g=>`<th colspan="${g.cols.length}" class="outlineIndexParentHead">${escapeHtml(g.rootTitle)}</th>`).join('')}`;
-      const row2 = document.createElement('tr');
-      row2.innerHTML = `${visibleColumns.map(c=>`<th class="outlineIndexChildHead">${escapeHtml(c.childTitle)}</th>`).join('')}`;
-      thead.appendChild(row1); thead.appendChild(row2); table.appendChild(thead);
-      const tbody = document.createElement('tbody');
-      for(const d of filteredDocs){
-        const meta = getDocumentExhibitMeta(d.id);
-        const expanded = !!ui.outlineIndexExpandedIds[d.id];
-        const activeCols = docHeadingMap.get(d.id) || new Set();
-        const tr = document.createElement('tr');
-        tr.className = 'docSummaryRow' + (ui.selectedDocId===d.id ? ' selectedDocRow' : '');
-        tr.setAttribute('data-outline-index-toggle', d.id);
-        tr.title = meta.tooltip;
-        const statusText = meta.isExhibit ? escapeHtml(meta.label || 'Exhibit') : 'Not an exhibit';
-        tr.innerHTML = `<td class="docNameCell"><div class="docRowTitle"><span class="docExpandCaret">${expanded ? '&#9662;' : '&#9656;'}</span><span class="docNameHover" title="${escapeHtml(meta.tooltip)}">${escapeHtml(d.name)}</span></div></td><td><span class="docStatusBadge ${meta.isExhibit ? 'isExhibit' : 'notExhibit'}" title="${escapeHtml(meta.tooltip)}">${statusText}</span></td><td>${escapeHtml(d.date || '')}</td>${visibleColumns.map(c=>`<td class="docTagMatrixCell"><span class="docTagMatrixSquare ${activeCols.has(c.id) ? 'on' : ''}"></span></td>`).join('')}`;
-        tbody.appendChild(tr);
-        if(expanded){
-          const detailTr = document.createElement('tr');
-          detailTr.className = 'docDetailRow';
-          const docUrl = d.filePath && window.getDocumentPublicUrl ? window.getDocumentPublicUrl(d.filePath) : '';
-          detailTr.innerHTML = `<td colspan="${3 + Math.max(visibleColumns.length,1)}"><div class="docExpandedPanel"><div style="display:grid; gap:12px"><div><div class="label">Document details</div><div style="font-weight:700; font-size:16px">${escapeHtml(d.name)}</div><div class="docHeadingNote">${escapeHtml(d.date || 'No date')} • ${d.originalFileName || d.filename ? escapeHtml(d.originalFileName || d.filename) : 'No file attached'}</div>${docUrl ? `<div style="margin-top:8px; display:flex; gap:8px; flex-wrap:wrap"><button type="button" class="mini outlineIndexViewBtn" data-doc-id="${d.id}">View file</button><button type="button" class="mini outlineIndexDownloadBtn" data-doc-id="${d.id}">Download file</button><a class="btnGhost docOpenLink" href="${docUrl}" target="_blank" rel="noopener">Open file in new tab</a></div><div data-outline-doc-viewer="${d.id}" style="margin-top:12px"></div>` : ''}</div><div><div class="label">Assigned tags</div>${renderAssignedTagPills(d.tags || [], 'document', d.id)}${renderTagPicker('document', d.id, d.tags || [])}</div><div><div class="label">Add to heading</div><div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-top:8px"><select class="outlineHeadingPicker" data-doc-id="${d.id}"><option value="">Select heading…</option>${getAvailableHeadingOptions().map(opt=>`<option value="${opt.id}">${escapeHtml(opt.label)}</option>`).join('')}</select><select class="outlineWitnessPicker" data-doc-id="${d.id}" disabled><option value="">Select witness…</option></select><button type="button" class="mini outlineAddHeadingBtn" data-doc-id="${d.id}" disabled>Add</button></div><div class="hint" style="margin-top:6px">Select a heading, then choose which witness on that heading/subheading the document should be applied to. Choose “Heading only” to add it without a witness. This fills its square in the Outline Index.</div></div><div><div class="label">Outline locations</div>${meta.isExhibit ? `<ul class="docHeadingList">${meta.assignments.map(a=>`<li><b>${escapeHtml(meta.label || 'Exhibit')}</b> • ${escapeHtml(a.rowPath)}${a.isHeadingOnly ? ` <span class="docHeadingNote">(heading only)</span>` : (a.witnessName ? ` <span class="docHeadingNote">(${escapeHtml(a.witnessName)})</span>` : '')}</li>`).join('')}</ul>` : '<div class="hint">This document has not been added as an exhibit yet.</div>'}</div><div><details class="docDescToggle" open><summary class="label" style="cursor:pointer; user-select:none">Description</summary><div class="hint" style="margin-top:8px">${escapeHtml(d.description || 'No description')}</div></details></div></div></div></td>`;
-          tbody.appendChild(detailTr);
-        }
-      }
-      table.appendChild(tbody);
-      tableWrap.appendChild(table);
-      syncOutlineIndexScrollbars();
-      tableWrap.querySelectorAll('[data-outline-index-toggle]').forEach(row=>row.addEventListener('click', (ev)=>{
-        if(ev.target && (ev.target.closest('button') || ev.target.closest('select') || ev.target.closest('input') || ev.target.closest('textarea') || ev.target.closest('a'))) return;
-        const id = row.getAttribute('data-outline-index-toggle');
-        ui.selectedDocId = id;
-        ui.outlineIndexExpandedIds[id] = !ui.outlineIndexExpandedIds[id];
-        renderOutlineIndex();
-      }));
-      tableWrap.querySelectorAll('.tagPicker').forEach(sel=>sel.addEventListener('change', async ()=>{ await handleTagPickerChange(sel); }));
-      tableWrap.querySelectorAll('.outlineHeadingPicker').forEach(sel=>sel.addEventListener('change', ()=>{ const docId = sel.getAttribute('data-doc-id'); const rowId = sel.value || ''; const witnessSel = tableWrap.querySelector(`.outlineWitnessPicker[data-doc-id="${docId}"]`); const addBtn = tableWrap.querySelector(`.outlineAddHeadingBtn[data-doc-id="${docId}"]`); if(witnessSel){ if(!rowId){ witnessSel.innerHTML = '<option value="">Select witness…</option>'; witnessSel.disabled = true; } else { const options = getWitnessOptionsForRow(rowId); witnessSel.innerHTML = `<option value="${HEADING_EXHIBIT_KEY}">Heading only</option>${options.map(opt=>`<option value="${opt.id}">${escapeHtml(opt.label)}</option>`).join('')}`; witnessSel.disabled = false; witnessSel.value = options.length ? options[0].id : HEADING_EXHIBIT_KEY; } } if(addBtn) addBtn.disabled = !rowId; }));
-      tableWrap.querySelectorAll('.outlineAddHeadingBtn').forEach(btn=>btn.addEventListener('click', ()=>{ const docId = btn.getAttribute('data-doc-id'); const headingSel = tableWrap.querySelector(`.outlineHeadingPicker[data-doc-id="${docId}"]`); const witnessSel = tableWrap.querySelector(`.outlineWitnessPicker[data-doc-id="${docId}"]`); const rowId = headingSel?.value || ''; const witnessId = witnessSel?.value || HEADING_EXHIBIT_KEY; if(!docId || !rowId) return; const added = addDocumentToHeading(docId, rowId, witnessId); if(headingSel) headingSel.value = ''; if(witnessSel){ witnessSel.innerHTML = '<option value="">Select witness…</option>'; witnessSel.disabled = true; } btn.disabled = true; if(added){ renderOutlineIndex(); renderExhibits(); toast(witnessId === HEADING_EXHIBIT_KEY ? 'Document added to heading' : 'Document added to heading for selected witness'); } else { toast('Document already in that heading/witness'); } }));
-      tableWrap.querySelectorAll('.outlineIndexViewBtn').forEach(btn=>btn.addEventListener('click', async (ev)=>{ ev.stopPropagation(); const docId = btn.getAttribute('data-doc-id'); const doc = state.documents.find(x=>x.id===docId); const holder = tableWrap.querySelector(`[data-outline-doc-viewer="${docId}"]`); if(!doc || !holder) return; const url = await getDocumentPreviewUrl(doc); if(!url){ holder.innerHTML = '<div class="hint">No file stored for this document.</div>'; return; } holder.innerHTML = `<div class="label">Document viewer</div><iframe class="docViewerFrame" src="${url}"></iframe>`; }));
-      tableWrap.querySelectorAll('.outlineIndexDownloadBtn').forEach(btn=>btn.addEventListener('click', (ev)=>{ ev.stopPropagation(); const docId = btn.getAttribute('data-doc-id'); if(docId) downloadDocument(docId); }));
-      tableWrap.querySelectorAll('.tagRemoveBtn').forEach(btn=>btn.addEventListener('click', async (ev)=>{
-        ev.stopPropagation();
-        const itemId = btn.getAttribute('data-item-id');
-        const tagId = btn.getAttribute('data-tag-id');
-        const ok = await window.removeDocumentTag(itemId, tagId);
-        if(ok) await window.loadDocumentTags();
-      }));
-      filterBoxWrap.querySelectorAll('input[type="checkbox"]').forEach(cb=>cb.addEventListener('change', ()=>{ ui.outlineIndexFilterIds = Array.from(filterBoxWrap.querySelectorAll('input[type="checkbox"]:checked')).map(x=>x.value); renderOutlineIndex(); }));
-      const selectAllBtn = $('outlineIndexSelectAll');
-      const deselectAllBtn = $('outlineIndexDeselectAll');
-      if(selectAllBtn) selectAllBtn.onclick = ()=>{ ui.outlineIndexFilterIds = allColumns.map(c=>c.id); renderOutlineIndex(); };
-      if(deselectAllBtn) deselectAllBtn.onclick = ()=>{ ui.outlineIndexFilterIds = []; renderOutlineIndex(); };
-      exSel.onchange = ()=>{ ui.outlineIndexExhibitFilter = exSel.value || 'all'; renderOutlineIndex(); };
-      usedOnly.onchange = ()=>{ ui.outlineIndexShowUsedOnly = !!usedOnly.checked; renderOutlineIndex(); };
-      noTagsOnly.onchange = ()=>{ if(noTagsOnly.checked) ui.outlineIndexHasTagsOnly = false; ui.outlineIndexNoTagsOnly = !!noTagsOnly.checked; renderOutlineIndex(); };
-      hasTagsOnly.onchange = ()=>{ if(hasTagsOnly.checked) ui.outlineIndexNoTagsOnly = false; ui.outlineIndexHasTagsOnly = !!hasTagsOnly.checked; renderOutlineIndex(); };
-      syncOutlineIndexScrollbars();
-    }
-    function syncDocTagIndexScrollbars(){
-      const top = $('docTagIndexScrollTop');
-      const topInner = $('docTagIndexScrollTopInner');
-      const wrap = $('docTagIndexTableWrap');
-      if(!top || !topInner || !wrap) return;
-      const table = wrap.querySelector('table');
-      const needsScroll = !!table && table.scrollWidth > wrap.clientWidth + 2;
-      top.style.display = needsScroll ? '' : 'none';
-      topInner.style.width = needsScroll ? (table.scrollWidth + 'px') : '1px';
-      if(top._boundWrap !== wrap){
-        let syncing = false;
-        top.addEventListener('scroll', ()=>{ if(syncing) return; syncing = true; wrap.scrollLeft = top.scrollLeft; syncing = false; });
-        wrap.addEventListener('scroll', ()=>{ if(syncing) return; syncing = true; top.scrollLeft = wrap.scrollLeft; syncing = false; });
-        top._boundWrap = wrap;
-      }
-      if(needsScroll && Math.abs(top.scrollLeft - wrap.scrollLeft) > 1) top.scrollLeft = wrap.scrollLeft;
-    }
-    function renderDocumentTagIndex(){
-      const wrap = $('viewTagIndex');
-      if(!wrap) return;
-      if(ui.currentView !== 'tagindex'){
-        wrap.style.display = 'none';
-        return;
-      }
-      wrap.style.display = 'block';
-      const tableWrap = $('docTagIndexTableWrap');
-      const empty = $('docTagIndexEmpty');
-      const exSel = $('docExhibitFilter');
-      const filterBoxWrap = $('docTagFilterBoxes');
-      const usedOnly = $('docTagShowUsedOnly');
-      const noTagsOnly = $('docTagNoTagsOnly');
-      if(!wrap || !tableWrap || !empty || !exSel || !filterBoxWrap || !usedOnly || !noTagsOnly) return;
-
-      exSel.value = ui.docExhibitFilter || 'all';
-      usedOnly.checked = !!ui.docTagIndexShowUsedOnly;
-      noTagsOnly.checked = !!ui.docTagNoTagsOnly;
-
-      const allTags = state.tags.slice().sort(sortByName);
-      const docs = state.documents.slice().sort((a,b)=>(b.date||'').localeCompare(a.date||'') || (a.name||'').localeCompare(b.name||''));
-      const tagUseCounts = new Map(allTags.map(t=>[t.id, 0]));
-      for(const d of docs){
-        for(const tagId of (d.tags || [])){
-          if(tagUseCounts.has(tagId)) tagUseCounts.set(tagId, (tagUseCounts.get(tagId) || 0) + 1);
-        }
-      }
-
-      filterBoxWrap.innerHTML = allTags.length ? allTags.map(t=>`<label class="checkItem"><input type="checkbox" value="${t.id}" ${ui.docTagFilterIds.includes(t.id) ? 'checked' : ''} /> <span>${escapeHtml(t.name)}</span></label>`).join('') : '<div class="hint">No tags yet.</div>';
-
-      let visibleTags = allTags.slice();
-      if(ui.docTagIndexShowUsedOnly){
-        visibleTags = visibleTags.filter(t => (tagUseCounts.get(t.id) || 0) > 0);
-      }
-      if((ui.docTagFilterIds || []).length){
-        const chosen = new Set(ui.docTagFilterIds);
-        visibleTags = visibleTags.filter(t => chosen.has(t.id));
-      }
-
-      const filteredDocs = docs.filter(d=>{
-        const meta = getDocumentExhibitMeta(d.id);
-        if((ui.docExhibitFilter || 'all') === 'exhibit' && !meta.isExhibit) return false;
-        if((ui.docExhibitFilter || 'all') === 'not_exhibit' && meta.isExhibit) return false;
-        if(ui.docTagNoTagsOnly && (d.tags || []).length) return false;
-        if(ui.docTagHasTagsOnly && !(d.tags || []).length) return false;
-        return true;
-      });
-
-      tableWrap.innerHTML = '';
-      empty.style.display = filteredDocs.length ? 'none' : '';
-      if(!filteredDocs.length) return;
-
-      const table = document.createElement('table');
-      table.id = 'docTagIndexTable';
-      table.className = 'docRepoTable docTagMatrixTable';
-      const thead = document.createElement('thead');
-      const headRow = document.createElement('tr');
-      headRow.innerHTML = `<th style="min-width:280px">Document</th><th style="min-width:170px">Exhibit status</th><th style="min-width:120px">Date</th>${visibleTags.map(t=>`<th class="docTagMatrixCol">${escapeHtml(t.name)}</th>`).join('')}`;
-      thead.appendChild(headRow);
-      table.appendChild(thead);
-      const tbody = document.createElement('tbody');
-
-      for(const d of filteredDocs){
-        const meta = getDocumentExhibitMeta(d.id);
-        const expanded = !!ui.docTagIndexExpandedIds[d.id];
-        const tr = document.createElement('tr');
-        tr.className = 'docSummaryRow' + (ui.selectedDocId===d.id ? ' selectedDocRow' : '');
-        tr.setAttribute('data-doc-index-toggle', d.id);
-        tr.title = meta.tooltip;
-        const statusText = meta.isExhibit ? escapeHtml(meta.label || 'Exhibit') : 'Not an exhibit';
-        tr.innerHTML = `<td class="docNameCell"><div class="docRowTitle"><span class="docExpandCaret">${expanded ? '&#9662;' : '&#9656;'}</span><span class="docNameHover" title="${escapeHtml(meta.tooltip)}">${escapeHtml(d.name)}</span></div></td><td><span class="docStatusBadge ${meta.isExhibit ? 'isExhibit' : 'notExhibit'}" title="${escapeHtml(meta.tooltip)}">${statusText}</span></td><td>${escapeHtml(d.date || '')}</td>${visibleTags.map(t=>{ const hasTag = (d.tags || []).includes(t.id); return `<td class="docTagMatrixCell"><span class="docTagMatrixSquare ${hasTag ? 'on' : ''}" title="${hasTag ? escapeHtml(d.name + ' has tag: ' + t.name) : ''}"></span></td>`; }).join('')}`;
-        tbody.appendChild(tr);
-
-        if(expanded){
-          const detailTr = document.createElement('tr');
-          detailTr.className = 'docDetailRow';
-          const docUrl = d.filePath && window.getDocumentPublicUrl ? window.getDocumentPublicUrl(d.filePath) : '';
-          detailTr.innerHTML = `<td colspan="${3 + visibleTags.length}"><div class="docExpandedPanel"><div style="display:grid; gap:12px"><div><div class="label">Document details</div><div style="font-weight:700; font-size:16px">${escapeHtml(d.name)}</div><div class="docHeadingNote">${escapeHtml(d.date || 'No date')} • ${d.originalFileName || d.filename ? escapeHtml(d.originalFileName || d.filename) : 'No file attached'}</div>${docUrl ? `<div style="margin-top:8px"><a class="btnGhost docOpenLink" href="${docUrl}" target="_blank" rel="noopener">Open file in new tab</a></div>` : ''}</div><div><div class="label">Assigned tags</div>${renderAssignedTagPills(d.tags || [], 'document', d.id)}${renderTagPicker('document', d.id, d.tags || [])}</div><div><div class="label">Exhibit locations</div>${meta.isExhibit ? `<ul class="docHeadingList">${meta.assignments.map(a=>`<li><b>${escapeHtml(meta.label || 'Exhibit')}</b> • ${escapeHtml(a.rowPath)}${a.witnessName ? ` <span class="docHeadingNote">(${escapeHtml(a.witnessName)})</span>` : ''}</li>`).join('')}</ul>` : '<div class="hint">This document has not been added as an exhibit yet.</div>'}</div><div><div class="label">Description</div><div class="hint">${escapeHtml(d.description || 'No description')}</div></div></div></div></td>`;
-          tbody.appendChild(detailTr);
-        }
-      }
-
-      table.appendChild(tbody);
-      tableWrap.appendChild(table);
-      syncDocTagIndexScrollbars();
-
-      tableWrap.querySelectorAll('[data-doc-index-toggle]').forEach(row=>{
-        row.addEventListener('click', (ev)=>{
-          if(ev.target && (ev.target.closest('button') || ev.target.closest('select') || ev.target.closest('input') || ev.target.closest('textarea') || ev.target.closest('a'))) return;
-          const id = row.getAttribute('data-doc-index-toggle');
-          ui.selectedDocId = id;
-          ui.docTagIndexExpandedIds[id] = !ui.docTagIndexExpandedIds[id];
-          renderDocumentTagIndex();
-                });
-      });
-      tableWrap.querySelectorAll('.tagPicker').forEach(sel=>{
-        sel.addEventListener('change', async ()=>{ await handleTagPickerChange(sel); });
-      });
-      tableWrap.querySelectorAll('.tagRemoveBtn').forEach(btn=>{
-        btn.addEventListener('click', async (ev)=>{
-          ev.stopPropagation();
-          const itemId = btn.getAttribute('data-item-id');
-          const tagId = btn.getAttribute('data-tag-id');
-          const ok = await window.removeDocumentTag(itemId, tagId);
-          if(ok) await window.loadDocumentTags();
-        });
-      });
-      filterBoxWrap.querySelectorAll('input[type="checkbox"]').forEach(cb=>{
-        cb.addEventListener('change', ()=>{
-          ui.docTagFilterIds = Array.from(filterBoxWrap.querySelectorAll('input[type="checkbox"]:checked')).map(x=>x.value);
-          renderDocumentTagIndex();
-                });
-      });
-      exSel.onchange = ()=>{ ui.docExhibitFilter = exSel.value || 'all'; renderDocumentTagIndex(); };
-      usedOnly.onchange = ()=>{ ui.docTagIndexShowUsedOnly = !!usedOnly.checked; renderDocumentTagIndex(); };
-      noTagsOnly.onchange = ()=>{ if(noTagsOnly.checked) ui.docTagHasTagsOnly = false; ui.docTagNoTagsOnly = !!noTagsOnly.checked; renderDocumentTagIndex(); };
-      syncDocTagIndexScrollbars();
-      const hasTagsOnly = $('docTagHasTagsOnly');
-      if(hasTagsOnly){ hasTagsOnly.checked = !!ui.docTagHasTagsOnly; hasTagsOnly.onchange = ()=>{ if(hasTagsOnly.checked) ui.docTagNoTagsOnly = false; ui.docTagHasTagsOnly = !!hasTagsOnly.checked; renderDocumentTagIndex(); }; }
-    }
-
-
-    function getVisibleStructuredWitnessIds(){ return Array.isArray(ui.structuredOutlineWitnessFilterIds) ? ui.structuredOutlineWitnessFilterIds.slice() : []; }
-    function getStructuredOutlineWitnesses(){ return (state.people || []).slice().sort((a,b)=>(a.name||'').localeCompare(b.name||'')); }
-    
-function getStructuredOutlineRows(){ return flattenVisible(); }
-    function getStructuredHeadingRows(){ return getFilteredVisibleRows(ui.structuredHeadingTagIds || [], ui.structuredHeadingWitnessIds || []).filter(n => n && n.id); }
-    function getCellExhibits(rowId, witnessId){ const node = (state.outline || []).find(n=>n.id===rowId); if(!node || !node.witnessData) return []; return Array.from(new Set((node.witnessData[witnessId]?.exhibits || []).filter(Boolean))); }
-    function getStructuredDocAssignments(docId){
-      const rows = [];
-      const witnessIds = new Set();
-      let hasHeading = false;
-      for(const node of (state.outline || [])){
-        const wd = node.witnessData || {};
-        for(const [wid, info] of Object.entries(wd)){
-          const exhibits = (info && info.exhibits) || [];
-          if(exhibits.includes(docId)){
-            rows.push({ rowId: node.id, witnessId: wid });
-            hasHeading = true;
-            if(wid && wid !== HEADING_EXHIBIT_KEY) witnessIds.add(wid);
-          }
-        }
-      }
-      return { rows, hasHeading, witnessIds: Array.from(witnessIds) };
-    }
-
-    function structuredEnsureWitnessFilterDefaults(){ if(!Array.isArray(ui.structuredOutlineWitnessFilterIds)) ui.structuredOutlineWitnessFilterIds = []; }
-    function structuredEnsureHeadingFilterDefaults(){
-      const rows = getStructuredHeadingRows();
-      const ids = rows.map(r=>r.id);
-      if(!Array.isArray(structuredUi.visibleHeadingIds)) structuredUi.visibleHeadingIds = [];
-      if(!structuredUi.headingFilterInitialized){
-        structuredUi.visibleHeadingIds = ids.slice();
-        structuredUi.headingFilterInitialized = true;
-      } else {
-        structuredUi.visibleHeadingIds = structuredUi.visibleHeadingIds.filter(id => ids.includes(id));
-      }
-    }
-    function getStructuredVisibleRows(){
-      structuredEnsureHeadingFilterDefaults();
-      const allowed = new Set(structuredUi.visibleHeadingIds);
-      return getStructuredOutlineRows().filter(r => allowed.has(r.id));
-    }
-    function getStructuredWitnessWidth(id){
-      return Number(structuredUi.witnessColWidths[id] || 220);
-    }
-    function structuredGridTemplate(cols){
-      const widths = cols.map(col => {
-        const custom = structuredUi.witnessColWidths[col.id];
-        return custom ? `minmax(${getStructuredWitnessWidth(col.id)}px, ${getStructuredWitnessWidth(col.id)}px)` : 'minmax(220px, 1fr)';
-      }).join(' ');
-      return `${ui.outlinePaneWidth || 720}px 8px ${widths}`;
-    }
-    function renderStructuredHeadingFilter(){
-      const host = $('structuredHeadingFilterHost');
-      if(!host) return;
-      structuredEnsureHeadingFilterDefaults();
-      const rows = getStructuredHeadingRows();
-      const shown = structuredUi.visibleHeadingIds.length;
-      const summary = shown === rows.length ? `Showing all ${rows.length} headings` : `Showing ${shown} of ${rows.length} headings`;
-      host.innerHTML = `<div class="structuredHeadingFilter">
-        <div class="structuredHeadingSummary" id="structuredHeadingSummary"><span>${escapeHtml(summary)}</span><span>${structuredUi.headingFilterOpen ? '▲' : '▼'}</span></div>
-        <div class="structuredHeadingPanel ${structuredUi.headingFilterOpen ? 'open' : ''}" id="structuredHeadingPanel">
-          <div class="structuredHeadingToolbar">
-            <button type="button" class="mini" id="structuredHeadingSelectAll">Select all</button>
-            <button type="button" class="mini" id="structuredHeadingSelectNone">Select none</button>
-          </div>
-          <div class="structuredHeadingList">
-            ${rows.map(r => {
-              const level = Math.min(depthOf(r.id) + 1, 4);
-              return `<label class="structuredHeadingItem level${level}"><input type="checkbox" value="${r.id}" ${structuredUi.visibleHeadingIds.includes(r.id) ? 'checked' : ''}> <span>${escapeHtml(r.title || 'Untitled heading')}</span></label>`;
-            }).join('')}
-          </div>
-        </div>
-      </div>`;
-      $('structuredHeadingSummary')?.addEventListener('click', (ev)=>{ ev.stopPropagation(); structuredUi.headingFilterOpen = !structuredUi.headingFilterOpen; renderStructuredHeadingFilter(); });
-      $('structuredHeadingSelectAll')?.addEventListener('click', (ev)=>{ ev.preventDefault(); ev.stopPropagation(); structuredUi.visibleHeadingIds = rows.map(r=>r.id); structuredUi.headingFilterInitialized = true; renderStructuredOutline(); structuredUi.headingFilterOpen = true; });
-      $('structuredHeadingSelectNone')?.addEventListener('click', (ev)=>{ ev.preventDefault(); ev.stopPropagation(); structuredUi.visibleHeadingIds = []; structuredUi.headingFilterInitialized = true; renderStructuredOutline(); structuredUi.headingFilterOpen = true; });
-      host.querySelectorAll('#structuredHeadingPanel input[type="checkbox"]').forEach(cb=>{
-        cb.addEventListener('change', ()=>{
-          structuredUi.visibleHeadingIds = Array.from(host.querySelectorAll('#structuredHeadingPanel input[type="checkbox"]:checked')).map(x=>x.value);
-          renderStructuredOutline();
-        });
-      });
-    }
-    document.addEventListener('click', (ev)=>{
-      const wrap = document.querySelector('.structuredHeadingFilter');
-      if(!wrap || !structuredUi.headingFilterOpen) return;
-      if(!wrap.contains(ev.target)){ structuredUi.headingFilterOpen = false; renderStructuredHeadingFilter(); }
-    });
-    function startStructuredWitnessResize(ev, witnessId){
-      ev.preventDefault();
-      structuredUi.resizingWitnessId = witnessId;
-      structuredUi.resizeStartX = ev.clientX;
-      structuredUi.resizeStartWidth = getStructuredWitnessWidth(witnessId);
-      document.body.style.cursor = 'col-resize';
-      document.body.style.userSelect = 'none';
-    }
-    function handleStructuredWitnessResize(ev){
-      if(!structuredUi.resizingWitnessId) return;
-      const dx = ev.clientX - structuredUi.resizeStartX;
-      structuredUi.witnessColWidths[structuredUi.resizingWitnessId] = Math.max(160, structuredUi.resizeStartWidth + dx);
-      const table = $('structuredOutlineTable');
-      if(table){ renderStructuredOutline(); }
-    }
-    function stopStructuredWitnessResize(){
-      if(!structuredUi.resizingWitnessId) return;
-      structuredUi.resizingWitnessId = null;
-      document.body.style.cursor = '';
-      document.body.style.userSelect = '';
-    }
-    window.addEventListener('mousemove', handleStructuredWitnessResize);
-    window.addEventListener('mouseup', stopStructuredWitnessResize);
-
-    
-function openStructuredDocEditor(docId){
-      const doc = (state.documents || []).find(d=>d.id===docId); if(!doc) return;
-      ui.structuredDocEditorId = docId;
-      $('structuredDocName').value = doc.name || '';
-      $('structuredDocDesc').value = doc.description || '';
-      $('structuredDocTags').innerHTML = (state.tags || []).slice().sort(sortByName).map(t=>`<label><input type="checkbox" value="${t.id}" ${(doc.tags || []).includes(t.id) ? 'checked' : ''} /> <span>${escapeHtml(t.name)}</span></label>`).join('') || '<div class="hint">No tags yet.</div>';
-      $('structuredDocViewer').innerHTML = '';
-      $('structuredDocModal').classList.add('open');
-    }
-    function closeStructuredDocEditor(){ ui.structuredDocEditorId = null; $('structuredDocModal')?.classList.remove('open'); }
-    async function saveStructuredDocEditor(){
-      const docId = ui.structuredDocEditorId; const doc = (state.documents || []).find(d=>d.id===docId); if(!doc) return;
-      const newName = ($('structuredDocName').value || '').trim(); if(!newName){ alert('Document name is required.'); return; }
-      const newDesc = ($('structuredDocDesc').value || '').trim();
-      const selectedTagIds = Array.from(document.querySelectorAll('#structuredDocTags input[type="checkbox"]:checked')).map(x=>x.value);
-      const oldTagIds = Array.from(new Set(doc.tags || []));
-      const toAdd = selectedTagIds.filter(id=>!oldTagIds.includes(id));
-      const toRemove = oldTagIds.filter(id=>!selectedTagIds.includes(id));
-      const updated = await window.updateDocumentRow(docId, { name: newName, description: newDesc, doc_date: doc.date || null });
-      if(!updated){ alert('Failed to save document.'); return; }
-      for(const tagId of toAdd) await window.assignDocumentTag(docId, tagId);
-      for(const tagId of toRemove) await window.removeDocumentTag(docId, tagId);
-      await window.loadDocuments(); await window.loadDocumentTags();
-      renderStructuredOutline(); renderOutlineIndex(); renderDocuments();
-      toast('Document updated');
-      closeStructuredDocEditor();
-    }
-    async function viewStructuredDocEditorFile(){ const doc = (state.documents || []).find(d=>d.id===ui.structuredDocEditorId); const holder = $('structuredDocViewer'); if(!doc || !holder) return; const url = await getDocumentPreviewUrl(doc); if(!url){ holder.innerHTML = '<div class="hint">No file stored for this document.</div>'; return; } holder.innerHTML = `<div class="label">Document viewer</div><iframe class="docViewerFrame" src="${url}"></iframe>`; }
-    function downloadStructuredDocEditorFile(){ if(ui.structuredDocEditorId) downloadDocument(ui.structuredDocEditorId); }
-    function renderStructuredTray(){
-      const wrap = $('structuredTrayList'); if(!wrap) return;
-      const q = (ui.structuredTraySearch || '').trim().toLowerCase();
-      const assignmentSel = $('structuredTrayAssignmentFilter');
-      const personSel = $('structuredTrayPersonFilter');
-      const tagSel = $('structuredTrayTagFilter');
-
-      if(assignmentSel && assignmentSel.value !== ui.structuredTrayAssignmentFilter) assignmentSel.value = ui.structuredTrayAssignmentFilter;
-
-      if(personSel){
-        const options = ['<option value="any">Any person</option>', '<option value="__none__">No person</option>']
-          .concat((state.people || []).slice().sort(sortByName).map(p=>`<option value="${p.id}">${escapeHtml(p.name || 'Unnamed person')}</option>`));
-        personSel.innerHTML = options.join('');
-        personSel.value = ui.structuredTrayPersonFilterId || 'any';
-      }
-
-      if(tagSel){
-        const selected = new Set(ui.structuredTrayTagFilterIds || []);
-        tagSel.innerHTML = (state.tags || []).slice().sort(sortByName).map(t=>`<option value="${t.id}" ${selected.has(t.id) ? 'selected' : ''}>${escapeHtml(t.name || 'Untitled tag')}</option>`).join('');
-      }
-
-      const docs = (state.documents || []).filter(d => canDocumentBeExhibit(d)).slice().sort(sortByName).filter(d=>{
-        if(q && !((d.name || '').toLowerCase().includes(q) || (d.description || '').toLowerCase().includes(q))) return false;
-        const assign = getStructuredDocAssignments(d.id);
-        if(ui.structuredTrayAssignmentFilter === 'assigned' && !assign.hasHeading) return false;
-        if(ui.structuredTrayAssignmentFilter === 'unassigned' && assign.hasHeading) return false;
-        const personFilter = ui.structuredTrayPersonFilterId || 'any';
-        if(personFilter === '__none__' && assign.witnessIds.length) return false;
-        if(personFilter !== 'any' && personFilter !== '__none__' && !assign.witnessIds.includes(personFilter)) return false;
-        const tagFilters = ui.structuredTrayTagFilterIds || [];
-        if(tagFilters.length && !tagFilters.every(id => (d.tags || []).includes(id))) return false;
-        return true;
-      });
-
-      wrap.innerHTML = docs.map(d=>`<span class="structuredExChip" draggable="true" data-structured-doc="${d.id}" data-source-row="" data-source-witness=""><span class="labelText">${escapeHtml(d.name || 'Document')}</span></span>`).join('') || '<div class="hint">No documents match those filters.</div>';
-      wrap.querySelectorAll('[data-structured-doc]').forEach(el=>{
-        el.addEventListener('dragstart', ev=>{ ui.structuredDragging = { docId: el.getAttribute('data-structured-doc'), sourceRowId: '', sourceWitnessId: '', fromTray: true }; ev.dataTransfer.setData('text/plain', JSON.stringify(ui.structuredDragging)); el.classList.add('dragging'); });
-        el.addEventListener('dragend', ()=>{ el.classList.remove('dragging'); ui.structuredDragging = null; });
-        el.addEventListener('click', ()=> openStructuredDocEditor(el.getAttribute('data-structured-doc')));
-      });
-    }
-
-    
-    function bindStructuredScrollDock(){
-      const shell = $('structuredOutlineShell');
-      const dock = $('structuredScrollDock');
-      const inner = $('structuredScrollDockInner');
-      if(!shell || !dock || !inner) return;
-      inner.style.width = Math.max(shell.scrollWidth, shell.clientWidth) + 'px';
-      if(dock.dataset.bound !== '1'){
-        dock.dataset.bound = '1';
-        let syncing = false;
-        shell.addEventListener('scroll', ()=>{
-          if(syncing) return;
-          syncing = true;
-          dock.scrollLeft = shell.scrollLeft;
-          syncing = false;
-        });
-        dock.addEventListener('scroll', ()=>{
-          if(syncing) return;
-          syncing = true;
-          shell.scrollLeft = dock.scrollLeft;
-          syncing = false;
-        });
-        window.addEventListener('resize', ()=>{ inner.style.width = Math.max(shell.scrollWidth, shell.clientWidth) + 'px'; });
-      }
-      dock.scrollLeft = shell.scrollLeft;
-    }
-    function getStructuredRowControls(nodeId){
-      return `<div class="rowControlsWrap">
-        <button type="button" class="rowControlsBtn">Controls</button>
-        <div class="rowControlsMenu">
-          <button type="button" class="rowControlItem" data-structured-act="sibling" data-node-id="${nodeId}">+ Sibling</button>
-          <button type="button" class="rowControlItem" data-structured-act="child" data-node-id="${nodeId}">+ Child</button>
-          <button type="button" class="rowControlItem" data-structured-act="indent" data-node-id="${nodeId}">↳ Indent</button>
-          <button type="button" class="rowControlItem" data-structured-act="outdent" data-node-id="${nodeId}">↰ Outdent</button>
-          <button type="button" class="rowControlItem" data-structured-act="up" data-node-id="${nodeId}">↑ Up</button>
-          <button type="button" class="rowControlItem" data-structured-act="down" data-node-id="${nodeId}">↓ Down</button>
-          <button type="button" class="rowControlItem" data-structured-act="delete" data-node-id="${nodeId}">Delete</button>
-        </div>
-      </div>`;
-    }
-
-    async function moveStructuredDocument(docId, targetRowId, targetWitnessId, sourceRowId = '', sourceWitnessId = '', fromTray = false){ if(!docId || !targetRowId || !targetWitnessId) return; const doc = (state.documents || []).find(d=>d.id===docId); if(!canDocumentBeExhibit(doc)){ alert('That document is marked “Not for use as exhibit.” Change it in the Documents repository first.'); return; } if(sourceRowId && sourceWitnessId && (sourceRowId !== targetRowId || sourceWitnessId !== targetWitnessId)){ if(sourceWitnessId === HEADING_EXHIBIT_KEY) removeHeadingOnlyExhibit(sourceRowId, docId); else await removeExhibitFromCell(sourceRowId, sourceWitnessId, docId); } if(targetWitnessId === HEADING_EXHIBIT_KEY){ addDocumentToHeading(docId, targetRowId, HEADING_EXHIBIT_KEY); renderOutline(); renderStructuredOutline(); renderExhibits(); } else { await addExhibitToCell(targetRowId, targetWitnessId, docId); } }
-    function renderStructuredOutline(){
-      structuredEnsureWitnessFilterDefaults();
-      structuredEnsureHeadingFilterDefaults();
-      const view = $('viewStructuredOutline');
-      if(!view || ui.currentView !== 'structuredoutline') return;
-
-      const witnesses = getStructuredOutlineWitnesses();
-      const filterWrap = $('structuredWitnessFilterList');
-      if(filterWrap){
-        filterWrap.innerHTML = witnesses.map(p=>`<label class="checkItem" style="margin:0"><input type="checkbox" value="${p.id}" ${ui.structuredOutlineWitnessFilterIds.includes(p.id) ? 'checked' : ''} /> <span>${escapeHtml(p.name)}</span></label>`).join('') || '<div class="hint">No witnesses yet.</div>';
-        filterWrap.querySelectorAll('input[type="checkbox"]').forEach(cb=>cb.addEventListener('change', ()=>{
-          ui.structuredOutlineWitnessFilterIds = Array.from(filterWrap.querySelectorAll('input:checked')).map(x=>x.value);
-          renderStructuredOutline();
-        }));
-      }
-      renderStructuredHeadingFilter();
-      renderStructuredHeadingExtraFilters();
-
-      const cols = [{ id: HEADING_EXHIBIT_KEY, label: 'No witness' }].concat(
-        witnesses
-          .filter(p=>ui.structuredOutlineWitnessFilterIds.includes(p.id))
-          .map(p=>({ id: p.id, label: p.name }))
-      );
-
-      const table = $('structuredOutlineTable');
-      if(!table) return;
-      table.style.setProperty('--structured-left', (ui.outlinePaneWidth || 720) + 'px');
-      table.style.setProperty('--structured-cols', String(Math.max(cols.length,1)));
-
-      const rows = getStructuredVisibleRows();
-      const gridTemplate = structuredGridTemplate(cols);
-      const header = `<div class="structuredHeader" style="grid-template-columns:${gridTemplate}">
-        <div class="structuredOutlineCell">Heading / Structure</div>
-        <div class="structuredDivider" id="structuredOutlineDivider"></div>
-        ${cols.map(col=>`<div class="structuredHeadCell structuredHeaderCell" style="position:relative;${structuredUi.witnessColWidths[col.id] ? `min-width:${getStructuredWitnessWidth(col.id)}px;max-width:${getStructuredWitnessWidth(col.id)}px` : ''}">${escapeHtml(col.label)}<div class="structuredColResize" data-structured-resize="${col.id}"></div></div>`).join('')}
-      </div>`;
-
-      const body = rows.map(n=>{
-        const depth = depthOf(n.id);
-        const hasKids = (state.outline || []).some(x=>x.parentId===n.id);
-        const childBadge = depth ? '<span class="structuredOutlineBadge">Child row</span>' : '';
-        const left = `<div class="structuredOutlineCell">
-          <div class="structuredOutlineTitleRow" style="padding-left:${Math.max(2, depth * 52)}px">
-            ${hasKids ? `<span class="structuredCaret" data-structured-caret="${n.id}">${n.collapsed ? '&#9656;' : '&#9662;'}</span>` : '<span style="display:inline-block;width:20px"></span>'}
-            <button type="button" class="detailToggle" data-structured-open-outline="${n.id}" title="Open this row in Case Outline">+</button>
-            <button type="button" class="outlineDragHandle" draggable="true" data-structured-drag="${n.id}" title="${depth ? 'Drag within this parent only' : 'Drag to reorder top-level headings'}">⋮⋮</button>
-            ${childBadge}
-            <span class="structuredOutlineTitleText" title="${escapeHtml(n.title || 'Untitled heading')}">${escapeHtml(n.title || 'Untitled heading')}</span>
-            ${getStructuredRowControls(n.id)}
-          </div>
-        </div>`;
-        const cells = cols.map(col=>{
-          const docs = getCellExhibits(n.id, col.id);
-          return `<div class="structuredCell" style="${structuredUi.witnessColWidths[col.id] ? `min-width:${getStructuredWitnessWidth(col.id)}px;max-width:${getStructuredWitnessWidth(col.id)}px` : ''}">
-            <div class="structuredDropzone structuredExhibitCell" data-target-row="${n.id}" data-target-witness="${col.id}">
-              ${docs.length ? docs.map(docId=>{ const d = (state.documents || []).find(x=>x.id===docId); return `<span class="structuredExChip" draggable="true" data-structured-doc="${docId}" data-source-row="${n.id}" data-source-witness="${col.id}"><span class="labelText">${escapeHtml(d?.name || 'Document')}</span></span>`; }).join('') : '<span class="structuredEmpty">Drop exhibit here</span>'}
-            </div>
-          </div>`;
-        }).join('');
-        return `<div class="structuredRow" style="grid-template-columns:${gridTemplate}">${left}<div class="structuredDivider"></div>${cells}</div>`;
-      }).join('');
-
-      table.innerHTML = header + body;
-
-      table.querySelectorAll('[data-structured-caret]').forEach(btn=>btn.addEventListener('click', ()=>{
-        const id = btn.getAttribute('data-structured-caret');
-        const node = (state.outline || []).find(x=>x.id===id);
-        if(node){ node.collapsed = !node.collapsed; safeSave(); renderStructuredOutline(); }
-      }));
-
-      table.querySelectorAll('[data-structured-open-outline]').forEach(btn=>btn.addEventListener('click', ()=>{
-        const id = btn.getAttribute('data-structured-open-outline');
-        const node = (state.outline || []).find(x=>x.id===id);
-        if(node){
-          ui.selectedNodeId = id;
-          node.detailsOpen = true;
-          ui.currentView = 'outline';
-          setTab('outline');
-          renderOutline();
-        }
-      }));
-
-      table.querySelectorAll('[data-structured-act]').forEach(btn=>btn.addEventListener('click', async ()=>{
-        const act = btn.getAttribute('data-structured-act');
-        const nid = btn.getAttribute('data-node-id');
-        await runRowControl(act, nid);
-        renderStructuredOutline();
-      }));
-
-      table.querySelectorAll('[data-structured-drag]').forEach(handle=>{
-        handle.addEventListener('dragstart', (e)=>{
-          const nId = handle.getAttribute('data-structured-drag');
-          const n = (state.outline || []).find(x=>x.id===nId);
-          suppressOutlineRealtime(5000);
-          outlineDragState = { draggedId: nId, overId: null, position: null };
-          e.dataTransfer.effectAllowed = 'move';
-          try { e.dataTransfer.setData('text/plain', nId); } catch {}
-        });
-        handle.addEventListener('dragend', ()=>{ resetOutlineDragState(); });
-      });
-      table.querySelectorAll('.structuredOutlineCell').forEach(cell=>{
-        const row = cell.closest('.structuredRow');
-        if(!row) return;
-        const dragBtn = row.querySelector('[data-structured-drag]');
-        const targetId = dragBtn ? dragBtn.getAttribute('data-structured-drag') : null;
-        cell.addEventListener('dragover', (e)=>{
-          if(!outlineDragState.draggedId || !targetId || outlineDragState.draggedId === targetId) return;
-          const dragged = (state.outline || []).find(x=>x.id===outlineDragState.draggedId);
-          const target = (state.outline || []).find(x=>x.id===targetId);
-          if(!dragged || !target || (dragged.parentId || null) !== (target.parentId || null)) return;
-          e.preventDefault();
-          const rect = cell.getBoundingClientRect();
-          const nextPosition = (e.clientY - rect.top) < rect.height / 2 ? 'before' : 'after';
-          setOutlineDropTarget(targetId, nextPosition);
-        });
-        cell.addEventListener('drop', async (e)=>{
-          if(!outlineDragState.draggedId || !targetId) return;
-          e.preventDefault();
-          const draggedId = outlineDragState.draggedId;
-          const position = outlineDragState.position || 'after';
-          resetOutlineDragState();
-          await reorderNodeRelative(draggedId, targetId, position);
-          renderStructuredOutline();
-        });
-      });
-
-      table.querySelectorAll('.structuredDropzone').forEach(zone=>{
-        zone.addEventListener('dragover', ev=>{ ev.preventDefault(); zone.classList.add('dragOver'); });
-        zone.addEventListener('dragleave', ()=> zone.classList.remove('dragOver'));
-        zone.addEventListener('drop', async ev=>{
-          ev.preventDefault();
-          zone.classList.remove('dragOver');
-          let payload = ui.structuredDragging;
-          try{ payload = JSON.parse(ev.dataTransfer.getData('text/plain') || 'null') || payload; }catch(_e){}
-          if(!payload || !payload.docId) return;
-          await moveStructuredDocument(payload.docId, zone.getAttribute('data-target-row'), zone.getAttribute('data-target-witness'), payload.sourceRowId, payload.sourceWitnessId, !!payload.fromTray);
-        });
-      });
-
-      table.querySelectorAll('.structuredExChip[data-structured-doc]').forEach(el=>{
-        el.addEventListener('dragstart', ev=>{
-          const payload = { docId: el.getAttribute('data-structured-doc'), sourceRowId: el.getAttribute('data-source-row'), sourceWitnessId: el.getAttribute('data-source-witness'), fromTray: !el.getAttribute('data-source-row') };
-          ui.structuredDragging = payload;
-          ev.dataTransfer.setData('text/plain', JSON.stringify(payload));
-          el.classList.add('dragging');
-        });
-        el.addEventListener('dragend', ()=>{
-          el.classList.remove('dragging');
-          ui.structuredDragging = null;
-        });
-        el.addEventListener('click', ()=> openStructuredDocEditor(el.getAttribute('data-structured-doc')));
-      });
-
-      table.querySelectorAll('[data-structured-resize]').forEach(handle=>{
-        handle.addEventListener('mousedown', ev=> startStructuredWitnessResize(ev, handle.getAttribute('data-structured-resize')));
-      });
-
-      syncStructuredDivider();
-      renderStructuredTray();
-      bindStructuredScrollDock();
-    }
-
-    function syncStructuredDivider(){ const handle = $('structuredOutlineDivider'); if(!handle || handle.dataset.bound === '1') return; handle.dataset.bound = '1'; handle.addEventListener('mousedown', (ev)=>{ ev.preventDefault(); const startX = ev.clientX; const startWidth = ui.outlinePaneWidth || 720; const onMove = (e)=>{ ui.outlinePaneWidth = Math.max(380, Math.min(window.innerWidth - 320, startWidth + (e.clientX - startX))); safeSave(); const table = $('structuredOutlineTable'); if(table) table.style.setProperty('--structured-left', (ui.outlinePaneWidth || 720) + 'px'); const matrix = $('matrix'); if(matrix) matrix.style.setProperty('--outline-left-width', (ui.outlinePaneWidth || 720) + 'px'); bindStructuredScrollDock(); }; const onUp = ()=>{ window.removeEventListener('mousemove', onMove); window.removeEventListener('mouseup', onUp); renderStructuredOutline(); renderOutline(); renderElements(); }; window.addEventListener('mousemove', onMove); window.addEventListener('mouseup', onUp); }); }
-
-
-    let documentEditModalId = null;
-    function getDocumentExhibitStatusHtml(doc){ const meta = getDocumentExhibitMeta(doc.id); return `<div><span class="docStatusBadge ${meta.isExhibit ? 'isExhibit' : 'notExhibit'}">${meta.isExhibit ? escapeHtml(meta.label || 'Exhibit') : 'Not an exhibit'}</span></div>${meta.isExhibit ? `<ul class="docHeadingList">${meta.assignments.map(a=>`<li>${escapeHtml(a.rowPath)}${a.witnessName ? ` <span class="docHeadingNote">(${escapeHtml(a.witnessName)})</span>` : ''}</li>`).join('')}</ul>` : '<div class="hint">This document has not been added as an exhibit yet.</div>'}`; }
-    function renderDocumentEditTagControls(){
-      const host = $('documentEditTags');
-      const doc = (state.documents || []).find(d=>d.id===documentEditModalId);
-      if(!host || !doc) return;
-      host.innerHTML = `${renderAssignedTagPills(doc.tags || [], 'document', doc.id)}${renderTagPicker('document', doc.id, doc.tags || [])}`;
-      host.querySelector('.tagPicker')?.addEventListener('change', async (ev)=>{ await handleTagPickerChange(ev.currentTarget); renderDocumentEditTagControls(); renderDocuments(); if(ui.currentView==='tagindex') renderDocumentTagIndex(); renderTimeline(); });
-      host.querySelectorAll('.tagRemoveBtn').forEach(btn=>btn.addEventListener('click', async (ev)=>{ ev.stopPropagation(); const itemId = btn.getAttribute('data-item-id'); const tagId = btn.getAttribute('data-tag-id'); const ok = await window.removeDocumentTag(itemId, tagId); if(ok){ await window.loadDocumentTags(); renderDocumentEditTagControls(); renderDocuments(); if(ui.currentView==='tagindex') renderDocumentTagIndex(); renderTimeline(); } }));
-    }
-    function closeDocumentEditModal(){ documentEditModalId = null; $('documentEditModal')?.classList.remove('open'); $('documentEditViewer').innerHTML = ''; }
-    function openDocumentEditModal(docId){ const doc = state.documents.find(d=>d.id===docId); if(!doc) return; documentEditModalId = docId; $('documentEditName').value = doc.name || ''; $('documentEditDate').value = safeDateInputValue(doc.date || ''); $('documentEditDesc').value = doc.description || ''; $('documentEditFile').value = ''; $('documentEditUploadDate').textContent = formatDateForDisplay(getDocumentUploadDate(doc)) || 'Unknown'; $('documentEditCurrentFile').textContent = 'Current file: ' + ((doc.originalFileName || doc.filename) ? (doc.originalFileName || doc.filename) : 'No file'); $('documentEditExhibitStatus').innerHTML = getDocumentExhibitStatusHtml(doc); renderDocumentEditTagControls(); $('documentEditViewer').innerHTML = ''; $('documentEditModal').classList.add('open'); }
-    async function saveDocumentEditModal(){ const id = documentEditModalId; const doc = state.documents.find(d=>d.id===id); if(!doc) return; const newName = ($('documentEditName').value || '').trim(); const newDate = $('documentEditDate').value || null; const newDesc = ($('documentEditDesc').value || '').trim(); if(!newName){ alert('Document name is required.'); return; } const updated = await window.updateDocumentRow(id, { name: newName, doc_date: newDate, description: newDesc }); if(!updated){ alert('Failed to save document changes.'); return; } const newFile = $('documentEditFile').files && $('documentEditFile').files[0] ? $('documentEditFile').files[0] : null; if(newFile){ if(doc.filePath) await window.deleteDocumentFile(doc.filePath); const newPath = await window.uploadDocumentFile(id, newFile); if(!newPath){ alert('Document details saved, but file upload failed.'); } else { await window.updateDocumentRow(id, { file_path: newPath, original_file_name: newFile.name || '', mime_type: newFile.type || '', file_size: Number(newFile.size || 0) || 0 }); } } await window.loadDocuments(); renderDocuments(); renderTimeline(); renderOutlineIndex(); renderStructuredOutline(); toast('Document updated'); closeDocumentEditModal(); }
-    async function previewDocumentEditModal(){ const id = documentEditModalId; const doc = state.documents.find(d=>d.id===id); if(!doc) return; const url = await getDocumentPreviewUrl(doc); $('documentEditViewer').innerHTML = url ? `<div class="label">Document viewer</div><iframe class="docViewerFrame" src="${url}"></iframe>` : '<div class="hint">No file stored for this document.</div>'; }
-    function downloadDocumentEditModal(){ if(documentEditModalId) downloadDocument(documentEditModalId); }
-    function deleteDocumentEditModal(){ if(!documentEditModalId) return; const id = documentEditModalId; closeDocumentEditModal(); deleteDocument(id); }
-    $('documentEditModalClose')?.addEventListener('click', closeDocumentEditModal);
-    $('documentEditSave')?.addEventListener('click', saveDocumentEditModal);
-    $('documentEditPreview')?.addEventListener('click', previewDocumentEditModal);
-    $('documentEditDownload')?.addEventListener('click', downloadDocumentEditModal);
-    $('documentEditDelete')?.addEventListener('click', deleteDocumentEditModal);
-    $('documentEditModal')?.addEventListener('click', (e)=>{ if(e.target?.id === 'documentEditModal') closeDocumentEditModal(); });
-
-    let docRepoResizeState = null;
-    function getDocRepoColWidth(key, fallback){ const raw = Number((ui.docRepoColWidths || {})[key]); return Number.isFinite(raw) && raw >= 70 ? raw : fallback; }
-    function beginDocRepoResize(ev, key){ ev.preventDefault(); ev.stopPropagation(); docRepoResizeState = { key, startX: ev.clientX, startWidth: getDocRepoColWidth(key, 120) }; document.body.classList.add('doc-repo-resizing'); const onMove = (moveEv)=>{ if(!docRepoResizeState) return; ui.docRepoColWidths[key] = Math.max(70, docRepoResizeState.startWidth + (moveEv.clientX - docRepoResizeState.startX)); const table = $('docList')?.querySelector('table.docRepoTable'); if(table){ const col = table.querySelector(`col[data-doc-col="${key}"]`); if(col) col.style.width = ui.docRepoColWidths[key] + 'px'; } }; const onUp = ()=>{ document.removeEventListener('mousemove', onMove); document.removeEventListener('mouseup', onUp); document.body.classList.remove('doc-repo-resizing'); docRepoResizeState = null; safeSave(); renderDocuments(); }; document.addEventListener('mousemove', onMove); document.addEventListener('mouseup', onUp); }
-
-    function renderDocuments(){
-  const tagIndexView = $('viewTagIndex');
-  if(tagIndexView && ui.currentView !== 'tagindex') tagIndexView.style.display = 'none';
-  const outlineIndexView = $('viewOutlineIndex');
-  if(outlineIndexView && ui.currentView !== 'outlineindex') outlineIndexView.style.display = 'none';
-  const list = $('docList');
-  list.innerHTML = '';
-  $('docEmpty').style.display = state.documents.length ? 'none' : '';
-  renderDocumentRepositoryFilters();
-  renderDocumentDownloadList();
-  if(!state.documents.length){
-    renderOutline();
-    return;
-  }
-  const docs = sortDocumentsForRepository((state.documents || []).filter(d=>{
-    const meta = getDocumentExhibitMeta(d.id);
-    const elig = Array.isArray(ui.docRepoEligibilityFilters) ? ui.docRepoEligibilityFilters : ['possible','not'];
-    const status = Array.isArray(ui.docRepoStatusFilters) ? ui.docRepoStatusFilters : ['exhibit','not_exhibit'];
-    const docElig = d.exhibitEligibility === 'not' ? 'not' : 'possible';
-    const docStatus = meta.isExhibit ? 'exhibit' : 'not_exhibit';
-    return elig.includes(docElig) && status.includes(docStatus);
-  }));
-  const widths = {
-    name: getDocRepoColWidth('name', 340),
-    date: getDocRepoColWidth('date', 150),
-    uploadDate: getDocRepoColWidth('uploadDate', 160),
-    timeline: getDocRepoColWidth('timeline', 170),
-    eligibility: getDocRepoColWidth('eligibility', 220),
-    exhibitStatus: getDocRepoColWidth('exhibitStatus', 190),
-    file: getDocRepoColWidth('file', 90)
-  };
-  const table = document.createElement('table');
-  table.className = 'docRepoTable';
-  table.innerHTML = `
-    <colgroup>
-      <col data-doc-col="name" style="width:${widths.name}px" />
-      <col data-doc-col="date" style="width:${widths.date}px" />
-      <col data-doc-col="uploadDate" style="width:${widths.uploadDate}px" />
-      <col data-doc-col="timeline" style="width:${widths.timeline}px" />
-      <col data-doc-col="eligibility" style="width:${widths.eligibility}px" />
-      <col data-doc-col="exhibitStatus" style="width:${widths.exhibitStatus}px" />
-      <col data-doc-col="file" style="width:${widths.file}px" />
-    </colgroup>
-    <thead>
-      <tr>
-        <th class="docRepoResizableHead"><span class="docRepoHeaderLabel"><button type="button" data-doc-repo-sort="name">Document ${(ui.docRepoSort||{}).field==='name' ? ((ui.docRepoSort||{}).dir==='asc' ? '↑' : '↓') : ''}</button></span><span class="docRepoResizeHandle" data-doc-col-resize="name"></span></th>
-        <th class="docRepoResizableHead"><span class="docRepoHeaderLabel"><button type="button" data-doc-repo-sort="date">Date ${(ui.docRepoSort||{}).field==='date' ? ((ui.docRepoSort||{}).dir==='asc' ? '↑' : '↓') : ''}</button></span><span class="docRepoResizeHandle" data-doc-col-resize="date"></span></th>
-        <th class="docRepoResizableHead"><span class="docRepoHeaderLabel"><button type="button" data-doc-repo-sort="uploadDate">Upload date ${(ui.docRepoSort||{}).field==='uploadDate' ? ((ui.docRepoSort||{}).dir==='asc' ? '↑' : '↓') : ''}</button></span><span class="docRepoResizeHandle" data-doc-col-resize="uploadDate"></span></th>
-        <th class="docRepoResizableHead timelineInclusionCell"><span class="docRepoHeaderLabel">In timeline</span><span class="docRepoResizeHandle" data-doc-col-resize="timeline"></span></th>
-        <th class="docRepoResizableHead"><span class="docRepoHeaderLabel">Exhibit category</span><span class="docRepoResizeHandle" data-doc-col-resize="eligibility"></span></th>
-        <th class="docRepoResizableHead"><span class="docRepoHeaderLabel"><button type="button" data-doc-repo-sort="exhibitStatus">Exhibit status ${(ui.docRepoSort||{}).field==='exhibitStatus' ? ((ui.docRepoSort||{}).dir==='asc' ? '↑' : '↓') : ''}</button></span><span class="docRepoResizeHandle" data-doc-col-resize="exhibitStatus"></span></th>
-        <th class="docRepoResizableHead"><span class="docRepoHeaderLabel">File</span><span class="docRepoResizeHandle" data-doc-col-resize="file"></span></th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-  `;
-  const tbody = table.querySelector('tbody');
-  for(const d of docs){
-    const meta = getDocumentExhibitMeta(d.id);
-    const uploadDate = getDocumentUploadDate(d);
-    const tr = document.createElement('tr');
-    tr.className = 'docSummaryRow' + (ui.selectedDocId===d.id ? ' selectedDocRow' : '');
-    tr.setAttribute('data-doc-open-modal', d.id);
-    tr.title = 'Click to edit document';
-    tr.innerHTML = `
-      <td class="docNameCell"><div class="docRowTitle"><span class="docExpandCaret">✎</span><span>${escapeHtml(d.name)}</span></div><div style="margin-top:8px"><div class="label">Tags</div>${renderTagLinkPills(getDocumentTagLinks(d), 'document', d.id)}<div style="margin-top:8px"><button type="button" class="mini" data-doc-add-tags="${d.id}">Add tags</button></div></div></td>
-      <td><input type="date" data-doc-inline-date="${d.id}" value="${escapeHtml(safeDateInputValue(d.date || ''))}" /></td>
-      <td>${escapeHtml(formatDateForDisplay(uploadDate) || '')}</td>
-      <td><label class="checkItem" style="margin:0; justify-content:flex-start"><input type="checkbox" data-doc-timeline="${d.id}" ${d.includeInTimeline !== false ? 'checked' : ''} /> <span>${d.includeInTimeline !== false ? 'Show' : 'Hide'}</span></label></td>
-      <td>
-        <select data-doc-eligibility="${d.id}">
-          <option value="possible" ${d.exhibitEligibility !== 'not' ? 'selected' : ''}>For possible use as exhibit</option>
-          <option value="not" ${d.exhibitEligibility === 'not' ? 'selected' : ''}>Not for use as exhibit</option>
-        </select>
-      </td>
-      <td><span class="docStatusBadge ${meta.isExhibit ? 'isExhibit' : 'notExhibit'}" title="${escapeHtml(meta.tooltip)}">${meta.isExhibit ? escapeHtml(meta.label || 'Exhibit') : 'Not an exhibit'}</span></td>
-      <td>${(d.filePath || d.dataUrl || d.hasFile) ? `<button type="button" class="mini" data-doc-open-modal="${d.id}">Open</button>` : '<span class="hint">—</span>'}</td>
-    `;
-    tbody.appendChild(tr);
-  }
-  list.appendChild(table);
-  list.querySelectorAll('[data-doc-col-resize]').forEach(handle => handle.addEventListener('mousedown', (ev)=> beginDocRepoResize(ev, handle.getAttribute('data-doc-col-resize'))));
-  list.querySelectorAll('[data-doc-repo-sort]').forEach(btn=>btn.addEventListener('click', (ev)=>{ ev.preventDefault(); ev.stopPropagation(); toggleDocRepoSort(btn.getAttribute('data-doc-repo-sort')); }));
-  list.querySelectorAll('[data-doc-inline-date]').forEach(input=>{
-    const save = async ()=>{
-      const id = input.getAttribute('data-doc-inline-date');
-      const value = input.value || null;
-      const doc = state.documents.find(x=>x.id===id);
-      if(doc) doc.date = value || '';
-      safeSave();
-      const updated = await window.updateDocumentRow(id, { doc_date: value });
-      if(!updated) alert('Failed to save document date.');
-      await window.loadDocuments();
-      renderDocuments();
-      renderTimeline();
-    };
-    input.addEventListener('change', save);
-    input.addEventListener('click', ev=>ev.stopPropagation());
-  });
-  list.querySelectorAll('[data-doc-timeline]').forEach(input=>{
-    input.addEventListener('click', ev=>ev.stopPropagation());
-    input.addEventListener('change', ()=>{
-      const id = input.getAttribute('data-doc-timeline');
-      const doc = state.documents.find(x=>x.id===id);
-      if(!doc) return;
-      doc.includeInTimeline = !!input.checked;
-      safeSave();
-      renderDocuments();
-      renderTimeline();
-      toast(doc.includeInTimeline ? 'Document shown in timeline' : 'Document hidden from timeline');
-    });
-  });
-  list.querySelectorAll('[data-doc-eligibility]').forEach(sel=>{
-    sel.addEventListener('click', ev=>ev.stopPropagation());
-    sel.addEventListener('change', ()=>{
-      const id = sel.getAttribute('data-doc-eligibility');
-      const doc = state.documents.find(x=>x.id===id);
-      if(!doc) return;
-      doc.exhibitEligibility = sel.value === 'not' ? 'not' : 'possible';
-      if(doc.exhibitEligibility === 'not'){
-        for(const n of state.outline){
-          if(!n.witnessData) continue;
-          for(const wid of Object.keys(n.witnessData)) n.witnessData[wid].exhibits = (n.witnessData[wid].exhibits || []).filter(eid => eid !== id);
-        }
-      }
-      safeSave();
-      renderDocuments();
-      renderOutline();
-      renderStructuredOutline();
-      renderOutlineIndex();
-      renderExhibits();
-      renderTimeline();
-      toast(doc.exhibitEligibility === 'not' ? 'Marked as not for exhibit use' : 'Marked as possible exhibit');
-    });
-  });
-  list.querySelectorAll('[data-doc-add-tags]').forEach(btn=>btn.addEventListener('click', (ev)=>{ ev.preventDefault(); ev.stopPropagation(); openDocumentTagModal(btn.getAttribute('data-doc-add-tags')); }));
-  list.querySelectorAll('[data-doc-open-modal]').forEach(el=>el.addEventListener('click', (ev)=>{ ev.preventDefault(); ev.stopPropagation(); const id = el.getAttribute('data-doc-open-modal'); ui.selectedDocId = id; openDocumentEditModal(id); }));
-  renderOutline();
-  renderStructuredOutline();
-  if(ui.currentView === 'documenttable') renderDocumentTable();
 }
 
-
-
-    function makeBulkDocumentDraft(file){
-      const rawName = String(file?.name || '');
-      return { id: uid(), file, name: rawName || 'Untitled document', date: '', description: '', tagLinks: [] };
-    }
-    function getBulkDocumentDraftById(draftId){
-      return (ui.bulkDocumentDrafts || []).find(draft => draft && draft.id === draftId) || null;
-    }
-    function getBulkDocumentDraftPreviewUrl(draft){
-      if(!draft || !draft.file) return '';
-      if(!draft.previewUrl){
-        try{ draft.previewUrl = URL.createObjectURL(draft.file); }catch(err){ console.warn('Bulk preview URL failed', err); draft.previewUrl = ''; }
-      }
-      return draft.previewUrl || '';
-    }
-    function toggleBulkDocumentSelection(draftId, checked){
-      const ids = new Set(Array.isArray(ui.bulkDocumentSelectedIds) ? ui.bulkDocumentSelectedIds : []);
-      if(checked) ids.add(draftId);
-      else ids.delete(draftId);
-      ui.bulkDocumentSelectedIds = Array.from(ids);
-    }
-    function setAllBulkDocumentSelections(checked){
-      ui.bulkDocumentSelectedIds = checked ? (ui.bulkDocumentDrafts || []).map(draft => draft.id) : [];
-      renderBulkDocumentUpload();
-    }
-    function applyBulkDocumentTagsToSelected(sourceDraftId){
-      const sourceDraft = getBulkDocumentDraftById(sourceDraftId);
-      if(!sourceDraft) return;
-      const targetIds = (ui.bulkDocumentSelectedIds || []).filter(id => id && id !== sourceDraftId);
-      if(!targetIds.length){ alert('Select one or more other bulk-upload rows first.'); return; }
-      const links = Array.isArray(sourceDraft.tagLinks) ? sourceDraft.tagLinks.map(link => ({ tagId: link.tagId || '', subtagId: link.subtagId || '' })).filter(link => link.tagId) : [];
-      (ui.bulkDocumentDrafts || []).forEach(draft => { if(targetIds.includes(draft.id)) draft.tagLinks = links.map(link => ({ ...link })); });
-      renderBulkDocumentUpload();
-      toast(targetIds.length === 1 ? 'Tags copied to 1 selected document' : `Tags copied to ${targetIds.length} selected documents`);
-    }
     function renderBulkDocumentUpload(){
       const wrap = $('docBulkUploadWrap');
       if(!wrap) return;
@@ -4960,7 +3539,7 @@ function openStructuredDocEditor(docId){
       wrap.style.display = '';
       const selectedIds = new Set(ui.bulkDocumentSelectedIds || []);
       const statusHtml = ui.bulkDocumentStatus ? `<div class="hint" style="margin-top:8px">${escapeHtml(ui.bulkDocumentStatus)}</div>` : '';
-      wrap.innerHTML = `<div class="card" style="box-shadow:none; padding:12px 14px"><div style="display:flex; justify-content:space-between; gap:10px; align-items:center; flex-wrap:wrap"><div><div class="label">Bulk upload review</div><div class="hint">Edit names, add dates, descriptions, and tags, preview each file, then save everything together. Check multiple rows if you want to copy one row's tags to the others.</div>${statusHtml}</div><div style="display:flex; gap:8px; flex-wrap:wrap"><button type="button" id="docBulkAddMoreBtn" class="btnGhost" ${ui.bulkDocumentSaving ? 'disabled' : ''}>Add more files</button><button type="button" id="docBulkClearBtn" class="btnGhost" ${ui.bulkDocumentSaving ? 'disabled' : ''}>Clear list</button></div></div><div class="bulkDocActionsBar" style="margin-top:12px"><label class="checkItem" style="margin:0"><input type="checkbox" id="docBulkSelectAll" ${drafts.length && drafts.every(draft => selectedIds.has(draft.id)) ? 'checked' : ''} ${ui.bulkDocumentSaving ? 'disabled' : ''} /> <span>Select all rows</span></label><div class="hint">${selectedIds.size} selected for bulk tag copy</div></div><div class="bulkDocTableWrap"><table class="bulkDocTable"><thead><tr><th style="width:64px">Pick</th><th style="width:250px">File</th><th style="width:220px">Document name</th><th style="width:140px">Date</th><th>Description</th><th style="width:280px">Tags</th><th style="width:110px">Preview</th><th style="width:90px">Remove</th></tr></thead><tbody>${drafts.map((draft, idx) => { const previewOpen = ui.bulkDocumentViewerId === draft.id; const previewUrl = previewOpen ? getBulkDocumentDraftPreviewUrl(draft) : ''; const tooLarge = draft.file && Number(draft.file.size || 0) > BULK_UPLOAD_MAX_FILE_SIZE; const fileMeta = draft.file ? `${formatFileSize(draft.file.size || 0)}${tooLarge ? ' • too large for current upload limit' : ''}` : ''; const rowStatus = draft.error ? `<div class="hint" style="color:#991b1b; margin-top:6px">${escapeHtml(draft.error)}</div>` : (draft.success ? `<div class="hint" style="color:#166534; margin-top:6px">Uploaded</div>` : ''); return `<tr><td><label class="checkItem" style="margin:0; padding:6px 8px"><input type="checkbox" data-bulk-doc-select="${draft.id}" ${selectedIds.has(draft.id) ? 'checked' : ''} ${ui.bulkDocumentSaving ? 'disabled' : ''} /><span>Row</span></label></td><td><div><b>${escapeHtml(String(draft.file?.name || ''))}</b></div><div class="hint">${escapeHtml(fileMeta)}</div>${rowStatus}</td><td><input class="bulkDocNameInput" data-bulk-doc-name="${idx}" type="text" value="${escapeHtml(draft.name || '')}" ${ui.bulkDocumentSaving ? 'disabled' : ''} /></td><td><input class="bulkDocDateInput" data-bulk-doc-date="${idx}" type="date" value="${escapeHtml(draft.date || '')}" ${ui.bulkDocumentSaving ? 'disabled' : ''} /></td><td><textarea class="bulkDocDescInput" data-bulk-doc-desc="${idx}" placeholder="Optional description" ${ui.bulkDocumentSaving ? 'disabled' : ''}>${escapeHtml(draft.description || '')}</textarea></td><td class="bulkDocTagsCell"><div class="bulkDocTagSummary">${renderTagLinkPills(draft.tagLinks || [])}</div><div style="margin-top:8px; display:flex; gap:8px; flex-wrap:wrap"><button type="button" class="btnGhost" data-bulk-doc-tags="${idx}" ${ui.bulkDocumentSaving ? 'disabled' : ''}>Add tags</button><button type="button" class="btnGhost" data-bulk-doc-copy-tags="${draft.id}" ${ui.bulkDocumentSaving ? 'disabled' : ''}>Copy tags to selected</button></div></td><td><button type="button" class="btnGhost" data-bulk-doc-preview="${draft.id}">${previewOpen ? 'Hide' : 'View'}</button></td><td><button type="button" class="btnDanger" data-bulk-doc-remove="${idx}" ${ui.bulkDocumentSaving ? 'disabled' : ''}>Remove</button></td></tr>${previewOpen ? `<tr><td colspan="8"><div style="padding:8px 0">${previewUrl ? `<div class="label">Document viewer</div><iframe class="docViewerFrame" src="${previewUrl}"></iframe>` : '<div class="hint">Preview is not available for this file.</div>'}</div></td></tr>` : ''}`; }).join('')}</tbody></table></div><div class="bulkDocActionsBar"><div class="hint">${drafts.length} file${drafts.length===1?'':'s'} ready</div><div style="display:flex; gap:8px; flex-wrap:wrap">${ui.bulkDocumentSaving ? '<button type="button" id="docBulkCancelBtn" class="btnDanger">Cancel upload</button>' : ''}<button type="button" id="docBulkSaveBtn" class="btnPrimary" ${ui.bulkDocumentSaving ? 'disabled' : ''}>Save all documents</button></div></div></div>`;
+      wrap.innerHTML = `<div class="card" style="box-shadow:none; padding:12px 14px"><div style="display:flex; justify-content:space-between; gap:10px; align-items:center; flex-wrap:wrap"><div><div class="label">Bulk upload review</div><div class="hint">Edit names, add dates, descriptions, and tags, preview each file, then save everything together. Check multiple rows if you want to copy one row's tags to the others.</div>${statusHtml}</div><div style="display:flex; gap:8px; flex-wrap:wrap"><button type="button" id="docBulkAddMoreBtn" class="btnGhost" ${ui.bulkDocumentSaving ? 'disabled' : ''}>Add more files</button><button type="button" id="docBulkClearBtn" class="btnGhost" ${ui.bulkDocumentSaving ? 'disabled' : ''}>Clear list</button></div></div><div class="bulkDocActionsBar" style="margin-top:12px"><label class="checkItem" style="margin:0"><input type="checkbox" id="docBulkSelectAll" ${drafts.length && drafts.every(draft => selectedIds.has(draft.id)) ? 'checked' : ''} ${ui.bulkDocumentSaving ? 'disabled' : ''} /> <span>Select all rows</span></label><div class="hint">${selectedIds.size} selected for bulk tag copy</div></div><div class="bulkDocTableWrap"><table class="bulkDocTable"><thead><tr><th style="width:64px">Pick</th><th style="width:250px">File</th><th style="width:220px">Document name</th><th style="width:140px">Date</th><th>Description</th><th style="width:280px">Tags</th><th style="width:170px">Status</th><th style="width:110px">Preview</th><th style="width:90px">Remove</th></tr></thead><tbody>${drafts.map((draft, idx) => { const previewOpen = ui.bulkDocumentViewerId === draft.id; const previewUrl = previewOpen ? getBulkDocumentDraftPreviewUrl(draft) : ''; const tooLarge = draft.file && Number(draft.file.size || 0) > BULK_UPLOAD_MAX_FILE_SIZE; const fileMeta = draft.file ? `${formatFileSize(draft.file.size || 0)}${tooLarge ? ' • too large for current upload limit' : ''}` : ''; const statusPill = draft.success ? `<span class="pill" style="background:rgba(22,163,74,.08);border-color:rgba(22,163,74,.25);color:#166534">Uploaded</span>` : (draft.error ? `<span class="pill" style="background:rgba(239,68,68,.08);border-color:rgba(239,68,68,.25);color:#991b1b">Failed</span>` : `<span class="pill">Pending</span>`); const statusDetail = draft.error ? `<div class="hint" style="color:#991b1b; margin-top:6px">${escapeHtml(draft.error)}</div>` : (draft.success ? `<div class="hint" style="margin-top:6px">Saved successfully${draft.uploadedAt ? ' on ' + escapeHtml(formatDateForDisplay(String(draft.uploadedAt).slice(0,10)) || '') : ''}</div>` : '<div class="hint" style="margin-top:6px">Not uploaded yet</div>'); return `<tr><td><label class="checkItem" style="margin:0; padding:6px 8px"><input type="checkbox" data-bulk-doc-select="${draft.id}" ${selectedIds.has(draft.id) ? 'checked' : ''} ${ui.bulkDocumentSaving ? 'disabled' : ''} /><span>Row</span></label></td><td><div><b>${escapeHtml(String(draft.file?.name || ''))}</b></div><div class="hint">${escapeHtml(fileMeta)}</div></td><td><input class="bulkDocNameInput" data-bulk-doc-name="${idx}" type="text" value="${escapeHtml(draft.name || '')}" ${(ui.bulkDocumentSaving || draft.success) ? 'disabled' : ''} /></td><td><input class="bulkDocDateInput" data-bulk-doc-date="${idx}" type="date" value="${escapeHtml(draft.date || '')}" ${(ui.bulkDocumentSaving || draft.success) ? 'disabled' : ''} /></td><td><textarea class="bulkDocDescInput" data-bulk-doc-desc="${idx}" placeholder="Optional description" ${(ui.bulkDocumentSaving || draft.success) ? 'disabled' : ''}>${escapeHtml(draft.description || '')}</textarea></td><td class="bulkDocTagsCell"><div class="bulkDocTagSummary">${renderTagLinkPills(draft.tagLinks || [])}</div><div style="margin-top:8px; display:flex; gap:8px; flex-wrap:wrap"><button type="button" class="btnGhost" data-bulk-doc-tags="${idx}" ${(ui.bulkDocumentSaving || draft.success) ? 'disabled' : ''}>Add tags</button><button type="button" class="btnGhost" data-bulk-doc-copy-tags="${draft.id}" ${ui.bulkDocumentSaving ? 'disabled' : ''}>Copy tags to selected</button></div></td><td><div style="display:grid; gap:6px">${statusPill}${statusDetail}</div></td><td><button type="button" class="btnGhost" data-bulk-doc-preview="${draft.id}">${previewOpen ? 'Hide' : 'View'}</button></td><td><button type="button" class="btnDanger" data-bulk-doc-remove="${idx}" ${ui.bulkDocumentSaving ? 'disabled' : ''}>Remove</button></td></tr>${previewOpen ? `<tr><td colspan="9"><div style="padding:8px 0">${previewUrl ? `<div class="label">Document viewer</div><iframe class="docViewerFrame" src="${previewUrl}"></iframe>` : '<div class="hint">Preview is not available for this file.</div>'}</div></td></tr>` : ''}`; }).join('')}</tbody></table></div><div class="bulkDocActionsBar"><div class="hint">${drafts.length} file${drafts.length===1?'':'s'} in this list</div><div style="display:flex; gap:8px; flex-wrap:wrap">${ui.bulkDocumentSaving ? '<button type="button" id="docBulkCancelBtn" class="btnDanger">Cancel upload</button>' : ''}<button type="button" id="docBulkSaveBtn" class="btnPrimary" ${ui.bulkDocumentSaving ? 'disabled' : ''}>Save all documents</button></div></div></div>`;
       wrap.querySelectorAll('[data-bulk-doc-name]').forEach(input => input.addEventListener('input', ()=>{ const idx = Number(input.getAttribute('data-bulk-doc-name')); if(ui.bulkDocumentDrafts[idx]) ui.bulkDocumentDrafts[idx].name = input.value; }));
       wrap.querySelectorAll('[data-bulk-doc-date]').forEach(input => input.addEventListener('input', ()=>{ const idx = Number(input.getAttribute('data-bulk-doc-date')); if(ui.bulkDocumentDrafts[idx]) ui.bulkDocumentDrafts[idx].date = input.value; }));
       wrap.querySelectorAll('[data-bulk-doc-desc]').forEach(input => input.addEventListener('input', ()=>{ const idx = Number(input.getAttribute('data-bulk-doc-desc')); if(ui.bulkDocumentDrafts[idx]) ui.bulkDocumentDrafts[idx].description = input.value; }));
@@ -4975,6 +3554,7 @@ function openStructuredDocEditor(docId){
       $('docBulkSaveBtn')?.addEventListener('click', saveBulkDocuments);
       $('docBulkCancelBtn')?.addEventListener('click', ()=>{ ui.bulkDocumentCancelRequested = true; ui.bulkDocumentStatus = 'Stopping after the current file finishes…'; renderBulkDocumentUpload(); });
     }
+
     function queueBulkDocumentFiles(fileList){
       const files = Array.from(fileList || []).filter(Boolean);
       if(!files.length) return;
@@ -5000,30 +3580,34 @@ function openStructuredDocEditor(docId){
     async function saveBulkDocuments(){
       const drafts = Array.isArray(ui.bulkDocumentDrafts) ? ui.bulkDocumentDrafts : [];
       if(!drafts.length) return;
-      for(const draft of drafts){
+      const pendingDrafts = drafts.filter(draft => !draft.success);
+      for(const draft of pendingDrafts){
         const name = String(draft.name || '').trim();
         draft.error = '';
         draft.success = false;
+        draft.uploadedDocumentId = '';
+        draft.uploadedAt = '';
         if(!name){ alert('Every bulk-upload document needs a name.'); return; }
       }
+      if(!pendingDrafts.length){ ui.bulkDocumentStatus = 'All files in the list have already been uploaded.'; renderBulkDocumentUpload(); return; }
       ui.bulkDocumentCancelRequested = false;
       ui.bulkDocumentSaving = true;
-      ui.bulkDocumentStatus = `Uploading 0 of ${drafts.length}…`;
+      ui.bulkDocumentStatus = `Uploading 0 of ${pendingDrafts.length}…`;
       renderBulkDocumentUpload();
       let savedCount = 0;
       let failedCount = 0;
       let processedCount = 0;
       try{
-        for(const draft of drafts){
+        for(const draft of pendingDrafts){
           if(ui.bulkDocumentCancelRequested){
-            ui.bulkDocumentStatus = `Stopped after ${processedCount} of ${drafts.length} file${drafts.length===1?'':'s'}.`;
+            ui.bulkDocumentStatus = `Stopped after ${processedCount} of ${pendingDrafts.length} file${pendingDrafts.length===1?'':'s'}.`;
             break;
           }
           const name = String(draft.name || '').trim();
           const date = draft.date || null;
           const description = String(draft.description || '').trim();
           const file = draft.file || null;
-          ui.bulkDocumentStatus = `Uploading ${processedCount + 1} of ${drafts.length}: ${name}`;
+          ui.bulkDocumentStatus = `Uploading ${processedCount + 1} of ${pendingDrafts.length}: ${name}`;
           renderBulkDocumentUpload();
           if(file && Number(file.size || 0) > BULK_UPLOAD_MAX_FILE_SIZE){
             draft.error = `Skipped: file is ${formatFileSize(file.size || 0)}, which is larger than the current upload limit of ${formatFileSize(BULK_UPLOAD_MAX_FILE_SIZE)}.`;
@@ -5055,6 +3639,8 @@ function openStructuredDocEditor(docId){
             }
             draft.success = true;
             draft.error = '';
+            draft.uploadedDocumentId = finalDoc.id || '';
+            draft.uploadedAt = finalDoc.created_at || new Date().toISOString();
             savedCount += 1;
           }catch(err){
             console.error('Bulk document upload failed:', err);
@@ -5077,18 +3663,15 @@ function openStructuredDocEditor(docId){
       renderDocuments();
       if(ui.currentView === 'documenttable') renderDocumentTable();
       const remainingDrafts = (ui.bulkDocumentDrafts || []).filter(draft => !draft.success);
-      (ui.bulkDocumentDrafts || []).filter(draft => draft && draft.success).forEach(draft => { if(draft.previewUrl){ try{ URL.revokeObjectURL(draft.previewUrl); }catch(err){} } });
-      ui.bulkDocumentDrafts = remainingDrafts;
       ui.bulkDocumentEditIndex = -1;
       ui.bulkDocumentSelectedIds = remainingDrafts.map(draft => draft.id);
-      if(!remainingDrafts.some(draft => draft.id === ui.bulkDocumentViewerId)) ui.bulkDocumentViewerId = '';
       if($('docBulkFiles')) $('docBulkFiles').value='';
       if(ui.bulkDocumentCancelRequested && remainingDrafts.length){
         ui.bulkDocumentStatus = `Stopped. ${savedCount} uploaded, ${failedCount} not uploaded.`;
       }else if(remainingDrafts.length){
-        ui.bulkDocumentStatus = `${savedCount} uploaded, ${failedCount} not uploaded. Failed rows were left in the table so you can fix them and try again.`;
+        ui.bulkDocumentStatus = `${savedCount} uploaded, ${failedCount} not uploaded. Each row now shows whether it succeeded or failed.`;
       }else{
-        ui.bulkDocumentStatus = savedCount === 1 ? '1 document uploaded.' : `${savedCount} documents uploaded.`;
+        ui.bulkDocumentStatus = savedCount === 1 ? '1 document uploaded. Each row shows it was saved successfully.' : `${savedCount} documents uploaded. Each row shows it was saved successfully.`;
       }
       ui.bulkDocumentCancelRequested = false;
       renderBulkDocumentUpload();
