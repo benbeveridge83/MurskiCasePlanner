@@ -1306,6 +1306,11 @@
     const structuredUi = { headingFilterOpen: false, visibleHeadingIds: [], headingFilterInitialized: false, witnessColWidths: {}, resizingWitnessId: null, resizeStartX: 0, resizeStartWidth: 220 };
     const HEADING_EXHIBIT_KEY = '__heading__';
     const $ = (id) => document.getElementById(id);
+    function normalizeDocumentTagLinks(links){
+      return Array.isArray(links)
+        ? links.map(link => ({ tagId: link?.tagId || '', subtagId: link?.subtagId || '' })).filter(link => link.tagId)
+        : [];
+    }
     function setSourceDocSelectionMessage(message){
       const text = String(message || '');
       if($('sourceDocSelectionInfo')) $('sourceDocSelectionInfo').textContent = text;
