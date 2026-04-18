@@ -1272,11 +1272,6 @@
         elementsFilterMode: ui.elementsFilterMode || 'all',
         elementsWorksheetOpen: !!ui.elementsWorksheetOpen,
         docTagLinksLocal: Array.isArray(state.documents) ? Object.fromEntries(state.documents.filter(doc => Array.isArray(doc.tagLinks) && doc.tagLinks.length).map(doc => [doc.id, doc.tagLinks])) : {},
-        localAssociations: {
-          documents: Array.isArray(state.documents) ? Object.fromEntries(state.documents.filter(doc => doc && doc.id).map(doc => [doc.id, { tags: Array.isArray(doc.tags) ? doc.tags : [], tagLinks: Array.isArray(doc.tagLinks) ? doc.tagLinks : [] }])) : {},
-          outline: Array.isArray(state.outline) ? Object.fromEntries(state.outline.filter(row => row && row.id).map(row => [row.id, { tags: Array.isArray(row.tags) ? row.tags : [], witnessIds: Array.isArray(row.witnessIds) ? row.witnessIds : [], elementIds: Array.isArray(row.elementIds) ? row.elementIds : [], witnessData: row && row.witnessData && typeof row.witnessData === 'object' ? cloneJson(row.witnessData, {}) : {} }])) : {},
-          elements: Array.isArray(state.elements) ? Object.fromEntries(state.elements.filter(el => el && el.id).map(el => [el.id, { tags: Array.isArray(el.tags) ? el.tags : [], tagLinks: Array.isArray(el.tagLinks) ? el.tagLinks : [], witnessIds: Array.isArray(el.witnessIds) ? el.witnessIds : [], documentIds: Array.isArray(el.documentIds) ? el.documentIds : [], exhibitDocIds: Array.isArray(el.exhibitDocIds) ? el.exhibitDocIds : [], sourceRefs: Array.isArray(el.sourceRefs) ? el.sourceRefs : [] }])) : {}
-        },
         localOutlineCache: Array.isArray(state.outline) ? state.outline.map(row => ({
           id: row.id,
           collapsed: !!row.collapsed,
@@ -1317,87 +1312,6 @@
         });
         return row;
       });
-    }
-
-    function mergeAssociationArrays(primary, fallback){
-      const first = Array.isArray(primary) ? primary.filter(Boolean) : [];
-      const second = Array.isArray(fallback) ? fallback.filter(Boolean) : [];
-      return Array.from(new Set(first.concat(second)));
-    }
-    function getLegacyAssociationSnapshot(){
-      const parseSnapshot = (raw, label)=>{
-        try{
-          if(!raw) return null;
-          const parsed = JSON.parse(raw);
-          if(!parsed || typeof parsed !== 'object') return null;
-          const hasUiAssociations = parsed.localAssociations && typeof parsed.localAssociations === 'object';
-          const hasStateArrays = Array.isArray(parsed.documents) || Array.isArray(parsed.outline) || Array.isArray(parsed.elements);
-          if(!hasUiAssociations && !hasStateArrays) return null;
-          return parsed;
-        }catch(e){
-          console.warn(`Could not read ${label}:`, e);
-          return null;
-        }
-      };
-      return parseSnapshot(localStorage.getItem(UI_STORAGE_KEY), 'ui local case state') || parseSnapshot(localStorage.getItem(LEGACY_STORAGE_KEY), 'legacy local case state');
-    }
-    function mergeAssociationSnapshotIntoState(snapshot){
-      if(!snapshot || typeof snapshot !== 'object') return;
-      const localAssociations = snapshot.localAssociations && typeof snapshot.localAssociations === 'object' ? snapshot.localAssociations : {};
-      const legacyDocs = Array.isArray(snapshot.documents) ? snapshot.documents : [];
-      const legacyOutline = Array.isArray(snapshot.outline) ? snapshot.outline : [];
-      const legacyElements = Array.isArray(snapshot.elements) ? snapshot.elements : [];
-      const docAssoc = new Map();
-      legacyDocs.forEach(doc => { if(doc && doc.id) docAssoc.set(doc.id, { tags: Array.isArray(doc.tags) ? doc.tags : [], tagLinks: Array.isArray(doc.tagLinks) ? doc.tagLinks : [] }); });
-      if(localAssociations.documents && typeof localAssociations.documents === 'object') Object.entries(localAssociations.documents).forEach(([id, value]) => { if(id) docAssoc.set(id, value || {}); });
-      state.documents = (state.documents || []).map(doc => {
-        const extra = docAssoc.get(doc.id) || {};
-        const nextTagLinks = mergeAssociationArrays(doc.tagLinks, extra.tagLinks).map(link => typeof link === 'string' ? { tagId: link, subtagId: '' } : { tagId: link.tagId || '', subtagId: link.subtagId || '' }).filter(link => link.tagId);
-        const nextTags = mergeAssociationArrays(doc.tags, extra.tags).concat(nextTagLinks.map(link => link.tagId));
-        return { ...doc, tagLinks: nextTagLinks, tags: Array.from(new Set(nextTags.filter(Boolean))) };
-      });
-      const outlineAssoc = new Map();
-      legacyOutline.forEach(row => { if(row && row.id) outlineAssoc.set(row.id, row); });
-      if(localAssociations.outline && typeof localAssociations.outline === 'object') Object.entries(localAssociations.outline).forEach(([id, value]) => { if(id) outlineAssoc.set(id, { ...(outlineAssoc.get(id) || {}), ...(value || {}) }); });
-      state.outline = (state.outline || []).map(row => {
-        const extra = outlineAssoc.get(row.id) || {};
-        const nextWitnessData = { ...(row.witnessData && typeof row.witnessData === 'object' ? row.witnessData : {}) };
-        const extraWitnessData = extra.witnessData && typeof extra.witnessData === 'object' ? extra.witnessData : {};
-        Object.entries(extraWitnessData).forEach(([wid, cell]) => {
-          const currentCell = nextWitnessData[wid] && typeof nextWitnessData[wid] === 'object' ? nextWitnessData[wid] : {};
-          nextWitnessData[wid] = {
-            ...currentCell,
-            ...cell,
-            exhibits: mergeAssociationArrays(currentCell.exhibits, cell && cell.exhibits),
-            elementIds: mergeAssociationArrays(currentCell.elementIds, cell && cell.elementIds)
-          };
-        });
-        return {
-          ...row,
-          tags: mergeAssociationArrays(row.tags, extra.tags),
-          witnessIds: mergeAssociationArrays(row.witnessIds, extra.witnessIds),
-          elementIds: mergeAssociationArrays(row.elementIds, extra.elementIds),
-          witnessData: nextWitnessData
-        };
-      });
-      const elementAssoc = new Map();
-      legacyElements.forEach(el => { if(el && el.id) elementAssoc.set(el.id, el); });
-      if(localAssociations.elements && typeof localAssociations.elements === 'object') Object.entries(localAssociations.elements).forEach(([id, value]) => { if(id) elementAssoc.set(id, { ...(elementAssoc.get(id) || {}), ...(value || {}) }); });
-      state.elements = (state.elements || []).map(el => {
-        const extra = elementAssoc.get(el.id) || {};
-        const nextTagLinks = mergeAssociationArrays(el.tagLinks, extra.tagLinks).map(link => typeof link === 'string' ? { tagId: link, subtagId: '' } : { tagId: link.tagId || '', subtagId: link.subtagId || '' }).filter(link => link.tagId);
-        const nextTags = mergeAssociationArrays(el.tags, extra.tags).concat(nextTagLinks.map(link => link.tagId));
-        return {
-          ...el,
-          tagLinks: nextTagLinks,
-          tags: Array.from(new Set(nextTags.filter(Boolean))),
-          witnessIds: mergeAssociationArrays(el.witnessIds, extra.witnessIds),
-          documentIds: mergeAssociationArrays(el.documentIds, extra.documentIds),
-          exhibitDocIds: mergeAssociationArrays(el.exhibitDocIds, extra.exhibitDocIds),
-          sourceRefs: mergeAssociationArrays(el.sourceRefs, extra.sourceRefs)
-        };
-      });
-      state.elements.forEach(syncElementDerivedSourceFields);
     }
     function safeSave(){
       try{
@@ -1457,8 +1371,6 @@
           console.warn('Failed to parse saved local UI cache', e);
         }
       }
-      const legacySnapshot = getLegacyAssociationSnapshot();
-      if(legacySnapshot) mergeAssociationSnapshotIntoState(legacySnapshot);
       if(INITIAL_WORKSHEET_OPEN){ ui.currentView = 'elements'; ui.elementsWorksheetOpen = true; }
       $('caseName').value = state.caseName || '';
       if($('documentTableSearch')) $('documentTableSearch').value = ui.documentTableSearch || '';
@@ -1522,9 +1434,9 @@
     var activeOutlineEdit = null;
     function syncPeopleFromSupabase(){ if (!Array.isArray(window.loadedPeople)) return; const previousById = new Map((state.people || []).map(p => [p.id, p])); state.people = window.loadedPeople.map((p) => { const prev = previousById.get(p.id); return { id: p.id, name: p.name || '', description: p.description || '', tags: prev?.tags || [] }; }); safeSave(); renderElements(); }
     window.syncPeopleFromSupabase = syncPeopleFromSupabase;
-    function syncOutlineFromSupabase(){ if (!Array.isArray(window.loadedRows)) return; const previousById = new Map((state.outline || []).map(row => [row.id, row])); state.outline = window.loadedRows.map((r) => { const prev = previousById.get(r.id); const row = { id: r.id, parentId: r.parent_row_id, order: Number(r.sort_order) || 0, title: r.heading || '', description: r.description || '', rowDate: r.row_date || prev?.rowDate || '', tags: prev?.tags || [], collapsed: prev?.collapsed || false, detailsOpen: prev?.detailsOpen || false, witnessIds: prev?.witnessIds || [], elementIds: prev?.elementIds || [], witnessData: prev?.witnessData || {} }; if (activeOutlineEdit && activeOutlineEdit.nodeId === r.id && prev) { if (activeOutlineEdit.field === 'title') row.title = prev.title || ''; if (activeOutlineEdit.field === 'description') row.description = prev.description || ''; } return row; }); mergeAssociationSnapshotIntoState(getLegacyAssociationSnapshot()); safeSave(); }
+    function syncOutlineFromSupabase(){ if (!Array.isArray(window.loadedRows)) return; const previousById = new Map((state.outline || []).map(row => [row.id, row])); state.outline = window.loadedRows.map((r) => { const prev = previousById.get(r.id); const row = { id: r.id, parentId: r.parent_row_id, order: Number(r.sort_order) || 0, title: r.heading || '', description: r.description || '', rowDate: r.row_date || prev?.rowDate || '', tags: prev?.tags || [], collapsed: prev?.collapsed || false, detailsOpen: prev?.detailsOpen || false, witnessIds: prev?.witnessIds || [], elementIds: prev?.elementIds || [], witnessData: prev?.witnessData || {} }; if (activeOutlineEdit && activeOutlineEdit.nodeId === r.id && prev) { if (activeOutlineEdit.field === 'title') row.title = prev.title || ''; if (activeOutlineEdit.field === 'description') row.description = prev.description || ''; } return row; }); safeSave(); }
     window.syncOutlineFromSupabase = syncOutlineFromSupabase;
-    function syncDocumentsFromSupabase(){ if (!Array.isArray(window.loadedDocuments)) return; const previousById = new Map((state.documents || []).map(doc => [doc.id, doc])); state.documents = window.loadedDocuments.map((d) => { const prev = previousById.get(d.id); const filePath = d.file_path || d.filePath || d.path || prev?.filePath || prev?.file_path || ''; const originalFileName = d.original_file_name || d.originalFileName || d.filename || d.file_name || prev?.originalFileName || prev?.filename || ''; return { id: d.id, name: d.name || '', date: d.doc_date || d.date || '', description: d.description || '', tags: prev?.tags || [], tagLinks: Array.isArray(prev?.tagLinks) ? prev.tagLinks : [], filename: originalFileName || prev?.filename || '', originalFileName, filePath, mimeType: d.mime_type || d.mimeType || prev?.mimeType || '', fileSize: Number(d.file_size || d.fileSize || prev?.fileSize || 0) || 0, hasFile: !!(filePath || d.has_file || d.hasFile || prev?.hasFile), dataUrl: prev?.dataUrl || '', exhibitLabel: prev?.exhibitLabel || '', createdAt: d.created_at || d.createdAt || prev?.createdAt || '', exhibitEligibility: prev?.exhibitEligibility === 'not' ? 'not' : 'possible', includeInTimeline: prev?.includeInTimeline !== false }; }); mergeAssociationSnapshotIntoState(getLegacyAssociationSnapshot()); safeSave(); }
+    function syncDocumentsFromSupabase(){ if (!Array.isArray(window.loadedDocuments)) return; const previousById = new Map((state.documents || []).map(doc => [doc.id, doc])); state.documents = window.loadedDocuments.map((d) => { const prev = previousById.get(d.id); const filePath = d.file_path || d.filePath || d.path || prev?.filePath || prev?.file_path || ''; const originalFileName = d.original_file_name || d.originalFileName || d.filename || d.file_name || prev?.originalFileName || prev?.filename || ''; return { id: d.id, name: d.name || '', date: d.doc_date || d.date || '', description: d.description || '', tags: prev?.tags || [], tagLinks: Array.isArray(prev?.tagLinks) ? prev.tagLinks : [], filename: originalFileName || prev?.filename || '', originalFileName, filePath, mimeType: d.mime_type || d.mimeType || prev?.mimeType || '', fileSize: Number(d.file_size || d.fileSize || prev?.fileSize || 0) || 0, hasFile: !!(filePath || d.has_file || d.hasFile || prev?.hasFile), dataUrl: prev?.dataUrl || '', exhibitLabel: prev?.exhibitLabel || '', createdAt: d.created_at || d.createdAt || prev?.createdAt || '', exhibitEligibility: prev?.exhibitEligibility === 'not' ? 'not' : 'possible', includeInTimeline: prev?.includeInTimeline !== false }; }); safeSave(); }
     window.syncDocumentsFromSupabase = syncDocumentsFromSupabase;
     function syncTagsFromSupabase(){
       if (!Array.isArray(window.loadedTags)) return;
@@ -1583,10 +1495,9 @@
         if (!personMap.has(item.person_id)) personMap.set(item.person_id, []);
         personMap.get(item.person_id).push(item.tag_id);
       }
-      state.outline = (state.outline || []).map((n) => ({ ...n, tags: Array.from(new Set((rowMap.get(n.id) || []).concat(Array.isArray(n.tags) ? n.tags : []))) }));
-      state.documents = (state.documents || []).map((d) => { const nextTags = Array.from(new Set((docMap.get(d.id) || []).concat(Array.isArray(d.tags) ? d.tags : []))); const keptLinks = Array.isArray(d.tagLinks) ? d.tagLinks.filter(link => nextTags.includes(link.tagId)) : []; return { ...d, tags: nextTags, tagLinks: keptLinks.length ? keptLinks : nextTags.map(tagId => ({ tagId, subtagId: '' })) }; });
-      state.people = (state.people || []).map((p) => ({ ...p, tags: Array.from(new Set((personMap.get(p.id) || []).concat(Array.isArray(p.tags) ? p.tags : []))) }));
-      mergeAssociationSnapshotIntoState(getLegacyAssociationSnapshot());
+      state.outline = (state.outline || []).map((n) => ({ ...n, tags: Array.from(new Set(rowMap.get(n.id) || [])) }));
+      state.documents = (state.documents || []).map((d) => { const nextTags = Array.from(new Set(docMap.get(d.id) || [])); const keptLinks = Array.isArray(d.tagLinks) ? d.tagLinks.filter(link => nextTags.includes(link.tagId)) : []; return { ...d, tags: nextTags, tagLinks: keptLinks.length ? keptLinks : nextTags.map(tagId => ({ tagId, subtagId: '' })) }; });
+      state.people = (state.people || []).map((p) => ({ ...p, tags: Array.from(new Set(personMap.get(p.id) || [])) }));
       safeSave();
     }
     window.syncTagAssignmentsFromSupabase = syncTagAssignmentsFromSupabase;
@@ -1694,7 +1605,6 @@
       renderDocuments();
     }
     function renderDocumentRepositoryFilters(){
-      ensureCollapsedTagMapDefaults('docRepoCollapsedTagNodes');
       const host = $('docRepoFilterBar');
       if(!host) return;
       const elig = Array.isArray(ui.docRepoEligibilityFilters) && ui.docRepoEligibilityFilters.length ? ui.docRepoEligibilityFilters : ['possible','not'];
@@ -2269,20 +2179,16 @@
         'data-document-table-file': ['documentTableFileIds','documentTableFileExcludeIds','documentTableFileNoneSelected','documentTableFileExcludeNoneSelected']
       };
       const keys = keyMap[attr] || [];
-      const rerender = ()=>{
-        if(String(attr || '').startsWith('data-document-table-')) renderDocumentTable();
-        else renderElements();
-      };
       host.querySelectorAll(`input[${attr}]`).forEach(input => input.addEventListener('change', ()=>{
         if(keys[0]) ui[keys[0]] = Array.from(host.querySelectorAll(`input[${attr}]:checked`)).map(x => x.value).filter(Boolean);
-        rerender();
+        renderElements();
       }));
       host.querySelectorAll(`input[data-elements-filter-exclude="${attr}"]`).forEach(input => input.addEventListener('change', ()=>{
         if(keys[1]) ui[keys[1]] = Array.from(host.querySelectorAll(`input[data-elements-filter-exclude="${attr}"]:not(:checked)`)).map(x => x.value).filter(Boolean);
-        rerender();
+        renderElements();
       }));
-      host.querySelector(`input[data-elements-filter-none-include="${attr}"]`)?.addEventListener('change', (ev)=>{ if(keys[2]) ui[keys[2]] = !!ev.target.checked; rerender(); });
-      host.querySelector(`input[data-elements-filter-none-exclude="${attr}"]`)?.addEventListener('change', (ev)=>{ if(keys[3]) ui[keys[3]] = !!ev.target.checked; rerender(); });
+      host.querySelector(`input[data-elements-filter-none-include="${attr}"]`)?.addEventListener('change', (ev)=>{ if(keys[2]) ui[keys[2]] = !!ev.target.checked; renderElements(); });
+      host.querySelector(`input[data-elements-filter-none-exclude="${attr}"]`)?.addEventListener('change', (ev)=>{ if(keys[3]) ui[keys[3]] = !!ev.target.checked; renderElements(); });
     }
     function getElementFilterOptionSets(){
       const witnessIds = new Set();
@@ -2361,79 +2267,6 @@
       host.querySelectorAll('[data-element-tag-collapse]').forEach(btn => btn.addEventListener('click', ()=> setTimeout(trigger,0)));
     }
 
-    function elementTagFilterLinksMatch(selectedLinks, ownLinks){
-      const selected = Array.isArray(selectedLinks) ? selectedLinks.filter(link => link && link.tagId) : [];
-      if(!selected.length) return true;
-      const own = Array.isArray(ownLinks) ? ownLinks.filter(link => link && link.tagId) : [];
-      if(!own.length) return false;
-      return selected.some(sel => {
-        return own.some(link => {
-          if(String(link.tagId || '') !== String(sel.tagId || '')) return false;
-          const selSub = String(sel.subtagId || '');
-          const ownSub = String(link.subtagId || '');
-          if(!selSub) return true;
-          if(ownSub === selSub) return true;
-          const ownPath = ownSub ? getSubtagPath(ownSub) : '';
-          const selPath = getSubtagPath(selSub);
-          return !!ownPath && !!selPath && ownPath.startsWith(selPath);
-        });
-      });
-    }
-
-    function elementMatchesIdFilter(ownIds, includeIds, excludeIds, includeNoneSelected, excludeNoneSelected){
-      const own = Array.isArray(ownIds) ? ownIds.filter(Boolean) : [];
-      const hasOwn = own.length > 0;
-      const include = Array.isArray(includeIds) ? includeIds.filter(Boolean) : [];
-      const exclude = Array.isArray(excludeIds) ? excludeIds.filter(Boolean) : [];
-      if((include.length || includeNoneSelected) && !(includeNoneSelected && !hasOwn)){
-        if(!include.some(id => own.includes(id))) return false;
-      }
-      if(!hasOwn && !excludeNoneSelected) return false;
-      if(hasOwn && exclude.some(id => own.includes(id))) return false;
-      return true;
-    }
-
-    function getFilteredElements(){
-      const mode = String(ui.elementsFilterMode || 'all');
-      const search = String(ui.elementsSearch || '').trim().toLowerCase();
-      const creator = String(ui.elementsCreatorFilter || 'all');
-      return (state.elements || []).filter(el => {
-        if(mode === 'timeline' && !el.includeInTimeline) return false;
-        if(mode === 'not_timeline' && el.includeInTimeline) return false;
-        if(creator !== 'all' && getElementCreatorLabel(el) !== creator) return false;
-        if(search){
-          const hay = [
-            el.name,
-            el.text,
-            el.source,
-            formatTimelineDateDisplay(el.date || ''),
-            ...(el.documentIds || []).map(id => getDocumentById(id)?.name || ''),
-            ...(el.witnessIds || []).map(id => getPersonById(id)?.name || ''),
-            ...(el.exhibitDocIds || []).map(id => getDocumentById(id)?.name || ''),
-            ...getElementSourceDocumentIds(el).map(id => getDocumentById(id)?.name || ''),
-            ...getElementSourcePersonIds(el).map(id => getPersonById(id)?.name || ''),
-            ...getEventTagLinks(el).map(link => {
-              const tag = (state.tags || []).find(t => t.id === link.tagId)?.name || '';
-              const sub = link.subtagId ? getSubtagPath(link.subtagId) : '';
-              return [tag, sub].filter(Boolean).join(' ');
-            })
-          ].join(' ').toLowerCase();
-          if(!hay.includes(search)) return false;
-        }
-        const ownTagLinks = getEventTagLinks(el);
-        const hasTags = ownTagLinks.length > 0;
-        if(((ui.elementsFilterTagIds || []).length || ui.elementsFilterTagNoneSelected) && !(ui.elementsFilterTagNoneSelected && !hasTags) && !elementTagFilterLinksMatch(ui.elementsFilterTagIds || [], ownTagLinks)) return false;
-        if(!hasTags && ui.elementsFilterTagExcludeNoneSelected === false) return false;
-        if(hasTags && elementTagFilterLinksMatch(ui.elementsFilterTagExcludeIds || [], ownTagLinks)) return false;
-        if(!elementMatchesIdFilter(el.witnessIds || [], ui.elementsFilterWitnessIds || [], ui.elementsFilterWitnessExcludeIds || [], !!ui.elementsFilterWitnessNoneSelected, ui.elementsFilterWitnessExcludeNoneSelected !== false)) return false;
-        if(!elementMatchesIdFilter(el.documentIds || [], ui.elementsFilterDocumentIds || [], ui.elementsFilterDocumentExcludeIds || [], !!ui.elementsFilterDocumentNoneSelected, ui.elementsFilterDocumentExcludeNoneSelected !== false)) return false;
-        if(!elementMatchesIdFilter(el.exhibitDocIds || [], ui.elementsFilterExhibitIds || [], ui.elementsFilterExhibitExcludeIds || [], !!ui.elementsFilterExhibitNoneSelected, ui.elementsFilterExhibitExcludeNoneSelected !== false)) return false;
-        if(!elementMatchesIdFilter(getElementSourceDocumentIds(el), ui.elementsFilterSourceDocumentIds || [], ui.elementsFilterSourceDocumentExcludeIds || [], !!ui.elementsFilterSourceDocumentNoneSelected, ui.elementsFilterSourceDocumentExcludeNoneSelected !== false)) return false;
-        if(!elementMatchesIdFilter(getElementSourcePersonIds(el), ui.elementsFilterSourcePersonIds || [], ui.elementsFilterSourcePersonExcludeIds || [], !!ui.elementsFilterSourcePersonNoneSelected, ui.elementsFilterSourcePersonExcludeNoneSelected !== false)) return false;
-        return true;
-      }).sort((a,b)=> (a.name || '').localeCompare(b.name || ''));
-    }
-
     function documentMatchesHierFilterWithState(doc, selected, excluded, includeNone, excludeNone){
       const own = getDocumentTagLinks(doc);
       const hasOwn = own.length > 0;
@@ -2466,135 +2299,6 @@
         return true;
       }).sort((a,b)=> (a.name||'').localeCompare(b.name||''));
     }
-
-    function ensureCollapsedTagMapDefaults(mapName){
-      ui[mapName] = ui[mapName] && typeof ui[mapName] === 'object' ? ui[mapName] : {};
-      const map = ui[mapName];
-      let changed = false;
-      const tagIds = [];
-      (state.tags || []).forEach(tag => { if(tag?.id) tagIds.push(tag.id); });
-      (state.subtags || []).forEach(subtag => { if(subtag?.id) tagIds.push(subtag.id); });
-      tagIds.forEach(id => {
-        if(typeof map[id] === 'undefined'){
-          map[id] = true;
-          changed = true;
-        }
-      });
-      if(changed) safeSave();
-      return map;
-    }
-
-    function getSortedDocumentsForTable(){
-      const docs = getFilteredDocumentsForTable();
-      const sort = ui.documentTableSort || { key:'name', dir:'asc' };
-      const dir = sort.dir === 'desc' ? -1 : 1;
-      return docs.slice().sort((a,b)=>{
-        let cmp = 0;
-        if(sort.key === 'date') cmp = (getTimelineDateSortKey(a.date || '') || '').localeCompare(getTimelineDateSortKey(b.date || '') || '');
-        else if(sort.key === 'uploadDate') cmp = (getDocumentUploadDate(a) || '').localeCompare(getDocumentUploadDate(b) || '');
-        else if(sort.key === 'fileSize') cmp = Number(a.fileSize || 0) - Number(b.fileSize || 0);
-        else if(sort.key === 'file') cmp = getDocumentFileName(a).localeCompare(getDocumentFileName(b));
-        else cmp = (a.name || '').localeCompare(b.name || '');
-        if(cmp) return cmp * dir;
-        return (a.name || '').localeCompare(b.name || '');
-      });
-    }
-
-    function toggleDocumentTableSort(key){
-      const current = ui.documentTableSort || { key:'name', dir:'asc' };
-      if(current.key === key) ui.documentTableSort = { key, dir: current.dir === 'asc' ? 'desc' : 'asc' };
-      else ui.documentTableSort = { key, dir: key === 'name' || key === 'file' ? 'asc' : 'desc' };
-      renderDocumentTable();
-    }
-
-    function bindDocumentTableTagControls(root){
-      const scope = root || document;
-      scope.querySelectorAll('.tagPicker').forEach(sel => {
-        if(sel.dataset.bound === '1') return;
-        sel.dataset.bound = '1';
-        sel.addEventListener('change', async ()=>{
-          await handleTagPickerChange(sel);
-          renderDocumentTable();
-          renderDocuments();
-          if(ui.currentView === 'tagindex') renderDocumentTagIndex();
-          if(ui.currentView === 'outlineindex') renderOutlineIndex();
-          renderTimeline();
-        });
-      });
-      scope.querySelectorAll('.tagRemoveBtn').forEach(btn => {
-        if(btn.dataset.bound === '1') return;
-        btn.dataset.bound = '1';
-        btn.addEventListener('click', async (ev)=>{
-          ev.stopPropagation();
-          const itemId = btn.getAttribute('data-item-id');
-          const tagId = btn.getAttribute('data-tag-id');
-          const ok = await window.removeDocumentTag(itemId, tagId);
-          if(ok){
-            await window.loadDocumentTags();
-            renderDocumentTable();
-            renderDocuments();
-            if(ui.currentView === 'tagindex') renderDocumentTagIndex();
-            if(ui.currentView === 'outlineindex') renderOutlineIndex();
-            renderTimeline();
-          }
-        });
-      });
-    }
-
-    function renderDocumentTable(){
-      ensureCollapsedTagMapDefaults('documentTableCollapsedTagNodes');
-      const panel = $('documentTableFilterPanel');
-      if(panel) panel.style.display = ui.documentTableFilterPanelOpen ? 'block' : 'none';
-      renderDocumentTableFilters();
-      const host = $('documentTableHost');
-      const empty = $('documentTableEmpty');
-      if(!host || !empty) return;
-      const docs = getSortedDocumentsForTable();
-      if(!docs.length){
-        host.innerHTML = '';
-        empty.style.display = '';
-        return;
-      }
-      empty.style.display = 'none';
-      const sort = ui.documentTableSort || { key:'name', dir:'asc' };
-      const arrow = (key)=> sort.key === key ? (sort.dir === 'asc' ? '↑' : '↓') : '';
-      host.innerHTML = `
-        <div style="overflow:auto; border:1px solid var(--border); border-radius:12px; background:#fff">
-          <table class="docRepoTable" style="min-width:1180px">
-            <thead>
-              <tr>
-                <th><button type="button" data-document-table-sort="name">Document ${arrow('name')}</button></th>
-                <th><button type="button" data-document-table-sort="date">Date ${arrow('date')}</button></th>
-                <th><button type="button" data-document-table-sort="uploadDate">Upload date ${arrow('uploadDate')}</button></th>
-                <th><button type="button" data-document-table-sort="fileSize">File size ${arrow('fileSize')}</button></th>
-                <th>Tags</th>
-                <th><button type="button" data-document-table-sort="file">File ${arrow('file')}</button></th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${docs.map(doc => {
-                const fileName = getDocumentFileName(doc);
-                return `<tr>
-                  <td><b>${escapeHtml(doc.name || 'Untitled')}</b><div class="hint" style="margin-top:4px">${escapeHtml(doc.description || '')}</div></td>
-                  <td>${escapeHtml(formatTimelineDateDisplay(doc.date || '') || '')}</td>
-                  <td>${escapeHtml(formatDateForDisplay(getDocumentUploadDate(doc)) || '')}</td>
-                  <td>${escapeHtml(formatFileSize(doc.fileSize || 0))}</td>
-                  <td style="white-space:normal; min-width:280px"><div>${renderAssignedTagPills(doc.tags || [], 'document', doc.id)}${renderTagPicker('document', doc.id, doc.tags || [])}</div></td>
-                  <td>${fileName ? escapeHtml(fileName) : '<span class="hint">No file</span>'}</td>
-                  <td><div style="display:flex; gap:8px; flex-wrap:wrap"><button type="button" class="mini" data-document-table-edit="${doc.id}">Edit</button><button type="button" class="mini" data-document-table-download="${doc.id}">Download</button><button type="button" class="mini" data-document-table-source="${doc.id}">Elements from document</button></div></td>
-                </tr>`;
-              }).join('')}
-            </tbody>
-          </table>
-        </div>`;
-      host.querySelectorAll('[data-document-table-sort]').forEach(btn => btn.addEventListener('click', ()=> toggleDocumentTableSort(btn.getAttribute('data-document-table-sort') || 'name')));
-      host.querySelectorAll('[data-document-table-edit]').forEach(btn => btn.addEventListener('click', ()=> openDocumentEditModal(btn.getAttribute('data-document-table-edit'))));
-      host.querySelectorAll('[data-document-table-download]').forEach(btn => btn.addEventListener('click', ()=> downloadDocument(btn.getAttribute('data-document-table-download'))));
-      host.querySelectorAll('[data-document-table-source]').forEach(btn => btn.addEventListener('click', ()=> openSourceDocModalForDocument(btn.getAttribute('data-document-table-source'))));
-      bindDocumentTableTagControls(host);
-    }
-
     function getWorksheetTagBranchCount(tagId, parentSubtagId=''){
       const children = (state.subtags || []).filter(st => st.parentTagId === tagId && String(st.parentSubtagId || '') === String(parentSubtagId || ''));
       if(!children.length) return parentSubtagId ? 1 : 1;
@@ -3004,20 +2708,6 @@
       });
       bindElementsFilterTagTreeInteractions(includeRoot);
       bindElementsFilterTagTreeInteractions(excludeRoot);
-    }
-    function renderElementsAdvancedFilters(){
-      renderElementsFilterTagTree();
-      const optionSets = getElementFilterOptionSets();
-      const witnessItems = Array.from(optionSets.witnessIds || []).map(id => ({ id, name: getPersonById(id)?.name || 'Unknown person' })).sort((a,b)=> (a.name || '').localeCompare(b.name || ''));
-      const documentItems = Array.from(optionSets.documentIds || []).map(id => ({ id, name: getDocumentById(id)?.name || 'Unknown document' })).sort((a,b)=> (a.name || '').localeCompare(b.name || ''));
-      const exhibitItems = Array.from(optionSets.exhibitIds || []).map(id => ({ id, name: getDocumentById(id)?.name || 'Unknown exhibit' })).sort((a,b)=> (a.name || '').localeCompare(b.name || ''));
-      const sourceDocumentItems = Array.from(optionSets.sourceDocumentIds || []).map(id => ({ id, name: getDocumentById(id)?.name || 'Unknown document' })).sort((a,b)=> (a.name || '').localeCompare(b.name || ''));
-      const sourcePersonItems = Array.from(optionSets.sourcePersonIds || []).map(id => ({ id, name: getPersonById(id)?.name || 'Unknown person' })).sort((a,b)=> (a.name || '').localeCompare(b.name || ''));
-      renderElementSimpleFilter('elementsFilterWitnesses', witnessItems, ui.elementsFilterWitnessIds || [], ui.elementsFilterWitnessExcludeIds || [], !!ui.elementsFilterWitnessNoneSelected, ui.elementsFilterWitnessExcludeNoneSelected !== false, 'data-elements-filter-witness');
-      renderElementSimpleFilter('elementsFilterDocuments', documentItems, ui.elementsFilterDocumentIds || [], ui.elementsFilterDocumentExcludeIds || [], !!ui.elementsFilterDocumentNoneSelected, ui.elementsFilterDocumentExcludeNoneSelected !== false, 'data-elements-filter-document');
-      renderElementSimpleFilter('elementsFilterExhibits', exhibitItems, ui.elementsFilterExhibitIds || [], ui.elementsFilterExhibitExcludeIds || [], !!ui.elementsFilterExhibitNoneSelected, ui.elementsFilterExhibitExcludeNoneSelected !== false, 'data-elements-filter-exhibit');
-      renderElementSimpleFilter('elementsFilterSourceDocuments', sourceDocumentItems, ui.elementsFilterSourceDocumentIds || [], ui.elementsFilterSourceDocumentExcludeIds || [], !!ui.elementsFilterSourceDocumentNoneSelected, ui.elementsFilterSourceDocumentExcludeNoneSelected !== false, 'data-elements-filter-source-document');
-      renderElementSimpleFilter('elementsFilterSourcePeople', sourcePersonItems, ui.elementsFilterSourcePersonIds || [], ui.elementsFilterSourcePersonExcludeIds || [], !!ui.elementsFilterSourcePersonNoneSelected, ui.elementsFilterSourcePersonExcludeNoneSelected !== false, 'data-elements-filter-source-person');
     }
     function collectElementForm(){ const name = ($('elementName')?.value || '').trim(); if(!name){ alert('Element name is required.'); return null; } const date = normalizeFlexibleDateInput($('elementDate')?.value || ''); const textValue = $('elementText')?.innerHTML?.trim() || ''; const tagLinks = getElementFormSelectedTagLinks(); const tags = Array.from(new Set(tagLinks.map(link => link.tagId).filter(Boolean))); const documentIds = getElementFormSelectedDocumentIds(); const witnessIds = getElementFormSelectedWitnessIds(); const exhibitDocIds = getElementFormSelectedExhibitIds(); const existing = ui.selectedElementId ? getElementById(ui.selectedElementId) : null; const source = String($('elementSource')?.value || '').trim(); const sourceDocumentIds = getElementFormSelectedSourceDocumentIds(); const sourcePersonIds = getElementFormSelectedSourcePersonIds(); const sourceRefs = buildElementSourceRefs(Array.isArray(existing?.sourceRefs) ? existing.sourceRefs.slice() : [], source, sourceDocumentIds, sourcePersonIds, ui.sourceDocSelection); return finalizeElementSystemMeta({ name, addedAt: existing?.addedAt || new Date().toISOString(), type: 'text', date, text: textValue, documentIds, witnessIds, exhibitDocIds, tags, tagLinks, includeInTimeline: !!$('elementIncludeInTimeline')?.checked, source, sourceDocumentIds, sourcePersonIds, sourceRefs }); }
     function resetElementForm(){ if($('elementName')) $('elementName').value = ''; if($('elementDate')) $('elementDate').value = ''; if($('elementSource')) $('elementSource').value = ''; if($('elementText')) $('elementText').innerHTML = ''; if($('elementIncludeInTimeline')) $('elementIncludeInTimeline').checked = false; if($('elementWitnessSearch')) $('elementWitnessSearch').value = ''; if($('elementDocumentsSearch')) $('elementDocumentsSearch').value = ''; if($('elementExhibitsSearch')) $('elementExhibitsSearch').value = ''; if($('elementSourceDocumentsSearch')) $('elementSourceDocumentsSearch').value = ''; if($('elementSourcePeopleSearch')) $('elementSourcePeopleSearch').value = ''; renderElementWitnessList([]); renderElementDocumentList([]); renderElementExhibitList([]); renderElementSourceDocumentList([]); renderElementSourcePeopleList([]); renderElementCreateTagChoices([]); ui.selectedElementId = null; ui.sourceDocSelection = null; }
@@ -6597,117 +6287,35 @@ function openStructuredDocEditor(docId){
     return uploadCaseAsset(dataUrlToBlob(value), fileName, folder);
   }
 
-  async function fetchElementAssociationRows(tableName, selectClause){
-    if(!sb() || !cid()) return [];
-    try{
-      const { data, error } = await sb().from(tableName).select(selectClause || '*').eq('case_id', cid());
-      if(error) throw error;
-      return Array.isArray(data) ? data : [];
-    }catch(error){
-      console.warn('Element association load skipped for ' + tableName + ':', error);
-      return [];
-    }
-  }
-
-  function buildElementAssociationMaps(tagRows, witnessRows){
-    const tagMap = new Map();
-    const witnessMap = new Map();
-    (Array.isArray(tagRows) ? tagRows : []).forEach(row => {
-      const elementId = String(row?.element_id || row?.elementId || '').trim();
-      const tagId = String(row?.tag_id || row?.tagId || '').trim();
-      if(!elementId || !tagId) return;
-      const list = tagMap.get(elementId) || [];
-      list.push({ tagId, subtagId: String(row?.subtag_id || row?.subtagId || '').trim() });
-      tagMap.set(elementId, list);
-    });
-    (Array.isArray(witnessRows) ? witnessRows : []).forEach(row => {
-      const elementId = String(row?.element_id || row?.elementId || '').trim();
-      const personId = String(row?.person_id || row?.personId || '').trim();
-      if(!elementId || !personId) return;
-      const list = witnessMap.get(elementId) || [];
-      list.push(personId);
-      witnessMap.set(elementId, list);
-    });
-    return { tagMap, witnessMap };
-  }
-
-  async function replaceElementAssociations(elementId, payload){
-    const targetId = String(elementId || '').trim();
-    if(!sb() || !cid() || !targetId) return false;
-    const tagLinks = Array.isArray(payload?.tagLinks) ? payload.tagLinks.filter(link => link && link.tagId) : [];
-    const witnessIds = Array.isArray(payload?.witnessIds) ? payload.witnessIds.filter(Boolean) : [];
-    try{
-      await sb().from('element_tags').delete().eq('case_id', cid()).eq('element_id', targetId);
-      if(tagLinks.length){
-        const tagRows = tagLinks.map(link => ({ case_id: cid(), element_id: targetId, tag_id: link.tagId || '' })).filter(row => row.tag_id);
-        if(tagRows.length){
-          const { error } = await sb().from('element_tags').insert(tagRows);
-          if(error) throw error;
-        }
-      }
-      await sb().from('element_witnesses').delete().eq('case_id', cid()).eq('element_id', targetId);
-      if(witnessIds.length){
-        const witnessRows = witnessIds.map(personId => ({ case_id: cid(), element_id: targetId, person_id: personId })).filter(row => row.person_id);
-        if(witnessRows.length){
-          const { error } = await sb().from('element_witnesses').insert(witnessRows);
-          if(error) throw error;
-        }
-      }
-      return true;
-    }catch(error){
-      console.error('Save element associations error:', error);
-      alert('Could not save element tag/witness links to Supabase\n\n' + (error.message || JSON.stringify(error)) + '\n\nMake sure the element_tags and element_witnesses tables exist.');
-      return false;
-    }
-  }
-
   async function loadElementsFromSupabase(options){
     if(!sb() || !cid()) return;
     const opts = options && typeof options === 'object' ? options : {};
     const keepLocalOnly = !opts.replaceLocal;
     const localOnly = keepLocalOnly ? (state.elements || []).filter(el => el && !isUuidValue(el.id)).map(el => ({ ...el })) : [];
-    const [elementsRes, tagRows, witnessRows] = await Promise.all([
-      sb().from('elements').select('*').eq('case_id', cid()).order('timeline_order', { ascending:true }).order('updated_at', { ascending:true }),
-      fetchElementAssociationRows('element_tags', '*'),
-      fetchElementAssociationRows('element_witnesses', '*')
-    ]);
-    const { data, error } = elementsRes || {};
+    const query = sb().from('elements').select('*').eq('case_id', cid()).order('timeline_order', { ascending:true }).order('updated_at', { ascending:true });
+    const { data, error } = await query;
     if(error){ console.error('Load elements error:', error); return; }
-    const { tagMap, witnessMap } = buildElementAssociationMaps(tagRows, witnessRows);
-    const previousById = new Map((state.elements || []).filter(el => el && el.id).map(el => [el.id, el]));
-    const legacySnapshot = getLegacyAssociationSnapshot();
-    const legacyElementsById = new Map((Array.isArray(legacySnapshot?.elements) ? legacySnapshot.elements : []).filter(el => el && el.id).map(el => [el.id, el]));
-    const remoteElements = (data || []).map((row, idx) => {
-      const prev = previousById.get(row.id) || legacyElementsById.get(row.id) || {};
-      const rowTagLinks = Array.isArray(row.tag_links) ? row.tag_links.filter(link => link && link.tagId).map(link => ({ tagId: link.tagId || '', subtagId: link.subtagId || '' })) : [];
-      const assocTagLinks = Array.isArray(tagMap.get(row.id)) ? tagMap.get(row.id) : [];
-      const nextTagLinks = mergeAssociationArrays(assocTagLinks, mergeAssociationArrays(rowTagLinks, Array.isArray(prev.tagLinks) ? prev.tagLinks : []));
-      const nextWitnessIds = mergeAssociationArrays(Array.isArray(witnessMap.get(row.id)) ? witnessMap.get(row.id) : [], mergeAssociationArrays(Array.isArray(row.witness_ids) ? row.witness_ids.filter(Boolean) : [], Array.isArray(prev.witnessIds) ? prev.witnessIds : []));
-      const nextDocumentIds = mergeAssociationArrays(Array.isArray(row.document_ids) ? row.document_ids.filter(Boolean) : [], Array.isArray(prev.documentIds) ? prev.documentIds : []);
-      const nextExhibitDocIds = mergeAssociationArrays(Array.isArray(row.exhibit_doc_ids) ? row.exhibit_doc_ids.filter(Boolean) : [], Array.isArray(prev.exhibitDocIds) ? prev.exhibitDocIds : []);
-      return {
-        id: row.id,
-        name: row.name || '',
-        addedAt: row.created_at || row.added_at || prev.addedAt || '',
-        date: row.element_date || prev.date || '',
-        type: row.element_type || prev.type || 'text',
-        text: row.text_html || prev.text || '',
-        tags: Array.from(new Set(nextTagLinks.map(link => link && link.tagId).filter(Boolean).concat(Array.isArray(prev.tags) ? prev.tags : []))),
-        tagLinks: nextTagLinks.filter(link => link && link.tagId).map(link => ({ tagId: link.tagId || '', subtagId: link.subtagId || '' })),
-        documentIds: nextDocumentIds,
-        witnessIds: nextWitnessIds,
-        exhibitDocIds: nextExhibitDocIds,
-        includeInTimeline: row.include_in_timeline !== false,
-        timelineOrder: Number.isFinite(Number(row.timeline_order)) ? Number(row.timeline_order) : idx,
-        sourceRefs: mergeAssociationArrays(Array.isArray(row.source_refs) ? row.source_refs : [], Array.isArray(prev.sourceRefs) ? prev.sourceRefs : []),
-        source: '',
-        sourceDocumentIds: [],
-        sourcePersonIds: []
-      };
-    });
+    const remoteElements = (data || []).map((row, idx) => ({
+      id: row.id,
+      name: row.name || '',
+      addedAt: row.created_at || row.added_at || '',
+      date: row.element_date || '',
+      type: row.element_type || 'text',
+      text: row.text_html || '',
+      tags: Array.from(new Set(((row.tag_links || []) || []).map(link => link && link.tagId).filter(Boolean))),
+      tagLinks: Array.isArray(row.tag_links) ? row.tag_links.filter(link => link && link.tagId).map(link => ({ tagId: link.tagId || '', subtagId: link.subtagId || '' })) : [],
+      documentIds: Array.isArray(row.document_ids) ? row.document_ids.filter(Boolean) : [],
+      witnessIds: Array.isArray(row.witness_ids) ? row.witness_ids.filter(Boolean) : [],
+      exhibitDocIds: Array.isArray(row.exhibit_doc_ids) ? row.exhibit_doc_ids.filter(Boolean) : [],
+      includeInTimeline: row.include_in_timeline !== false,
+      timelineOrder: Number.isFinite(Number(row.timeline_order)) ? Number(row.timeline_order) : idx,
+      sourceRefs: Array.isArray(row.source_refs) ? row.source_refs : [],
+      source: '',
+      sourceDocumentIds: [],
+      sourcePersonIds: []
+    }));
     remoteElements.forEach(el => finalizeElementSystemMeta(el));
     state.elements = remoteElements.concat(localOnly.filter(el => !remoteElements.some(remote => remote.id === el.id)));
-    mergeAssociationSnapshotIntoState(legacySnapshot);
     state.elements.forEach(syncElementDerivedSourceFields);
     console.log('Loaded elements from Supabase:', remoteElements.length, 'remote,', localOnly.length, 'local-only retained');
     if(opts.replaceLocal && typeof resetElementUiState === 'function') resetElementUiState();
@@ -6752,27 +6360,12 @@ function openStructuredDocEditor(docId){
       alert('Could not save element to Supabase.\n\n' + (error.message || JSON.stringify(error)));
       return null;
     }
-    const assocOk = await replaceElementAssociations(data?.id || payload?.id, payload);
-    if(!assocOk) return null;
-    return {
-      ...data,
-      tag_links: cloneJson(payload.tagLinks || [], []),
-      witness_ids: cloneJson(payload.witnessIds || [], []),
-      document_ids: cloneJson(payload.documentIds || [], []),
-      exhibit_doc_ids: cloneJson(payload.exhibitDocIds || [], []),
-      source_refs: cloneJson(payload.sourceRefs || [], [])
-    };
+    return data;
   }
 
   async function deleteElementRowSupabase(id){
     if(!sb()) return false;
     if(!isUuidValue(id)) return true;
-    try{
-      await sb().from('element_tags').delete().eq('case_id', cid()).eq('element_id', id);
-      await sb().from('element_witnesses').delete().eq('case_id', cid()).eq('element_id', id);
-    }catch(error){
-      console.warn('Delete element associations skipped:', error);
-    }
     const { error } = await sb().from('elements').delete().eq('id', id);
     if(error){
       console.error('Delete element error:', error, 'id:', id);
