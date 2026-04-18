@@ -1821,41 +1821,303 @@
       page.scrollIntoView({ block:'center' });
       return true;
     }
+    function getElementSourcePopupWindow(){
+      const features = [
+        'popup=yes',
+        'noopener=no',
+        'resizable=yes',
+        'scrollbars=yes',
+        'toolbar=yes',
+        'menubar=yes',
+        'location=no',
+        'status=no',
+        'width=' + Math.max(1100, Math.round(window.screen.availWidth * 0.72)),
+        'height=' + Math.max(800, Math.round(window.screen.availHeight * 0.82)),
+        'left=' + Math.max(20, Math.round((window.screen.availWidth - Math.max(1100, Math.round(window.screen.availWidth * 0.72))) / 2)),
+        'top=' + Math.max(20, Math.round((window.screen.availHeight - Math.max(800, Math.round(window.screen.availHeight * 0.82))) / 2))
+      ].join(',');
+      const popup = window.open('', 'murski_element_source_window', features);
+      if(!popup) return null;
+      popup.focus();
+      return popup;
+    }
+    function ensureElementSourcePopupShell(popup, titleText){
+      if(!popup) return false;
+      const doc = popup.document;
+      doc.open();
+      doc.write(`<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>${escapeHtml(titleText || 'Element source')}</title>
+  <style>
+    :root{--bg:#f8fafc;--surface:#ffffff;--text:#0f172a;--muted:#64748b;--border:#e2e8f0;--brand:#2563eb;--shadow:0 10px 30px rgba(2,6,23,.10);--font:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;}
+    *{box-sizing:border-box;} html,body{height:100%;margin:0;padding:0;background:var(--bg);color:var(--text);font-family:var(--font);} 
+    body{display:grid;grid-template-rows:auto auto auto 1fr;gap:12px;padding:14px;overflow:hidden;}
+    .popupCard{background:var(--surface);border:1px solid var(--border);border-radius:18px;box-shadow:var(--shadow);} 
+    .popupHead{padding:14px 16px;display:flex;justify-content:space-between;gap:12px;align-items:center;}
+    .popupHead h2{margin:0;font-size:20px;line-height:1.2;}
+    .popupMeta{padding:12px 16px;font-size:13px;color:var(--muted);}
+    .popupQuote{padding:12px 16px;border-left:4px solid rgba(37,99,235,.35);background:#f8fbff;border-radius:14px;font-size:13px;display:none;white-space:pre-wrap;}
+    .popupViewer{min-height:0;height:100%;overflow:auto;padding:12px;}
+    .sourceDocViewerInner{display:grid;gap:16px;position:relative;justify-items:center;}
+    .sourceDocPage{position:relative;border:1px solid var(--border);border-radius:14px;background:#fff;padding:12px;box-shadow:0 2px 8px rgba(15,23,42,.04);margin:0 auto;width:fit-content;max-width:100%;}
+    .sourceDocPage.activeSourcePage{box-shadow:0 0 0 3px rgba(37,99,235,.16);border-color:rgba(37,99,235,.40);}
+    .sourceDocPageHeader{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:10px;font-size:12px;color:var(--muted);font-weight:800;width:100%;}
+    .sourcePdfStage{position:relative;display:block;margin:0 auto;max-width:100%;overflow:hidden;border:1px solid var(--border);border-radius:10px;background:#fff;}
+    .sourcePdfCanvas{width:100%;height:auto;background:#fff;display:block;position:relative;z-index:1;pointer-events:none;}
+    .sourceTextLayer{position:absolute;inset:0;margin:0;line-height:1;white-space:normal;user-select:text;-webkit-user-select:text;z-index:2;color:transparent;overflow:hidden;cursor:text;pointer-events:auto;}
+    .sourceTextLayer .sourceTextSpan{position:absolute;transform-origin:0 0;white-space:pre;user-select:text;-webkit-user-select:text;color:transparent;cursor:text;pointer-events:auto;line-height:1;}
+    .sourceTextLayer .sourceTextSpan::selection,.sourceTextLayer::selection{background:rgba(37,99,235,.28);color:transparent;}
+    .sourceTextLayer .sourceTextSpan::-moz-selection,.sourceTextLayer::-moz-selection{background:rgba(37,99,235,.28);color:transparent;}
+    .sourceHighlight{background:rgba(255,235,59,.55);border-radius:3px;box-shadow:0 0 0 1px rgba(255,193,7,.28) inset;}
+    .sourceDocCaptureBox{position:absolute;border:2px solid rgba(37,99,235,.85);background:rgba(37,99,235,.12);pointer-events:none;z-index:30;box-shadow:0 0 0 1px rgba(255,255,255,.8) inset;}
+    .sourceDocEmpty{padding:24px;border:1px dashed var(--border);border-radius:14px;color:var(--muted);background:#fff;}
+    .docViewerFrame{width:100%;height:100%;min-height:70vh;border:1px solid var(--border);border-radius:12px;background:#fff;}
+    .popupActions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+    .popupBtn{border:1px solid var(--border);background:#fff;border-radius:999px;padding:8px 12px;font-weight:800;font-size:13px;cursor:pointer;}
+  </style>
+</head>
+<body>
+  <div class="popupCard popupHead"><h2 id="popupSourceTitle"></h2><div class="popupActions"><button class="popupBtn" type="button" onclick="window.focus()">Bring to front</button><button class="popupBtn" type="button" onclick="window.close()">Close</button></div></div>
+  <div class="popupCard popupMeta" id="popupSourceMeta"></div>
+  <div class="popupCard popupQuote" id="popupSourceQuote"></div>
+  <div class="popupCard popupViewer" id="popupSourceViewer"><div id="popupSourceViewerInner" class="sourceDocViewerInner"><div class="sourceDocEmpty">Loading source…</div></div></div>
+</body>
+</html>`);
+      doc.close();
+      return true;
+    }
+    function clearSourceHighlightsInRoot(root){
+      if(!root) return;
+      root.querySelectorAll('.sourceHighlight').forEach(el => el.classList.remove('sourceHighlight'));
+      root.querySelectorAll('.activeSourcePage').forEach(el => el.classList.remove('activeSourcePage'));
+    }
+    function renderElementSourceCaptureOverlayInRoot(holder, sourceRef){
+      if(!holder || !sourceRef || sourceRef.sourceType !== 'image_capture') return false;
+      const left = Number(sourceRef.left);
+      const top = Number(sourceRef.top);
+      const width = Number(sourceRef.width);
+      const height = Number(sourceRef.height);
+      if(!(width > 0 && height > 0)) return false;
+      const pageNumber = sourceRef.pageNumber == null ? '' : String(sourceRef.pageNumber);
+      const page = holder.querySelector(`.sourceDocPage[data-page-number="${pageNumber}"]`) || holder.querySelector('.sourceDocPage');
+      if(!page) return false;
+      const stage = page.querySelector('.sourcePdfStage') || page;
+      if(!stage) return false;
+      page.classList.add('activeSourcePage');
+      const box = holder.ownerDocument.createElement('div');
+      box.className = 'sourceDocCaptureBox elementSourceCaptureOverlay';
+      box.style.left = left + 'px';
+      box.style.top = top + 'px';
+      box.style.width = width + 'px';
+      box.style.height = height + 'px';
+      stage.appendChild(box);
+      page.scrollIntoView({ block:'center' });
+      return true;
+    }
+    async function renderDocumentInPopupWindow(popup, doc, opts={}){
+      if(!popup || popup.closed) return false;
+      const popupDoc = popup.document;
+      const holder = popupDoc.getElementById('popupSourceViewerInner');
+      const viewerShell = popupDoc.getElementById('popupSourceViewer');
+      if(!holder) return false;
+      holder.innerHTML = '<div class="sourceDocEmpty">Loading document…</div>';
+      try{
+        const blob = await getDocumentBlob(doc);
+        const url = blob ? URL.createObjectURL(blob) : await getDocumentFileUrl(doc);
+        if(!url){ holder.innerHTML = '<div class="sourceDocEmpty">No file stored for this document.</div>'; return false; }
+        const mime = String(doc.mimeType || blob?.type || '').toLowerCase();
+        const name = String(doc.originalFileName || doc.filename || doc.name || '').toLowerCase();
+        const inner = popupDoc.createElement('div');
+        inner.className = 'sourceDocViewerInner';
+        holder.innerHTML = '';
+        holder.appendChild(inner);
+        const sourceRef = opts.sourceRef || null;
+        if((mime.includes('pdf')) || name.endsWith('.pdf')){
+          const pdfjs = await ensurePdfJsLib();
+          if(!pdfjs || !pdfjs.getDocument) throw new Error('PDF.js is not available');
+          if(pdfjs.GlobalWorkerOptions){
+            const version = String(pdfjs.version || '');
+            pdfjs.GlobalWorkerOptions.workerSrc = version.startsWith('4.')
+              ? 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.5.136/pdf.worker.min.js'
+              : 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+          }
+          const pdfData = blob ? new Uint8Array(await blob.arrayBuffer()) : null;
+          let pdf = null;
+          let pdfError = null;
+          const pdfAttempts = [];
+          if(pdfData) pdfAttempts.push({ data: pdfData, disableWorker: true, useWorkerFetch: false, isEvalSupported: false });
+          if(url) pdfAttempts.push({ url, disableWorker: true, useWorkerFetch: false, isEvalSupported: false });
+          for(const attempt of pdfAttempts){
+            try{
+              pdf = await pdfjs.getDocument(attempt).promise;
+              if(pdf) break;
+            }catch(err){
+              pdfError = err;
+              console.warn('PDF load attempt failed', err);
+            }
+          }
+          if(!pdf) throw (pdfError || new Error('Unable to open PDF'));
+          const shellWidth = Math.max(600, Number(viewerShell?.clientWidth || holder.clientWidth || 0));
+          for(let pageNum=1; pageNum<=pdf.numPages; pageNum++){
+            const page = await pdf.getPage(pageNum);
+            const baseViewport = page.getViewport({ scale: 1 });
+            const targetWidth = Math.max(720, shellWidth - 32);
+            const scale = Math.max(1.6, Math.min(3.1, targetWidth / baseViewport.width));
+            const viewport = page.getViewport({ scale });
+            const pageWrap = popupDoc.createElement('div');
+            pageWrap.className = 'sourceDocPage';
+            pageWrap.setAttribute('data-page-number', String(pageNum));
+            pageWrap.setAttribute('data-page-label', 'Page ' + pageNum);
+            pageWrap.innerHTML = `<div class="sourceDocPageHeader" style="width:100%"><span>${escapeHtml(doc.name || 'Document')}</span><span>Page ${pageNum}</span></div>`;
+            const stage = popupDoc.createElement('div');
+            stage.className = 'sourcePdfStage';
+            stage.style.width = viewport.width + 'px';
+            stage.style.height = viewport.height + 'px';
+            stage.style.minWidth = viewport.width + 'px';
+            stage.style.minHeight = viewport.height + 'px';
+            const canvas = popupDoc.createElement('canvas');
+            canvas.className = 'sourcePdfCanvas';
+            canvas.width = Math.ceil(viewport.width);
+            canvas.height = Math.ceil(viewport.height);
+            canvas.style.width = viewport.width + 'px';
+            canvas.style.height = viewport.height + 'px';
+            await page.render({ canvasContext: canvas.getContext('2d', { alpha:false }), viewport }).promise;
+            stage.appendChild(canvas);
+            const textLayer = popupDoc.createElement('div');
+            textLayer.className = 'sourceTextLayer';
+            textLayer.style.width = viewport.width + 'px';
+            textLayer.style.height = viewport.height + 'px';
+            const textContent = await page.getTextContent({ normalizeWhitespace: true, disableCombineTextItems: false });
+            const pdfUtil = (pdfjs && pdfjs.Util) ? pdfjs.Util : null;
+            const measureCanvas = popupDoc.createElement('canvas');
+            const measureCtx = measureCanvas.getContext('2d');
+            (textContent.items || []).forEach(item => {
+              const str = String(item?.str || '');
+              if(!str.trim()) return;
+              const tx = pdfUtil ? pdfUtil.transform(viewport.transform, item.transform) : item.transform;
+              const angle = Math.atan2(tx[1], tx[0]);
+              const style = (textContent.styles && item.fontName) ? (textContent.styles[item.fontName] || {}) : {};
+              const fontHeight = Math.max(8, Math.hypot(tx[2], tx[3]));
+              let fontAscent = fontHeight;
+              if(typeof style.ascent === 'number') fontAscent = style.ascent * fontHeight;
+              else if(typeof style.descent === 'number') fontAscent = (1 + style.descent) * fontHeight;
+              const fontFamily = style.fontFamily || 'sans-serif';
+              const span = popupDoc.createElement('span');
+              span.className = 'sourceTextSpan';
+              span.textContent = str;
+              span.style.left = tx[4] + 'px';
+              span.style.top = Math.max(0, tx[5] - fontAscent) + 'px';
+              span.style.fontSize = fontHeight + 'px';
+              span.style.fontFamily = fontFamily;
+              span.style.lineHeight = '1';
+              span.style.height = Math.max(fontHeight, 1) + 'px';
+              span.style.whiteSpace = 'pre';
+              let transform = angle ? `rotate(${angle}rad)` : '';
+              const expectedWidth = Math.max(0, Number(item.width || 0) * viewport.scale);
+              if(measureCtx){
+                measureCtx.font = `${fontHeight}px ${fontFamily}`;
+                const measuredWidth = Math.max(measureCtx.measureText(str).width, 0.01);
+                if(expectedWidth > 0 && measuredWidth > 0){
+                  const scaleX = expectedWidth / measuredWidth;
+                  if(Number.isFinite(scaleX) && scaleX > 0) transform = `${transform} scaleX(${scaleX})`.trim();
+                }
+              }
+              if(transform) span.style.transform = transform;
+              textLayer.appendChild(span);
+            });
+            stage.appendChild(textLayer);
+            pageWrap.appendChild(stage);
+            inner.appendChild(pageWrap);
+          }
+        } else if(name.endsWith('.docx') || mime.includes('wordprocessingml')){
+          const buffer = blob ? await blob.arrayBuffer() : await fetchArrayBufferFromUrl(url);
+          const result = await window.mammoth.convertToHtml({ arrayBuffer: buffer });
+          const pageWrap = popupDoc.createElement('div');
+          pageWrap.className = 'sourceDocPage';
+          pageWrap.setAttribute('data-page-label', 'Document');
+          pageWrap.innerHTML = `<div class="sourceDocPageHeader"><span>${escapeHtml(doc.name || 'Document')}</span><span>Document text</span></div>`;
+          const textLayer = popupDoc.createElement('div');
+          textLayer.className = 'sourceTextLayer';
+          textLayer.innerHTML = result.value || '<div class="hint">No text extracted.</div>';
+          Array.from(textLayer.childNodes).forEach(node => {
+            if(node.nodeType === 3){ const span = popupDoc.createElement('span'); span.className = 'sourceTextSpan'; span.textContent = node.textContent || ''; node.replaceWith(span); }
+          });
+          textLayer.querySelectorAll('*').forEach(el => { if(!el.querySelector('*')) el.classList.add('sourceTextSpan'); });
+          pageWrap.appendChild(textLayer);
+          inner.appendChild(pageWrap);
+        } else {
+          holder.innerHTML = `<iframe class="docViewerFrame" src="${url}"></iframe><div class="sourceDocEmpty" style="margin-top:10px">Text selection is available for PDF and DOCX files. For other file types, this popup uses standard preview mode.</div>`;
+          return true;
+        }
+        clearSourceHighlightsInRoot(holder);
+        if(sourceRef?.excerpt){
+          let highlighted = false;
+          if(sourceRef.pageNumber){
+            const page = holder.querySelector(`.sourceDocPage[data-page-number="${sourceRef.pageNumber}"]`);
+            if(page){ page.classList.add('activeSourcePage'); highlighted = highlightTextInContainer(page, sourceRef.excerpt) || highlighted; page.scrollIntoView({ block:'center' }); }
+          }
+          if(!highlighted){
+            holder.querySelectorAll('.sourceDocPage').forEach(page => { if(highlightTextInContainer(page, sourceRef.excerpt) && !highlighted){ page.classList.add('activeSourcePage'); highlighted = true; page.scrollIntoView({ block:'center' }); } });
+          }
+        }
+        holder.querySelectorAll('.elementSourceCaptureOverlay').forEach(el => el.remove());
+        renderElementSourceCaptureOverlayInRoot(holder, sourceRef);
+        return true;
+      }catch(err){
+        console.error(err);
+        try{
+          const fallbackUrl = await getDocumentFileUrl(doc);
+          if(fallbackUrl){
+            holder.innerHTML = `<iframe class="docViewerFrame" src="${fallbackUrl}"></iframe><div class="sourceDocEmpty" style="margin-top:10px">This document opened in preview mode instead of the in-app text selector.</div>`;
+            return true;
+          }
+        }catch(fallbackErr){
+          console.warn('Fallback preview failed', fallbackErr);
+        }
+        holder.innerHTML = `<div class="sourceDocEmpty">Could not load this document here.</div>`;
+        return false;
+      }
+    }
     async function openElementSourceModal(elementId){
       const el = getElementById(elementId);
       if(!el){ toast('Element was not found.'); return; }
       const sourceRef = getElementPrimaryViewableSourceRef(el);
-      const quoteEl = $('elementSourceQuote');
-      const metaEl = $('elementSourceMeta');
-      const titleEl = $('elementSourceModalTitle');
-      const viewerEl = $('elementSourceViewerInner');
-      if(titleEl) titleEl.textContent = `Element source${el.name ? ': ' + el.name : ''}`;
+      const sourceText = getElementSourceText(el);
+      const popupTitle = `Element source${el.name ? ': ' + el.name : ''}`;
+      const popup = getElementSourcePopupWindow();
+      if(!popup){ toast('Popup blocked. Please allow popups for this page.'); return; }
+      ensureElementSourcePopupShell(popup, popupTitle);
+      popup.focus();
+      const popupDoc = popup.document;
+      const titleEl = popupDoc.getElementById('popupSourceTitle');
+      const metaEl = popupDoc.getElementById('popupSourceMeta');
+      const quoteEl = popupDoc.getElementById('popupSourceQuote');
+      const viewerEl = popupDoc.getElementById('popupSourceViewerInner');
+      if(titleEl) titleEl.textContent = popupTitle;
       if(viewerEl) viewerEl.innerHTML = '<div class="sourceDocEmpty">Loading source…</div>';
+      const quote = String(sourceRef?.excerpt || '').replace(/\s+/g, ' ').trim();
       if(quoteEl){
-        const quote = String(sourceRef?.excerpt || '').replace(/\s+/g, ' ').trim();
-        if(quote){
-          quoteEl.textContent = quote;
-          quoteEl.style.display = '';
-        } else {
-          quoteEl.textContent = '';
-          quoteEl.style.display = 'none';
-        }
+        if(quote){ quoteEl.textContent = quote; quoteEl.style.display = ''; }
+        else { quoteEl.textContent = ''; quoteEl.style.display = 'none'; }
       }
       const metaBits = [];
-      const sourceText = getElementSourceText(el);
       if(sourceText) metaBits.push(`Source: ${sourceText}`);
       if(sourceRef?.pageNumber && sourceRef?.endPageNumber && Number(sourceRef.endPageNumber) !== Number(sourceRef.pageNumber)) metaBits.push(`Pages ${sourceRef.pageNumber}-${sourceRef.endPageNumber}`);
       else if(sourceRef?.pageNumber) metaBits.push(`Page ${sourceRef.pageNumber}`);
-      if(metaEl) metaEl.textContent = metaBits.join(' • ');
       if(!sourceRef?.documentId){
+        if(metaEl) metaEl.textContent = metaBits.join(' • ');
         if(viewerEl) viewerEl.innerHTML = '<div class="sourceDocEmpty">This element does not have an openable document source yet.</div>';
-        $('elementSourceModal').classList.add('open');
+        popup.focus();
         return;
       }
       const doc = getDocumentById(sourceRef.documentId);
       if(!doc){
+        if(metaEl) metaEl.textContent = metaBits.join(' • ');
         if(viewerEl) viewerEl.innerHTML = '<div class="sourceDocEmpty">The source document could not be found.</div>';
-        $('elementSourceModal').classList.add('open');
+        popup.focus();
         return;
       }
       if(metaEl){
@@ -1865,10 +2127,8 @@
         else if(sourceRef?.pageNumber) bits.push(`Page ${sourceRef.pageNumber}`);
         metaEl.textContent = bits.join(' • ');
       }
-      await renderDocumentInSourceViewer(doc, 'elementSourceViewerInner', { sourceRef });
-      clearElementSourceOverlays($('elementSourceViewerInner'));
-      renderElementSourceCaptureOverlay($('elementSourceViewerInner'), sourceRef);
-      $('elementSourceModal').classList.add('open');
+      await renderDocumentInPopupWindow(popup, doc, { sourceRef });
+      popup.focus();
     }
     function getElementSourceText(el){ if(typeof el?.source === 'string' && el.source.trim()) return el.source.trim(); const manual = (Array.isArray(el?.sourceRefs) ? el.sourceRefs : []).find(ref => ref && ref.sourceType === 'manual_text' && String(ref.text || '').trim()); return manual ? String(manual.text || '').trim() : ''; }
     function getElementSourceDocumentIds(el){ const direct = Array.isArray(el?.sourceDocumentIds) ? el.sourceDocumentIds.filter(Boolean) : []; const refs = (Array.isArray(el?.sourceRefs) ? el.sourceRefs : []).filter(ref => ref && (ref.sourceType === 'document_link' || ref.sourceType === 'document' || ref.sourceType === 'image_capture') && ref.documentId).map(ref => ref.documentId).filter(Boolean); return Array.from(new Set(direct.concat(refs))); }
