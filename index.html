@@ -6597,21 +6597,92 @@ function openStructuredDocEditor(docId){
     return uploadCaseAsset(dataUrlToBlob(value), fileName, folder);
   }
 
+  async function fetchElementAssociationRows(tableName, selectClause){
+    if(!sb() || !cid()) return [];
+    try{
+      const { data, error } = await sb().from(tableName).select(selectClause || '*').eq('case_id', cid());
+      if(error) throw error;
+      return Array.isArray(data) ? data : [];
+    }catch(error){
+      console.warn('Element association load skipped for ' + tableName + ':', error);
+      return [];
+    }
+  }
+
+  function buildElementAssociationMaps(tagRows, witnessRows){
+    const tagMap = new Map();
+    const witnessMap = new Map();
+    (Array.isArray(tagRows) ? tagRows : []).forEach(row => {
+      const elementId = String(row?.element_id || row?.elementId || '').trim();
+      const tagId = String(row?.tag_id || row?.tagId || '').trim();
+      if(!elementId || !tagId) return;
+      const list = tagMap.get(elementId) || [];
+      list.push({ tagId, subtagId: String(row?.subtag_id || row?.subtagId || '').trim() });
+      tagMap.set(elementId, list);
+    });
+    (Array.isArray(witnessRows) ? witnessRows : []).forEach(row => {
+      const elementId = String(row?.element_id || row?.elementId || '').trim();
+      const personId = String(row?.person_id || row?.personId || '').trim();
+      if(!elementId || !personId) return;
+      const list = witnessMap.get(elementId) || [];
+      list.push(personId);
+      witnessMap.set(elementId, list);
+    });
+    return { tagMap, witnessMap };
+  }
+
+  async function replaceElementAssociations(elementId, payload){
+    const targetId = String(elementId || '').trim();
+    if(!sb() || !cid() || !targetId) return false;
+    const tagLinks = Array.isArray(payload?.tagLinks) ? payload.tagLinks.filter(link => link && link.tagId) : [];
+    const witnessIds = Array.isArray(payload?.witnessIds) ? payload.witnessIds.filter(Boolean) : [];
+    try{
+      await sb().from('element_tags').delete().eq('case_id', cid()).eq('element_id', targetId);
+      if(tagLinks.length){
+        const tagRows = tagLinks.map(link => ({ case_id: cid(), element_id: targetId, tag_id: link.tagId || '' })).filter(row => row.tag_id);
+        if(tagRows.length){
+          const { error } = await sb().from('element_tags').insert(tagRows);
+          if(error) throw error;
+        }
+      }
+      await sb().from('element_witnesses').delete().eq('case_id', cid()).eq('element_id', targetId);
+      if(witnessIds.length){
+        const witnessRows = witnessIds.map(personId => ({ case_id: cid(), element_id: targetId, person_id: personId })).filter(row => row.person_id);
+        if(witnessRows.length){
+          const { error } = await sb().from('element_witnesses').insert(witnessRows);
+          if(error) throw error;
+        }
+      }
+      return true;
+    }catch(error){
+      console.error('Save element associations error:', error);
+      alert('Could not save element tag/witness links to Supabase\n\n' + (error.message || JSON.stringify(error)) + '\n\nMake sure the element_tags and element_witnesses tables exist.');
+      return false;
+    }
+  }
+
   async function loadElementsFromSupabase(options){
     if(!sb() || !cid()) return;
     const opts = options && typeof options === 'object' ? options : {};
     const keepLocalOnly = !opts.replaceLocal;
     const localOnly = keepLocalOnly ? (state.elements || []).filter(el => el && !isUuidValue(el.id)).map(el => ({ ...el })) : [];
-    const query = sb().from('elements').select('*').eq('case_id', cid()).order('timeline_order', { ascending:true }).order('updated_at', { ascending:true });
-    const { data, error } = await query;
+    const [elementsRes, tagRows, witnessRows] = await Promise.all([
+      sb().from('elements').select('*').eq('case_id', cid()).order('timeline_order', { ascending:true }).order('updated_at', { ascending:true }),
+      fetchElementAssociationRows('element_tags', '*'),
+      fetchElementAssociationRows('element_witnesses', '*')
+    ]);
+    const { data, error } = elementsRes || {};
     if(error){ console.error('Load elements error:', error); return; }
+    const { tagMap, witnessMap } = buildElementAssociationMaps(tagRows, witnessRows);
     const previousById = new Map((state.elements || []).filter(el => el && el.id).map(el => [el.id, el]));
     const legacySnapshot = getLegacyAssociationSnapshot();
     const legacyElementsById = new Map((Array.isArray(legacySnapshot?.elements) ? legacySnapshot.elements : []).filter(el => el && el.id).map(el => [el.id, el]));
     const remoteElements = (data || []).map((row, idx) => {
       const prev = previousById.get(row.id) || legacyElementsById.get(row.id) || {};
-      const nextTagLinks = (Array.isArray(row.tag_links) ? row.tag_links.filter(link => link && link.tagId).map(link => ({ tagId: link.tagId || '', subtagId: link.subtagId || '' })) : []).concat(Array.isArray(prev.tagLinks) ? prev.tagLinks : []);
-      const nextWitnessIds = mergeAssociationArrays(Array.isArray(row.witness_ids) ? row.witness_ids.filter(Boolean) : [], Array.isArray(prev.witnessIds) ? prev.witnessIds : []);
+      const rowTagLinks = Array.isArray(row.tag_links) ? row.tag_links.filter(link => link && link.tagId).map(link => ({ tagId: link.tagId || '', subtagId: link.subtagId || '' })) : [];
+      const assocTagLinks = Array.isArray(tagMap.get(row.id)) ? tagMap.get(row.id) : [];
+      const nextTagLinks = mergeAssociationArrays(assocTagLinks, mergeAssociationArrays(rowTagLinks, Array.isArray(prev.tagLinks) ? prev.tagLinks : []));
+      const nextWitnessIds = mergeAssociationArrays(Array.isArray(witnessMap.get(row.id)) ? witnessMap.get(row.id) : [], mergeAssociationArrays(Array.isArray(row.witness_ids) ? row.witness_ids.filter(Boolean) : [], Array.isArray(prev.witnessIds) ? prev.witnessIds : []));
       const nextDocumentIds = mergeAssociationArrays(Array.isArray(row.document_ids) ? row.document_ids.filter(Boolean) : [], Array.isArray(prev.documentIds) ? prev.documentIds : []);
       const nextExhibitDocIds = mergeAssociationArrays(Array.isArray(row.exhibit_doc_ids) ? row.exhibit_doc_ids.filter(Boolean) : [], Array.isArray(prev.exhibitDocIds) ? prev.exhibitDocIds : []);
       return {
@@ -6681,12 +6752,27 @@ function openStructuredDocEditor(docId){
       alert('Could not save element to Supabase.\n\n' + (error.message || JSON.stringify(error)));
       return null;
     }
-    return data;
+    const assocOk = await replaceElementAssociations(data?.id || payload?.id, payload);
+    if(!assocOk) return null;
+    return {
+      ...data,
+      tag_links: cloneJson(payload.tagLinks || [], []),
+      witness_ids: cloneJson(payload.witnessIds || [], []),
+      document_ids: cloneJson(payload.documentIds || [], []),
+      exhibit_doc_ids: cloneJson(payload.exhibitDocIds || [], []),
+      source_refs: cloneJson(payload.sourceRefs || [], [])
+    };
   }
 
   async function deleteElementRowSupabase(id){
     if(!sb()) return false;
     if(!isUuidValue(id)) return true;
+    try{
+      await sb().from('element_tags').delete().eq('case_id', cid()).eq('element_id', id);
+      await sb().from('element_witnesses').delete().eq('case_id', cid()).eq('element_id', id);
+    }catch(error){
+      console.warn('Delete element associations skipped:', error);
+    }
     const { error } = await sb().from('elements').delete().eq('id', id);
     if(error){
       console.error('Delete element error:', error, 'id:', id);
