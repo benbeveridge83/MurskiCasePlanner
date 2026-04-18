@@ -2330,7 +2330,7 @@
       empty.style.display = docs.length ? 'none' : '';
       if(!docs.length){ host.innerHTML = ''; return; }
       host.innerHTML = `<div class="bulkDocTableWrap"><table class="bulkDocTable"><thead><tr><th><button type="button" class="mini" data-document-table-sort="name">Document${getDocumentTableSortIndicator('name')}</button></th><th><button type="button" class="mini" data-document-table-sort="date">Date${getDocumentTableSortIndicator('date')}</button></th><th><button type="button" class="mini" data-document-table-sort="uploadDate">Upload date${getDocumentTableSortIndicator('uploadDate')}</button></th><th><button type="button" class="mini" data-document-table-sort="fileSize">File size${getDocumentTableSortIndicator('fileSize')}</button></th><th><button type="button" class="mini" data-document-table-sort="tags">Tags${getDocumentTableSortIndicator('tags')}</button></th><th><button type="button" class="mini" data-document-table-sort="view">View${getDocumentTableSortIndicator('view')}</button></th><th><button type="button" class="mini" data-document-table-sort="download">Download${getDocumentTableSortIndicator('download')}</button></th><th><button type="button" class="mini" data-document-table-sort="elements">Elements from Document${getDocumentTableSortIndicator('elements')}</button></th><th><button type="button" class="mini" data-document-table-sort="delete">Delete${getDocumentTableSortIndicator('delete')}</button></th></tr></thead><tbody>${docs.map(doc => { const meta = getDocumentExhibitMeta(doc.id); const uploadDate = formatTimelineDateDisplay(getDocumentUploadDate(doc) || '') || ''; const fileSize = formatFileSize(doc.fileSize || 0); return `<tr>
-        <td><div><b>${escapeHtml(doc.name || '')}</b></div><div class="hint">${escapeHtml(formatTimelineDateDisplay(doc.date || '') || 'No date')} ${meta.isExhibit ? '• ' + escapeHtml(meta.label || 'Exhibit') : ''} ${(doc.filePath || doc.dataUrl || doc.hasFile) ? '• Has file' : '• No file'} ${(doc.includeInTimeline !== false) ? '• In timeline' : '• Hidden from timeline'}</div></td>
+        <td><div><button type="button" class="mini" data-document-table-edit="${doc.id}" style="padding:0; border:none; background:none; box-shadow:none; border-radius:0; font-size:14px; font-weight:800; color:inherit; text-align:left; cursor:pointer">${escapeHtml(doc.name || '')}</button></div><div class="hint">${escapeHtml(formatTimelineDateDisplay(doc.date || '') || 'No date')} ${meta.isExhibit ? '• ' + escapeHtml(meta.label || 'Exhibit') : ''} ${(doc.filePath || doc.dataUrl || doc.hasFile) ? '• Has file' : '• No file'} ${(doc.includeInTimeline !== false) ? '• In timeline' : '• Hidden from timeline'}</div></td>
         <td>${escapeHtml(formatTimelineDateDisplay(doc.date || '') || '')}</td>
         <td>${escapeHtml(uploadDate)}</td>
         <td>${escapeHtml(fileSize)}</td>
@@ -2342,7 +2342,8 @@
       </tr>`; }).join('')}</tbody></table></div>`;
       host.querySelectorAll('[data-document-table-sort]').forEach(btn => btn.addEventListener('click', (ev)=>{ ev.preventDefault(); ev.stopPropagation(); toggleDocumentTableSort(btn.getAttribute('data-document-table-sort')); }));
       host.querySelectorAll('[data-document-table-tags]').forEach(btn => btn.addEventListener('click', (ev)=>{ ev.preventDefault(); ev.stopPropagation(); openDocumentTagModal(btn.getAttribute('data-document-table-tags')); }));
-      host.querySelectorAll('[data-document-table-view]').forEach(btn => btn.addEventListener('click', (ev)=>{ ev.preventDefault(); ev.stopPropagation(); openDocumentEditModal(btn.getAttribute('data-document-table-view')); }));
+      host.querySelectorAll('[data-document-table-edit]').forEach(btn => btn.addEventListener('click', (ev)=>{ ev.preventDefault(); ev.stopPropagation(); openDocumentEditModal(btn.getAttribute('data-document-table-edit')); }));
+      host.querySelectorAll('[data-document-table-view]').forEach(btn => btn.addEventListener('click', async (ev)=>{ ev.preventDefault(); ev.stopPropagation(); await openDocumentTableViewer(btn.getAttribute('data-document-table-view')); }));
       host.querySelectorAll('[data-document-table-download]').forEach(btn => btn.addEventListener('click', (ev)=>{ ev.preventDefault(); ev.stopPropagation(); downloadDocument(btn.getAttribute('data-document-table-download')); }));
       host.querySelectorAll('[data-document-table-elements]').forEach(btn => btn.addEventListener('click', async (ev)=>{ ev.preventDefault(); ev.stopPropagation(); await openSourceDocumentDirect(btn.getAttribute('data-document-table-elements')); }));
       host.querySelectorAll('[data-document-table-delete]').forEach(btn => btn.addEventListener('click', async (ev)=>{ ev.preventDefault(); ev.stopPropagation(); await deleteDocument(btn.getAttribute('data-document-table-delete')); }));
@@ -3934,6 +3935,26 @@ function getAllTagNodes(){ const roots = (state.tags || []).map(t => ({ id:t.id,
     }
     function populateTagSelectors(){}
     function getDocumentFileName(doc){ return doc ? (doc.originalFileName || doc.filename || doc.original_file_name || doc.file_name || '') : ''; }
+    async function openDocumentTableViewer(docId){
+      const doc = (state.documents || []).find(d => d.id === docId);
+      if(!doc){
+        alert('Document not found.');
+        return;
+      }
+      const url = await getDocumentPreviewUrl(doc);
+      if(!url){
+        alert('No file stored for this document.');
+        return;
+      }
+      const viewerWindow = window.open('', '_blank', 'noopener,width=1200,height=900');
+      if(!viewerWindow){
+        window.open(url, '_blank', 'noopener');
+        return;
+      }
+      viewerWindow.document.write(`<!doctype html><html><head><meta charset="utf-8" /><title>${escapeHtml(doc.name || 'Document viewer')}</title><style>html,body{height:100%;margin:0;font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;background:#f8fafc;color:#0f172a} .bar{display:flex;justify-content:space-between;gap:12px;align-items:center;padding:12px 16px;border-bottom:1px solid #e2e8f0;background:#fff;position:sticky;top:0} .name{font-weight:800} iframe{width:100%;height:calc(100vh - 58px);border:none;background:#fff;display:block}</style></head><body><div class="bar"><div class="name">${escapeHtml(doc.name || 'Document')}</div><button onclick="window.close()">Close</button></div><iframe src="${url}"></iframe></body></html>`);
+      viewerWindow.document.close();
+    }
+
     async function getDocumentPreviewUrl(doc){
       if(!doc) return '';
       try{ const blob = await getDocumentBlob(doc); if(blob) return URL.createObjectURL(blob); }catch(err){ console.warn('Preview load failed', err); }
