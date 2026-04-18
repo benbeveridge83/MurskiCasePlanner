@@ -1098,16 +1098,16 @@
     .bulkDocTable{width:100%;border-collapse:collapse;min-width:980px;}
     .bulkDocTable th,.bulkDocTable td{padding:10px;border-bottom:1px solid var(--border);vertical-align:top;text-align:left;}
     .bulkDocTable th{background:#f8fbff;font-size:12px;text-transform:uppercase;letter-spacing:.03em;color:var(--muted);}
-    .documentTableNameBtn{color:var(--brand);text-decoration:underline;text-decoration-color:rgba(37,99,235,.35);text-underline-offset:3px;}
-    .documentTableNameBtn:hover{color:var(--brand2);text-decoration-color:var(--brand2);}
     .bulkDocNameInput,.bulkDocDateInput,.bulkDocDescInput{width:100%;}
     .bulkDocDescInput{min-height:44px;}
     .bulkDocTagsCell{min-width:240px;}
     .bulkDocTagSummary{display:grid;gap:6px;}
     .bulkDocActionsBar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;justify-content:space-between;margin-top:10px;}
-    .bulkDocTable tbody tr.bulkDocRowOk{background:#ecfdf5!important;}
-    .bulkDocTable tbody tr.bulkDocRowErr{background:#fef2f2!important;}
-    .bulkDocTable tbody tr.bulkDocRowDup{background:#fef2f2!important;}
+    .bulkDocRowDuplicate td{background:rgba(239,68,68,.12);}
+    .bulkDocRowError td{background:rgba(239,68,68,.16);}
+    .bulkDocRowSuccess td{background:rgba(34,197,94,.14);}
+    .bulkDocRowDuplicate:hover td,.bulkDocRowError:hover td,.bulkDocRowSuccess:hover td{filter:brightness(.99);}
+    .bulkDocStatusText{font-weight:700;}
     .authShell{max-width:980px;margin:18px auto 0;padding:0 16px;}
     .authGrid{display:grid;grid-template-columns:repeat(2,minmax(280px,1fr));gap:14px;}
     .authMuted{color:var(--muted);font-size:13px;line-height:1.4;}
@@ -1209,7 +1209,7 @@
     const UI_STORAGE_KEY = 'murski_ui_prefs_v1';
     const LEGACY_STORAGE_KEY = 'murski_case_planner_v1';
     let state = { caseName: '', tags: [], people: [], documents: [], elements: [], outline: [], timelineEvents: [], subtags: [], iconLibrary: [] };
-    const ui = { selectedNodeId: null, selectedWitnessId: null, selectedDocId: null, selectedPersonId: null, selectedElementId: null, activeWitnessColumnId: null, expandedDocIds: {}, showDocDownloadList: false, showDocTagIndex: false, docTagFilterIds: [], docTagIndexExpandedIds: {}, docTagIndexShowUsedOnly: false, docTagNoTagsOnly: false, docTagHasTagsOnly: false, docExhibitFilter: 'all', outlineIndexFilterIds: [], outlineIndexExpandedIds: {}, outlineIndexShowUsedOnly: false, outlineIndexNoTagsOnly: false, outlineIndexHasTagsOnly: false, outlineIndexExhibitFilter: 'all', docSort: { field: 'file', dir: 'asc' }, docRepoSort: { field: 'date', dir: 'desc' }, docDownloadSelections: {}, docDownloadEligibilityFilter: 'all', docRepoEligibilityFilters: ['possible','not'], docRepoStatusFilters: ['exhibit','not_exhibit'], docRepoFilterPanelOpen: false, docRepoTagIds: [], docRepoTagExcludeIds: [], docRepoTagNoneSelected: false, docRepoTagExcludeNoneSelected: true, docRepoCollapsedTagNodes: {}, docRepoColWidths: { name: 340, date: 150, uploadDate: 160, timeline: 170, eligibility: 220, exhibitStatus: 190, file: 90 }, outlineCompact: false, outlineStructureView: false, outlinePaneWidth: 720, timelineSelectedId: null, timelineEditingId: null, timelineShowEventColumn: true, timelineShowDocumentColumn: true, timelineShowHeadlineColumn: true, timelineDocPickerOpen: false, timelineColumnOrder: ['date','event','document','headline'], timelineDraggingUndatedId: null, timelineFilterTagIds: [], timelineFilterTagOpen: false, elementsFilterMode: 'all', elementsSearch: '', currentView: INITIAL_VIEW, outlineFilterTagIds: [], outlineFilterWitnessIds: [], outlineFilterTagOpen: false, outlineFilterWitnessOpen: false, outlineIndexTagIds: [], outlineIndexWitnessIds: [], outlineIndexTagOpen: false, outlineIndexWitnessOpen: false, structuredOutlineWitnessFilterIds: [], structuredHeadingTagIds: [], structuredHeadingWitnessIds: [], structuredHeadingTagOpen: false, structuredHeadingWitnessOpen: false, structuredTraySearch: '', structuredTrayAssignmentFilter: 'all', structuredTrayPersonFilterId: 'any', structuredTrayTagFilterIds: [], structuredDocEditorId: null, structuredDragging: null, sourceDocSearch: '', sourceDocSelectedId: null, sourceDocSelection: null, sourceDocContext: 'create', sourceDocOpenFromElementId: null, sourceDocMaximized: false, sourceDocImageCapture: null, sourceDocCapturePointer: null, sourceDocScrollByDocumentId: {}, sourceDocAnchorByDocumentId: {}, elementsFilterTagIds: [], elementsFilterTagExcludeIds: [], elementsFilterTagNoneSelected: false, elementsFilterTagExcludeNoneSelected: true, elementsFilterWitnessIds: [], elementsFilterWitnessExcludeIds: [], elementsFilterWitnessNoneSelected: false, elementsFilterWitnessExcludeNoneSelected: true, elementsFilterDocumentIds: [], elementsFilterDocumentExcludeIds: [], elementsFilterDocumentNoneSelected: false, elementsFilterDocumentExcludeNoneSelected: true, elementsFilterExhibitIds: [], elementsFilterExhibitExcludeIds: [], elementsFilterExhibitNoneSelected: false, elementsFilterExhibitExcludeNoneSelected: true, elementsFilterSourceDocumentIds: [], elementsFilterSourceDocumentExcludeIds: [], elementsFilterSourceDocumentNoneSelected: false, elementsFilterSourceDocumentExcludeNoneSelected: true, elementsFilterSourcePersonIds: [], elementsFilterSourcePersonExcludeIds: [], elementsFilterSourcePersonNoneSelected: false, elementsFilterSourcePersonExcludeNoneSelected: true, elementsFilterPanelOpen: false, elementsCreatorFilter: 'all', elementsWorksheetOpen: false, elementsWorksheetPinnedTopIds: [], elementsWorksheetSort: { key: 'name', dir: 'asc' }, elementsWorksheetCollapsedTags: {}, elementsWorksheetCollapsedChildren: {}, newDocumentTagLinks: [], bulkDocumentDrafts: [], bulkDocumentEditIndex: -1, bulkDocumentSelectedIds: [], bulkDocumentViewerId: '', bulkDocumentCancelRequested: false, bulkDocumentSaving: false, bulkDocumentStatus: '', documentTableCollapsedTagNodes: {}, selectedTagNodeId: null, collapsedTagNodes: {}, collapsedElementTagNodes: {}, documentTableSearch: '', documentTableFilterPanelOpen: false, documentTableTagIds: [], documentTableTagExcludeIds: [], documentTableTagNoneSelected: false, documentTableTagExcludeNoneSelected: true, documentTableExhibitIds: [], documentTableExhibitExcludeIds: [], documentTableExhibitNoneSelected: false, documentTableExhibitExcludeNoneSelected: true, documentTableTimelineIds: [], documentTableTimelineExcludeIds: [], documentTableTimelineNoneSelected: false, documentTableTimelineExcludeNoneSelected: true, documentTableFileIds: [], documentTableFileExcludeIds: [], documentTableFileNoneSelected: false, documentTableFileExcludeNoneSelected: true, documentTableSort: { field: 'name', dir: 'asc' } };
+    const ui = { selectedNodeId: null, selectedWitnessId: null, selectedDocId: null, selectedPersonId: null, selectedElementId: null, activeWitnessColumnId: null, expandedDocIds: {}, showDocDownloadList: false, showDocTagIndex: false, docTagFilterIds: [], docTagIndexExpandedIds: {}, docTagIndexShowUsedOnly: false, docTagNoTagsOnly: false, docTagHasTagsOnly: false, docExhibitFilter: 'all', outlineIndexFilterIds: [], outlineIndexExpandedIds: {}, outlineIndexShowUsedOnly: false, outlineIndexNoTagsOnly: false, outlineIndexHasTagsOnly: false, outlineIndexExhibitFilter: 'all', docSort: { field: 'file', dir: 'asc' }, docRepoSort: { field: 'date', dir: 'desc' }, docDownloadSelections: {}, docDownloadEligibilityFilter: 'all', docRepoEligibilityFilters: ['possible','not'], docRepoStatusFilters: ['exhibit','not_exhibit'], docRepoFilterPanelOpen: false, docRepoTagIds: [], docRepoTagExcludeIds: [], docRepoTagNoneSelected: false, docRepoTagExcludeNoneSelected: true, docRepoCollapsedTagNodes: {}, docRepoColWidths: { name: 340, date: 150, uploadDate: 160, timeline: 170, eligibility: 220, exhibitStatus: 190, file: 90 }, outlineCompact: false, outlineStructureView: false, outlinePaneWidth: 720, timelineSelectedId: null, timelineEditingId: null, timelineShowEventColumn: true, timelineShowDocumentColumn: true, timelineShowHeadlineColumn: true, timelineDocPickerOpen: false, timelineColumnOrder: ['date','event','document','headline'], timelineDraggingUndatedId: null, timelineFilterTagIds: [], timelineFilterTagOpen: false, elementsFilterMode: 'all', elementsSearch: '', currentView: INITIAL_VIEW, outlineFilterTagIds: [], outlineFilterWitnessIds: [], outlineFilterTagOpen: false, outlineFilterWitnessOpen: false, outlineIndexTagIds: [], outlineIndexWitnessIds: [], outlineIndexTagOpen: false, outlineIndexWitnessOpen: false, structuredOutlineWitnessFilterIds: [], structuredHeadingTagIds: [], structuredHeadingWitnessIds: [], structuredHeadingTagOpen: false, structuredHeadingWitnessOpen: false, structuredTraySearch: '', structuredTrayAssignmentFilter: 'all', structuredTrayPersonFilterId: 'any', structuredTrayTagFilterIds: [], structuredDocEditorId: null, structuredDragging: null, sourceDocSearch: '', sourceDocSelectedId: null, sourceDocSelection: null, sourceDocContext: 'create', sourceDocOpenFromElementId: null, sourceDocMaximized: false, sourceDocImageCapture: null, sourceDocCapturePointer: null, sourceDocScrollByDocumentId: {}, sourceDocAnchorByDocumentId: {}, elementsFilterTagIds: [], elementsFilterTagExcludeIds: [], elementsFilterTagNoneSelected: false, elementsFilterTagExcludeNoneSelected: true, elementsFilterWitnessIds: [], elementsFilterWitnessExcludeIds: [], elementsFilterWitnessNoneSelected: false, elementsFilterWitnessExcludeNoneSelected: true, elementsFilterDocumentIds: [], elementsFilterDocumentExcludeIds: [], elementsFilterDocumentNoneSelected: false, elementsFilterDocumentExcludeNoneSelected: true, elementsFilterExhibitIds: [], elementsFilterExhibitExcludeIds: [], elementsFilterExhibitNoneSelected: false, elementsFilterExhibitExcludeNoneSelected: true, elementsFilterSourceDocumentIds: [], elementsFilterSourceDocumentExcludeIds: [], elementsFilterSourceDocumentNoneSelected: false, elementsFilterSourceDocumentExcludeNoneSelected: true, elementsFilterSourcePersonIds: [], elementsFilterSourcePersonExcludeIds: [], elementsFilterSourcePersonNoneSelected: false, elementsFilterSourcePersonExcludeNoneSelected: true, elementsFilterPanelOpen: false, elementsCreatorFilter: 'all', elementsWorksheetOpen: false, elementsWorksheetPinnedTopIds: [], elementsWorksheetSort: { key: 'name', dir: 'asc' }, elementsWorksheetCollapsedTags: {}, elementsWorksheetCollapsedChildren: {}, newDocumentTagLinks: [], bulkDocumentDrafts: [], bulkDocumentEditIndex: -1, bulkDocumentSelectedIds: [], bulkDocumentViewerId: '', bulkDocumentCancelRequested: false, bulkDocumentSaving: false, bulkDocumentStatus: '', documentTableCollapsedTagNodes: {}, selectedTagNodeId: null, collapsedTagNodes: {}, collapsedElementTagNodes: {}, documentTableSearch: '', documentTableFilterPanelOpen: false, documentTableTagIds: [], documentTableTagExcludeIds: [], documentTableTagNoneSelected: false, documentTableTagExcludeNoneSelected: true, documentTableExhibitIds: [], documentTableExhibitExcludeIds: [], documentTableExhibitNoneSelected: false, documentTableExhibitExcludeNoneSelected: true, documentTableTimelineIds: [], documentTableTimelineExcludeIds: [], documentTableTimelineNoneSelected: false, documentTableTimelineExcludeNoneSelected: true, documentTableFileIds: [], documentTableFileExcludeIds: [], documentTableFileNoneSelected: false, documentTableFileExcludeNoneSelected: true, documentTableSort: { field: 'name', dir: 'asc' }, documentTableSelections: {}, documentTagModalDocIds: [] };
     const structuredUi = { headingFilterOpen: false, visibleHeadingIds: [], headingFilterInitialized: false, witnessColWidths: {}, resizingWitnessId: null, resizeStartX: 0, resizeStartWidth: 220 };
     const HEADING_EXHIBIT_KEY = '__heading__';
     const $ = (id) => document.getElementById(id);
@@ -2095,10 +2095,15 @@
       const host = $('documentTagModalSummary');
       if(host) host.innerHTML = renderTagLinkPills(links || []);
     }
-    function openDocumentTagModal(docId=null){
-      ui.documentTagModalDocId = docId || '';
+    function openDocumentTagModal(docId=null, docIds=null){
+      const multiIds = Array.isArray(docIds) ? Array.from(new Set(docIds.filter(Boolean))) : [];
+      ui.documentTagModalDocIds = multiIds.length ? multiIds.slice() : (docId ? [docId] : []);
+      ui.documentTagModalDocId = docId || (multiIds.length === 1 ? multiIds[0] : '');
       const title = $('documentTagModalTitle');
-      if(title) title.textContent = docId ? 'Add tags to document' : 'Choose tags for new document';
+      if(title){
+        if(multiIds.length > 1) title.textContent = `Add tags to ${multiIds.length} selected documents`;
+        else title.textContent = docId ? 'Add tags to document' : 'Choose tags for new document';
+      }
       const doc = docId ? (state.documents || []).find(d => d.id === docId) : null;
       const links = doc ? getDocumentTagLinks(doc) : (ui.newDocumentTagLinks || []);
       renderHierarchicalTagTree('documentTagModalTree', links);
@@ -2106,12 +2111,13 @@
       $('documentTagModal')?.classList.add('open');
       document.querySelectorAll('#documentTagModalTree input[data-hier-tag-link]').forEach(input => input.addEventListener('change', ()=> renderDocumentTagModalSummary(collectHierarchicalTagLinks('documentTagModalTree'))));
     }
-    function closeDocumentTagModal(){ $('documentTagModal')?.classList.remove('open'); ui.bulkDocumentEditIndex = -1; }
+    function closeDocumentTagModal(){ $('documentTagModal')?.classList.remove('open'); ui.bulkDocumentEditIndex = -1; ui.documentTagModalDocIds = []; }
     async function saveDocumentTagModal(){
       const links = collectHierarchicalTagLinks('documentTagModalTree');
       const mainTagIds = Array.from(new Set(links.map(link => link.tagId).filter(Boolean)));
       const docId = ui.documentTagModalDocId || '';
-      if(!docId){
+      const docIds = Array.isArray(ui.documentTagModalDocIds) ? Array.from(new Set(ui.documentTagModalDocIds.filter(Boolean))) : [];
+      if(!docId && !docIds.length){
         if(Number.isInteger(ui.bulkDocumentEditIndex) && ui.bulkDocumentEditIndex >= 0 && ui.bulkDocumentDrafts[ui.bulkDocumentEditIndex]){
           ui.bulkDocumentDrafts[ui.bulkDocumentEditIndex].tagLinks = links;
           ui.bulkDocumentEditIndex = -1;
@@ -2121,20 +2127,25 @@
         }
         setDraftDocumentTagLinks(links); closeDocumentTagModal(); return;
       }
-      const doc = (state.documents || []).find(d => d.id === docId);
-      if(!doc) return;
-      const current = new Set(doc.tags || []);
-      const next = new Set(mainTagIds);
-      for(const tagId of next){ if(!current.has(tagId)) await window.assignDocumentTag(docId, tagId); }
-      for(const tagId of current){ if(!next.has(tagId)) await window.removeDocumentTag(docId, tagId); }
-      doc.tags = mainTagIds;
-      doc.tagLinks = links;
+      const targetDocIds = docIds.length ? docIds : [docId];
+      for(const targetDocId of targetDocIds){
+        const doc = (state.documents || []).find(d => d.id === targetDocId);
+        if(!doc) continue;
+        const current = new Set(doc.tags || []);
+        const next = new Set(mainTagIds);
+        for(const tagId of next){ if(!current.has(tagId)) await window.assignDocumentTag(targetDocId, tagId); }
+        for(const tagId of current){ if(!next.has(tagId)) await window.removeDocumentTag(targetDocId, tagId); }
+        doc.tags = mainTagIds.slice();
+        doc.tagLinks = links.map(link => ({ tagId: link.tagId || '', subtagId: link.subtagId || '' }));
+      }
       safeSave();
       if(window.loadDocumentTags) await window.loadDocumentTags();
       renderDocuments();
+      renderDocumentTable();
       renderTimeline();
+      const count = targetDocIds.length;
       closeDocumentTagModal();
-      toast('Document tags updated');
+      toast(count > 1 ? `Tags applied to ${count} documents` : 'Document tags updated');
     }
 
     function renderElementSimpleFilter(hostId, items, includeIds, excludeIds, includeNoneSelected, excludeNoneSelected, attr){
@@ -2300,6 +2311,16 @@
       else ui.documentTableSort = { field, dir: (field === 'name' || field === 'tags') ? 'asc' : 'desc' };
       renderDocumentTable();
     }
+    function getSelectedDocumentTableIds(visibleDocs){
+      const docs = Array.isArray(visibleDocs) ? visibleDocs : getFilteredDocumentsForTable();
+      return docs.filter(doc => ui.documentTableSelections && ui.documentTableSelections[doc.id]).map(doc => doc.id);
+    }
+    function setDocumentTableSelectionsForDocs(docs, checked){
+      (Array.isArray(docs) ? docs : []).forEach(doc => {
+        if(!doc || !doc.id) return;
+        ui.documentTableSelections[doc.id] = !!checked;
+      });
+    }
     function getFilteredDocumentsForTable(){
       const search = String(ui.documentTableSearch || '').trim().toLowerCase();
       const sort = ui.documentTableSort || { field:'name', dir:'asc' };
@@ -2334,17 +2355,26 @@
       const docs = getFilteredDocumentsForTable();
       empty.style.display = docs.length ? 'none' : '';
       if(!docs.length){ host.innerHTML = ''; return; }
-      host.innerHTML = `<div class="bulkDocTableWrap"><table class="bulkDocTable"><thead><tr><th><button type="button" class="mini" data-document-table-sort="name">Document${getDocumentTableSortIndicator('name')}</button></th><th><button type="button" class="mini" data-document-table-sort="date">Date${getDocumentTableSortIndicator('date')}</button></th><th><button type="button" class="mini" data-document-table-sort="uploadDate">Upload date${getDocumentTableSortIndicator('uploadDate')}</button></th><th><button type="button" class="mini" data-document-table-sort="fileSize">File size${getDocumentTableSortIndicator('fileSize')}</button></th><th><button type="button" class="mini" data-document-table-sort="tags">Tags${getDocumentTableSortIndicator('tags')}</button></th><th><button type="button" class="mini" data-document-table-sort="view">View${getDocumentTableSortIndicator('view')}</button></th><th><button type="button" class="mini" data-document-table-sort="download">Download${getDocumentTableSortIndicator('download')}</button></th><th><button type="button" class="mini" data-document-table-sort="elements">Elements from Document${getDocumentTableSortIndicator('elements')}</button></th><th><button type="button" class="mini" data-document-table-sort="delete">Delete${getDocumentTableSortIndicator('delete')}</button></th></tr></thead><tbody>${docs.map(doc => { const meta = getDocumentExhibitMeta(doc.id); const uploadDate = formatTimelineDateDisplay(getDocumentUploadDate(doc) || '') || ''; const fileSize = formatFileSize(doc.fileSize || 0); return `<tr>
-        <td><div><button type="button" class="mini documentTableNameBtn" data-document-table-edit="${doc.id}" style="padding:0; border:none; background:none; box-shadow:none; border-radius:0; font-size:14px; font-weight:800; text-align:left; cursor:pointer" title="Edit document (name, date, description, tags, file)">${escapeHtml(doc.name || '')}</button></div><div class="hint">${escapeHtml(formatTimelineDateDisplay(doc.date || '') || 'No date')} ${meta.isExhibit ? '• ' + escapeHtml(meta.label || 'Exhibit') : ''} ${(doc.filePath || doc.dataUrl || doc.hasFile) ? '• Has file' : '• No file'} ${(doc.includeInTimeline !== false) ? '• In timeline' : '• Hidden from timeline'}</div></td>
+      const selectedIds = getSelectedDocumentTableIds(docs);
+      const allVisibleSelected = !!docs.length && selectedIds.length === docs.length;
+      host.innerHTML = `<div class="card" style="box-shadow:none; padding:12px 14px; margin-bottom:10px"><div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center; justify-content:space-between"><div class="hint">${selectedIds.length} selected in current table view</div><div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center"><label class="checkItem" style="margin:0"><input type="checkbox" id="documentTableSelectAll" ${allVisibleSelected ? 'checked' : ''}> <span>Select all visible</span></label><button type="button" class="btnGhost" id="documentTableSelectNone">Select none</button><button type="button" class="btnPrimary" id="documentTableBulkTagsBtn" ${selectedIds.length ? '' : 'disabled'}>Add tags to selected</button></div></div></div><div class="bulkDocTableWrap"><table class="bulkDocTable"><thead><tr><th style="width:54px"><input type="checkbox" id="documentTableHeaderSelectAll" ${allVisibleSelected ? 'checked' : ''} title="Select all visible"></th><th><button type="button" class="mini" data-document-table-sort="name">Document${getDocumentTableSortIndicator('name')}</button></th><th><button type="button" class="mini" data-document-table-sort="date">Date${getDocumentTableSortIndicator('date')}</button></th><th><button type="button" class="mini" data-document-table-sort="uploadDate">Upload date${getDocumentTableSortIndicator('uploadDate')}</button></th><th><button type="button" class="mini" data-document-table-sort="fileSize">File size${getDocumentTableSortIndicator('fileSize')}</button></th><th><button type="button" class="mini" data-document-table-sort="tags">Tags${getDocumentTableSortIndicator('tags')}</button></th><th><button type="button" class="mini" data-document-table-sort="view">View${getDocumentTableSortIndicator('view')}</button></th><th><button type="button" class="mini" data-document-table-sort="download">Download${getDocumentTableSortIndicator('download')}</button></th><th><button type="button" class="mini" data-document-table-sort="elements">Elements from Document${getDocumentTableSortIndicator('elements')}</button></th><th><button type="button" class="mini" data-document-table-sort="delete">Delete${getDocumentTableSortIndicator('delete')}</button></th></tr></thead><tbody>${docs.map(doc => { const meta = getDocumentExhibitMeta(doc.id); const uploadDate = formatTimelineDateDisplay(getDocumentUploadDate(doc) || '') || ''; const fileSize = formatFileSize(doc.fileSize || 0); return `<tr>
+        <td><input type="checkbox" data-document-table-select="${doc.id}" ${ui.documentTableSelections && ui.documentTableSelections[doc.id] ? 'checked' : ''}></td>
+        <td><div><button type="button" class="mini" data-document-table-edit="${doc.id}" style="padding:0; border:none; background:none; box-shadow:none; border-radius:0; font-size:14px; font-weight:800; color:inherit; text-align:left; cursor:pointer">${escapeHtml(doc.name || '')}</button></div><div class="hint">${escapeHtml(formatTimelineDateDisplay(doc.date || '') || 'No date')} ${meta.isExhibit ? '• ' + escapeHtml(meta.label || 'Exhibit') : ''} ${(doc.filePath || doc.dataUrl || doc.hasFile) ? '• Has file' : '• No file'} ${(doc.includeInTimeline !== false) ? '• In timeline' : '• Hidden from timeline'}</div></td>
         <td>${escapeHtml(formatTimelineDateDisplay(doc.date || '') || '')}</td>
         <td>${escapeHtml(uploadDate)}</td>
         <td>${escapeHtml(fileSize)}</td>
         <td class="bulkDocTagsCell">${renderTagLinkPills(getDocumentTagLinks(doc), 'document', doc.id)}<div style="margin-top:8px"><button type="button" class="mini" data-document-table-tags="${doc.id}">Edit tags</button></div></td>
-        <td><button type="button" class="mini" data-document-table-view="${doc.id}" title="View uploaded file in a new window">View</button></td>
+        <td><button type="button" class="mini" data-document-table-view="${doc.id}">View</button></td>
         <td><button type="button" class="mini" data-document-table-download="${doc.id}">Download</button></td>
         <td><button type="button" class="mini btnPrimary" data-document-table-elements="${doc.id}">Elements from Document</button></td>
         <td><button type="button" class="mini btnDanger" data-document-table-delete="${doc.id}">Delete</button></td>
       </tr>`; }).join('')}</tbody></table></div>`;
+      const setAllSelected = (checked)=>{ setDocumentTableSelectionsForDocs(docs, checked); renderDocumentTable(); };
+      host.querySelector('#documentTableSelectAll')?.addEventListener('change', (ev)=>{ setAllSelected(!!ev.target.checked); });
+      host.querySelector('#documentTableHeaderSelectAll')?.addEventListener('change', (ev)=>{ setAllSelected(!!ev.target.checked); });
+      host.querySelector('#documentTableSelectNone')?.addEventListener('click', ()=>{ setAllSelected(false); });
+      host.querySelector('#documentTableBulkTagsBtn')?.addEventListener('click', (ev)=>{ ev.preventDefault(); ev.stopPropagation(); const ids = getSelectedDocumentTableIds(docs); if(!ids.length) return; openDocumentTagModal(ids[0], ids); });
+      host.querySelectorAll('[data-document-table-select]').forEach(cb => cb.addEventListener('change', ()=>{ ui.documentTableSelections[cb.getAttribute('data-document-table-select')] = cb.checked; renderDocumentTable(); }));
       host.querySelectorAll('[data-document-table-sort]').forEach(btn => btn.addEventListener('click', (ev)=>{ ev.preventDefault(); ev.stopPropagation(); toggleDocumentTableSort(btn.getAttribute('data-document-table-sort')); }));
       host.querySelectorAll('[data-document-table-tags]').forEach(btn => btn.addEventListener('click', (ev)=>{ ev.preventDefault(); ev.stopPropagation(); openDocumentTagModal(btn.getAttribute('data-document-table-tags')); }));
       host.querySelectorAll('[data-document-table-edit]').forEach(btn => btn.addEventListener('click', (ev)=>{ ev.preventDefault(); ev.stopPropagation(); openDocumentEditModal(btn.getAttribute('data-document-table-edit')); }));
@@ -5037,33 +5067,43 @@ function openStructuredDocEditor(docId){
 
 
 
-    function normalizeBulkOriginalFileKey(name){
-      return String(name || '').trim().toLowerCase();
-    }
-    function getCaseOriginalFileNameKeys(){
-      const keys = new Set();
-      (state.documents || []).forEach(doc => {
-        if(!doc) return;
-        const fn = doc.originalFileName || doc.filename || '';
-        const fp = doc.filePath || doc.file_path || '';
-        if(fn && fp) keys.add(normalizeBulkOriginalFileKey(fn));
-      });
-      return keys;
-    }
-    function countBulkDraftFileNames(drafts){
-      const counts = new Map();
-      (drafts || []).forEach(draft => {
-        const fn = draft && draft.file ? draft.file.name : '';
-        if(!fn) return;
-        const k = normalizeBulkOriginalFileKey(fn);
-        counts.set(k, (counts.get(k) || 0) + 1);
-      });
-      return counts;
-    }
-
     function makeBulkDocumentDraft(file){
       const rawName = String(file?.name || '');
-      return { id: uid(), file, name: rawName || 'Untitled document', date: '', description: '', tagLinks: [] };
+      return { id: uid(), file, name: rawName || 'Untitled document', date: '', description: '', tagLinks: [], error: '', success: false, duplicateExisting: false, duplicateMessage: '', statusLabel: '' };
+    }
+    function normalizeBulkDuplicateKeyPart(value){
+      return String(value || '').trim().toLowerCase();
+    }
+    function getDocumentDuplicateKey(doc){
+      if(!doc) return '';
+      const fileName = normalizeBulkDuplicateKeyPart(doc.originalFileName || doc.filename || doc.name || '');
+      const fileSize = Number(doc.fileSize || 0) || 0;
+      return fileName && fileSize > 0 ? `${fileName}__${fileSize}` : '';
+    }
+    function getBulkDraftDuplicateKey(draft){
+      if(!draft) return '';
+      const fileName = normalizeBulkDuplicateKeyPart(draft.file?.name || draft.name || '');
+      const fileSize = Number(draft.file?.size || 0) || 0;
+      return fileName && fileSize > 0 ? `${fileName}__${fileSize}` : '';
+    }
+    function refreshBulkDocumentDuplicateFlags(){
+      const existingKeys = new Set((state.documents || []).map(getDocumentDuplicateKey).filter(Boolean));
+      const duplicateCounts = new Map();
+      (ui.bulkDocumentDrafts || []).forEach(draft => {
+        const key = getBulkDraftDuplicateKey(draft);
+        if(!key) return;
+        duplicateCounts.set(key, (duplicateCounts.get(key) || 0) + 1);
+      });
+      (ui.bulkDocumentDrafts || []).forEach(draft => {
+        const key = getBulkDraftDuplicateKey(draft);
+        const duplicateExisting = !!(key && existingKeys.has(key));
+        const duplicateInBatch = !!(key && (duplicateCounts.get(key) || 0) > 1);
+        draft.duplicateExisting = duplicateExisting || duplicateInBatch;
+        if(duplicateExisting && duplicateInBatch) draft.duplicateMessage = 'Duplicate: this file already exists in the case and also appears more than once in this bulk upload.';
+        else if(duplicateExisting) draft.duplicateMessage = 'Duplicate: this file appears to already be uploaded in this case.';
+        else if(duplicateInBatch) draft.duplicateMessage = 'Duplicate: this same file appears more than once in this bulk upload.';
+        else draft.duplicateMessage = '';
+      });
     }
     function getBulkDocumentDraftById(draftId){
       return (ui.bulkDocumentDrafts || []).find(draft => draft && draft.id === draftId) || null;
@@ -5095,41 +5135,8 @@ function openStructuredDocEditor(docId){
       renderBulkDocumentUpload();
       toast(targetIds.length === 1 ? 'Tags copied to 1 selected document' : `Tags copied to ${targetIds.length} selected documents`);
     }
-    function removeSelectedBulkDocumentDrafts(){
-      if(ui.bulkDocumentSaving) return;
-      const toRemove = new Set(ui.bulkDocumentSelectedIds || []);
-      if(!toRemove.size){
-        alert('Select one or more rows with the checkboxes, then click Remove selected.');
-        return;
-      }
-      const editingDraft = Number.isInteger(ui.bulkDocumentEditIndex) && ui.bulkDocumentEditIndex >= 0 && ui.bulkDocumentDrafts[ui.bulkDocumentEditIndex]
-        ? ui.bulkDocumentDrafts[ui.bulkDocumentEditIndex]
-        : null;
-      const before = (ui.bulkDocumentDrafts || []).length;
-      (ui.bulkDocumentDrafts || []).forEach(draft => {
-        if(!draft || !toRemove.has(draft.id)) return;
-        if(ui.bulkDocumentViewerId === draft.id) ui.bulkDocumentViewerId = '';
-        if(draft.previewUrl){ try{ URL.revokeObjectURL(draft.previewUrl); }catch(err){} }
-      });
-      ui.bulkDocumentDrafts = (ui.bulkDocumentDrafts || []).filter(d => d && !toRemove.has(d.id));
-      ui.bulkDocumentSelectedIds = (ui.bulkDocumentSelectedIds || []).filter(id => !toRemove.has(id));
-      if(editingDraft && toRemove.has(editingDraft.id)){
-        ui.bulkDocumentEditIndex = -1;
-        closeDocumentTagModal();
-      }else if(editingDraft){
-        const newIdx = ui.bulkDocumentDrafts.findIndex(d => d.id === editingDraft.id);
-        ui.bulkDocumentEditIndex = newIdx >= 0 ? newIdx : -1;
-        if(ui.bulkDocumentEditIndex < 0) closeDocumentTagModal();
-      }
-      if(!(ui.bulkDocumentDrafts || []).length){
-        ui.bulkDocumentStatus = '';
-        ui.bulkDocumentViewerId = '';
-      }
-      renderBulkDocumentUpload();
-      const removed = before - (ui.bulkDocumentDrafts || []).length;
-      if(removed) toast(removed === 1 ? 'Removed 1 row from the list' : `Removed ${removed} rows from the list`);
-    }
     function renderBulkDocumentUpload(){
+      refreshBulkDocumentDuplicateFlags();
       const wrap = $('docBulkUploadWrap');
       if(!wrap) return;
       const drafts = Array.isArray(ui.bulkDocumentDrafts) ? ui.bulkDocumentDrafts : [];
@@ -5137,12 +5144,7 @@ function openStructuredDocEditor(docId){
       wrap.style.display = '';
       const selectedIds = new Set(ui.bulkDocumentSelectedIds || []);
       const statusHtml = ui.bulkDocumentStatus ? `<div class="hint" style="margin-top:8px">${escapeHtml(ui.bulkDocumentStatus)}</div>` : '';
-      const existingFileKeys = getCaseOriginalFileNameKeys();
-      const batchFileCounts = countBulkDraftFileNames(drafts);
-      const doneOk = drafts.filter(d => d && d.success).length;
-      const doneErr = drafts.filter(d => d && d.error && !d.success).length;
-      const listSummary = drafts.some(d => d && (d.success || d.error)) ? `${drafts.length} row${drafts.length === 1 ? '' : 's'} (${doneOk} uploaded ok, ${doneErr} error${doneErr === 1 ? '' : 's'})` : `${drafts.length} file${drafts.length === 1 ? '' : 's'} ready`;
-      wrap.innerHTML = `<div class="card" style="box-shadow:none; padding:12px 14px"><div style="display:flex; justify-content:space-between; gap:10px; align-items:center; flex-wrap:wrap"><div><div class="label">Bulk upload review</div><div class="hint">Edit names, add dates, descriptions, and tags, preview each file, then save everything together. Check multiple rows if you want to copy one row's tags to the others. Rows with the same file name as an existing document (or duplicated in this list) are highlighted red before you save.</div>${statusHtml}</div><div style="display:flex; gap:8px; flex-wrap:wrap"><button type="button" id="docBulkAddMoreBtn" class="btnGhost" ${ui.bulkDocumentSaving ? 'disabled' : ''}>Add more files</button><button type="button" id="docBulkClearBtn" class="btnGhost" ${ui.bulkDocumentSaving ? 'disabled' : ''}>Clear list</button></div></div><div class="bulkDocActionsBar" style="margin-top:12px"><label class="checkItem" style="margin:0"><input type="checkbox" id="docBulkSelectAll" ${drafts.length && drafts.every(draft => selectedIds.has(draft.id)) ? 'checked' : ''} ${ui.bulkDocumentSaving ? 'disabled' : ''} /> <span>Select all rows</span></label><div class="hint">${selectedIds.size} selected for bulk tag copy</div><button type="button" id="docBulkRemoveSelectedBtn" class="btnDanger" ${ui.bulkDocumentSaving ? 'disabled' : ''} ${selectedIds.size && !ui.bulkDocumentSaving ? '' : 'disabled'}>Remove selected</button></div><div class="bulkDocTableWrap"><table class="bulkDocTable"><thead><tr><th style="width:64px">Pick</th><th style="width:250px">File</th><th style="width:220px">Document name</th><th style="width:140px">Date</th><th>Description</th><th style="width:280px">Tags</th><th style="width:110px">Preview</th><th style="width:90px">Remove</th></tr></thead><tbody>${drafts.map((draft, idx) => { const previewOpen = ui.bulkDocumentViewerId === draft.id; const previewUrl = previewOpen ? getBulkDocumentDraftPreviewUrl(draft) : ''; const tooLarge = draft.file && Number(draft.file.size || 0) > BULK_UPLOAD_MAX_FILE_SIZE; const fileMeta = draft.file ? `${formatFileSize(draft.file.size || 0)}${tooLarge ? ' • too large for current upload limit' : ''}` : ''; const fk = normalizeBulkOriginalFileKey(draft.file?.name || ''); const dupInBatch = !!(fk && (batchFileCounts.get(fk) || 0) > 1); const dupInCase = !!(fk && existingFileKeys.has(fk)); const dupHighlight = !!(!draft.success && !draft.error && fk && (dupInBatch || dupInCase)); let rowClass = ''; if(draft.success) rowClass = 'bulkDocRowOk'; else if(draft.error) rowClass = 'bulkDocRowErr'; else if(dupHighlight) rowClass = 'bulkDocRowDup'; const dupNote = dupHighlight ? `<div class="hint" style="color:#991b1b; margin-top:4px">Duplicate file name (already in this case or listed twice in this batch).</div>` : ''; const rowStatus = draft.error ? `<div class="hint" style="color:#991b1b; margin-top:6px">${escapeHtml(draft.error)}</div>` : (draft.success ? `<div class="hint" style="color:#166534; margin-top:6px">Uploaded</div>` : ''); return `<tr class="${rowClass}"><td><label class="checkItem" style="margin:0; padding:6px 8px"><input type="checkbox" data-bulk-doc-select="${draft.id}" ${selectedIds.has(draft.id) ? 'checked' : ''} ${ui.bulkDocumentSaving ? 'disabled' : ''} /><span>Row</span></label></td><td><div><b>${escapeHtml(String(draft.file?.name || ''))}</b></div><div class="hint">${escapeHtml(fileMeta)}</div>${dupNote}${rowStatus}</td><td><input class="bulkDocNameInput" data-bulk-doc-name="${idx}" type="text" value="${escapeHtml(draft.name || '')}" ${ui.bulkDocumentSaving ? 'disabled' : ''} /></td><td><input class="bulkDocDateInput" data-bulk-doc-date="${idx}" type="date" value="${escapeHtml(draft.date || '')}" ${ui.bulkDocumentSaving ? 'disabled' : ''} /></td><td><textarea class="bulkDocDescInput" data-bulk-doc-desc="${idx}" placeholder="Optional description" ${ui.bulkDocumentSaving ? 'disabled' : ''}>${escapeHtml(draft.description || '')}</textarea></td><td class="bulkDocTagsCell"><div class="bulkDocTagSummary">${renderTagLinkPills(draft.tagLinks || [])}</div><div style="margin-top:8px; display:flex; gap:8px; flex-wrap:wrap"><button type="button" class="btnGhost" data-bulk-doc-tags="${idx}" ${ui.bulkDocumentSaving ? 'disabled' : ''}>Add tags</button><button type="button" class="btnGhost" data-bulk-doc-copy-tags="${draft.id}" ${ui.bulkDocumentSaving ? 'disabled' : ''}>Copy tags to selected</button></div></td><td><button type="button" class="btnGhost" data-bulk-doc-preview="${draft.id}">${previewOpen ? 'Hide' : 'View'}</button></td><td><button type="button" class="btnDanger" data-bulk-doc-remove="${idx}" ${ui.bulkDocumentSaving ? 'disabled' : ''}>Remove</button></td></tr>${previewOpen ? `<tr class="${rowClass}"><td colspan="8"><div style="padding:8px 0">${previewUrl ? `<div class="label">Document viewer</div><iframe class="docViewerFrame" src="${previewUrl}"></iframe>` : '<div class="hint">Preview is not available for this file.</div>'}</div></td></tr>` : ''}`; }).join('')}</tbody></table></div><div class="bulkDocActionsBar"><div class="hint">${listSummary}</div><div style="display:flex; gap:8px; flex-wrap:wrap">${ui.bulkDocumentSaving ? '<button type="button" id="docBulkCancelBtn" class="btnDanger">Cancel upload</button>' : ''}<button type="button" id="docBulkSaveBtn" class="btnPrimary" ${ui.bulkDocumentSaving ? 'disabled' : ''}>Save all documents</button></div></div></div>`;
+      wrap.innerHTML = `<div class="card" style="box-shadow:none; padding:12px 14px"><div style="display:flex; justify-content:space-between; gap:10px; align-items:center; flex-wrap:wrap"><div><div class="label">Bulk upload review</div><div class="hint">Edit names, add dates, descriptions, and tags, preview each file, then save everything together. Check multiple rows if you want to copy one row's tags to the others.</div>${statusHtml}</div><div style="display:flex; gap:8px; flex-wrap:wrap"><button type="button" id="docBulkAddMoreBtn" class="btnGhost" ${ui.bulkDocumentSaving ? 'disabled' : ''}>Add more files</button><button type="button" id="docBulkClearBtn" class="btnGhost" ${ui.bulkDocumentSaving ? 'disabled' : ''}>Clear list</button></div></div><div class="bulkDocActionsBar" style="margin-top:12px"><label class="checkItem" style="margin:0"><input type="checkbox" id="docBulkSelectAll" ${drafts.length && drafts.every(draft => selectedIds.has(draft.id)) ? 'checked' : ''} ${ui.bulkDocumentSaving ? 'disabled' : ''} /> <span>Select all rows</span></label><div class="hint">${selectedIds.size} selected for bulk tag copy</div></div><div class="bulkDocTableWrap"><table class="bulkDocTable"><thead><tr><th style="width:64px">Pick</th><th style="width:250px">File</th><th style="width:220px">Document name</th><th style="width:140px">Date</th><th>Description</th><th style="width:280px">Tags</th><th style="width:110px">Preview</th><th style="width:90px">Remove</th></tr></thead><tbody>${drafts.map((draft, idx) => { const previewOpen = ui.bulkDocumentViewerId === draft.id; const previewUrl = previewOpen ? getBulkDocumentDraftPreviewUrl(draft) : ''; const tooLarge = draft.file && Number(draft.file.size || 0) > BULK_UPLOAD_MAX_FILE_SIZE; const fileMeta = draft.file ? `${formatFileSize(draft.file.size || 0)}${tooLarge ? ' • too large for current upload limit' : ''}` : ''; const rowClass = draft.success ? 'bulkDocRowSuccess' : ((draft.error || draft.duplicateExisting) ? 'bulkDocRowError' : ''); const rowStatusText = draft.error ? draft.error : (draft.success ? (draft.statusLabel || 'Uploaded') : (draft.duplicateMessage || '')); const rowStatusColor = draft.success ? '#166534' : ((draft.error || draft.duplicateExisting) ? '#991b1b' : ''); const rowStatus = rowStatusText ? `<div class="hint bulkDocStatusText" style="color:${rowStatusColor}; margin-top:6px">${escapeHtml(rowStatusText)}</div>` : ''; return `<tr class="${rowClass}"><td><label class="checkItem" style="margin:0; padding:6px 8px"><input type="checkbox" data-bulk-doc-select="${draft.id}" ${selectedIds.has(draft.id) ? 'checked' : ''} ${ui.bulkDocumentSaving ? 'disabled' : ''} /><span>Row</span></label></td><td><div><b>${escapeHtml(String(draft.file?.name || ''))}</b></div><div class="hint">${escapeHtml(fileMeta)}</div>${rowStatus}</td><td><input class="bulkDocNameInput" data-bulk-doc-name="${idx}" type="text" value="${escapeHtml(draft.name || '')}" ${ui.bulkDocumentSaving || draft.success ? 'disabled' : ''} /></td><td><input class="bulkDocDateInput" data-bulk-doc-date="${idx}" type="date" value="${escapeHtml(draft.date || '')}" ${ui.bulkDocumentSaving || draft.success ? 'disabled' : ''} /></td><td><textarea class="bulkDocDescInput" data-bulk-doc-desc="${idx}" placeholder="Optional description" ${ui.bulkDocumentSaving || draft.success ? 'disabled' : ''}>${escapeHtml(draft.description || '')}</textarea></td><td class="bulkDocTagsCell"><div class="bulkDocTagSummary">${renderTagLinkPills(draft.tagLinks || [])}</div><div style="margin-top:8px; display:flex; gap:8px; flex-wrap:wrap"><button type="button" class="btnGhost" data-bulk-doc-tags="${idx}" ${ui.bulkDocumentSaving || draft.success ? 'disabled' : ''}>Add tags</button><button type="button" class="btnGhost" data-bulk-doc-copy-tags="${draft.id}" ${ui.bulkDocumentSaving ? 'disabled' : ''}>Copy tags to selected</button></div></td><td><button type="button" class="btnGhost" data-bulk-doc-preview="${draft.id}">${previewOpen ? 'Hide' : 'View'}</button></td><td><button type="button" class="btnDanger" data-bulk-doc-remove="${idx}" ${ui.bulkDocumentSaving ? 'disabled' : ''}>Remove</button></td></tr>${previewOpen ? `<tr><td colspan="8"><div style="padding:8px 0">${previewUrl ? `<div class="label">Document viewer</div><iframe class="docViewerFrame" src="${previewUrl}"></iframe>` : '<div class="hint">Preview is not available for this file.</div>'}</div></td></tr>` : ''}`; }).join('')}</tbody></table></div><div class="bulkDocActionsBar"><div class="hint">${drafts.length} file${drafts.length===1?'':'s'} in review</div><div style="display:flex; gap:8px; flex-wrap:wrap">${ui.bulkDocumentSaving ? '<button type="button" id="docBulkCancelBtn" class="btnDanger">Cancel upload</button>' : ''}<button type="button" id="docBulkSaveBtn" class="btnPrimary" ${ui.bulkDocumentSaving ? 'disabled' : ''}>Save all documents</button></div></div></div>`;
       wrap.querySelectorAll('[data-bulk-doc-name]').forEach(input => input.addEventListener('input', ()=>{ const idx = Number(input.getAttribute('data-bulk-doc-name')); if(ui.bulkDocumentDrafts[idx]) ui.bulkDocumentDrafts[idx].name = input.value; }));
       wrap.querySelectorAll('[data-bulk-doc-date]').forEach(input => input.addEventListener('input', ()=>{ const idx = Number(input.getAttribute('data-bulk-doc-date')); if(ui.bulkDocumentDrafts[idx]) ui.bulkDocumentDrafts[idx].date = input.value; }));
       wrap.querySelectorAll('[data-bulk-doc-desc]').forEach(input => input.addEventListener('input', ()=>{ const idx = Number(input.getAttribute('data-bulk-doc-desc')); if(ui.bulkDocumentDrafts[idx]) ui.bulkDocumentDrafts[idx].description = input.value; }));
@@ -5154,7 +5156,6 @@ function openStructuredDocEditor(docId){
       $('docBulkAddMoreBtn')?.addEventListener('click', ()=> $('docBulkFiles')?.click());
       $('docBulkClearBtn')?.addEventListener('click', ()=>{ (ui.bulkDocumentDrafts || []).forEach(draft => { if(draft && draft.previewUrl){ try{ URL.revokeObjectURL(draft.previewUrl); }catch(err){} } }); ui.bulkDocumentDrafts = []; ui.bulkDocumentEditIndex = -1; ui.bulkDocumentSelectedIds = []; ui.bulkDocumentViewerId = ''; ui.bulkDocumentCancelRequested = false; ui.bulkDocumentSaving = false; ui.bulkDocumentStatus = ''; renderBulkDocumentUpload(); });
       $('docBulkSelectAll')?.addEventListener('change', ()=> setAllBulkDocumentSelections(!!$('docBulkSelectAll')?.checked));
-      $('docBulkRemoveSelectedBtn')?.addEventListener('click', removeSelectedBulkDocumentDrafts);
       $('docBulkSaveBtn')?.addEventListener('click', saveBulkDocuments);
       $('docBulkCancelBtn')?.addEventListener('click', ()=>{ ui.bulkDocumentCancelRequested = true; ui.bulkDocumentStatus = 'Stopping after the current file finishes…'; renderBulkDocumentUpload(); });
     }
@@ -5162,6 +5163,7 @@ function openStructuredDocEditor(docId){
       const files = Array.from(fileList || []).filter(Boolean);
       if(!files.length) return;
       ui.bulkDocumentDrafts = (ui.bulkDocumentDrafts || []).concat(files.map(makeBulkDocumentDraft));
+      refreshBulkDocumentDuplicateFlags();
       ui.bulkDocumentSelectedIds = ui.bulkDocumentDrafts.map(draft => draft.id);
       ui.bulkDocumentStatus = '';
       ui.bulkDocumentCancelRequested = false;
@@ -5183,37 +5185,45 @@ function openStructuredDocEditor(docId){
     async function saveBulkDocuments(){
       const drafts = Array.isArray(ui.bulkDocumentDrafts) ? ui.bulkDocumentDrafts : [];
       if(!drafts.length) return;
-      const pending = drafts.filter(d => !d.success);
-      if(!pending.length){
-        toast('All rows in the list are already uploaded. Clear the list or add more files.');
-        return;
-      }
-      for(const draft of pending){
+      refreshBulkDocumentDuplicateFlags();
+      for(const draft of drafts){
         const name = String(draft.name || '').trim();
+        draft.error = '';
+        draft.statusLabel = '';
+        if(!draft.success) draft.success = false;
         if(!name){ alert('Every bulk-upload document needs a name.'); return; }
       }
       ui.bulkDocumentCancelRequested = false;
       ui.bulkDocumentSaving = true;
-      const pendingCount = pending.length;
-      ui.bulkDocumentStatus = `Uploading 0 of ${pendingCount}…`;
+      ui.bulkDocumentStatus = `Uploading 0 of ${drafts.length}…`;
       renderBulkDocumentUpload();
       let savedCount = 0;
       let failedCount = 0;
       let processedCount = 0;
       try{
         for(const draft of drafts){
-          if(draft.success) continue;
+          if(draft.success){
+            processedCount += 1;
+            continue;
+          }
           if(ui.bulkDocumentCancelRequested){
-            ui.bulkDocumentStatus = `Stopped after ${processedCount} of ${pendingCount} file${pendingCount===1?'':'s'}.`;
+            ui.bulkDocumentStatus = `Stopped after ${processedCount} of ${drafts.length} file${drafts.length===1?'':'s'}.`;
             break;
           }
           const name = String(draft.name || '').trim();
           const date = draft.date || null;
           const description = String(draft.description || '').trim();
           const file = draft.file || null;
-          draft.error = '';
-          ui.bulkDocumentStatus = `Uploading ${processedCount + 1} of ${pendingCount}: ${name}`;
+          ui.bulkDocumentStatus = `Uploading ${processedCount + 1} of ${drafts.length}: ${name}`;
           renderBulkDocumentUpload();
+          if(draft.duplicateExisting){
+            draft.success = false;
+            draft.error = draft.duplicateMessage || 'Duplicate file.';
+            failedCount += 1;
+            processedCount += 1;
+            renderBulkDocumentUpload();
+            continue;
+          }
           if(file && Number(file.size || 0) > BULK_UPLOAD_MAX_FILE_SIZE){
             draft.error = `Skipped: file is ${formatFileSize(file.size || 0)}, which is larger than the current upload limit of ${formatFileSize(BULK_UPLOAD_MAX_FILE_SIZE)}.`;
             failedCount += 1;
@@ -5244,10 +5254,12 @@ function openStructuredDocEditor(docId){
             }
             draft.success = true;
             draft.error = '';
+            draft.statusLabel = 'Uploaded successfully';
             savedCount += 1;
           }catch(err){
             console.error('Bulk document upload failed:', err);
             draft.success = false;
+            draft.statusLabel = '';
             draft.error = String(err && err.message ? err.message : err || 'Upload failed');
             failedCount += 1;
             if(created && created.id){
@@ -5265,16 +5277,21 @@ function openStructuredDocEditor(docId){
       await window.loadDocuments();
       renderDocuments();
       if(ui.currentView === 'documenttable') renderDocumentTable();
-      (ui.bulkDocumentDrafts || []).filter(draft => draft && draft.success).forEach(draft => { if(draft.previewUrl){ try{ URL.revokeObjectURL(draft.previewUrl); draft.previewUrl = ''; }catch(err){} } });
+      refreshBulkDocumentDuplicateFlags();
       ui.bulkDocumentEditIndex = -1;
-      ui.bulkDocumentSelectedIds = (ui.bulkDocumentDrafts || []).map(draft => draft.id);
+      ui.bulkDocumentSelectedIds = (ui.bulkDocumentDrafts || []).filter(draft => !draft.success).map(draft => draft.id);
+      if(!ui.bulkDocumentDrafts.some(draft => draft.id === ui.bulkDocumentViewerId)) ui.bulkDocumentViewerId = '';
       if($('docBulkFiles')) $('docBulkFiles').value='';
-      if(ui.bulkDocumentCancelRequested && failedCount){
-        ui.bulkDocumentStatus = `Stopped. ${savedCount} uploaded (green), ${failedCount} not finished (red).`;
-      }else if(failedCount){
-        ui.bulkDocumentStatus = `${savedCount} uploaded (green rows). ${failedCount} error${failedCount===1?'':'s'} (red rows). Fix or remove failed rows and click Save again.`;
-      }else{
-        ui.bulkDocumentStatus = savedCount === 1 ? '1 document uploaded (green row). You can clear the list or add more files.' : `${savedCount} documents uploaded (green rows). You can clear the list or add more files.`;
+      const pendingCount = (ui.bulkDocumentDrafts || []).filter(draft => !draft.success && !draft.error).length;
+      const failedVisibleCount = (ui.bulkDocumentDrafts || []).filter(draft => !draft.success && !!draft.error).length;
+      if(ui.bulkDocumentCancelRequested && failedVisibleCount){
+        ui.bulkDocumentStatus = `Stopped. ${savedCount} uploaded, ${failedCount} errors. Green rows uploaded; red rows need attention.`;
+      }else if(failedVisibleCount){
+        ui.bulkDocumentStatus = `${savedCount} uploaded, ${failedCount} errors. Green rows uploaded successfully; red rows were not uploaded.`;
+      }else if(savedCount){
+        ui.bulkDocumentStatus = savedCount === 1 ? '1 document uploaded. Green row shows the saved file.' : `${savedCount} documents uploaded. Green rows show the saved files.`;
+      }else if(pendingCount){
+        ui.bulkDocumentStatus = `${pendingCount} file${pendingCount===1?' is':'s are'} still waiting to be uploaded.`;
       }
       ui.bulkDocumentCancelRequested = false;
       renderBulkDocumentUpload();
@@ -6379,9 +6396,9 @@ function openStructuredDocEditor(docId){
     async function bootAuthStartup(){
       await waitForSupabaseReady();
       load();
+    renderBulkDocumentUpload();
       syncOutlineFromSupabase();
       syncDocumentsFromSupabase();
-      renderBulkDocumentUpload();
       syncPeopleFromSupabase();
       syncWitnessCellsFromSupabase();
       syncTagsFromSupabase();
