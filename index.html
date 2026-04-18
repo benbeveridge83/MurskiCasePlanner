@@ -807,6 +807,14 @@
     .sourceTextLayer::selection{background:rgba(37,99,235,.28);color:transparent;}
     .sourceTextLayer::-moz-selection{background:rgba(37,99,235,.28);color:transparent;}
     .sourceHighlight{background:rgba(255,235,59,.55);border-radius:3px;box-shadow:0 0 0 1px rgba(255,193,7,.28) inset;}
+    #elementSourceModal{background:transparent;align-items:flex-start;justify-content:flex-start;pointer-events:none;z-index:95;}
+    #elementSourceModal.open{display:block;}
+    #elementSourceModal .structuredModalCard{position:fixed;left:24px;top:148px;width:min(96vw,1280px);height:min(78vh,760px);max-height:min(78vh,760px);overflow:hidden;display:grid;grid-template-rows:auto auto auto 1fr;pointer-events:auto;box-shadow:0 18px 42px rgba(2,6,23,.24);resize:both;}
+    #elementSourceModal.is-dragging .structuredModalCard{user-select:none;}
+    #elementSourceModalHeader{cursor:move;user-select:none;}
+    #elementSourceViewerShell{min-height:0;height:100%;max-height:none;overflow:auto;}
+    #elementSourceViewerInner{min-height:100%;}
+    .sourceHighlight{background:rgba(255,235,59,.9) !important;border-radius:4px;box-shadow:0 0 0 2px rgba(245,158,11,.48),0 0 18px rgba(250,204,21,.35);}
     .sourceQuotePreview{border-left:4px solid rgba(37,99,235,.35);padding:8px 12px;background:#f8fbff;border-radius:10px;font-size:13px;}
     .sourceDocEmpty{padding:24px;border:1px dashed var(--border);border-radius:14px;color:var(--muted);background:var(--surface2);}
 
@@ -1198,7 +1206,7 @@
     <div id="elementDescriptionModal" class="structuredModal"><div class="structuredModalCard"><div style="display:flex; justify-content:space-between; gap:10px; align-items:center"><h3 id="elementDescriptionModalTitle" style="margin:0">Edit description</h3><button type="button" id="elementDescriptionModalClose" class="btnGhost">Close</button></div><div><div class="label">Description</div><div class="richTextToolbar" data-rich-toolbar data-rich-target="#elementDescriptionEditor"><button type="button" class="richTextToolBtn" data-rich-cmd="bold"><b>B</b></button><button type="button" class="richTextToolBtn" data-rich-cmd="underline"><u>U</u></button><button type="button" class="richTextToolBtn" data-rich-cmd="insertOrderedList">1. List</button><button type="button" class="richTextToolBtn" data-rich-cmd="insertUnorderedList">• List</button><button type="button" class="richTextToolBtn" data-rich-cmd="indent">Indent</button><button type="button" class="richTextToolBtn" data-rich-cmd="outdent">Outdent</button></div><div id="elementDescriptionEditor" class="richTextEditorBox" contenteditable="true" data-placeholder="Element description"></div></div><div style="display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end"><button type="button" id="elementDescriptionModalSave" class="btnPrimary">Save description</button></div></div></div>
 
     <div id="sourceDocModal" class="structuredModal"><div id="sourceDocModalCard" class="structuredModalCard sourceDocModalCard"><div style="display:flex; justify-content:space-between; gap:10px; align-items:center"><h3 id="sourceDocModalTitle" style="margin:0">Elements from Document</h3><div class="sourceDocHeaderActions"><button type="button" id="sourceDocModalMaxBtn" class="btnGhost">Maximize</button><button type="button" id="sourceDocModalClose" class="btnGhost">Close</button></div></div><div id="sourceDocPickerMode"><div class="sourceDocToolbar"><input id="sourceDocSearch" type="text" placeholder="Search documents" style="min-width:260px" /><div class="hint">Pick any uploaded document, then select text in the viewer or capture an image snippet.</div></div><div id="sourceDocPickerList" class="sourceDocPickerList"></div></div><div id="sourceDocStickyBar" class="sourceDocStickyBar"><div id="sourceDocStickyInfo" class="sourceDocStickyInfo">Highlight text in the document, then click Create element from selection or use image capture.</div><div class="sourceDocStickyActions"><button type="button" id="sourceDocBackToPicker" class="btnGhost" style="display:none">Choose another document</button><button type="button" id="sourceDocCreateElement" class="btnPrimary" disabled>Create element from selection</button><button type="button" id="sourceDocStartImageCapture" class="btnGhost" disabled>Create element from image capture</button><button type="button" id="sourceDocReturnToElement" class="btnGhost" style="display:none">Back to element</button></div></div><div id="sourceDocViewerShell" class="sourceDocViewerShell"><div id="sourceDocViewerInner" class="sourceDocViewerInner"><div class="sourceDocEmpty">Choose a document to open it here.</div></div></div><div style="display:flex; justify-content:space-between; gap:10px; align-items:center; flex-wrap:wrap"><div id="sourceDocSelectionInfo" class="hint">Highlight text in the document, then click Create element from selection or use image capture.</div></div></div></div>
-    <div id="elementSourceModal" class="structuredModal"><div class="structuredModalCard sourceDocModalCard"><div style="display:flex; justify-content:space-between; gap:10px; align-items:center"><h3 id="elementSourceModalTitle" style="margin:0">Element source</h3><button type="button" id="elementSourceModalClose" class="btnGhost">Close</button></div><div id="elementSourceMeta" class="hint"></div><div id="elementSourceQuote" class="sourceQuotePreview" style="display:none"></div><div id="elementSourceViewerShell" class="sourceDocViewerShell"><div id="elementSourceViewerInner" class="sourceDocViewerInner"><div class="sourceDocEmpty">No source selected.</div></div></div></div></div>
+    <div id="elementSourceModal" class="structuredModal"><div class="structuredModalCard sourceDocModalCard"><div id="elementSourceModalHeader" style="display:flex; justify-content:space-between; gap:10px; align-items:center"><h3 id="elementSourceModalTitle" style="margin:0">Element source</h3><button type="button" id="elementSourceModalClose" class="btnGhost">Close</button></div><div id="elementSourceMeta" class="hint"></div><div id="elementSourceQuote" class="sourceQuotePreview" style="display:none"></div><div id="elementSourceViewerShell" class="sourceDocViewerShell"><div id="elementSourceViewerInner" class="sourceDocViewerInner"><div class="sourceDocEmpty">No source selected.</div></div></div></div></div>
     <div id="documentTagModal" class="structuredModal"><div class="structuredModalCard"><div style="display:flex; justify-content:space-between; gap:10px; align-items:center"><h3 id="documentTagModalTitle" style="margin:0">Add tags to document</h3><button type="button" id="documentTagModalClose" class="btnGhost">Close</button></div><div class="hint">Select as many main tags, sub-tags, and sub-sub-tags as you want.</div><div id="documentTagModalSummary" class="docTagModalSummary"></div><div id="documentTagModalTree" class="docTagModalTree"></div><div style="display:flex; justify-content:flex-end; gap:8px; flex-wrap:wrap"><button type="button" id="documentTagModalCancel" class="btnGhost">Cancel</button><button type="button" id="documentTagModalSave" class="btnPrimary">Save tags</button></div></div></div>
     <div id="viewSettings" class="card" style="display:none"><div style="display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap"><h2 style="margin:0">Add Tag</h2><div style="display:flex;gap:8px;flex-wrap:wrap"><a class="btnGhost docOpenLink" data-view-link="tagindex" href="?view=tagindex">Tag Index</a></div></div><div class="hint">Create tags, sub-tags, and sub-sub-tags here. Everything is now saved in Supabase under the tags table, and the library below shows the full hierarchy.</div><div class="toolbar" style="margin-bottom:12px"><span class="pill" id="tagSelHint">Select a tag, then use these controls</span><button id="tagAddRootBtn" class="btnPrimary">+ Top-level tag</button><button id="tagAddSiblingBtn" class="btnGhost">+ Sibling</button><button id="tagAddChildBtn" class="btnGhost">+ Child</button><button id="tagRenameBtn" class="btnGhost">Rename</button><button id="tagDeleteBtn" class="btnDanger">Delete</button><button id="tagCollapseAllBtn" class="btnGhost">Collapse all</button><button id="tagExpandAllBtn" class="btnGhost">Expand all</button></div><div class="grid2"><div class="card" style="box-shadow:none"><h2 style="margin-bottom:8px">Create tag</h2><div class="label">Tag name</div><input id="tagName" type="text" placeholder="e.g., Financial, Parenting time, Credibility" /><div style="margin-top:10px; display:flex; gap:10px; align-items:center; flex-wrap:wrap"><button id="addTag" class="btnPrimary">Add tag</button><span class="pill">Names must be unique</span></div><div style="margin-top:18px; border-top:1px solid var(--border); padding-top:14px"><h2 style="margin-bottom:8px">Create child tag</h2><div class="label">Main tag</div><select id="subtagParent"></select><div class="label" style="margin-top:10px">Create under this sub-tag (optional)</div><select id="subtagParentSubtag"></select><div class="hint" style="margin-top:6px">Leave this as None to create a normal sub-tag. Choose a sub-tag here to create a sub-sub-tag under it.</div><div class="label" style="margin-top:10px">Child tag name</div><input id="subtagName" type="text" placeholder="e.g., Hearing, Motion, School, Medical" /><div class="label" style="margin-top:10px">Icon image (optional)</div><select id="subtagIconSelect"></select><div style="margin-top:10px; display:flex; gap:10px; align-items:center; flex-wrap:wrap"><button id="addSubtag" class="btnPrimary">Add child tag</button></div></div><div style="margin-top:18px; border-top:1px solid var(--border); padding-top:14px"><h2 style="margin-bottom:8px">Icon library</h2><div class="label">Upload new icon</div><input id="iconUploadFile" type="file" accept="image/*" /><div class="label" style="margin-top:10px">Icon name</div><input id="iconUploadName" type="text" placeholder="e.g., Court, School, Doctor" /><div style="margin-top:10px; display:flex; gap:10px; align-items:center; flex-wrap:wrap"><button id="addIconToLibrary" class="btnPrimary">Add icon</button></div><div id="iconLibraryList" style="display:flex; gap:10px; flex-wrap:wrap; margin-top:12px"></div></div></div><div class="card" style="box-shadow:none"><h2 style="margin-bottom:8px">Tag library</h2><div class="hint" style="margin-bottom:10px">Main tags, sub-tags, and sub-sub-tags are shown below in one hierarchy.</div><div id="tagList" style="display:flex; flex-direction:column; gap:10px"></div><div id="tagEmpty" class="empty" style="display:none">No tags yet.</div><div style="margin-top:18px"><h2 style="margin-bottom:8px">Child tag library</h2><div id="subtagList" style="display:flex; flex-direction:column; gap:10px"></div><div id="subtagEmpty" class="empty" style="display:none">No child tags yet.</div></div></div></div></div>
   </div>
@@ -1681,7 +1689,68 @@
         function timelineTagNames(ids){ return (ids||[]).map(id => state.tags.find(t=>t.id===id)?.name).filter(Boolean); }
     let timelineImageDraft = { dataUrl: '', name: '', file: null, uploadedPath: '' };
     let timelineImportDrafts = [];
-    function closeElementSourceModal(){ $('elementSourceModal').classList.remove('open'); }
+    const elementSourceWindowState = { dragging:false, dragOffsetX:0, dragOffsetY:0, moved:false };
+    function getElementSourceCard(){ return document.querySelector('#elementSourceModal .structuredModalCard'); }
+    function positionElementSourceModal(){
+      const modal = $('elementSourceModal');
+      const card = getElementSourceCard();
+      if(!modal || !card) return;
+      const editCard = document.querySelector('#elementModal .structuredModalCard');
+      const viewportWidth = window.innerWidth || document.documentElement.clientWidth || 1400;
+      const viewportHeight = window.innerHeight || document.documentElement.clientHeight || 900;
+      const desiredWidth = Math.min(Math.max(Math.round(viewportWidth * 0.76), 980), 1280);
+      const desiredHeight = Math.min(Math.max(Math.round(viewportHeight * 0.74), 560), 760);
+      card.style.width = desiredWidth + 'px';
+      card.style.height = desiredHeight + 'px';
+      card.style.maxHeight = desiredHeight + 'px';
+      let left = Math.max(20, Math.round((viewportWidth - desiredWidth) / 2));
+      let top = Math.max(20, Math.round((viewportHeight - desiredHeight) / 2));
+      if(editCard){
+        const rect = editCard.getBoundingClientRect();
+        left = Math.max(20, Math.min(viewportWidth - desiredWidth - 20, rect.left + 26));
+        top = Math.max(20, Math.min(viewportHeight - desiredHeight - 20, rect.top + 26));
+      }
+      card.style.left = left + 'px';
+      card.style.top = top + 'px';
+    }
+    function beginElementSourceDrag(ev){
+      const modal = $('elementSourceModal');
+      const card = getElementSourceCard();
+      const header = $('elementSourceModalHeader');
+      if(!modal || !card || !header) return;
+      if(ev.target && (ev.target.closest('button') || ev.target.closest('a') || ev.target.closest('input') || ev.target.closest('textarea') || ev.target.closest('select'))) return;
+      const rect = card.getBoundingClientRect();
+      elementSourceWindowState.dragging = true;
+      elementSourceWindowState.moved = true;
+      elementSourceWindowState.dragOffsetX = ev.clientX - rect.left;
+      elementSourceWindowState.dragOffsetY = ev.clientY - rect.top;
+      modal.classList.add('is-dragging');
+      const onMove = (moveEv)=>{
+        if(!elementSourceWindowState.dragging) return;
+        const maxLeft = Math.max(12, (window.innerWidth || 0) - rect.width - 12);
+        const maxTop = Math.max(12, (window.innerHeight || 0) - 120);
+        const nextLeft = Math.min(maxLeft, Math.max(12, moveEv.clientX - elementSourceWindowState.dragOffsetX));
+        const nextTop = Math.min(maxTop, Math.max(12, moveEv.clientY - elementSourceWindowState.dragOffsetY));
+        card.style.left = nextLeft + 'px';
+        card.style.top = nextTop + 'px';
+      };
+      const onUp = ()=>{
+        elementSourceWindowState.dragging = false;
+        modal.classList.remove('is-dragging');
+        window.removeEventListener('mousemove', onMove);
+        window.removeEventListener('mouseup', onUp);
+      };
+      window.addEventListener('mousemove', onMove);
+      window.addEventListener('mouseup', onUp);
+      ev.preventDefault();
+    }
+    function bindElementSourceModalDrag(){
+      const header = $('elementSourceModalHeader');
+      if(!header || header.dataset.bound === '1') return;
+      header.dataset.bound = '1';
+      header.addEventListener('mousedown', beginElementSourceDrag);
+    }
+    function closeElementSourceModal(){ $('elementSourceModal').classList.remove('open'); elementSourceWindowState.dragging = false; }
     async function openElementSourceModal(elementId){
       const el = getElementById(elementId);
       if(!el) return;
@@ -1706,7 +1775,9 @@
           quoteEl.style.display = 'none';
         }
       }
+      bindElementSourceModalDrag();
       $('elementSourceModal').classList.add('open');
+      if(!elementSourceWindowState.moved) positionElementSourceModal();
       if(holder) holder.innerHTML = '<div class="sourceDocEmpty">Loading source…</div>';
       if(doc){
         await renderDocumentInSourceViewer(doc, 'elementSourceViewerInner', { sourceRef });
@@ -5644,6 +5715,7 @@ function openStructuredDocEditor(docId){
     $('sourceDocViewerShell')?.addEventListener('keyup', ()=> setTimeout(handleSourceSelectionChange, 0));
     $('sourceDocViewerShell')?.addEventListener('scroll', ()=>{ if(ui.sourceDocSelectedId){ ui.sourceDocScrollByDocumentId[ui.sourceDocSelectedId] = $('sourceDocViewerShell')?.scrollTop || 0; } });
     $('elementSourceModalClose')?.addEventListener('click', closeElementSourceModal);
+    window.addEventListener('resize', ()=>{ if($('elementSourceModal')?.classList.contains('open') && !elementSourceWindowState.moved) positionElementSourceModal(); });
     $('documentTableSearch')?.addEventListener('input', (ev)=>{ ui.documentTableSearch = ev.target.value || ''; renderDocumentTable(); });
     $('documentTableFilterToggle')?.addEventListener('click', ()=>{ ui.documentTableFilterPanelOpen = !ui.documentTableFilterPanelOpen; renderDocumentTable(); });
     $('elementsFilterMode')?.addEventListener('change', (ev)=>{ ui.elementsFilterMode = ev.target.value || 'all'; renderElements(); });
