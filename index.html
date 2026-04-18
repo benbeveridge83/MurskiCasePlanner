@@ -1504,6 +1504,7 @@
       const rowMap = new Map();
       const docMap = new Map();
       const personMap = new Map();
+      const remoteDocumentLinkMap = new Map();
       for (const item of (window.loadedRowTags || [])) {
         if (!rowMap.has(item.row_id)) rowMap.set(item.row_id, []);
         rowMap.get(item.row_id).push(item.tag_id);
@@ -1512,12 +1513,27 @@
         if (!docMap.has(item.document_id)) docMap.set(item.document_id, []);
         docMap.get(item.document_id).push(item.tag_id);
       }
+      for (const row of (window.loadedDocuments || [])) {
+        const remoteLinks = Array.isArray(row?.tag_links)
+          ? row.tag_links
+              .filter(link => link && link.tagId)
+              .map(link => ({ tagId: link.tagId || '', subtagId: link.subtagId || '' }))
+          : [];
+        remoteDocumentLinkMap.set(row.id, remoteLinks);
+      }
       for (const item of (window.loadedPersonTags || [])) {
         if (!personMap.has(item.person_id)) personMap.set(item.person_id, []);
         personMap.get(item.person_id).push(item.tag_id);
       }
       state.outline = (state.outline || []).map((n) => ({ ...n, tags: Array.from(new Set(rowMap.get(n.id) || [])) }));
-      state.documents = (state.documents || []).map((d) => { const nextTags = Array.from(new Set(docMap.get(d.id) || [])); const keptLinks = Array.isArray(d.tagLinks) ? d.tagLinks.filter(link => nextTags.includes(link.tagId)) : []; return { ...d, tags: nextTags, tagLinks: keptLinks.length ? keptLinks : nextTags.map(tagId => ({ tagId, subtagId: '' })) }; });
+      state.documents = (state.documents || []).map((d) => {
+        const nextTags = Array.from(new Set(docMap.get(d.id) || []));
+        const remoteLinks = remoteDocumentLinkMap.get(d.id) || [];
+        const filteredRemoteLinks = remoteLinks.filter(link => nextTags.includes(link.tagId));
+        const keptLinks = Array.isArray(d.tagLinks) ? d.tagLinks.filter(link => nextTags.includes(link.tagId)) : [];
+        const finalLinks = filteredRemoteLinks.length ? filteredRemoteLinks : (keptLinks.length ? keptLinks : nextTags.map(tagId => ({ tagId, subtagId: '' })));
+        return { ...d, tags: nextTags, tagLinks: finalLinks };
+      });
       state.people = (state.people || []).map((p) => ({ ...p, tags: Array.from(new Set(personMap.get(p.id) || [])) }));
       safeSave();
     }
