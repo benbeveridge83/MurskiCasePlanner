@@ -676,15 +676,23 @@
       const safeName = sanitizeFileName(file?.name || "file")
       const path = `${CASE_ID}/${docId}/${Date.now()}_${safeName}`
       const tusClient = window.tus
-      if (!file || !tusClient || !window.supabase?.auth?.getSession) {
+      const standardOptions = { upsert: true, contentType: file?.type || undefined }
+
+      if (!file) return null
+
+      try {
         const { error } = await supabase.storage
           .from(DOCUMENT_BUCKET)
-          .upload(path, file, { upsert: true, contentType: file?.type || undefined })
-        if (error) {
-          console.error("Upload document file error:", error)
-          return null
-        }
-        return path
+          .upload(path, file, standardOptions)
+        if (!error) return path
+        console.warn('Standard upload document file error, trying resumable upload:', error)
+      } catch (error) {
+        console.warn('Standard upload document file threw, trying resumable upload:', error)
+      }
+
+      if (!tusClient || !window.supabase?.auth?.getSession) {
+        console.error('Upload document file error: standard upload failed and resumable upload is unavailable.')
+        return null
       }
 
       let accessToken = ''
@@ -693,18 +701,12 @@
         if (error) throw error
         accessToken = data?.session?.access_token || ''
       } catch (e) {
-        console.warn('Could not get auth session for resumable upload, falling back to standard upload.', e)
+        console.warn('Could not get auth session for resumable upload.', e)
       }
 
       if (!accessToken) {
-        const { error } = await supabase.storage
-          .from(DOCUMENT_BUCKET)
-          .upload(path, file, { upsert: true, contentType: file?.type || undefined })
-        if (error) {
-          console.error("Upload document file error:", error)
-          return null
-        }
-        return path
+        console.error('Upload document file error: standard upload failed and no auth session was available for resumable upload.')
+        return null
       }
 
       try {
