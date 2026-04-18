@@ -650,17 +650,90 @@
         .replace(/^_+|_+$/g, "") || "file"
     }
 
+    function getSupabaseProjectRef() {
+      try {
+        return new URL(SUPABASE_URL).hostname.split('.')[0] || ''
+      } catch (e) {
+        return ''
+      }
+    }
+
+    function getSupabaseResumableEndpoint() {
+      const projectRef = getSupabaseProjectRef()
+      return projectRef ? `https://${projectRef}.storage.supabase.co/storage/v1/upload/resumable` : `${SUPABASE_URL}/storage/v1/upload/resumable`
+    }
+
     async function uploadDocumentFile(docId, file) {
       const safeName = sanitizeFileName(file?.name || "file")
       const path = `${CASE_ID}/${docId}/${Date.now()}_${safeName}`
-      const { error } = await supabase.storage
-        .from(DOCUMENT_BUCKET)
-        .upload(path, file, { upsert: true, contentType: file?.type || undefined })
-      if (error) {
-        console.error("Upload document file error:", error)
+      const tusClient = window.tus
+      if (!file || !tusClient || !window.supabase?.auth?.getSession) {
+        const { error } = await supabase.storage
+          .from(DOCUMENT_BUCKET)
+          .upload(path, file, { upsert: true, contentType: file?.type || undefined })
+        if (error) {
+          console.error("Upload document file error:", error)
+          return null
+        }
+        return path
+      }
+
+      let accessToken = ''
+      try {
+        const { data, error } = await supabase.auth.getSession()
+        if (error) throw error
+        accessToken = data?.session?.access_token || ''
+      } catch (e) {
+        console.warn('Could not get auth session for resumable upload, falling back to standard upload.', e)
+      }
+
+      if (!accessToken) {
+        const { error } = await supabase.storage
+          .from(DOCUMENT_BUCKET)
+          .upload(path, file, { upsert: true, contentType: file?.type || undefined })
+        if (error) {
+          console.error("Upload document file error:", error)
+          return null
+        }
+        return path
+      }
+
+      try {
+        await new Promise((resolve, reject) => {
+          const upload = new tusClient.Upload(file, {
+            endpoint: getSupabaseResumableEndpoint(),
+            retryDelays: [0, 3000, 5000, 10000, 20000],
+            headers: {
+              authorization: `Bearer ${accessToken}`,
+              'x-upsert': 'true'
+            },
+            uploadDataDuringCreation: true,
+            removeFingerprintOnSuccess: true,
+            chunkSize: 6 * 1024 * 1024,
+            metadata: {
+              bucketName: DOCUMENT_BUCKET,
+              objectName: path,
+              contentType: file?.type || 'application/octet-stream',
+              cacheControl: '3600'
+            },
+            onError(error) {
+              reject(error)
+            },
+            onSuccess() {
+              resolve(upload.url || true)
+            }
+          })
+
+          upload.findPreviousUploads().then((previousUploads) => {
+            if (previousUploads && previousUploads.length) upload.resumeFromPreviousUpload(previousUploads[0])
+            upload.start()
+          }).catch(reject)
+        })
+        return path
+      } catch (error) {
+        console.error("Resumable upload document file error:", error)
         return null
       }
-      return path
     }
 
     async function updateDocumentRow(docId, patch) {
@@ -739,6 +812,7 @@
 
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.5.136/pdf.min.js"></script>
+  <script src="https://unpkg.com/tus-js-client@4/dist/tus.min.js"></script>
   <script src="https://unpkg.com/mammoth@1.8.0/mammoth.browser.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
