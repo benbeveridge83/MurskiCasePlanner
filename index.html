@@ -1204,7 +1204,7 @@
     const UI_STORAGE_KEY = 'murski_ui_prefs_v1';
     const LEGACY_STORAGE_KEY = 'murski_case_planner_v1';
     let state = { caseName: '', tags: [], people: [], documents: [], elements: [], outline: [], timelineEvents: [], subtags: [], iconLibrary: [] };
-    const ui = { selectedNodeId: null, selectedWitnessId: null, selectedDocId: null, selectedPersonId: null, selectedElementId: null, activeWitnessColumnId: null, expandedDocIds: {}, showDocDownloadList: false, showDocTagIndex: false, docTagFilterIds: [], docTagIndexExpandedIds: {}, docTagIndexShowUsedOnly: false, docTagNoTagsOnly: false, docTagHasTagsOnly: false, docExhibitFilter: 'all', outlineIndexFilterIds: [], outlineIndexExpandedIds: {}, outlineIndexShowUsedOnly: false, outlineIndexNoTagsOnly: false, outlineIndexHasTagsOnly: false, outlineIndexExhibitFilter: 'all', docSort: { field: 'file', dir: 'asc' }, docRepoSort: { field: 'date', dir: 'desc' }, docDownloadSelections: {}, docDownloadEligibilityFilter: 'all', docRepoEligibilityFilters: ['possible','not'], docRepoStatusFilters: ['exhibit','not_exhibit'], docRepoColWidths: { name: 340, date: 150, uploadDate: 160, timeline: 170, eligibility: 220, exhibitStatus: 190, file: 90 }, outlineCompact: false, outlineStructureView: false, outlinePaneWidth: 720, timelineSelectedId: null, timelineEditingId: null, timelineShowEventColumn: true, timelineShowDocumentColumn: true, timelineShowHeadlineColumn: true, timelineDocPickerOpen: false, timelineColumnOrder: ['date','event','document','headline'], timelineDraggingUndatedId: null, timelineFilterTagIds: [], timelineFilterTagOpen: false, elementsFilterMode: 'all', elementsSearch: '', currentView: INITIAL_VIEW, outlineFilterTagIds: [], outlineFilterWitnessIds: [], outlineFilterTagOpen: false, outlineFilterWitnessOpen: false, outlineIndexTagIds: [], outlineIndexWitnessIds: [], outlineIndexTagOpen: false, outlineIndexWitnessOpen: false, structuredOutlineWitnessFilterIds: [], structuredHeadingTagIds: [], structuredHeadingWitnessIds: [], structuredHeadingTagOpen: false, structuredHeadingWitnessOpen: false, structuredTraySearch: '', structuredTrayAssignmentFilter: 'all', structuredTrayPersonFilterId: 'any', structuredTrayTagFilterIds: [], structuredDocEditorId: null, structuredDragging: null, sourceDocSearch: '', sourceDocSelectedId: null, sourceDocSelection: null, sourceDocContext: 'create', sourceDocOpenFromElementId: null, sourceDocMaximized: false, sourceDocImageCapture: null, sourceDocCapturePointer: null, sourceDocScrollByDocumentId: {}, sourceDocAnchorByDocumentId: {}, elementsFilterTagIds: [], elementsFilterTagExcludeIds: [], elementsFilterTagNoneSelected: false, elementsFilterTagExcludeNoneSelected: true, elementsFilterWitnessIds: [], elementsFilterWitnessExcludeIds: [], elementsFilterWitnessNoneSelected: false, elementsFilterWitnessExcludeNoneSelected: true, elementsFilterDocumentIds: [], elementsFilterDocumentExcludeIds: [], elementsFilterDocumentNoneSelected: false, elementsFilterDocumentExcludeNoneSelected: true, elementsFilterExhibitIds: [], elementsFilterExhibitExcludeIds: [], elementsFilterExhibitNoneSelected: false, elementsFilterExhibitExcludeNoneSelected: true, elementsFilterSourceDocumentIds: [], elementsFilterSourceDocumentExcludeIds: [], elementsFilterSourceDocumentNoneSelected: false, elementsFilterSourceDocumentExcludeNoneSelected: true, elementsFilterSourcePersonIds: [], elementsFilterSourcePersonExcludeIds: [], elementsFilterSourcePersonNoneSelected: false, elementsFilterSourcePersonExcludeNoneSelected: true, elementsFilterPanelOpen: false, elementsCreatorFilter: 'all', elementsWorksheetOpen: false, elementsWorksheetPinnedTopIds: [], elementsWorksheetSort: { key: 'name', dir: 'asc' }, elementsWorksheetCollapsedTags: {}, elementsWorksheetCollapsedChildren: {}, newDocumentTagLinks: [], bulkDocumentDrafts: [], bulkDocumentEditIndex: -1, bulkDocumentSelectedIds: [], bulkDocumentViewerId: '', bulkDocumentCancelRequested: false, bulkDocumentSaving: false, bulkDocumentStatus: '', documentTableCollapsedTagNodes: {}, selectedTagNodeId: null, collapsedTagNodes: {}, collapsedElementTagNodes: {}, documentTableSearch: '', documentTableFilterPanelOpen: false, documentTableTagIds: [], documentTableTagExcludeIds: [], documentTableTagNoneSelected: false, documentTableTagExcludeNoneSelected: true, documentTableExhibitIds: [], documentTableExhibitExcludeIds: [], documentTableExhibitNoneSelected: false, documentTableExhibitExcludeNoneSelected: true, documentTableTimelineIds: [], documentTableTimelineExcludeIds: [], documentTableTimelineNoneSelected: false, documentTableTimelineExcludeNoneSelected: true, documentTableFileIds: [], documentTableFileExcludeIds: [], documentTableFileNoneSelected: false, documentTableFileExcludeNoneSelected: true, docRepoTagFilters: [] };
+    const ui = { selectedNodeId: null, selectedWitnessId: null, selectedDocId: null, selectedPersonId: null, selectedElementId: null, activeWitnessColumnId: null, expandedDocIds: {}, showDocDownloadList: false, showDocTagIndex: false, docTagFilterIds: [], docTagIndexExpandedIds: {}, docTagIndexShowUsedOnly: false, docTagNoTagsOnly: false, docTagHasTagsOnly: false, docExhibitFilter: 'all', outlineIndexFilterIds: [], outlineIndexExpandedIds: {}, outlineIndexShowUsedOnly: false, outlineIndexNoTagsOnly: false, outlineIndexHasTagsOnly: false, outlineIndexExhibitFilter: 'all', docSort: { field: 'file', dir: 'asc' }, docRepoSort: { field: 'date', dir: 'desc' }, docDownloadSelections: {}, docDownloadEligibilityFilter: 'all', docRepoEligibilityFilters: ['possible','not'], docRepoStatusFilters: ['exhibit','not_exhibit'], docRepoColWidths: { name: 340, date: 150, uploadDate: 160, timeline: 170, eligibility: 220, exhibitStatus: 190, file: 90 }, outlineCompact: false, outlineStructureView: false, outlinePaneWidth: 720, timelineSelectedId: null, timelineEditingId: null, timelineShowEventColumn: true, timelineShowDocumentColumn: true, timelineShowHeadlineColumn: true, timelineDocPickerOpen: false, timelineColumnOrder: ['date','event','document','headline'], timelineDraggingUndatedId: null, timelineFilterTagIds: [], timelineFilterTagOpen: false, elementsFilterMode: 'all', elementsSearch: '', currentView: INITIAL_VIEW, outlineFilterTagIds: [], outlineFilterWitnessIds: [], outlineFilterTagOpen: false, outlineFilterWitnessOpen: false, outlineIndexTagIds: [], outlineIndexWitnessIds: [], outlineIndexTagOpen: false, outlineIndexWitnessOpen: false, structuredOutlineWitnessFilterIds: [], structuredHeadingTagIds: [], structuredHeadingWitnessIds: [], structuredHeadingTagOpen: false, structuredHeadingWitnessOpen: false, structuredTraySearch: '', structuredTrayAssignmentFilter: 'all', structuredTrayPersonFilterId: 'any', structuredTrayTagFilterIds: [], structuredDocEditorId: null, structuredDragging: null, sourceDocSearch: '', sourceDocSelectedId: null, sourceDocSelection: null, sourceDocContext: 'create', sourceDocOpenFromElementId: null, sourceDocMaximized: false, sourceDocImageCapture: null, sourceDocCapturePointer: null, sourceDocScrollByDocumentId: {}, sourceDocAnchorByDocumentId: {}, elementsFilterTagIds: [], elementsFilterTagExcludeIds: [], elementsFilterTagNoneSelected: false, elementsFilterTagExcludeNoneSelected: true, elementsFilterWitnessIds: [], elementsFilterWitnessExcludeIds: [], elementsFilterWitnessNoneSelected: false, elementsFilterWitnessExcludeNoneSelected: true, elementsFilterDocumentIds: [], elementsFilterDocumentExcludeIds: [], elementsFilterDocumentNoneSelected: false, elementsFilterDocumentExcludeNoneSelected: true, elementsFilterExhibitIds: [], elementsFilterExhibitExcludeIds: [], elementsFilterExhibitNoneSelected: false, elementsFilterExhibitExcludeNoneSelected: true, elementsFilterSourceDocumentIds: [], elementsFilterSourceDocumentExcludeIds: [], elementsFilterSourceDocumentNoneSelected: false, elementsFilterSourceDocumentExcludeNoneSelected: true, elementsFilterSourcePersonIds: [], elementsFilterSourcePersonExcludeIds: [], elementsFilterSourcePersonNoneSelected: false, elementsFilterSourcePersonExcludeNoneSelected: true, elementsFilterPanelOpen: false, elementsCreatorFilter: 'all', elementsWorksheetOpen: false, elementsWorksheetPinnedTopIds: [], elementsWorksheetSort: { key: 'name', dir: 'asc' }, elementsWorksheetCollapsedTags: {}, elementsWorksheetCollapsedChildren: {}, newDocumentTagLinks: [], bulkDocumentDrafts: [], bulkDocumentEditIndex: -1, bulkDocumentSelectedIds: [], bulkDocumentViewerId: '', bulkDocumentCancelRequested: false, bulkDocumentSaving: false, bulkDocumentStatus: '', documentTableCollapsedTagNodes: {}, selectedTagNodeId: null, collapsedTagNodes: {}, collapsedElementTagNodes: {}, documentTableSearch: '', documentTableFilterPanelOpen: false, documentTableTagIds: [], documentTableTagExcludeIds: [], documentTableTagNoneSelected: false, documentTableTagExcludeNoneSelected: true, documentTableExhibitIds: [], documentTableExhibitExcludeIds: [], documentTableExhibitNoneSelected: false, documentTableExhibitExcludeNoneSelected: true, documentTableTimelineIds: [], documentTableTimelineExcludeIds: [], documentTableTimelineNoneSelected: false, documentTableTimelineExcludeNoneSelected: true, documentTableFileIds: [], documentTableFileExcludeIds: [], documentTableFileNoneSelected: false, documentTableFileExcludeNoneSelected: true, docRepoTagFilters: [], docRepoTagNoneSelected: false, docRepoCollapsedTagNodes: {} };
     const structuredUi = { headingFilterOpen: false, visibleHeadingIds: [], headingFilterInitialized: false, witnessColWidths: {}, resizingWitnessId: null, resizeStartX: 0, resizeStartWidth: 220 };
     const HEADING_EXHIBIT_KEY = '__heading__';
     const $ = (id) => document.getElementById(id);
@@ -1601,31 +1601,36 @@
       else ui.docRepoSort = { field, dir: field === 'name' || field === 'eligibility' || field === 'exhibitStatus' ? 'asc' : 'desc' };
       renderDocuments();
     }
+    function bindDocumentRepositoryTagTreeInteractions(root){
+      if(!root) return;
+      root.querySelectorAll('.elementTagRow').forEach(row => {
+        if(row.dataset.boundDocRepoClick === '1') return;
+        row.dataset.boundDocRepoClick = '1';
+        row.addEventListener('click', (ev)=>{
+          if(ev.target.closest('input,button')) return;
+          const node = row.closest('.elementTagNode, .elementTagRoot');
+          if(!node || !node.querySelector(':scope > .elementTagChildren')) return;
+          const input = row.querySelector('input[data-hier-tag-link]');
+          const nodeId = input?.getAttribute('data-subtag-id') || input?.getAttribute('data-tag-id') || '';
+          if(!nodeId) return;
+          ui.docRepoCollapsedTagNodes = ui.docRepoCollapsedTagNodes || {};
+          ui.docRepoCollapsedTagNodes[nodeId] = !ui.docRepoCollapsedTagNodes[nodeId];
+          renderDocuments();
+        });
+      });
+    }
     function renderDocumentRepositoryFilters(){
       const host = $('docRepoFilterBar');
       if(!host) return;
       const elig = Array.isArray(ui.docRepoEligibilityFilters) && ui.docRepoEligibilityFilters.length ? ui.docRepoEligibilityFilters : ['possible','not'];
       const status = Array.isArray(ui.docRepoStatusFilters) && ui.docRepoStatusFilters.length ? ui.docRepoStatusFilters : ['exhibit','not_exhibit'];
-      const selectedTagFilters = Array.isArray(ui.docRepoTagFilters) ? ui.docRepoTagFilters.slice() : [];
+      const selectedTagFilters = Array.isArray(ui.docRepoTagFilters) ? ui.docRepoTagFilters.filter(link => link && link.tagId) : [];
       ui.docRepoEligibilityFilters = elig.slice();
       ui.docRepoStatusFilters = status.slice();
       ui.docRepoTagFilters = selectedTagFilters;
-      const tagOptions = [];
-      const seenTagKeys = new Set();
-      (state.tags || []).slice().sort(sortByName).forEach(tag => {
-        const baseKey = `${tag.id}::`;
-        if(!seenTagKeys.has(baseKey)){
-          seenTagKeys.add(baseKey);
-          tagOptions.push({ key: baseKey, label: tag.name || 'Tag' });
-        }
-        getSubtagOptionsForTag(tag.id).forEach(sub => {
-          const key = `${tag.id}::${sub.id}`;
-          if(seenTagKeys.has(key)) return;
-          seenTagKeys.add(key);
-          tagOptions.push({ key, label: `${tag.name || 'Tag'} > ${getSubtagPath(sub.id)}` });
-        });
-      });
-      host.innerHTML = `<div class="card" style="box-shadow:none; padding:12px 14px"><div style="display:flex; gap:18px; flex-wrap:wrap; align-items:flex-start"><div><div class="label">Exhibit category filter</div><div class="checkGrid" style="margin-top:6px"><label class="checkItem"><input type="checkbox" data-doc-filter-eligibility="possible" ${elig.includes('possible') ? 'checked' : ''} /> <span>Can be used</span></label><label class="checkItem"><input type="checkbox" data-doc-filter-eligibility="not" ${elig.includes('not') ? 'checked' : ''} /> <span>Cannot be used / none</span></label></div></div><div><div class="label">Exhibit status filter</div><div class="checkGrid" style="margin-top:6px"><label class="checkItem"><input type="checkbox" data-doc-filter-status="exhibit" ${status.includes('exhibit') ? 'checked' : ''} /> <span>Exhibit</span></label><label class="checkItem"><input type="checkbox" data-doc-filter-status="not_exhibit" ${status.includes('not_exhibit') ? 'checked' : ''} /> <span>Not an exhibit</span></label></div></div><div style="min-width:280px; flex:1 1 320px"><div style="display:flex; justify-content:space-between; gap:8px; align-items:center"><div class="label">Tag filter</div>${tagOptions.length ? `<div style="display:flex; gap:6px; flex-wrap:wrap"><button type="button" class="mini" data-doc-tag-filter-all>Select all</button><button type="button" class="mini" data-doc-tag-filter-clear>Clear</button></div>` : ''}</div><div class="elementsFilterChecklist" style="margin-top:6px; max-height:180px">${tagOptions.length ? tagOptions.map(opt => `<label class="checkItem"><input type="checkbox" data-doc-filter-tag="${escapeHtml(opt.key)}" ${selectedTagFilters.includes(opt.key) ? 'checked' : ''} /> <span>${escapeHtml(opt.label)}</span></label>`).join('') : '<div class="hint">No tags yet.</div>'}</div><div class="hint" style="margin-top:6px">Leave all unchecked to show every document. Check any tags to show only documents with at least one selected tag.</div></div></div></div>`;
+      ui.docRepoCollapsedTagNodes = ui.docRepoCollapsedTagNodes && typeof ui.docRepoCollapsedTagNodes === 'object' ? ui.docRepoCollapsedTagNodes : {};
+      host.innerHTML = `<div class="card" style="box-shadow:none; padding:12px 14px"><div class="elementsFilterGrid"><div><div class="label">Exhibit category filter</div><div class="checkGrid" style="margin-top:6px"><label class="checkItem"><input type="checkbox" data-doc-filter-eligibility="possible" ${elig.includes('possible') ? 'checked' : ''} /> <span>Can be used</span></label><label class="checkItem"><input type="checkbox" data-doc-filter-eligibility="not" ${elig.includes('not') ? 'checked' : ''} /> <span>Cannot be used / none</span></label></div></div><div><div class="label">Exhibit status filter</div><div class="checkGrid" style="margin-top:6px"><label class="checkItem"><input type="checkbox" data-doc-filter-status="exhibit" ${status.includes('exhibit') ? 'checked' : ''} /> <span>Exhibit</span></label><label class="checkItem"><input type="checkbox" data-doc-filter-status="not_exhibit" ${status.includes('not_exhibit') ? 'checked' : ''} /> <span>Not an exhibit</span></label></div></div><div><div class="label">Tags / subtags</div><div class="elementsFilterDual"><div><div class="label" style="margin-bottom:6px">Filter-inclusion</div><div class="elementsFilterChecklist" style="margin-bottom:8px"><label class="checkItem" style="margin:0"><input type="checkbox" id="docRepoTagNoneSelected" ${ui.docRepoTagNoneSelected ? 'checked' : ''} /> <span>none selected</span></label></div><div id="docRepoFilterTagTreeInclude"></div></div></div></div></div></div>`;
+      renderHierarchicalTagTree('docRepoFilterTagTreeInclude', selectedTagFilters, { rootClass:'elementsFilterTagTree', collapsedMap: ui.docRepoCollapsedTagNodes, onTreeChange: renderDocuments });
       host.querySelectorAll('[data-doc-filter-eligibility]').forEach(cb => cb.addEventListener('change', ()=>{
         ui.docRepoEligibilityFilters = Array.from(host.querySelectorAll('[data-doc-filter-eligibility]:checked')).map(x => x.getAttribute('data-doc-filter-eligibility'));
         renderDocuments();
@@ -1634,18 +1639,15 @@
         ui.docRepoStatusFilters = Array.from(host.querySelectorAll('[data-doc-filter-status]:checked')).map(x => x.getAttribute('data-doc-filter-status'));
         renderDocuments();
       }));
-      host.querySelectorAll('[data-doc-filter-tag]').forEach(cb => cb.addEventListener('change', ()=>{
-        ui.docRepoTagFilters = Array.from(host.querySelectorAll('[data-doc-filter-tag]:checked')).map(x => x.getAttribute('data-doc-filter-tag'));
-        renderDocuments();
-      }));
-      host.querySelector('[data-doc-tag-filter-all]')?.addEventListener('click', ()=>{
-        ui.docRepoTagFilters = tagOptions.map(opt => opt.key);
+      host.querySelector('#docRepoTagNoneSelected')?.addEventListener('change', (ev)=>{
+        ui.docRepoTagNoneSelected = !!ev.target.checked;
         renderDocuments();
       });
-      host.querySelector('[data-doc-tag-filter-clear]')?.addEventListener('click', ()=>{
-        ui.docRepoTagFilters = [];
-        renderDocuments();
+      const includeRoot = $('docRepoFilterTagTreeInclude');
+      includeRoot?.querySelectorAll('input[data-hier-tag-link]').forEach(input => {
+        input.onchange = ()=>{ ui.docRepoTagFilters = collectHierarchicalTagLinks('docRepoFilterTagTreeInclude'); renderDocuments(); };
       });
+      bindDocumentRepositoryTagTreeInteractions(includeRoot);
     }
     function allWitnessIds(){ const set = new Set(); for(const n of state.outline){ (n.witnessIds||[]).forEach(id=> set.add(id)); } return Array.from(set); }
         function timelineTagNames(ids){ return (ids||[]).map(id => state.tags.find(t=>t.id===id)?.name).filter(Boolean); }
@@ -4821,11 +4823,14 @@ function openStructuredDocEditor(docId){
     const meta = getDocumentExhibitMeta(d.id);
     const elig = Array.isArray(ui.docRepoEligibilityFilters) ? ui.docRepoEligibilityFilters : ['possible','not'];
     const status = Array.isArray(ui.docRepoStatusFilters) ? ui.docRepoStatusFilters : ['exhibit','not_exhibit'];
-    const selectedTagFilters = Array.isArray(ui.docRepoTagFilters) ? ui.docRepoTagFilters.filter(Boolean) : [];
+    const selectedTagFilters = Array.isArray(ui.docRepoTagFilters) ? ui.docRepoTagFilters.filter(link => link && link.tagId) : [];
+    const includeNoneSelected = !!ui.docRepoTagNoneSelected;
     const docElig = d.exhibitEligibility === 'not' ? 'not' : 'possible';
     const docStatus = meta.isExhibit ? 'exhibit' : 'not_exhibit';
-    const docTagKeys = getDocumentTagLinks(d).map(link => `${link.tagId || ''}::${link.subtagId || ''}`).filter(Boolean);
-    const matchesTag = !selectedTagFilters.length || selectedTagFilters.some(key => docTagKeys.includes(key));
+    const docTagLinks = getDocumentTagLinks(d);
+    const hasNoTags = !docTagLinks.length;
+    const matchesSelectedTag = selectedTagFilters.some(filterLink => docTagLinks.some(docLink => String(docLink.tagId || '') === String(filterLink.tagId || '') && String(docLink.subtagId || '') === String(filterLink.subtagId || '')));
+    const matchesTag = (!selectedTagFilters.length && !includeNoneSelected) || matchesSelectedTag || (includeNoneSelected && hasNoTags);
     return elig.includes(docElig) && status.includes(docStatus) && matchesTag;
   }));
   $('docEmpty').style.display = docs.length ? 'none' : '';
