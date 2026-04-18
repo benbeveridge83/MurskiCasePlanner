@@ -907,9 +907,11 @@
     .structuredTrayList{display:flex;gap:8px;flex-wrap:wrap;max-height:140px;overflow:auto;}
     .structuredModal{position:fixed;inset:0;background:rgba(15,23,42,.35);display:none;align-items:center;justify-content:center;z-index:60;padding:20px;}
     #elementModal{z-index:80;}
-    #elementModal .structuredModalCard{width:min(1200px, calc(100vw - 24px));max-height:calc(100vh - 24px);overflow:visible;padding:22px;gap:14px;position:relative;}
+    #elementModal .structuredModalCard{width:min(1200px, calc(100vw - 24px));max-height:calc(100vh - 24px);overflow:auto;padding:22px;gap:14px;position:relative;}
     #elementModal .timelineEventModalMeta{grid-template-columns:repeat(2,minmax(220px,1fr));gap:12px;}
+    #elementModal #elementModalText{display:grid;gap:8px;}
     #elementModal #elementModalText textarea{min-height:320px;}
+    #elementModal #elementModalEditText{min-height:180px;max-height:min(32vh, 360px);overflow:auto;}
     #elementModal .elementHoverPicker{overflow:visible;}
     #elementModal .elementHoverPickerBody{width:min(92vw, 980px);max-height:min(70vh, 700px);z-index:500;}
     #elementModal .elementHoverPicker.openLeft .elementHoverPickerBody{right:0;left:auto;}
@@ -1680,6 +1682,44 @@
     let timelineImageDraft = { dataUrl: '', name: '', file: null, uploadedPath: '' };
     let timelineImportDrafts = [];
     function closeElementSourceModal(){ $('elementSourceModal').classList.remove('open'); }
+    async function openElementSourceModal(elementId){
+      const el = getElementById(elementId);
+      if(!el) return;
+      const sourceRef = getElementPrimarySourceRef(el);
+      const sourceDocId = sourceRef?.documentId || getPreferredSourceDocIdForElement(el);
+      const doc = sourceDocId ? getDocumentById(sourceDocId) : null;
+      const metaBits = [];
+      if(el?.name) metaBits.push(`<b>${escapeHtml(el.name)}</b>`);
+      if(doc?.name) metaBits.push(escapeHtml(doc.name));
+      if(sourceRef?.pageLabel) metaBits.push(escapeHtml(sourceRef.pageLabel));
+      $('elementSourceModalTitle').textContent = 'Element source';
+      $('elementSourceMeta').innerHTML = metaBits.join(' • ') || 'Source details';
+      const quoteEl = $('elementSourceQuote');
+      const holder = $('elementSourceViewerInner');
+      if(quoteEl){
+        const quoteText = String(sourceRef?.excerpt || sourceRef?.text || '').trim();
+        if(quoteText){
+          quoteEl.textContent = quoteText;
+          quoteEl.style.display = '';
+        } else {
+          quoteEl.textContent = '';
+          quoteEl.style.display = 'none';
+        }
+      }
+      $('elementSourceModal').classList.add('open');
+      if(holder) holder.innerHTML = '<div class="sourceDocEmpty">Loading source…</div>';
+      if(doc){
+        await renderDocumentInSourceViewer(doc, 'elementSourceViewerInner', { sourceRef });
+        return;
+      }
+      const imageRef = getElementImageRef(el);
+      if(imageRef?.imageDataUrl && holder){
+        holder.innerHTML = `<div class="sourceDocPage"><div class="sourceDocPageHeader"><span>${escapeHtml(el.name || 'Element source')}</span><span>${escapeHtml(imageRef.pageLabel || 'Captured image')}</span></div><div class="elementModalImage"><div class="elementImagePreview"><img src="${imageRef.imageDataUrl}" alt="Captured element image" /></div></div></div>`;
+        return;
+      }
+      const sourceText = escapeHtml(getElementSourceText(el) || 'No linked source document for this element.');
+      if(holder) holder.innerHTML = `<div class="sourceDocEmpty">${sourceText}</div>`;
+    }
     function getElementSourceText(el){ if(typeof el?.source === 'string' && el.source.trim()) return el.source.trim(); const manual = (Array.isArray(el?.sourceRefs) ? el.sourceRefs : []).find(ref => ref && ref.sourceType === 'manual_text' && String(ref.text || '').trim()); return manual ? String(manual.text || '').trim() : ''; }
     function getElementSourceDocumentIds(el){ const direct = Array.isArray(el?.sourceDocumentIds) ? el.sourceDocumentIds.filter(Boolean) : []; const refs = (Array.isArray(el?.sourceRefs) ? el.sourceRefs : []).filter(ref => ref && (ref.sourceType === 'document_link' || ref.sourceType === 'document' || ref.sourceType === 'image_capture') && ref.documentId).map(ref => ref.documentId).filter(Boolean); return Array.from(new Set(direct.concat(refs))); }
     function getElementSourcePersonIds(el){ const direct = Array.isArray(el?.sourcePersonIds) ? el.sourcePersonIds.filter(Boolean) : []; const refs = (Array.isArray(el?.sourceRefs) ? el.sourceRefs : []).filter(ref => ref && ref.sourceType === 'person_link' && ref.personId).map(ref => ref.personId).filter(Boolean); return Array.from(new Set(direct.concat(refs))); }
