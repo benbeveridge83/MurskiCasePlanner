@@ -444,6 +444,15 @@
     }
 
     window.addTestRow = addTestRow
+    window.loadDocuments = loadDocuments
+    window.createDocument = createDocument
+    window.updateDocumentRow = updateDocumentRow
+    window.uploadDocumentFile = uploadDocumentFile
+    window.deleteDocumentFile = deleteDocumentFile
+    window.getDocumentPublicUrl = getDocumentPublicUrl
+    window.deleteDocumentRow = deleteDocumentRow
+    window.normalizeDocumentTagLinks = normalizeDocumentTagLinks
+    window.saveDocumentTagLinks = saveDocumentTagLinks
 
     if (CASE_ID) {
       await loadOutlineRows()
@@ -707,7 +716,7 @@
               authorization: `Bearer ${accessToken}`,
               'x-upsert': 'true'
             },
-            uploadDataDuringCreation: true,
+            uploadDataDuringCreation: false,
             removeFingerprintOnSuccess: true,
             chunkSize: 6 * 1024 * 1024,
             metadata: {
