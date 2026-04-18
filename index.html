@@ -2124,6 +2124,102 @@
       toast('Document tags updated');
     }
 
+    function closeStructuredDocEditor(){
+      ui.structuredDocEditorId = null;
+      const modal = $('structuredDocModal');
+      if(modal) modal.classList.remove('open');
+      const viewer = $('structuredDocViewer');
+      if(viewer){
+        const iframe = viewer.querySelector('iframe[data-structured-doc-preview="1"]');
+        if(iframe && iframe.dataset.objectUrl){
+          try{ URL.revokeObjectURL(iframe.dataset.objectUrl); }catch(err){}
+        }
+        viewer.innerHTML = '';
+      }
+    }
+    function renderStructuredDocTagChoices(selectedLinks=[]){
+      const host = $('structuredDocTags');
+      if(!host) return;
+      renderHierarchicalTagTree('structuredDocTags', selectedLinks, { inputAttr:'data-structured-doc-tag-link', rootClass:'elementTagRoot', emptyMessage:'No tags yet.' });
+      host.querySelectorAll('[data-element-tag-collapse]').forEach(btn => btn.addEventListener('click', (e)=>{
+        e.preventDefault();
+        e.stopPropagation();
+        const nodeId = btn.getAttribute('data-element-tag-collapse');
+        ui.collapsedTagNodes[nodeId] = !ui.collapsedTagNodes[nodeId];
+        renderStructuredDocTagChoices(collectHierarchicalTagLinks('structuredDocTags', 'data-structured-doc-tag-link'));
+      }));
+    }
+    function openStructuredDocEditor(docId){
+      const doc = getDocumentById(docId);
+      if(!doc) return;
+      ui.structuredDocEditorId = docId;
+      if($('structuredDocName')) $('structuredDocName').value = doc.name || '';
+      if($('structuredDocDesc')) $('structuredDocDesc').value = doc.description || '';
+      renderStructuredDocTagChoices(getDocumentTagLinks(doc));
+      if($('structuredDocViewer')) $('structuredDocViewer').innerHTML = '';
+      $('structuredDocModal')?.classList.add('open');
+    }
+    async function saveStructuredDocEditor(){
+      const docId = ui.structuredDocEditorId;
+      const doc = getDocumentById(docId);
+      if(!doc) return;
+      const nextName = String($('structuredDocName')?.value || '').trim() || doc.name || 'Untitled document';
+      const nextDesc = String($('structuredDocDesc')?.value || '').trim();
+      const links = collectHierarchicalTagLinks('structuredDocTags', 'data-structured-doc-tag-link');
+      const mainTagIds = Array.from(new Set(links.map(link => link.tagId).filter(Boolean)));
+      const current = new Set(doc.tags || []);
+      const next = new Set(mainTagIds);
+      let updated = null;
+      if(window.updateDocumentRow){
+        updated = await window.updateDocumentRow(docId, { name: nextName, description: nextDesc });
+      }
+      doc.name = updated?.name || nextName;
+      doc.description = updated?.description || nextDesc;
+      for(const tagId of next){ if(!current.has(tagId)) await window.assignDocumentTag(docId, tagId); }
+      for(const tagId of current){ if(!next.has(tagId)) await window.removeDocumentTag(docId, tagId); }
+      doc.tags = mainTagIds;
+      doc.tagLinks = links;
+      safeSave();
+      if(window.loadDocuments) await window.loadDocuments();
+      if(window.loadDocumentTags) await window.loadDocumentTags();
+      renderDocuments();
+      renderDocumentTable();
+      renderStructuredOutline();
+      toast('Document updated');
+      closeStructuredDocEditor();
+    }
+    async function viewStructuredDocEditorFile(){
+      const doc = getDocumentById(ui.structuredDocEditorId);
+      const viewer = $('structuredDocViewer');
+      if(!viewer) return;
+      viewer.innerHTML = '<div class="hint">Loading preview…</div>';
+      if(!doc || !doc.hasFile){
+        viewer.innerHTML = '<div class="hint">No file is stored for this document.</div>';
+        return;
+      }
+      const blob = await getDocumentBlob(doc);
+      if(blob){
+        const url = URL.createObjectURL(blob);
+        viewer.innerHTML = `<div class="label" style="margin-bottom:6px">Preview</div><iframe class="docViewerFrame" data-structured-doc-preview="1" src="${url}"></iframe>`;
+        const iframe = viewer.querySelector('iframe[data-structured-doc-preview="1"]');
+        if(iframe) iframe.dataset.objectUrl = url;
+        return;
+      }
+      const publicUrl = doc.filePath && window.getDocumentPublicUrl ? window.getDocumentPublicUrl(doc.filePath) : '';
+      if(publicUrl){
+        viewer.innerHTML = `<div class="label" style="margin-bottom:6px">Preview</div><iframe class="docViewerFrame" data-structured-doc-preview="1" src="${publicUrl}"></iframe>`;
+        return;
+      }
+      viewer.innerHTML = '<div class="hint">Preview is not available for this file.</div>';
+    }
+    async function downloadStructuredDocEditorFile(){
+      if(!ui.structuredDocEditorId) return;
+      await downloadDocument(ui.structuredDocEditorId);
+    }
+    window.openStructuredDocEditor = openStructuredDocEditor;
+    window.closeStructuredDocEditor = closeStructuredDocEditor;
+
+
     function renderElementSimpleFilter(hostId, items, includeIds, excludeIds, includeNoneSelected, excludeNoneSelected, attr){
       const host = $(hostId); if(!host) return;
       const allItems = Array.isArray(items) ? items.slice() : [];
