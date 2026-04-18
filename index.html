@@ -1711,6 +1711,10 @@
       getAllElementTagNodeIds().forEach(id => { ui.documentTableCollapsedTagNodes[id] = true; });
       ui.documentTableTagFilterCollapseSeeded = true;
     }
+    function resetElementsFilterTagCollapsedDefaults(){
+      ui.elementsFilterCollapsedTagNodes = {};
+      getAllElementTagNodeIds().forEach(id => { ui.elementsFilterCollapsedTagNodes[id] = true; });
+    }
     function updateElementHoverSummaries(){
       const current = ui.selectedElementId ? getElementById(ui.selectedElementId) : null;
       const witnessIds = current?.witnessIds || getElementFormSelectedWitnessIds();
@@ -2808,6 +2812,7 @@
     function renderElementsFilterTagTree(){
       const host = $('elementsFilterTagTree');
       if(!host) return;
+      if(!ui.elementsFilterCollapsedTagNodes || !Object.keys(ui.elementsFilterCollapsedTagNodes).length) resetElementsFilterTagCollapsedDefaults();
       host.innerHTML = `<div class="elementsFilterDual">
         <div>
           <div class="label" style="margin-bottom:6px">Filter-inclusion</div>
@@ -5505,7 +5510,7 @@ function openStructuredDocEditor(docId){
     $('sourceDocSearch')?.addEventListener('input', renderSourceDocPicker);
     $('elementTagsCollapseAllBtn')?.addEventListener('click', ()=>{ setAllElementTagNodesCollapsed(true); renderElementCreateTagChoices(ui.selectedElementId ? getEventTagLinks(getElementById(ui.selectedElementId)) : getElementFormSelectedTagLinks()); });
     $('elementTagsExpandAllBtn')?.addEventListener('click', ()=>{ setAllElementTagNodesCollapsed(false); renderElementCreateTagChoices(ui.selectedElementId ? getEventTagLinks(getElementById(ui.selectedElementId)) : getElementFormSelectedTagLinks()); });
-    $('elementsTagFilterToggle')?.addEventListener('click', ()=>{ const panel = $('elementsTagFilterPanel'); if(!panel) return; ui.elementsFilterPanelOpen = !ui.elementsFilterPanelOpen; panel.style.display = ui.elementsFilterPanelOpen ? '' : 'none'; panel.classList.toggle('open', ui.elementsFilterPanelOpen); if(ui.elementsFilterPanelOpen) renderElementsAdvancedFilters(); }); $('elementsWorksheetToggle')?.addEventListener('click', (ev)=>{ ev.preventDefault(); ui.elementsWorksheetOpen = !ui.elementsWorksheetOpen; renderElements(); syncElementsWorksheetScrollbars(); const url = new URL(window.location.href); url.searchParams.set('view', 'elements'); if(ui.elementsWorksheetOpen) url.searchParams.set('worksheet', '1'); else url.searchParams.delete('worksheet'); history.replaceState(null, '', url.toString()); });
+    $('elementsTagFilterToggle')?.addEventListener('click', ()=>{ const panel = $('elementsTagFilterPanel'); if(!panel) return; const willOpen = !ui.elementsFilterPanelOpen; ui.elementsFilterPanelOpen = willOpen; panel.style.display = willOpen ? '' : 'none'; panel.classList.toggle('open', willOpen); if(willOpen){ resetElementsFilterTagCollapsedDefaults(); renderElementsAdvancedFilters(); } }); $('elementsWorksheetToggle')?.addEventListener('click', (ev)=>{ ev.preventDefault(); ui.elementsWorksheetOpen = !ui.elementsWorksheetOpen; renderElements(); syncElementsWorksheetScrollbars(); const url = new URL(window.location.href); url.searchParams.set('view', 'elements'); if(ui.elementsWorksheetOpen) url.searchParams.set('worksheet', '1'); else url.searchParams.delete('worksheet'); history.replaceState(null, '', url.toString()); });
     $('docAddTagsBtn')?.addEventListener('click', ()=> openDocumentTagModal(null));
     $('documentTagModalClose')?.addEventListener('click', closeDocumentTagModal);
     $('documentTagModalCancel')?.addEventListener('click', closeDocumentTagModal);
