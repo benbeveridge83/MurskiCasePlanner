@@ -1103,6 +1103,11 @@
     .bulkDocTagsCell{min-width:240px;}
     .bulkDocTagSummary{display:grid;gap:6px;}
     .bulkDocActionsBar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;justify-content:space-between;margin-top:10px;}
+    .bulkDocRowDuplicate td{background:rgba(239,68,68,.12);}
+    .bulkDocRowError td{background:rgba(239,68,68,.16);}
+    .bulkDocRowSuccess td{background:rgba(34,197,94,.14);}
+    .bulkDocRowDuplicate:hover td,.bulkDocRowError:hover td,.bulkDocRowSuccess:hover td{filter:brightness(.99);}
+    .bulkDocStatusText{font-weight:700;}
     .authShell{max-width:980px;margin:18px auto 0;padding:0 16px;}
     .authGrid{display:grid;grid-template-columns:repeat(2,minmax(280px,1fr));gap:14px;}
     .authMuted{color:var(--muted);font-size:13px;line-height:1.4;}
@@ -5034,7 +5039,41 @@ function openStructuredDocEditor(docId){
 
     function makeBulkDocumentDraft(file){
       const rawName = String(file?.name || '');
-      return { id: uid(), file, name: rawName || 'Untitled document', date: '', description: '', tagLinks: [] };
+      return { id: uid(), file, name: rawName || 'Untitled document', date: '', description: '', tagLinks: [], error: '', success: false, duplicateExisting: false, duplicateMessage: '', statusLabel: '' };
+    }
+    function normalizeBulkDuplicateKeyPart(value){
+      return String(value || '').trim().toLowerCase();
+    }
+    function getDocumentDuplicateKey(doc){
+      if(!doc) return '';
+      const fileName = normalizeBulkDuplicateKeyPart(doc.originalFileName || doc.filename || doc.name || '');
+      const fileSize = Number(doc.fileSize || 0) || 0;
+      return fileName && fileSize > 0 ? `${fileName}__${fileSize}` : '';
+    }
+    function getBulkDraftDuplicateKey(draft){
+      if(!draft) return '';
+      const fileName = normalizeBulkDuplicateKeyPart(draft.file?.name || draft.name || '');
+      const fileSize = Number(draft.file?.size || 0) || 0;
+      return fileName && fileSize > 0 ? `${fileName}__${fileSize}` : '';
+    }
+    function refreshBulkDocumentDuplicateFlags(){
+      const existingKeys = new Set((state.documents || []).map(getDocumentDuplicateKey).filter(Boolean));
+      const duplicateCounts = new Map();
+      (ui.bulkDocumentDrafts || []).forEach(draft => {
+        const key = getBulkDraftDuplicateKey(draft);
+        if(!key) return;
+        duplicateCounts.set(key, (duplicateCounts.get(key) || 0) + 1);
+      });
+      (ui.bulkDocumentDrafts || []).forEach(draft => {
+        const key = getBulkDraftDuplicateKey(draft);
+        const duplicateExisting = !!(key && existingKeys.has(key));
+        const duplicateInBatch = !!(key && (duplicateCounts.get(key) || 0) > 1);
+        draft.duplicateExisting = duplicateExisting || duplicateInBatch;
+        if(duplicateExisting && duplicateInBatch) draft.duplicateMessage = 'Duplicate: this file already exists in the case and also appears more than once in this bulk upload.';
+        else if(duplicateExisting) draft.duplicateMessage = 'Duplicate: this file appears to already be uploaded in this case.';
+        else if(duplicateInBatch) draft.duplicateMessage = 'Duplicate: this same file appears more than once in this bulk upload.';
+        else draft.duplicateMessage = '';
+      });
     }
     function getBulkDocumentDraftById(draftId){
       return (ui.bulkDocumentDrafts || []).find(draft => draft && draft.id === draftId) || null;
@@ -5067,6 +5106,7 @@ function openStructuredDocEditor(docId){
       toast(targetIds.length === 1 ? 'Tags copied to 1 selected document' : `Tags copied to ${targetIds.length} selected documents`);
     }
     function renderBulkDocumentUpload(){
+      refreshBulkDocumentDuplicateFlags();
       const wrap = $('docBulkUploadWrap');
       if(!wrap) return;
       const drafts = Array.isArray(ui.bulkDocumentDrafts) ? ui.bulkDocumentDrafts : [];
@@ -5074,7 +5114,7 @@ function openStructuredDocEditor(docId){
       wrap.style.display = '';
       const selectedIds = new Set(ui.bulkDocumentSelectedIds || []);
       const statusHtml = ui.bulkDocumentStatus ? `<div class="hint" style="margin-top:8px">${escapeHtml(ui.bulkDocumentStatus)}</div>` : '';
-      wrap.innerHTML = `<div class="card" style="box-shadow:none; padding:12px 14px"><div style="display:flex; justify-content:space-between; gap:10px; align-items:center; flex-wrap:wrap"><div><div class="label">Bulk upload review</div><div class="hint">Edit names, add dates, descriptions, and tags, preview each file, then save everything together. Check multiple rows if you want to copy one row's tags to the others.</div>${statusHtml}</div><div style="display:flex; gap:8px; flex-wrap:wrap"><button type="button" id="docBulkAddMoreBtn" class="btnGhost" ${ui.bulkDocumentSaving ? 'disabled' : ''}>Add more files</button><button type="button" id="docBulkClearBtn" class="btnGhost" ${ui.bulkDocumentSaving ? 'disabled' : ''}>Clear list</button></div></div><div class="bulkDocActionsBar" style="margin-top:12px"><label class="checkItem" style="margin:0"><input type="checkbox" id="docBulkSelectAll" ${drafts.length && drafts.every(draft => selectedIds.has(draft.id)) ? 'checked' : ''} ${ui.bulkDocumentSaving ? 'disabled' : ''} /> <span>Select all rows</span></label><div class="hint">${selectedIds.size} selected for bulk tag copy</div></div><div class="bulkDocTableWrap"><table class="bulkDocTable"><thead><tr><th style="width:64px">Pick</th><th style="width:250px">File</th><th style="width:220px">Document name</th><th style="width:140px">Date</th><th>Description</th><th style="width:280px">Tags</th><th style="width:110px">Preview</th><th style="width:90px">Remove</th></tr></thead><tbody>${drafts.map((draft, idx) => { const previewOpen = ui.bulkDocumentViewerId === draft.id; const previewUrl = previewOpen ? getBulkDocumentDraftPreviewUrl(draft) : ''; const tooLarge = draft.file && Number(draft.file.size || 0) > BULK_UPLOAD_MAX_FILE_SIZE; const fileMeta = draft.file ? `${formatFileSize(draft.file.size || 0)}${tooLarge ? ' • too large for current upload limit' : ''}` : ''; const rowStatus = draft.error ? `<div class="hint" style="color:#991b1b; margin-top:6px">${escapeHtml(draft.error)}</div>` : (draft.success ? `<div class="hint" style="color:#166534; margin-top:6px">Uploaded</div>` : ''); return `<tr><td><label class="checkItem" style="margin:0; padding:6px 8px"><input type="checkbox" data-bulk-doc-select="${draft.id}" ${selectedIds.has(draft.id) ? 'checked' : ''} ${ui.bulkDocumentSaving ? 'disabled' : ''} /><span>Row</span></label></td><td><div><b>${escapeHtml(String(draft.file?.name || ''))}</b></div><div class="hint">${escapeHtml(fileMeta)}</div>${rowStatus}</td><td><input class="bulkDocNameInput" data-bulk-doc-name="${idx}" type="text" value="${escapeHtml(draft.name || '')}" ${ui.bulkDocumentSaving ? 'disabled' : ''} /></td><td><input class="bulkDocDateInput" data-bulk-doc-date="${idx}" type="date" value="${escapeHtml(draft.date || '')}" ${ui.bulkDocumentSaving ? 'disabled' : ''} /></td><td><textarea class="bulkDocDescInput" data-bulk-doc-desc="${idx}" placeholder="Optional description" ${ui.bulkDocumentSaving ? 'disabled' : ''}>${escapeHtml(draft.description || '')}</textarea></td><td class="bulkDocTagsCell"><div class="bulkDocTagSummary">${renderTagLinkPills(draft.tagLinks || [])}</div><div style="margin-top:8px; display:flex; gap:8px; flex-wrap:wrap"><button type="button" class="btnGhost" data-bulk-doc-tags="${idx}" ${ui.bulkDocumentSaving ? 'disabled' : ''}>Add tags</button><button type="button" class="btnGhost" data-bulk-doc-copy-tags="${draft.id}" ${ui.bulkDocumentSaving ? 'disabled' : ''}>Copy tags to selected</button></div></td><td><button type="button" class="btnGhost" data-bulk-doc-preview="${draft.id}">${previewOpen ? 'Hide' : 'View'}</button></td><td><button type="button" class="btnDanger" data-bulk-doc-remove="${idx}" ${ui.bulkDocumentSaving ? 'disabled' : ''}>Remove</button></td></tr>${previewOpen ? `<tr><td colspan="8"><div style="padding:8px 0">${previewUrl ? `<div class="label">Document viewer</div><iframe class="docViewerFrame" src="${previewUrl}"></iframe>` : '<div class="hint">Preview is not available for this file.</div>'}</div></td></tr>` : ''}`; }).join('')}</tbody></table></div><div class="bulkDocActionsBar"><div class="hint">${drafts.length} file${drafts.length===1?'':'s'} ready</div><div style="display:flex; gap:8px; flex-wrap:wrap">${ui.bulkDocumentSaving ? '<button type="button" id="docBulkCancelBtn" class="btnDanger">Cancel upload</button>' : ''}<button type="button" id="docBulkSaveBtn" class="btnPrimary" ${ui.bulkDocumentSaving ? 'disabled' : ''}>Save all documents</button></div></div></div>`;
+      wrap.innerHTML = `<div class="card" style="box-shadow:none; padding:12px 14px"><div style="display:flex; justify-content:space-between; gap:10px; align-items:center; flex-wrap:wrap"><div><div class="label">Bulk upload review</div><div class="hint">Edit names, add dates, descriptions, and tags, preview each file, then save everything together. Check multiple rows if you want to copy one row's tags to the others.</div>${statusHtml}</div><div style="display:flex; gap:8px; flex-wrap:wrap"><button type="button" id="docBulkAddMoreBtn" class="btnGhost" ${ui.bulkDocumentSaving ? 'disabled' : ''}>Add more files</button><button type="button" id="docBulkClearBtn" class="btnGhost" ${ui.bulkDocumentSaving ? 'disabled' : ''}>Clear list</button></div></div><div class="bulkDocActionsBar" style="margin-top:12px"><label class="checkItem" style="margin:0"><input type="checkbox" id="docBulkSelectAll" ${drafts.length && drafts.every(draft => selectedIds.has(draft.id)) ? 'checked' : ''} ${ui.bulkDocumentSaving ? 'disabled' : ''} /> <span>Select all rows</span></label><div class="hint">${selectedIds.size} selected for bulk tag copy</div></div><div class="bulkDocTableWrap"><table class="bulkDocTable"><thead><tr><th style="width:64px">Pick</th><th style="width:250px">File</th><th style="width:220px">Document name</th><th style="width:140px">Date</th><th>Description</th><th style="width:280px">Tags</th><th style="width:110px">Preview</th><th style="width:90px">Remove</th></tr></thead><tbody>${drafts.map((draft, idx) => { const previewOpen = ui.bulkDocumentViewerId === draft.id; const previewUrl = previewOpen ? getBulkDocumentDraftPreviewUrl(draft) : ''; const tooLarge = draft.file && Number(draft.file.size || 0) > BULK_UPLOAD_MAX_FILE_SIZE; const fileMeta = draft.file ? `${formatFileSize(draft.file.size || 0)}${tooLarge ? ' • too large for current upload limit' : ''}` : ''; const rowClass = draft.success ? 'bulkDocRowSuccess' : ((draft.error || draft.duplicateExisting) ? 'bulkDocRowError' : ''); const rowStatusText = draft.error ? draft.error : (draft.success ? (draft.statusLabel || 'Uploaded') : (draft.duplicateMessage || '')); const rowStatusColor = draft.success ? '#166534' : ((draft.error || draft.duplicateExisting) ? '#991b1b' : ''); const rowStatus = rowStatusText ? `<div class="hint bulkDocStatusText" style="color:${rowStatusColor}; margin-top:6px">${escapeHtml(rowStatusText)}</div>` : ''; return `<tr class="${rowClass}"><td><label class="checkItem" style="margin:0; padding:6px 8px"><input type="checkbox" data-bulk-doc-select="${draft.id}" ${selectedIds.has(draft.id) ? 'checked' : ''} ${ui.bulkDocumentSaving ? 'disabled' : ''} /><span>Row</span></label></td><td><div><b>${escapeHtml(String(draft.file?.name || ''))}</b></div><div class="hint">${escapeHtml(fileMeta)}</div>${rowStatus}</td><td><input class="bulkDocNameInput" data-bulk-doc-name="${idx}" type="text" value="${escapeHtml(draft.name || '')}" ${ui.bulkDocumentSaving || draft.success ? 'disabled' : ''} /></td><td><input class="bulkDocDateInput" data-bulk-doc-date="${idx}" type="date" value="${escapeHtml(draft.date || '')}" ${ui.bulkDocumentSaving || draft.success ? 'disabled' : ''} /></td><td><textarea class="bulkDocDescInput" data-bulk-doc-desc="${idx}" placeholder="Optional description" ${ui.bulkDocumentSaving || draft.success ? 'disabled' : ''}>${escapeHtml(draft.description || '')}</textarea></td><td class="bulkDocTagsCell"><div class="bulkDocTagSummary">${renderTagLinkPills(draft.tagLinks || [])}</div><div style="margin-top:8px; display:flex; gap:8px; flex-wrap:wrap"><button type="button" class="btnGhost" data-bulk-doc-tags="${idx}" ${ui.bulkDocumentSaving || draft.success ? 'disabled' : ''}>Add tags</button><button type="button" class="btnGhost" data-bulk-doc-copy-tags="${draft.id}" ${ui.bulkDocumentSaving ? 'disabled' : ''}>Copy tags to selected</button></div></td><td><button type="button" class="btnGhost" data-bulk-doc-preview="${draft.id}">${previewOpen ? 'Hide' : 'View'}</button></td><td><button type="button" class="btnDanger" data-bulk-doc-remove="${idx}" ${ui.bulkDocumentSaving ? 'disabled' : ''}>Remove</button></td></tr>${previewOpen ? `<tr><td colspan="8"><div style="padding:8px 0">${previewUrl ? `<div class="label">Document viewer</div><iframe class="docViewerFrame" src="${previewUrl}"></iframe>` : '<div class="hint">Preview is not available for this file.</div>'}</div></td></tr>` : ''}`; }).join('')}</tbody></table></div><div class="bulkDocActionsBar"><div class="hint">${drafts.length} file${drafts.length===1?'':'s'} in review</div><div style="display:flex; gap:8px; flex-wrap:wrap">${ui.bulkDocumentSaving ? '<button type="button" id="docBulkCancelBtn" class="btnDanger">Cancel upload</button>' : ''}<button type="button" id="docBulkSaveBtn" class="btnPrimary" ${ui.bulkDocumentSaving ? 'disabled' : ''}>Save all documents</button></div></div></div>`;
       wrap.querySelectorAll('[data-bulk-doc-name]').forEach(input => input.addEventListener('input', ()=>{ const idx = Number(input.getAttribute('data-bulk-doc-name')); if(ui.bulkDocumentDrafts[idx]) ui.bulkDocumentDrafts[idx].name = input.value; }));
       wrap.querySelectorAll('[data-bulk-doc-date]').forEach(input => input.addEventListener('input', ()=>{ const idx = Number(input.getAttribute('data-bulk-doc-date')); if(ui.bulkDocumentDrafts[idx]) ui.bulkDocumentDrafts[idx].date = input.value; }));
       wrap.querySelectorAll('[data-bulk-doc-desc]').forEach(input => input.addEventListener('input', ()=>{ const idx = Number(input.getAttribute('data-bulk-doc-desc')); if(ui.bulkDocumentDrafts[idx]) ui.bulkDocumentDrafts[idx].description = input.value; }));
@@ -5093,6 +5133,7 @@ function openStructuredDocEditor(docId){
       const files = Array.from(fileList || []).filter(Boolean);
       if(!files.length) return;
       ui.bulkDocumentDrafts = (ui.bulkDocumentDrafts || []).concat(files.map(makeBulkDocumentDraft));
+      refreshBulkDocumentDuplicateFlags();
       ui.bulkDocumentSelectedIds = ui.bulkDocumentDrafts.map(draft => draft.id);
       ui.bulkDocumentStatus = '';
       ui.bulkDocumentCancelRequested = false;
@@ -5114,10 +5155,12 @@ function openStructuredDocEditor(docId){
     async function saveBulkDocuments(){
       const drafts = Array.isArray(ui.bulkDocumentDrafts) ? ui.bulkDocumentDrafts : [];
       if(!drafts.length) return;
+      refreshBulkDocumentDuplicateFlags();
       for(const draft of drafts){
         const name = String(draft.name || '').trim();
         draft.error = '';
-        draft.success = false;
+        draft.statusLabel = '';
+        if(!draft.success) draft.success = false;
         if(!name){ alert('Every bulk-upload document needs a name.'); return; }
       }
       ui.bulkDocumentCancelRequested = false;
@@ -5129,6 +5172,10 @@ function openStructuredDocEditor(docId){
       let processedCount = 0;
       try{
         for(const draft of drafts){
+          if(draft.success){
+            processedCount += 1;
+            continue;
+          }
           if(ui.bulkDocumentCancelRequested){
             ui.bulkDocumentStatus = `Stopped after ${processedCount} of ${drafts.length} file${drafts.length===1?'':'s'}.`;
             break;
@@ -5139,6 +5186,14 @@ function openStructuredDocEditor(docId){
           const file = draft.file || null;
           ui.bulkDocumentStatus = `Uploading ${processedCount + 1} of ${drafts.length}: ${name}`;
           renderBulkDocumentUpload();
+          if(draft.duplicateExisting){
+            draft.success = false;
+            draft.error = draft.duplicateMessage || 'Duplicate file.';
+            failedCount += 1;
+            processedCount += 1;
+            renderBulkDocumentUpload();
+            continue;
+          }
           if(file && Number(file.size || 0) > BULK_UPLOAD_MAX_FILE_SIZE){
             draft.error = `Skipped: file is ${formatFileSize(file.size || 0)}, which is larger than the current upload limit of ${formatFileSize(BULK_UPLOAD_MAX_FILE_SIZE)}.`;
             failedCount += 1;
@@ -5169,10 +5224,12 @@ function openStructuredDocEditor(docId){
             }
             draft.success = true;
             draft.error = '';
+            draft.statusLabel = 'Uploaded successfully';
             savedCount += 1;
           }catch(err){
             console.error('Bulk document upload failed:', err);
             draft.success = false;
+            draft.statusLabel = '';
             draft.error = String(err && err.message ? err.message : err || 'Upload failed');
             failedCount += 1;
             if(created && created.id){
@@ -5190,19 +5247,21 @@ function openStructuredDocEditor(docId){
       await window.loadDocuments();
       renderDocuments();
       if(ui.currentView === 'documenttable') renderDocumentTable();
-      const remainingDrafts = (ui.bulkDocumentDrafts || []).filter(draft => !draft.success);
-      (ui.bulkDocumentDrafts || []).filter(draft => draft && draft.success).forEach(draft => { if(draft.previewUrl){ try{ URL.revokeObjectURL(draft.previewUrl); }catch(err){} } });
-      ui.bulkDocumentDrafts = remainingDrafts;
+      refreshBulkDocumentDuplicateFlags();
       ui.bulkDocumentEditIndex = -1;
-      ui.bulkDocumentSelectedIds = remainingDrafts.map(draft => draft.id);
-      if(!remainingDrafts.some(draft => draft.id === ui.bulkDocumentViewerId)) ui.bulkDocumentViewerId = '';
+      ui.bulkDocumentSelectedIds = (ui.bulkDocumentDrafts || []).filter(draft => !draft.success).map(draft => draft.id);
+      if(!ui.bulkDocumentDrafts.some(draft => draft.id === ui.bulkDocumentViewerId)) ui.bulkDocumentViewerId = '';
       if($('docBulkFiles')) $('docBulkFiles').value='';
-      if(ui.bulkDocumentCancelRequested && remainingDrafts.length){
-        ui.bulkDocumentStatus = `Stopped. ${savedCount} uploaded, ${failedCount} not uploaded.`;
-      }else if(remainingDrafts.length){
-        ui.bulkDocumentStatus = `${savedCount} uploaded, ${failedCount} not uploaded. Failed rows were left in the table so you can fix them and try again.`;
-      }else{
-        ui.bulkDocumentStatus = savedCount === 1 ? '1 document uploaded.' : `${savedCount} documents uploaded.`;
+      const pendingCount = (ui.bulkDocumentDrafts || []).filter(draft => !draft.success && !draft.error).length;
+      const failedVisibleCount = (ui.bulkDocumentDrafts || []).filter(draft => !draft.success && !!draft.error).length;
+      if(ui.bulkDocumentCancelRequested && failedVisibleCount){
+        ui.bulkDocumentStatus = `Stopped. ${savedCount} uploaded, ${failedCount} errors. Green rows uploaded; red rows need attention.`;
+      }else if(failedVisibleCount){
+        ui.bulkDocumentStatus = `${savedCount} uploaded, ${failedCount} errors. Green rows uploaded successfully; red rows were not uploaded.`;
+      }else if(savedCount){
+        ui.bulkDocumentStatus = savedCount === 1 ? '1 document uploaded. Green row shows the saved file.' : `${savedCount} documents uploaded. Green rows show the saved files.`;
+      }else if(pendingCount){
+        ui.bulkDocumentStatus = `${pendingCount} file${pendingCount===1?' is':'s are'} still waiting to be uploaded.`;
       }
       ui.bulkDocumentCancelRequested = false;
       renderBulkDocumentUpload();
