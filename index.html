@@ -6967,6 +6967,8 @@ function openStructuredDocEditor(docId){
     if(!/^data:/i.test(value)) return { path:'', url:value };
     return uploadCaseAsset(dataUrlToBlob(value), fileName, folder);
   }
+  window.uploadCaseAsset = uploadCaseAsset;
+  window.uploadDataUrlAsCaseAsset = uploadDataUrlAsCaseAsset;
 
   async function loadElementsFromSupabase(options){
     if(!sb() || !cid()) return;
