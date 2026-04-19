@@ -1792,7 +1792,13 @@
     function closeElementSourceModal(){ $('elementSourceModal').classList.remove('open'); }
     function getElementPrimaryViewableSourceRef(el){
       const refs = Array.isArray(el?.sourceRefs) ? el.sourceRefs : [];
-      return refs.find(ref => ref && ref.documentId && (ref.sourceType === 'document' || ref.sourceType === 'image_capture' || ref.sourceType === 'document_link')) || null;
+      return (
+        refs.find(ref => ref && ref.documentId && ref.sourceType === 'document' && (String(ref.excerpt || '').trim() || ref.pageNumber != null))
+        || refs.find(ref => ref && ref.documentId && ref.sourceType === 'image_capture')
+        || refs.find(ref => ref && ref.documentId && ref.sourceType === 'document')
+        || refs.find(ref => ref && ref.documentId && ref.sourceType === 'document_link')
+        || null
+      );
     }
     function clearElementSourceOverlays(root){
       if(!root) return;
@@ -1927,10 +1933,178 @@
         const blob = await getDocumentBlob(doc);
         const url = blob ? URL.createObjectURL(blob) : await getDocumentFileUrl(doc);
         if(!url){ holder.innerHTML = '<div class="sourceDocEmpty">No file stored for this document.</div>'; return false; }
-        holder.innerHTML = `<iframe class="docViewerFrame" src="${url}"></iframe>`;
+        const mime = String(doc.mimeType || blob?.type || '').toLowerCase();
+        const name = String(doc.originalFileName || doc.filename || doc.name || '').toLowerCase();
+        const sourceRef = opts.sourceRef || null;
+        const inner = popupDoc.createElement('div');
+        inner.className = 'sourceDocViewerInner';
+        holder.innerHTML = '';
+        holder.appendChild(inner);
+        if((mime.includes('pdf')) || name.endsWith('.pdf')){
+          const pdfjs = await ensurePdfJsLib();
+          if(!pdfjs || !pdfjs.getDocument) throw new Error('PDF.js is not available');
+          if(pdfjs.GlobalWorkerOptions){
+            const version = String(pdfjs.version || '');
+            pdfjs.GlobalWorkerOptions.workerSrc = version.startsWith('4.')
+              ? 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.5.136/pdf.worker.min.js'
+              : 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+          }
+          const pdfData = blob ? new Uint8Array(await blob.arrayBuffer()) : null;
+          let pdf = null;
+          let pdfError = null;
+          const pdfAttempts = [];
+          if(pdfData) pdfAttempts.push({ data: pdfData, disableWorker: true, useWorkerFetch: false, isEvalSupported: false });
+          if(url) pdfAttempts.push({ url, disableWorker: true, useWorkerFetch: false, isEvalSupported: false });
+          for(const attempt of pdfAttempts){
+            try{
+              pdf = await pdfjs.getDocument(attempt).promise;
+              if(pdf) break;
+            }catch(err){
+              pdfError = err;
+              console.warn('PDF load attempt failed', err);
+            }
+          }
+          if(!pdf) throw (pdfError || new Error('Unable to open PDF'));
+          const viewerShell = popupDoc.getElementById('popupSourceViewer') || holder.parentElement || holder;
+          const shellWidth = Math.max(600, Number(viewerShell?.clientWidth || holder.clientWidth || 0));
+          for(let pageNum=1; pageNum<=pdf.numPages; pageNum++){
+            const page = await pdf.getPage(pageNum);
+            const baseViewport = page.getViewport({ scale: 1 });
+            const targetWidth = Math.max(720, shellWidth - 32);
+            const scale = Math.max(1.6, Math.min(3.1, targetWidth / baseViewport.width));
+            const viewport = page.getViewport({ scale });
+            const pageWrap = popupDoc.createElement('div');
+            pageWrap.className = 'sourceDocPage';
+            pageWrap.setAttribute('data-page-number', String(pageNum));
+            pageWrap.setAttribute('data-page-label', 'Page ' + pageNum);
+            pageWrap.innerHTML = `<div class="sourceDocPageHeader" style="width:100%"><span>${escapeHtml(doc.name || 'Document')}</span><span>Page ${pageNum}</span></div>`;
+            const stage = popupDoc.createElement('div');
+            stage.className = 'sourcePdfStage';
+            stage.style.width = viewport.width + 'px';
+            stage.style.height = viewport.height + 'px';
+            stage.style.minWidth = viewport.width + 'px';
+            stage.style.minHeight = viewport.height + 'px';
+            const canvas = popupDoc.createElement('canvas');
+            canvas.className = 'sourcePdfCanvas';
+            canvas.width = Math.ceil(viewport.width);
+            canvas.height = Math.ceil(viewport.height);
+            canvas.style.width = viewport.width + 'px';
+            canvas.style.height = viewport.height + 'px';
+            await page.render({ canvasContext: canvas.getContext('2d', { alpha:false }), viewport }).promise;
+            stage.appendChild(canvas);
+            const textLayer = popupDoc.createElement('div');
+            textLayer.className = 'sourceTextLayer';
+            textLayer.style.width = viewport.width + 'px';
+            textLayer.style.height = viewport.height + 'px';
+            const textContent = await page.getTextContent({ normalizeWhitespace: true, disableCombineTextItems: false });
+            const pdfUtil = (pdfjs && pdfjs.Util) ? pdfjs.Util : null;
+            const measureCanvas = popupDoc.createElement('canvas');
+            const measureCtx = measureCanvas.getContext('2d');
+            (textContent.items || []).forEach(item => {
+              const str = String(item?.str || '');
+              if(!str.trim()) return;
+              const tx = pdfUtil ? pdfUtil.transform(viewport.transform, item.transform) : item.transform;
+              const angle = Math.atan2(tx[1], tx[0]);
+              const style = (textContent.styles && item.fontName) ? (textContent.styles[item.fontName] || {}) : {};
+              const fontHeight = Math.max(8, Math.hypot(tx[2], tx[3]));
+              let fontAscent = fontHeight;
+              if(typeof style.ascent === 'number') fontAscent = style.ascent * fontHeight;
+              else if(typeof style.descent === 'number') fontAscent = (1 + style.descent) * fontHeight;
+              const fontFamily = style.fontFamily || 'sans-serif';
+              const span = popupDoc.createElement('span');
+              span.className = 'sourceTextSpan';
+              span.textContent = str;
+              span.style.left = tx[4] + 'px';
+              span.style.top = Math.max(0, tx[5] - fontAscent) + 'px';
+              span.style.fontSize = fontHeight + 'px';
+              span.style.fontFamily = fontFamily;
+              span.style.lineHeight = '1';
+              span.style.height = Math.max(fontHeight, 1) + 'px';
+              span.style.whiteSpace = 'pre';
+              let transform = angle ? `rotate(${angle}rad)` : '';
+              const expectedWidth = Math.max(0, Number(item.width || 0) * viewport.scale);
+              if(measureCtx){
+                measureCtx.font = `${fontHeight}px ${fontFamily}`;
+                const measuredWidth = Math.max(measureCtx.measureText(str).width, 0.01);
+                if(expectedWidth > 0 && measuredWidth > 0){
+                  const scaleX = expectedWidth / measuredWidth;
+                  if(Number.isFinite(scaleX) && scaleX > 0){
+                    transform = `${transform} scaleX(${scaleX})`.trim();
+                  }
+                }
+              }
+              if(transform) span.style.transform = transform;
+              textLayer.appendChild(span);
+            });
+            stage.appendChild(textLayer);
+            pageWrap.appendChild(stage);
+            inner.appendChild(pageWrap);
+          }
+        } else if(name.endsWith('.docx') || mime.includes('wordprocessingml')){
+          const buffer = blob ? await blob.arrayBuffer() : await fetchArrayBufferFromUrl(url);
+          const result = await window.mammoth.convertToHtml({ arrayBuffer: buffer });
+          const pageWrap = popupDoc.createElement('div');
+          pageWrap.className = 'sourceDocPage';
+          pageWrap.setAttribute('data-page-label', 'Document');
+          pageWrap.innerHTML = `<div class="sourceDocPageHeader"><span>${escapeHtml(doc.name || 'Document')}</span><span>Document text</span></div>`;
+          const textLayer = popupDoc.createElement('div');
+          textLayer.className = 'sourceTextLayer';
+          textLayer.innerHTML = result.value || '<div class="hint">No text extracted.</div>';
+          Array.from(textLayer.childNodes).forEach(node => {
+            if(node.nodeType === 3){ const span = popupDoc.createElement('span'); span.className = 'sourceTextSpan'; span.textContent = node.textContent || ''; node.replaceWith(span); }
+          });
+          textLayer.querySelectorAll('*').forEach(el => { if(!el.querySelector('*')) el.classList.add('sourceTextSpan'); });
+          pageWrap.appendChild(textLayer);
+          inner.appendChild(pageWrap);
+        } else {
+          holder.innerHTML = `<iframe class="docViewerFrame" src="${url}"></iframe>`;
+          return true;
+        }
+        clearSourceHighlightsInRoot(holder);
+        clearElementSourceOverlays(holder);
+        let focusedPage = null;
+        if(sourceRef?.sourceType === 'image_capture'){
+          if(sourceRef.pageNumber != null){
+            focusedPage = holder.querySelector(`.sourceDocPage[data-page-number="${sourceRef.pageNumber}"]`) || null;
+            if(focusedPage) focusedPage.classList.add('activeSourcePage');
+          }
+          renderElementSourceCaptureOverlayInRoot(holder, sourceRef);
+        } else if(sourceRef?.excerpt){
+          let highlighted = false;
+          if(sourceRef.pageNumber){
+            const page = holder.querySelector(`.sourceDocPage[data-page-number="${sourceRef.pageNumber}"]`);
+            if(page){
+              page.classList.add('activeSourcePage');
+              focusedPage = page;
+              highlighted = highlightTextInContainer(page, sourceRef.excerpt) || highlighted;
+            }
+          }
+          if(!highlighted){
+            holder.querySelectorAll('.sourceDocPage').forEach(page => {
+              if(!highlighted && highlightTextInContainer(page, sourceRef.excerpt)){
+                page.classList.add('activeSourcePage');
+                focusedPage = page;
+                highlighted = true;
+              }
+            });
+          }
+        } else if(sourceRef?.pageNumber){
+          focusedPage = holder.querySelector(`.sourceDocPage[data-page-number="${sourceRef.pageNumber}"]`) || null;
+          if(focusedPage) focusedPage.classList.add('activeSourcePage');
+        }
+        if(focusedPage) focusedPage.scrollIntoView({ block:'center' });
         return true;
       }catch(err){
         console.error(err);
+        try{
+          const fallbackUrl = await getDocumentFileUrl(doc);
+          if(fallbackUrl){
+            holder.innerHTML = `<iframe class="docViewerFrame" src="${fallbackUrl}"></iframe>`;
+            return true;
+          }
+        }catch(fallbackErr){
+          console.warn('Fallback preview failed', fallbackErr);
+        }
         holder.innerHTML = `<div class="sourceDocEmpty">Could not load this document here.</div>`;
         return false;
       }
