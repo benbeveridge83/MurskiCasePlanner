@@ -1332,7 +1332,7 @@
     function refreshSourceDocActionButtons(){ const appendEl = getSourceDocTargetElement(); const createBtn = $('sourceDocCreateElement'); const imageBtn = $('sourceDocStartImageCapture'); const backBtn = $('sourceDocReturnToElement'); if(createBtn) createBtn.textContent = appendEl ? 'Add selection to this element' : 'Create element from selection'; if(imageBtn){ if(ui.sourceDocImageCapture){ imageBtn.textContent = appendEl ? 'Add image to this element' : 'Create element with image'; } else { imageBtn.textContent = appendEl ? 'Add image to this element' : 'Create element from image capture'; } } if(backBtn) backBtn.style.display = appendEl ? '' : 'none'; }
     function rememberSourceDocViewState(){ const docId = ui.sourceDocSelectedId; const shell = $('sourceDocViewerShell'); if(docId && shell) ui.sourceDocScrollByDocumentId[docId] = shell.scrollTop || 0; const sel = ui.sourceDocSelection; if(sel && sel.documentId){ ui.sourceDocAnchorByDocumentId[sel.documentId] = { pageNumber: sel.pageNumber || null, excerpt: String(sel.excerpt || '').trim() }; } const capture = ui.sourceDocImageCapture; if(capture && capture.documentId){ ui.sourceDocAnchorByDocumentId[capture.documentId] = { pageNumber: capture.pageNumber || null, excerpt: '' }; } }
     function storeSourceDocAnchor(documentId, pageNumber, excerpt=''){ if(!documentId) return; ui.sourceDocAnchorByDocumentId[documentId] = { pageNumber: pageNumber || null, excerpt: String(excerpt || '').trim() }; }
-    function restoreSourceDocViewState(docId){ const shell = $('sourceDocViewerShell'); if(!shell || !docId) return; const savedTop = Number(ui.sourceDocScrollByDocumentId && ui.sourceDocScrollByDocumentId[docId]); const anchor = ui.sourceDocAnchorByDocumentId && ui.sourceDocAnchorByDocumentId[docId] ? ui.sourceDocAnchorByDocumentId[docId] : null; const apply = ()=>{ let restored = false; if(anchor && (anchor.pageNumber || anchor.excerpt)){ const pages = Array.from(document.querySelectorAll('#sourceDocViewerInner .sourceDocPage')); let targetPage = null; if(anchor.pageNumber != null){ targetPage = pages.find(page => String(page.getAttribute('data-page-number') || '') === String(anchor.pageNumber || '')) || null; } if(!targetPage && anchor.excerpt){ targetPage = pages.find(page => (page.textContent || '').includes(anchor.excerpt)) || null; } if(targetPage){ targetPage.classList.add('activeSourcePage'); targetPage.scrollIntoView({ block:'center' }); restored = true; } } if(Number.isFinite(savedTop) && savedTop > 0){ shell.scrollTop = savedTop; restored = true; } if(!restored) shell.scrollTop = 0; }; requestAnimationFrame(()=> requestAnimationFrame(apply)); }
+    function restoreSourceDocViewState(docId){ const shell = $('sourceDocViewerShell'); if(!shell || !docId) return; const savedTop = Number(ui.sourceDocScrollByDocumentId && ui.sourceDocScrollByDocumentId[docId]); const anchor = ui.sourceDocAnchorByDocumentId && ui.sourceDocAnchorByDocumentId[docId] ? ui.sourceDocAnchorByDocumentId[docId] : null; const apply = ()=>{ let restored = false; if(anchor && (anchor.pageNumber != null || anchor.excerpt)){ const pages = Array.from(document.querySelectorAll('#sourceDocViewerInner .sourceDocPage')); let targetPage = null; if(anchor.pageNumber != null){ targetPage = pages.find(page => String(page.getAttribute('data-page-number') || '') === String(anchor.pageNumber || '')) || null; } else if(anchor.excerpt){ targetPage = pages.find(page => (page.textContent || '').includes(anchor.excerpt)) || null; } if(targetPage){ targetPage.classList.add('activeSourcePage'); targetPage.scrollIntoView({ block:'center' }); restored = true; } } if(Number.isFinite(savedTop) && savedTop > 0){ shell.scrollTop = savedTop; restored = true; } if(!restored) shell.scrollTop = 0; }; requestAnimationFrame(()=> requestAnimationFrame(apply)); }
     function uid(){ return Math.random().toString(16).slice(2) + Date.now().toString(16); }
     const BULK_UPLOAD_MAX_FILE_SIZE = Number.POSITIVE_INFINITY;
     function formatFileSize(bytes){ const n = Number(bytes || 0); if(!n) return '0 B'; const units = ['B','KB','MB','GB']; let value = n; let unitIndex = 0; while(value >= 1024 && unitIndex < units.length - 1){ value /= 1024; unitIndex += 1; } return `${value >= 10 || unitIndex === 0 ? Math.round(value) : value.toFixed(1)} ${units[unitIndex]}`; }
@@ -2071,15 +2071,14 @@
           renderElementSourceCaptureOverlayInRoot(holder, sourceRef);
         } else if(sourceRef?.excerpt){
           let highlighted = false;
-          if(sourceRef.pageNumber){
+          if(sourceRef.pageNumber != null){
             const page = holder.querySelector(`.sourceDocPage[data-page-number="${sourceRef.pageNumber}"]`);
             if(page){
               page.classList.add('activeSourcePage');
               focusedPage = page;
               highlighted = highlightTextInContainer(page, sourceRef.excerpt) || highlighted;
             }
-          }
-          if(!highlighted){
+          } else {
             holder.querySelectorAll('.sourceDocPage').forEach(page => {
               if(!highlighted && highlightTextInContainer(page, sourceRef.excerpt)){
                 page.classList.add('activeSourcePage');
@@ -3524,11 +3523,10 @@ async function renderDocumentInSourceViewer(doc, targetId, opts={}){
         clearSourceHighlights(holder);
         if(sourceRef?.excerpt){
           let highlighted = false;
-          if(sourceRef.pageNumber){
+          if(sourceRef.pageNumber != null){
             const page = holder.querySelector(`.sourceDocPage[data-page-number="${sourceRef.pageNumber}"]`);
             if(page){ page.classList.add('activeSourcePage'); highlighted = highlightTextInContainer(page, sourceRef.excerpt) || highlighted; page.scrollIntoView({ block:'center' }); }
-          }
-          if(!highlighted){
+          } else {
             holder.querySelectorAll('.sourceDocPage').forEach(page => { if(highlightTextInContainer(page, sourceRef.excerpt) && !highlighted){ page.classList.add('activeSourcePage'); highlighted = true; page.scrollIntoView({ block:'center' }); } });
           }
         }
