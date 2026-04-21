@@ -1251,7 +1251,12 @@
     .trialIssuesRowControlWrap{position:relative;display:inline-flex;align-items:center;margin-left:16px;}
     .trialIssuesRowControlBtn{padding:6px 10px;font-size:12px;font-weight:800;border-radius:999px;background:#fff;border:1px solid var(--border);cursor:pointer;}
     .trialIssuesRowControlMenu{display:none;position:absolute;top:calc(100% + 6px);right:0;z-index:70;min-width:220px;padding:10px;border:1px solid var(--border);border-radius:14px;background:#fff;box-shadow:var(--shadow2);gap:6px;grid-template-columns:1fr;}
-    .trialIssuesRowControlWrap:hover .trialIssuesRowControlMenu,.trialIssuesRowControlWrap:focus-within .trialIssuesRowControlMenu{display:grid;}
+    .trialIssuesRowControlWrap:hover .trialIssuesRowControlMenu,.trialIssuesRowControlWrap:focus-within .trialIssuesRowControlMenu,.trialIssuesRowControlWrap.menu-open .trialIssuesRowControlMenu{display:grid;}
+    .trialIssuesRowControlWrap.menu-closing .trialIssuesRowControlMenu{display:grid;}
+    .elementsWorksheetHeadCell{position:relative;}
+    .elementsWorksheetColResize{position:absolute;top:0;right:-6px;width:12px;height:100%;cursor:col-resize;z-index:35;}
+    body.elements-worksheet-resizing,body.document-worksheet-resizing{cursor:col-resize;user-select:none;}
+    body.elements-worksheet-resizing *,body.document-worksheet-resizing *{cursor:col-resize !important;user-select:none !important;}
     .trialIssuesRowControlMenu .mini{width:100%;text-align:left;}
     .trialIssuesEntryRow .trialIssuesCellMain.leftAssertion,.trialIssuesPositionRow .trialIssuesCellMain.leftAssertion{background:#dce8f4;}
     .trialIssuesEntryRow .trialIssuesCellMain.leftResponse,.trialIssuesPositionRow .trialIssuesCellMain.leftResponse{background:#f3e0d3;}
@@ -1405,7 +1410,7 @@
     const UI_STORAGE_KEY = 'murski_ui_prefs_v1';
     const LEGACY_STORAGE_KEY = 'murski_case_planner_v1';
     let state = { caseName: '', tags: [], people: [], documents: [], elements: [], outline: [], timelineEvents: [], subtags: [], iconLibrary: [], trialIssues: { leftPartyName:'Matt Murski', rightPartyName:'Leah Murski', rows: [] } };
-    const ui = { selectedNodeId: null, selectedWitnessId: null, selectedDocId: null, selectedPersonId: null, selectedElementId: null, activeWitnessColumnId: null, expandedDocIds: {}, showDocDownloadList: false, showDocTagIndex: false, docTagFilterIds: [], docTagIndexExpandedIds: {}, docTagIndexShowUsedOnly: false, docTagNoTagsOnly: false, docTagHasTagsOnly: false, docExhibitFilter: 'all', outlineIndexFilterIds: [], outlineIndexExpandedIds: {}, outlineIndexShowUsedOnly: false, outlineIndexNoTagsOnly: false, outlineIndexHasTagsOnly: false, outlineIndexExhibitFilter: 'all', docSort: { field: 'file', dir: 'asc' }, docRepoSort: { field: 'date', dir: 'desc' }, docDownloadSelections: {}, docDownloadEligibilityFilter: 'all', docRepoEligibilityFilters: ['possible','not'], docRepoStatusFilters: ['exhibit','not_exhibit'], docRepoFilterPanelOpen: false, docRepoTagIds: [], docRepoTagExcludeIds: [], docRepoTagNoneSelected: false, docRepoTagExcludeNoneSelected: true, docRepoCollapsedTagNodes: {}, docRepoColWidths: { name: 340, date: 150, uploadDate: 160, timeline: 170, eligibility: 220, exhibitStatus: 190, file: 90 }, outlineCompact: false, outlineStructureView: false, outlinePaneWidth: 720, timelineSelectedId: null, timelineEditingId: null, timelineShowEventColumn: true, timelineShowDocumentColumn: true, timelineShowHeadlineColumn: true, timelineDocPickerOpen: false, timelineColumnOrder: ['date','event','document','headline'], timelineDraggingUndatedId: null, timelineFilterTagIds: [], timelineFilterTagOpen: false, elementsFilterMode: 'all', elementsSearch: '', currentView: INITIAL_VIEW, outlineFilterTagIds: [], outlineFilterWitnessIds: [], outlineFilterTagOpen: false, outlineFilterWitnessOpen: false, outlineIndexTagIds: [], outlineIndexWitnessIds: [], outlineIndexTagOpen: false, outlineIndexWitnessOpen: false, structuredOutlineWitnessFilterIds: [], structuredHeadingTagIds: [], structuredHeadingWitnessIds: [], structuredHeadingTagOpen: false, structuredHeadingWitnessOpen: false, structuredTraySearch: '', structuredTrayAssignmentFilter: 'all', structuredTrayPersonFilterId: 'any', structuredTrayTagFilterIds: [], structuredDocEditorId: null, structuredDragging: null, sourceDocSearch: '', sourceDocSelectedId: null, sourceDocSelection: null, sourceDocContext: 'create', sourceDocOpenFromElementId: null, sourceDocMaximized: false, sourceDocImageCapture: null, sourceDocCapturePointer: null, sourceDocScrollByDocumentId: {}, sourceDocAnchorByDocumentId: {}, elementsFilterTagIds: [], elementsFilterTagExcludeIds: [], elementsFilterTagNoneSelected: false, elementsFilterTagExcludeNoneSelected: true, elementsFilterWitnessIds: [], elementsFilterWitnessExcludeIds: [], elementsFilterWitnessNoneSelected: false, elementsFilterWitnessExcludeNoneSelected: true, elementsFilterDocumentIds: [], elementsFilterDocumentExcludeIds: [], elementsFilterDocumentNoneSelected: false, elementsFilterDocumentExcludeNoneSelected: true, elementsFilterExhibitIds: [], elementsFilterExhibitExcludeIds: [], elementsFilterExhibitNoneSelected: false, elementsFilterExhibitExcludeNoneSelected: true, elementsFilterSourceDocumentIds: [], elementsFilterSourceDocumentExcludeIds: [], elementsFilterSourceDocumentNoneSelected: false, elementsFilterSourceDocumentExcludeNoneSelected: true, elementsFilterSourcePersonIds: [], elementsFilterSourcePersonExcludeIds: [], elementsFilterSourcePersonNoneSelected: false, elementsFilterSourcePersonExcludeNoneSelected: true, elementsFilterPanelOpen: false, elementsCreatorFilter: 'all', elementsWorksheetOpen: false, elementsWorksheetPinnedTopIds: [], elementsWorksheetSort: { key: 'name', dir: 'asc' }, elementsWorksheetCollapsedTags: {}, elementsWorksheetCollapsedChildren: {}, newDocumentTagLinks: [], bulkDocumentDrafts: [], bulkDocumentEditIndex: -1, bulkDocumentSelectedIds: [], bulkDocumentViewerId: '', bulkDocumentCancelRequested: false, bulkDocumentSaving: false, bulkDocumentStatus: '', documentTableCollapsedTagNodes: {}, elementsFilterCollapsedTagNodes: {}, documentTableTagFilterCollapseSeeded: false, selectedTagNodeId: null, collapsedTagNodes: {}, collapsedElementTagNodes: {}, docRepoSearch: '', documentTableSearch: '', documentTableFilterPanelOpen: false, documentTableSelectedIds: [], documentTagModalBatchIds: [], documentTableTagIds: [], documentTableTagExcludeIds: [], documentTableTagNoneSelected: false, documentTableTagExcludeNoneSelected: true, documentTableExhibitIds: [], documentTableExhibitExcludeIds: [], documentTableExhibitNoneSelected: false, documentTableExhibitExcludeNoneSelected: true, documentTableTimelineIds: [], documentTableTimelineExcludeIds: [], documentTableTimelineNoneSelected: false, documentTableTimelineExcludeNoneSelected: true, documentTableFileIds: [], documentTableFileExcludeIds: [], documentTableFileNoneSelected: false, documentTableFileExcludeNoneSelected: true, documentTableTypeIds: [], documentTableSort: { field: 'name', dir: 'asc' }, documentWorksheetOpen: false, documentWorksheetSort: { key: 'name', dir: 'asc' } };
+    const ui = { selectedNodeId: null, selectedWitnessId: null, selectedDocId: null, selectedPersonId: null, selectedElementId: null, activeWitnessColumnId: null, expandedDocIds: {}, showDocDownloadList: false, showDocTagIndex: false, docTagFilterIds: [], docTagIndexExpandedIds: {}, docTagIndexShowUsedOnly: false, docTagNoTagsOnly: false, docTagHasTagsOnly: false, docExhibitFilter: 'all', outlineIndexFilterIds: [], outlineIndexExpandedIds: {}, outlineIndexShowUsedOnly: false, outlineIndexNoTagsOnly: false, outlineIndexHasTagsOnly: false, outlineIndexExhibitFilter: 'all', docSort: { field: 'file', dir: 'asc' }, docRepoSort: { field: 'date', dir: 'desc' }, docDownloadSelections: {}, docDownloadEligibilityFilter: 'all', docRepoEligibilityFilters: ['possible','not'], docRepoStatusFilters: ['exhibit','not_exhibit'], docRepoFilterPanelOpen: false, docRepoTagIds: [], docRepoTagExcludeIds: [], docRepoTagNoneSelected: false, docRepoTagExcludeNoneSelected: true, docRepoCollapsedTagNodes: {}, docRepoColWidths: { name: 340, date: 150, uploadDate: 160, timeline: 170, eligibility: 220, exhibitStatus: 190, file: 90 }, outlineCompact: false, outlineStructureView: false, outlinePaneWidth: 720, timelineSelectedId: null, timelineEditingId: null, timelineShowEventColumn: true, timelineShowDocumentColumn: true, timelineShowHeadlineColumn: true, timelineDocPickerOpen: false, timelineColumnOrder: ['date','event','document','headline'], timelineDraggingUndatedId: null, timelineFilterTagIds: [], timelineFilterTagOpen: false, elementsFilterMode: 'all', elementsSearch: '', currentView: INITIAL_VIEW, outlineFilterTagIds: [], outlineFilterWitnessIds: [], outlineFilterTagOpen: false, outlineFilterWitnessOpen: false, outlineIndexTagIds: [], outlineIndexWitnessIds: [], outlineIndexTagOpen: false, outlineIndexWitnessOpen: false, structuredOutlineWitnessFilterIds: [], structuredHeadingTagIds: [], structuredHeadingWitnessIds: [], structuredHeadingTagOpen: false, structuredHeadingWitnessOpen: false, structuredTraySearch: '', structuredTrayAssignmentFilter: 'all', structuredTrayPersonFilterId: 'any', structuredTrayTagFilterIds: [], structuredDocEditorId: null, structuredDragging: null, sourceDocSearch: '', sourceDocSelectedId: null, sourceDocSelection: null, sourceDocContext: 'create', sourceDocOpenFromElementId: null, sourceDocMaximized: false, sourceDocImageCapture: null, sourceDocCapturePointer: null, sourceDocScrollByDocumentId: {}, sourceDocAnchorByDocumentId: {}, elementsFilterTagIds: [], elementsFilterTagExcludeIds: [], elementsFilterTagNoneSelected: false, elementsFilterTagExcludeNoneSelected: true, elementsFilterWitnessIds: [], elementsFilterWitnessExcludeIds: [], elementsFilterWitnessNoneSelected: false, elementsFilterWitnessExcludeNoneSelected: true, elementsFilterDocumentIds: [], elementsFilterDocumentExcludeIds: [], elementsFilterDocumentNoneSelected: false, elementsFilterDocumentExcludeNoneSelected: true, elementsFilterExhibitIds: [], elementsFilterExhibitExcludeIds: [], elementsFilterExhibitNoneSelected: false, elementsFilterExhibitExcludeNoneSelected: true, elementsFilterSourceDocumentIds: [], elementsFilterSourceDocumentExcludeIds: [], elementsFilterSourceDocumentNoneSelected: false, elementsFilterSourceDocumentExcludeNoneSelected: true, elementsFilterSourcePersonIds: [], elementsFilterSourcePersonExcludeIds: [], elementsFilterSourcePersonNoneSelected: false, elementsFilterSourcePersonExcludeNoneSelected: true, elementsFilterPanelOpen: false, elementsCreatorFilter: 'all', elementsWorksheetOpen: false, elementsWorksheetPinnedTopIds: [], elementsWorksheetSort: { key: 'name', dir: 'asc' }, elementsWorksheetCollapsedTags: {}, elementsWorksheetCollapsedChildren: {}, newDocumentTagLinks: [], bulkDocumentDrafts: [], bulkDocumentEditIndex: -1, bulkDocumentSelectedIds: [], bulkDocumentViewerId: '', bulkDocumentCancelRequested: false, bulkDocumentSaving: false, bulkDocumentStatus: '', documentTableCollapsedTagNodes: {}, elementsFilterCollapsedTagNodes: {}, documentTableTagFilterCollapseSeeded: false, selectedTagNodeId: null, collapsedTagNodes: {}, collapsedElementTagNodes: {}, docRepoSearch: '', documentTableSearch: '', documentTableFilterPanelOpen: false, documentTableSelectedIds: [], documentTagModalBatchIds: [], documentTableTagIds: [], documentTableTagExcludeIds: [], documentTableTagNoneSelected: false, documentTableTagExcludeNoneSelected: true, documentTableExhibitIds: [], documentTableExhibitExcludeIds: [], documentTableExhibitNoneSelected: false, documentTableExhibitExcludeNoneSelected: true, documentTableTimelineIds: [], documentTableTimelineExcludeIds: [], documentTableTimelineNoneSelected: false, documentTableTimelineExcludeNoneSelected: true, documentTableFileIds: [], documentTableFileExcludeIds: [], documentTableFileNoneSelected: false, documentTableFileExcludeNoneSelected: true, documentTableTypeIds: [], documentTableSort: { field: 'name', dir: 'asc' }, documentWorksheetOpen: false, documentWorksheetSort: { key: 'name', dir: 'asc' }, elementsWorksheetColWidths: {}, documentWorksheetColWidths: {} };
     const structuredUi = { headingFilterOpen: false, visibleHeadingIds: [], headingFilterInitialized: false, witnessColWidths: {}, resizingWitnessId: null, resizeStartX: 0, resizeStartWidth: 220 };
     const HEADING_EXHIBIT_KEY = '__heading__';
     const $ = (id) => document.getElementById(id);
@@ -3044,6 +3049,67 @@
       else ui.documentWorksheetSort = { key, dir: 'asc' };
       renderDocumentTable();
     }
+
+    const DEFAULT_ELEMENTS_WORKSHEET_COL_WIDTHS = { edit:120, name:320, creator:220, dateAdded:160, source:220, witness:220, document:220, exhibit:180, date:150, tagSummary:120, tagLeaf:90 };
+    const DEFAULT_DOCUMENT_WORKSHEET_COL_WIDTHS = { edit:120, name:320, witness:220, uploadDate:160, exhibit:180, theirExhibit:260, date:150, tagSummary:120, tagLeaf:90 };
+    function getWorksheetWidthStore(mode){ return mode === 'document' ? (ui.documentWorksheetColWidths = ui.documentWorksheetColWidths || {}) : (ui.elementsWorksheetColWidths = ui.elementsWorksheetColWidths || {}); }
+    function getWorksheetDefaultWidth(mode, key, fallback){
+      const defaults = mode === 'document' ? DEFAULT_DOCUMENT_WORKSHEET_COL_WIDTHS : DEFAULT_ELEMENTS_WORKSHEET_COL_WIDTHS;
+      if(Object.prototype.hasOwnProperty.call(defaults, key)) return defaults[key];
+      return fallback || defaults.tagLeaf || 90;
+    }
+    function getWorksheetColumnWidth(mode, key, fallback){
+      const store = getWorksheetWidthStore(mode);
+      const value = Number(store[key]);
+      return Number.isFinite(value) && value >= 60 ? value : getWorksheetDefaultWidth(mode, key, fallback);
+    }
+    function setWorksheetColumnWidth(mode, key, width){
+      const store = getWorksheetWidthStore(mode);
+      store[key] = Math.max(60, Math.round(Number(width) || getWorksheetDefaultWidth(mode, key)));
+      safeSave();
+    }
+    function buildWorksheetColgroup(mode, defs){
+      return `<colgroup>${(defs || []).map(def => `<col style="width:${getWorksheetColumnWidth(mode, def.key, def.width)}px">`).join('')}</colgroup>`;
+    }
+    function worksheetHeaderWithResize(labelHtml, mode, key, width){
+      return `<span class="worksheetHeaderInner">${labelHtml}</span><span class="elementsWorksheetColResize" data-worksheet-col-resize="${mode}" data-worksheet-col-key="${key}" data-worksheet-col-width="${Number(width) || getWorksheetDefaultWidth(mode, key)}"></span>`;
+    }
+    function injectWorksheetHeaderResizeHandle(html, mode, key, width){
+      return String(html || '').replace('<th ', '<th class="elementsWorksheetHeadCell" ').replace(/>([\s\S]*?)<\/th>$/, (_, inner) => `>${inner}${worksheetHeaderWithResize('', mode, key, width)}</th>`);
+    }
+    function applyWorksheetStickyOffsets(mode){
+      const table = mode === 'document' ? $('documentWorksheetTableHost')?.querySelector('table') : $('elementsWorksheetTableHost')?.querySelector('table');
+      if(!table) return;
+      const editWidth = getWorksheetColumnWidth(mode, 'edit', 120);
+      table.querySelectorAll('th:nth-child(1), td:nth-child(1)').forEach(cell => { cell.style.left = '0px'; cell.style.width = editWidth + 'px'; cell.style.minWidth = editWidth + 'px'; cell.style.maxWidth = editWidth + 'px'; });
+      table.querySelectorAll('th:nth-child(2), td:nth-child(2)').forEach(cell => { cell.style.left = editWidth + 'px'; });
+    }
+    function beginWorksheetColumnResize(ev, mode, key, fallbackWidth){
+      ev.preventDefault(); ev.stopPropagation();
+      const startX = ev.clientX;
+      const startWidth = getWorksheetColumnWidth(mode, key, fallbackWidth);
+      const bodyClass = mode === 'document' ? 'document-worksheet-resizing' : 'elements-worksheet-resizing';
+      document.body.classList.add(bodyClass);
+      const onMove = (moveEv) => {
+        const nextWidth = Math.max(60, startWidth + (moveEv.clientX - startX));
+        setWorksheetColumnWidth(mode, key, nextWidth);
+        if(mode === 'document') renderDocumentTable(); else renderElements();
+      };
+      const onUp = () => {
+        document.removeEventListener('mousemove', onMove);
+        document.removeEventListener('mouseup', onUp);
+        document.body.classList.remove(bodyClass);
+      };
+      document.addEventListener('mousemove', onMove);
+      document.addEventListener('mouseup', onUp);
+    }
+    function bindWorksheetColumnResizeHandles(scope){
+      (scope || document).querySelectorAll('[data-worksheet-col-resize]').forEach(handle => {
+        if(handle.dataset.boundResize === '1') return;
+        handle.dataset.boundResize = '1';
+        handle.addEventListener('mousedown', (ev)=> beginWorksheetColumnResize(ev, handle.getAttribute('data-worksheet-col-resize') === 'document' ? 'document' : 'elements', handle.getAttribute('data-worksheet-col-key') || '', Number(handle.getAttribute('data-worksheet-col-width') || 0) || undefined));
+      });
+    }
     function syncDocumentWorksheetScrollbars(){
       const top = $('documentWorksheetScrollTop');
       const topInner = $('documentWorksheetScrollTopInner');
@@ -3080,7 +3146,20 @@
       const arrow = (key) => sort.key === key ? (sort.dir === 'asc' ? ' ▲' : ' ▼') : '';
       const baseCols = 7;
       const headerRows = getHierarchicalHeaderRowData(groups, 'worksheet');
-      host.innerHTML = `<table class="elementsWorksheetTable"><thead><tr><th rowspan="3" class="elementsWorksheetEditCol">Edit</th><th rowspan="3" data-document-worksheet-sort="name" style="cursor:pointer">Document${arrow('name')}</th><th rowspan="3" data-document-worksheet-sort="witness" style="cursor:pointer">Witness${arrow('witness')}</th><th rowspan="3" data-document-worksheet-sort="uploadDate" style="cursor:pointer">Upload Date${arrow('uploadDate')}</th><th rowspan="3" data-document-worksheet-sort="exhibit" style="cursor:pointer">Exhibit${arrow('exhibit')}</th><th rowspan="3" data-document-worksheet-sort="theirExhibit" style="cursor:pointer">Their Exhibit${arrow('theirExhibit')}</th><th rowspan="3" data-document-worksheet-sort="date" style="cursor:pointer">Date${arrow('date')}</th>${headerRows.row1.join('')}</tr><tr>${headerRows.row2.join('')}</tr><tr>${headerRows.row3.join('')}</tr></thead><tbody>${sortedItems.map(doc => {
+      const columnDefs = [
+        { key:'edit', width:120 },
+        { key:'name', width:320 },
+        { key:'witness', width:220 },
+        { key:'uploadDate', width:160 },
+        { key:'exhibit', width:180 },
+        { key:'theirExhibit', width:260 },
+        { key:'date', width:150 },
+        ...leafColumns.map(t => ({ key:`tag:${t.tagId}:${t.subtagId || ''}:${t.summaryType || 'leaf'}`, width:t.summaryType ? 120 : 90 }))
+      ];
+      const row1 = headerRows.row1.map((html, idx) => injectWorksheetHeaderResizeHandle(html, 'document', columnDefs[baseCols + idx]?.key || `tag:${idx}`, columnDefs[baseCols + idx]?.width || 90));
+      const row2 = headerRows.row2.map((html, idx) => injectWorksheetHeaderResizeHandle(html, 'document', columnDefs[baseCols + row1.length + idx]?.key || `tag2:${idx}`, columnDefs[baseCols + row1.length + idx]?.width || 90));
+      const row3 = headerRows.row3.map((html, idx) => injectWorksheetHeaderResizeHandle(html, 'document', columnDefs[baseCols + idx]?.key || `leaf:${idx}`, columnDefs[baseCols + idx]?.width || 90));
+      host.innerHTML = `<table class="elementsWorksheetTable">${buildWorksheetColgroup('document', columnDefs)}<thead><tr><th rowspan="3" class="elementsWorksheetEditCol elementsWorksheetHeadCell">${worksheetHeaderWithResize('Edit', 'document', 'edit', 120)}</th><th rowspan="3" data-document-worksheet-sort="name" style="cursor:pointer" class="elementsWorksheetHeadCell">${worksheetHeaderWithResize(`Document${arrow('name')}`, 'document', 'name', 320)}</th><th rowspan="3" data-document-worksheet-sort="witness" style="cursor:pointer" class="elementsWorksheetHeadCell">${worksheetHeaderWithResize(`Witness${arrow('witness')}`, 'document', 'witness', 220)}</th><th rowspan="3" data-document-worksheet-sort="uploadDate" style="cursor:pointer" class="elementsWorksheetHeadCell">${worksheetHeaderWithResize(`Upload Date${arrow('uploadDate')}`, 'document', 'uploadDate', 160)}</th><th rowspan="3" data-document-worksheet-sort="exhibit" style="cursor:pointer" class="elementsWorksheetHeadCell">${worksheetHeaderWithResize(`Exhibit${arrow('exhibit')}`, 'document', 'exhibit', 180)}</th><th rowspan="3" data-document-worksheet-sort="theirExhibit" style="cursor:pointer" class="elementsWorksheetHeadCell">${worksheetHeaderWithResize(`Their Exhibit${arrow('theirExhibit')}`, 'document', 'theirExhibit', 260)}</th><th rowspan="3" data-document-worksheet-sort="date" style="cursor:pointer" class="elementsWorksheetHeadCell">${worksheetHeaderWithResize(`Date${arrow('date')}`, 'document', 'date', 150)}</th>${row1.join('')}</tr><tr>${row2.join('')}</tr><tr>${row3.join('')}</tr></thead><tbody>${sortedItems.map(doc => {
         const links = Array.isArray(doc.tagLinks) ? doc.tagLinks : [];
         const cells = leafColumns.map(t => {
           const count = getWorksheetTagSelectionCount(links, t);
@@ -3105,6 +3184,8 @@
       host.querySelectorAll('[data-document-worksheet-tag]').forEach(td => td.addEventListener('click', async (ev)=>{ ev.stopPropagation(); const row = td.closest('[data-document-worksheet-row]'); if(!row) return; const summary = td.getAttribute('data-document-worksheet-summary') || ''; if(summary === 'tag'){ const tagId = td.getAttribute('data-tag-id') || ''; ui.elementsWorksheetCollapsedTags = ui.elementsWorksheetCollapsedTags || {}; ui.elementsWorksheetCollapsedTags[tagId] = false; renderDocumentTable(); return; } if(summary === 'child'){ const key = `${td.getAttribute('data-tag-id') || ''}::${td.getAttribute('data-subtag-id') || ''}`; ui.elementsWorksheetCollapsedChildren = ui.elementsWorksheetCollapsedChildren || {}; ui.elementsWorksheetCollapsedChildren[key] = false; renderDocumentTable(); return; } await toggleWorksheetTagForDocument(row.getAttribute('data-document-worksheet-row'), td.getAttribute('data-tag-id') || '', td.getAttribute('data-subtag-id') || ''); }));
       const collapseBtn = $('documentWorksheetCollapseAllTagsBtn'); if(collapseBtn) collapseBtn.onclick = ()=>{ ui.elementsWorksheetCollapsedTags = {}; ui.elementsWorksheetCollapsedChildren = {}; (state.tags || []).forEach(tag => { if((state.subtags || []).some(st => st.parentTagId === tag.id)) ui.elementsWorksheetCollapsedTags[tag.id] = true; }); renderDocumentTable(); };
       const expandBtn = $('documentWorksheetExpandAllTagsBtn'); if(expandBtn) expandBtn.onclick = ()=>{ ui.elementsWorksheetCollapsedTags = {}; ui.elementsWorksheetCollapsedChildren = {}; renderDocumentTable(); };
+      bindWorksheetColumnResizeHandles(host);
+      applyWorksheetStickyOffsets('document');
       syncDocumentWorksheetScrollbars();
     }
     async function toggleWorksheetTagForDocument(docId, tagId, subtagId){
@@ -3550,7 +3631,22 @@
       const arrow = (key) => sort.key === key ? (sort.dir === 'asc' ? ' ▲' : ' ▼') : '';
       const baseCols = 9;
       const headerRows = getHierarchicalHeaderRowData(groups, 'worksheet');
-      host.innerHTML = `<table class="elementsWorksheetTable"><thead><tr><th rowspan="3" class="elementsWorksheetEditCol">Edit</th><th rowspan="3" data-elements-worksheet-sort="name" style="cursor:pointer">Element${arrow('name')}</th><th rowspan="3">Created by</th><th rowspan="3" data-elements-worksheet-sort="dateAdded" style="cursor:pointer">Date added${arrow('dateAdded')}</th><th rowspan="3" data-elements-worksheet-sort="source" style="cursor:pointer">Source${arrow('source')}</th><th rowspan="3" data-elements-worksheet-sort="witness" style="cursor:pointer">Witness${arrow('witness')}</th><th rowspan="3" data-elements-worksheet-sort="document" style="cursor:pointer">Document${arrow('document')}</th><th rowspan="3" data-elements-worksheet-sort="exhibit" style="cursor:pointer">Exhibit${arrow('exhibit')}</th><th rowspan="3" data-elements-worksheet-sort="date" style="cursor:pointer">Date${arrow('date')}</th>${headerRows.row1.join('')}</tr><tr>${headerRows.row2.join('')}</tr><tr>${headerRows.row3.join('')}</tr></thead><tbody>${sortedItems.map(el => {
+      const columnDefs = [
+        { key:'edit', width:120 },
+        { key:'name', width:320 },
+        { key:'creator', width:220 },
+        { key:'dateAdded', width:160 },
+        { key:'source', width:220 },
+        { key:'witness', width:220 },
+        { key:'document', width:220 },
+        { key:'exhibit', width:180 },
+        { key:'date', width:150 },
+        ...leafColumns.map(t => ({ key:`tag:${t.tagId}:${t.subtagId || ''}:${t.summaryType || 'leaf'}`, width:t.summaryType ? 120 : 90 }))
+      ];
+      const row1 = headerRows.row1.map((html, idx) => injectWorksheetHeaderResizeHandle(html, 'elements', columnDefs[baseCols + idx]?.key || `tag:${idx}`, columnDefs[baseCols + idx]?.width || 90));
+      const row2 = headerRows.row2.map((html, idx) => injectWorksheetHeaderResizeHandle(html, 'elements', columnDefs[baseCols + row1.length + idx]?.key || `tag2:${idx}`, columnDefs[baseCols + row1.length + idx]?.width || 90));
+      const row3 = headerRows.row3.map((html, idx) => injectWorksheetHeaderResizeHandle(html, 'elements', columnDefs[baseCols + idx]?.key || `leaf:${idx}`, columnDefs[baseCols + idx]?.width || 90));
+      host.innerHTML = `<table class="elementsWorksheetTable">${buildWorksheetColgroup('elements', columnDefs)}<thead><tr><th rowspan="3" class="elementsWorksheetEditCol elementsWorksheetHeadCell">${worksheetHeaderWithResize('Edit', 'elements', 'edit', 120)}</th><th rowspan="3" data-elements-worksheet-sort="name" style="cursor:pointer" class="elementsWorksheetHeadCell">${worksheetHeaderWithResize(`Element${arrow('name')}`, 'elements', 'name', 320)}</th><th rowspan="3" class="elementsWorksheetHeadCell">${worksheetHeaderWithResize('Created by', 'elements', 'creator', 220)}</th><th rowspan="3" data-elements-worksheet-sort="dateAdded" style="cursor:pointer" class="elementsWorksheetHeadCell">${worksheetHeaderWithResize(`Date added${arrow('dateAdded')}`, 'elements', 'dateAdded', 160)}</th><th rowspan="3" data-elements-worksheet-sort="source" style="cursor:pointer" class="elementsWorksheetHeadCell">${worksheetHeaderWithResize(`Source${arrow('source')}`, 'elements', 'source', 220)}</th><th rowspan="3" data-elements-worksheet-sort="witness" style="cursor:pointer" class="elementsWorksheetHeadCell">${worksheetHeaderWithResize(`Witness${arrow('witness')}`, 'elements', 'witness', 220)}</th><th rowspan="3" data-elements-worksheet-sort="document" style="cursor:pointer" class="elementsWorksheetHeadCell">${worksheetHeaderWithResize(`Document${arrow('document')}`, 'elements', 'document', 220)}</th><th rowspan="3" data-elements-worksheet-sort="exhibit" style="cursor:pointer" class="elementsWorksheetHeadCell">${worksheetHeaderWithResize(`Exhibit${arrow('exhibit')}`, 'elements', 'exhibit', 180)}</th><th rowspan="3" data-elements-worksheet-sort="date" style="cursor:pointer" class="elementsWorksheetHeadCell">${worksheetHeaderWithResize(`Date${arrow('date')}`, 'elements', 'date', 150)}</th>${row1.join('')}</tr><tr>${row2.join('')}</tr><tr>${row3.join('')}</tr></thead><tbody>${sortedItems.map(el => {
         const links = Array.isArray(el.tagLinks) ? el.tagLinks : [];
         const cells = leafColumns.map(t => {
           const count = getWorksheetTagSelectionCount(links, t);
@@ -3581,6 +3677,8 @@
       const addRowBtn = $('elementsWorksheetAddRowBtn'); if(addRowBtn) addRowBtn.onclick = ()=> addBlankWorksheetElement();
       const collapseBtn = $('elementsWorksheetCollapseAllTagsBtn'); if(collapseBtn) collapseBtn.onclick = ()=>{ ui.elementsWorksheetCollapsedTags = {}; ui.elementsWorksheetCollapsedChildren = {}; (state.tags || []).forEach(tag => { if((state.subtags || []).some(st => st.parentTagId === tag.id)) ui.elementsWorksheetCollapsedTags[tag.id] = true; }); renderElements(); };
       const expandBtn = $('elementsWorksheetExpandAllTagsBtn'); if(expandBtn) expandBtn.onclick = ()=>{ ui.elementsWorksheetCollapsedTags = {}; ui.elementsWorksheetCollapsedChildren = {}; renderElements(); };
+      bindWorksheetColumnResizeHandles(host);
+      applyWorksheetStickyOffsets('elements');
       syncElementsWorksheetScrollbars();
     }
     function bindElementPickerToggles(scope){
@@ -7949,6 +8047,18 @@ function openStructuredDocEditor(docId){
   function renderTrialRowControl(buttonsHtml, label='Row Control'){
     return `<span class="trialIssuesRowControlWrap"><button type="button" class="trialIssuesRowControlBtn">${escapeHtml(label)}</button><span class="trialIssuesRowControlMenu">${buttonsHtml}</span></span>`;
   }
+  function bindTrialIssuesRowMenus(){
+    document.querySelectorAll('.trialIssuesRowControlWrap').forEach(wrap => {
+      if(wrap.dataset.menuBound === '1') return;
+      wrap.dataset.menuBound = '1';
+      const openNow = ()=>{ clearTimeout(wrap._menuTimer); wrap.classList.remove('menu-closing'); wrap.classList.add('menu-open'); };
+      const closeSoon = ()=>{ clearTimeout(wrap._menuTimer); wrap.classList.add('menu-closing'); wrap._menuTimer = setTimeout(()=>{ wrap.classList.remove('menu-open'); wrap.classList.remove('menu-closing'); }, 1000); };
+      wrap.addEventListener('mouseenter', openNow);
+      wrap.addEventListener('mouseleave', closeSoon);
+      wrap.addEventListener('focusin', openNow);
+      wrap.addEventListener('focusout', ()=>{ setTimeout(()=>{ if(!wrap.contains(document.activeElement)) closeSoon(); }, 0); });
+    });
+  }
   
   function getTrialRowLevel(row){
     if(!row) return 99;
@@ -7957,11 +8067,22 @@ function openStructuredDocEditor(docId){
     return 2;
   }
   function isTrialRowVisible(rows, index){
+    const row = rows[index];
+    if(!row) return false;
+    let activeReliefId = '';
+    let activeIssueId = '';
+    for(let i = 0; i <= index; i += 1){
+      const item = rows[i];
+      if(!item) continue;
+      if(item.type === 'relief'){ activeReliefId = item.id; activeIssueId = ''; }
+      else if(item.type === 'issue'){ activeIssueId = item.id; }
+      if(i === index) break;
+    }
     for(let i = index - 1; i >= 0; i -= 1){
       const prior = rows[i];
       if(!prior || !prior.collapsed) continue;
-      const priorLevel = getTrialRowLevel(prior);
-      if(priorLevel < getTrialRowLevel(rows[index])) return false;
+      if(prior.type === 'relief' && activeReliefId === prior.id && row.type !== 'relief') return false;
+      if(prior.type === 'issue' && activeIssueId === prior.id && (row.type === 'entry' || row.type === 'position')) return false;
     }
     return true;
   }
@@ -8004,7 +8125,7 @@ function renderTrialMainCell(row, side){
       const next = rows[idx + 1] || null;
       const startClass = (!prev || prev.type !== row.type) ? ' trialIssuesSectionStart' : '';
       const endClass = (!next || next.type !== row.type) ? ' trialIssuesSectionEnd' : '';
-      if(row.type === 'relief') return `<tr class="trialIssuesReliefRow${startClass}${endClass}" draggable="true" data-trial-row-id="${row.id}"><td colspan="4"><div class="trialIssuesReliefInner"><span class="trialIssuesRowDrag">⋮⋮</span><button type="button" class="trialIssuesCollapseBtn" data-trial-toggle-collapse="${row.id}">${row.collapsed ? '＋' : '－'}</button><span contenteditable="true" data-trial-label="${row.id}" data-trial-type="relief">${escapeHtml(row.label || 'New relief')}</span>${renderTrialRowControl(`<button type="button" class="mini" data-trial-add-position="${row.id}" data-trial-position-side="left">Add ${escapeHtml(state.trialIssues.leftPartyName || 'Left')} Position</button><button type="button" class="mini" data-trial-add-position="${row.id}" data-trial-position-side="right">Add ${escapeHtml(state.trialIssues.rightPartyName || 'Right')} Position</button><button type="button" class="mini" data-trial-add-below="${row.id}" data-trial-newtype="issue">+ Issue</button><button type="button" class="mini" data-trial-add-below="${row.id}" data-trial-newtype="entry">+ Row</button><button type="button" class="mini" data-trial-delete-row="${row.id}">Delete</button>`, 'Options')}</div></td></tr>`;
+      if(row.type === 'relief') return `<tr class="trialIssuesReliefRow${startClass}${endClass}" draggable="true" data-trial-row-id="${row.id}"><td colspan="4"><div class="trialIssuesReliefInner"><span class="trialIssuesRowDrag">⋮⋮</span><button type="button" class="trialIssuesCollapseBtn" data-trial-toggle-collapse="${row.id}">${row.collapsed ? '＋' : '－'}</button><span contenteditable="true" data-trial-label="${row.id}" data-trial-type="relief">${escapeHtml(row.label || 'New relief')}</span>${renderTrialRowControl(`<button type="button" class="mini" data-trial-add-subrelief="${row.id}">+ Sub relief</button><button type="button" class="mini" data-trial-add-position="${row.id}" data-trial-position-side="left">Add ${escapeHtml(state.trialIssues.leftPartyName || 'Left')} Position</button><button type="button" class="mini" data-trial-add-position="${row.id}" data-trial-position-side="right">Add ${escapeHtml(state.trialIssues.rightPartyName || 'Right')} Position</button><button type="button" class="mini" data-trial-add-below="${row.id}" data-trial-newtype="issue">+ Issue</button><button type="button" class="mini" data-trial-add-below="${row.id}" data-trial-newtype="entry">+ Row</button><button type="button" class="mini" data-trial-delete-row="${row.id}">Delete</button>`, 'Options')}</div></td></tr>`;
       if(row.type === 'issue') return `<tr class="trialIssuesIssueRow${startClass}${endClass}" draggable="true" data-trial-row-id="${row.id}"><td colspan="4"><div class="trialIssuesIssueInner"><span class="trialIssuesRowDrag">⋮⋮</span><button type="button" class="trialIssuesCollapseBtn" data-trial-toggle-collapse="${row.id}">${row.collapsed ? '＋' : '－'}</button><span contenteditable="true" data-trial-label="${row.id}" data-trial-type="issue">${escapeHtml(row.label || 'New issue / element / factor')}</span>${renderTrialRowControl(`<button type="button" class="mini" data-trial-add-position="${row.id}" data-trial-position-side="left">Add ${escapeHtml(state.trialIssues.leftPartyName || 'Left')} Position</button><button type="button" class="mini" data-trial-add-position="${row.id}" data-trial-position-side="right">Add ${escapeHtml(state.trialIssues.rightPartyName || 'Right')} Position</button><button type="button" class="mini" data-trial-add-below="${row.id}" data-trial-newtype="entry">+ Row</button><button type="button" class="mini" data-trial-delete-row="${row.id}">Delete</button>`, 'Options')}</div></td></tr>`;
       if(row.type === 'position') return renderTrialPositionRow(row, getTrialIssueRow(row.positionParentId));
       return `<tr class="trialIssuesEntryRow${startClass}${endClass}" draggable="true" data-trial-row-id="${row.id}"><td class="trialIssuesCellWitness">${renderTrialWitnessList(row.leftWitnessIds, row.id, 'left')}</td><td class="trialIssuesCellMain leftSide ${row.leftClassification === 'response' ? 'leftResponse' : 'leftAssertion'}">${renderTrialMainCell(row, 'left')}<div style="margin-top:8px;display:flex;justify-content:space-between;gap:8px;align-items:center"><span class="trialIssuesRowDrag">⋮⋮</span><span class="trialIssuesSubtle">Side-by-side row</span>${renderTrialRowControl(`<button type="button" class="mini" data-trial-add-below="${row.id}" data-trial-newtype="entry">+ Row below</button><button type="button" class="mini" data-trial-delete-row="${row.id}">Delete</button>`)}</div></td><td class="trialIssuesCellMain ${row.rightClassification === 'response' ? 'rightResponse' : 'rightAssertion'}">${renderTrialMainCell(row, 'right')}</td><td class="trialIssuesCellWitness">${renderTrialWitnessList(row.rightWitnessIds, row.id, 'right')}</td></tr>`;
@@ -8015,7 +8136,7 @@ function renderTrialMainCell(row, side){
   function trialIssuesExecRichCommand(editor, cmd){ if(!editor) return; editor.focus(); document.execCommand(cmd, false, null); }
   function promptForTrialWitness(rowId, side){ const options = (state.people || []).slice().sort(sortByName); if(!options.length){ alert('Add a person first.'); return; } const menu = options.map((p, idx) => `${idx + 1}. ${p.name}`).join('\n'); const raw = prompt(`Choose a witness by number:\n\n${menu}`); if(raw === null) return; const idx = Number(raw) - 1; if(!Number.isInteger(idx) || idx < 0 || idx >= options.length) return; const row = getTrialIssueRow(rowId); if(!row) return; const key = side === 'right' ? 'rightWitnessIds' : 'leftWitnessIds'; const notesKey = side === 'right' ? 'rightWitnessNotes' : 'leftWitnessNotes'; const personId = options[idx].id; row[key] = Array.from(new Set([...(row[key] || []), personId])); row[notesKey] = normalizeTrialWitnessNotesMap(row[notesKey]); if(!(personId in row[notesKey])) row[notesKey][personId] = ''; saveTrialIssuesLocal(); renderTrialIssues(); }
   function promptForTrialLink(rowId, side, kind){ const source = kind === 'element' ? (state.elements || []).slice().sort(sortByName) : (state.documents || []).slice().sort(sortByName); if(!source.length){ alert(kind === 'element' ? 'Add an element first.' : 'Add a document first.'); return; } const menu = source.map((item, idx) => `${idx + 1}. ${item.name}`).join('\n'); const raw = prompt(`Choose a ${kind} by number:\n\n${menu}`); if(raw === null) return; const idx = Number(raw) - 1; if(!Number.isInteger(idx) || idx < 0 || idx >= source.length) return; const row = getTrialIssueRow(rowId); if(!row) return; const key = side === 'right' ? 'rightLinks' : 'leftLinks'; row[key] = (row[key] || []).concat([{ id: uid(), type: kind, refId: source[idx].id }]); saveTrialIssuesLocal(); renderTrialIssues(); }
-  function addTrialIssuesRow(type, afterRowId){ const rows = getTrialIssuesRows(); const newRow = normalizeTrialIssueRow({ type, label: type === 'relief' ? 'New relief' : (type === 'issue' ? 'New issue / element / factor' : ''), leftClassification:'assertion', rightClassification:'assertion' }); if(!afterRowId){ rows.push(newRow); } else { const index = rows.findIndex(row => row.id === afterRowId); if(index === -1) rows.push(newRow); else rows.splice(index + 1, 0, newRow); } saveTrialIssuesLocal(); renderTrialIssues(); }
+  function addTrialIssuesRow(type, afterRowId, options = {}){ const rows = getTrialIssuesRows(); const newRow = normalizeTrialIssueRow({ type, label: options.label || (type === 'relief' ? 'New relief' : (type === 'issue' ? 'New issue / element / factor' : '')), leftClassification:'assertion', rightClassification:'assertion' }); if(!afterRowId){ rows.push(newRow); } else { const index = rows.findIndex(row => row.id === afterRowId); if(index === -1) rows.push(newRow); else rows.splice(index + 1, 0, newRow); } saveTrialIssuesLocal(); renderTrialIssues(); }
   function addTrialPositionRow(parentRowId, side){ const rows = getTrialIssuesRows(); const index = rows.findIndex(row => row.id === parentRowId); if(index === -1) return; let positionRow = rows.find(row => row.type === 'position' && row.positionParentId === parentRowId) || null; if(!positionRow){ positionRow = normalizeTrialIssueRow({ type:'position', positionParentId: parentRowId, leftPositionText:'', rightPositionText:'' }); rows.splice(index + 1, 0, positionRow); } if(side === 'right'){ if(typeof positionRow.rightPositionText !== 'string') positionRow.rightPositionText = ''; } else { if(typeof positionRow.leftPositionText !== 'string') positionRow.leftPositionText = ''; } saveTrialIssuesLocal(); renderTrialIssues(); }
   function deleteTrialIssuesRow(rowId){ const rows = getTrialIssuesRows(); const index = rows.findIndex(row => row.id === rowId); if(index === -1) return; const target = rows[index]; rows.splice(index, 1); if(target.type === 'relief' || target.type === 'issue'){ for(let i = rows.length - 1; i >= 0; i -= 1){ if(rows[i].type === 'position' && rows[i].positionParentId === rowId) rows.splice(i, 1); } } saveTrialIssuesLocal(); renderTrialIssues(); }
   function bindTrialIssuesDrag(){ const body = $('trialIssuesBody'); if(!body) return; let dragRowId = ''; body.querySelectorAll('[data-trial-row-id]').forEach(row => {
@@ -8191,10 +8312,12 @@ ${entry.summary}`).toLowerCase().includes(q)) return false;
     document.querySelectorAll('[data-trial-open-element]').forEach(btn => btn.addEventListener('click', ()=> openElementModal(btn.getAttribute('data-trial-open-element'))));
     document.querySelectorAll('[data-trial-view-source]').forEach(btn => btn.addEventListener('click', ()=> openElementSourceModal(btn.getAttribute('data-trial-view-source'))));
     document.querySelectorAll('[data-trial-toggle-classification]').forEach(btn => btn.addEventListener('click', ()=>{ const row = getTrialIssueRow(btn.getAttribute('data-trial-toggle-classification')); if(!row) return; const side = btn.getAttribute('data-trial-side-toggle') === 'right' ? 'right' : 'left'; const key = side + 'Classification'; row[key] = row[key] === 'response' ? 'assertion' : 'response'; saveTrialIssuesLocal(); renderTrialIssues(); }));
+    bindTrialIssuesRowMenus();
     document.querySelectorAll('[data-trial-add-position]').forEach(btn => btn.addEventListener('click', ()=> addTrialPositionRow(btn.getAttribute('data-trial-add-position'), btn.getAttribute('data-trial-position-side') === 'right' ? 'right' : 'left')));
+    document.querySelectorAll('[data-trial-add-subrelief]').forEach(btn => btn.addEventListener('click', ()=> addTrialIssuesRow('relief', btn.getAttribute('data-trial-add-subrelief'), { label:'New sub relief' })));
     document.querySelectorAll('[data-trial-add-below]').forEach(btn => btn.addEventListener('click', ()=> addTrialIssuesRow(btn.getAttribute('data-trial-newtype') || 'entry', btn.getAttribute('data-trial-add-below'))));
     document.querySelectorAll('[data-trial-delete-row]').forEach(btn => btn.addEventListener('click', ()=> deleteTrialIssuesRow(btn.getAttribute('data-trial-delete-row'))));
-    document.querySelectorAll('[data-trial-toggle-collapse]').forEach(btn => btn.addEventListener('click', ()=> toggleTrialCollapse(btn.getAttribute('data-trial-toggle-collapse'))));
+    document.querySelectorAll('[data-trial-toggle-collapse]').forEach(btn => btn.addEventListener('click', (ev)=>{ ev.preventDefault(); ev.stopPropagation(); toggleTrialCollapse(btn.getAttribute('data-trial-toggle-collapse')); }));
     bindTrialIssuesDrag();
   }
   function handleTrialPartyInput(){ state.trialIssues = normalizeTrialIssuesState(state.trialIssues); state.trialIssues.leftPartyName = $('trialIssuesLeftParty')?.value || 'Matt Murski'; state.trialIssues.rightPartyName = $('trialIssuesRightParty')?.value || 'Leah Murski'; saveTrialIssuesLocal(); if($('trialIssuesLeftHeader')) $('trialIssuesLeftHeader').textContent = state.trialIssues.leftPartyName; if($('trialIssuesRightHeader')) $('trialIssuesRightHeader').textContent = state.trialIssues.rightPartyName; renderTrialIssues(); }
