@@ -1364,7 +1364,7 @@
     const getCaseId = () => String(window.CASE_ID || CASE_ID || new URLSearchParams(window.location.search).get('case') || '');
     const UI_STORAGE_KEY = 'murski_ui_prefs_v1';
     const LEGACY_STORAGE_KEY = 'murski_case_planner_v1';
-    let state = { caseName: '', tags: [], people: [], documents: [], elements: [], outline: [], timelineEvents: [], subtags: [], iconLibrary: [] };
+    let state = { caseName: '', tags: [], people: [], documents: [], elements: [], outline: [], timelineEvents: [], subtags: [], iconLibrary: [], trialIssues: { leftPartyName:'Matt Murski', rightPartyName:'Leah Murski', rows: [] } };
     const ui = { selectedNodeId: null, selectedWitnessId: null, selectedDocId: null, selectedPersonId: null, selectedElementId: null, activeWitnessColumnId: null, expandedDocIds: {}, showDocDownloadList: false, showDocTagIndex: false, docTagFilterIds: [], docTagIndexExpandedIds: {}, docTagIndexShowUsedOnly: false, docTagNoTagsOnly: false, docTagHasTagsOnly: false, docExhibitFilter: 'all', outlineIndexFilterIds: [], outlineIndexExpandedIds: {}, outlineIndexShowUsedOnly: false, outlineIndexNoTagsOnly: false, outlineIndexHasTagsOnly: false, outlineIndexExhibitFilter: 'all', docSort: { field: 'file', dir: 'asc' }, docRepoSort: { field: 'date', dir: 'desc' }, docDownloadSelections: {}, docDownloadEligibilityFilter: 'all', docRepoEligibilityFilters: ['possible','not'], docRepoStatusFilters: ['exhibit','not_exhibit'], docRepoFilterPanelOpen: false, docRepoTagIds: [], docRepoTagExcludeIds: [], docRepoTagNoneSelected: false, docRepoTagExcludeNoneSelected: true, docRepoCollapsedTagNodes: {}, docRepoColWidths: { name: 340, date: 150, uploadDate: 160, timeline: 170, eligibility: 220, exhibitStatus: 190, file: 90 }, outlineCompact: false, outlineStructureView: false, outlinePaneWidth: 720, timelineSelectedId: null, timelineEditingId: null, timelineShowEventColumn: true, timelineShowDocumentColumn: true, timelineShowHeadlineColumn: true, timelineDocPickerOpen: false, timelineColumnOrder: ['date','event','document','headline'], timelineDraggingUndatedId: null, timelineFilterTagIds: [], timelineFilterTagOpen: false, elementsFilterMode: 'all', elementsSearch: '', currentView: INITIAL_VIEW, outlineFilterTagIds: [], outlineFilterWitnessIds: [], outlineFilterTagOpen: false, outlineFilterWitnessOpen: false, outlineIndexTagIds: [], outlineIndexWitnessIds: [], outlineIndexTagOpen: false, outlineIndexWitnessOpen: false, structuredOutlineWitnessFilterIds: [], structuredHeadingTagIds: [], structuredHeadingWitnessIds: [], structuredHeadingTagOpen: false, structuredHeadingWitnessOpen: false, structuredTraySearch: '', structuredTrayAssignmentFilter: 'all', structuredTrayPersonFilterId: 'any', structuredTrayTagFilterIds: [], structuredDocEditorId: null, structuredDragging: null, sourceDocSearch: '', sourceDocSelectedId: null, sourceDocSelection: null, sourceDocContext: 'create', sourceDocOpenFromElementId: null, sourceDocMaximized: false, sourceDocImageCapture: null, sourceDocCapturePointer: null, sourceDocScrollByDocumentId: {}, sourceDocAnchorByDocumentId: {}, elementsFilterTagIds: [], elementsFilterTagExcludeIds: [], elementsFilterTagNoneSelected: false, elementsFilterTagExcludeNoneSelected: true, elementsFilterWitnessIds: [], elementsFilterWitnessExcludeIds: [], elementsFilterWitnessNoneSelected: false, elementsFilterWitnessExcludeNoneSelected: true, elementsFilterDocumentIds: [], elementsFilterDocumentExcludeIds: [], elementsFilterDocumentNoneSelected: false, elementsFilterDocumentExcludeNoneSelected: true, elementsFilterExhibitIds: [], elementsFilterExhibitExcludeIds: [], elementsFilterExhibitNoneSelected: false, elementsFilterExhibitExcludeNoneSelected: true, elementsFilterSourceDocumentIds: [], elementsFilterSourceDocumentExcludeIds: [], elementsFilterSourceDocumentNoneSelected: false, elementsFilterSourceDocumentExcludeNoneSelected: true, elementsFilterSourcePersonIds: [], elementsFilterSourcePersonExcludeIds: [], elementsFilterSourcePersonNoneSelected: false, elementsFilterSourcePersonExcludeNoneSelected: true, elementsFilterPanelOpen: false, elementsCreatorFilter: 'all', elementsWorksheetOpen: false, elementsWorksheetPinnedTopIds: [], elementsWorksheetSort: { key: 'name', dir: 'asc' }, elementsWorksheetCollapsedTags: {}, elementsWorksheetCollapsedChildren: {}, newDocumentTagLinks: [], bulkDocumentDrafts: [], bulkDocumentEditIndex: -1, bulkDocumentSelectedIds: [], bulkDocumentViewerId: '', bulkDocumentCancelRequested: false, bulkDocumentSaving: false, bulkDocumentStatus: '', documentTableCollapsedTagNodes: {}, elementsFilterCollapsedTagNodes: {}, documentTableTagFilterCollapseSeeded: false, selectedTagNodeId: null, collapsedTagNodes: {}, collapsedElementTagNodes: {}, docRepoSearch: '', documentTableSearch: '', documentTableFilterPanelOpen: false, documentTableSelectedIds: [], documentTagModalBatchIds: [], documentTableTagIds: [], documentTableTagExcludeIds: [], documentTableTagNoneSelected: false, documentTableTagExcludeNoneSelected: true, documentTableExhibitIds: [], documentTableExhibitExcludeIds: [], documentTableExhibitNoneSelected: false, documentTableExhibitExcludeNoneSelected: true, documentTableTimelineIds: [], documentTableTimelineExcludeIds: [], documentTableTimelineNoneSelected: false, documentTableTimelineExcludeNoneSelected: true, documentTableFileIds: [], documentTableFileExcludeIds: [], documentTableFileNoneSelected: false, documentTableFileExcludeNoneSelected: true, documentTableTypeIds: [], documentTableSort: { field: 'name', dir: 'asc' }, documentWorksheetOpen: false, documentWorksheetSort: { key: 'name', dir: 'asc' } };
     const structuredUi = { headingFilterOpen: false, visibleHeadingIds: [], headingFilterInitialized: false, witnessColWidths: {}, resizingWitnessId: null, resizeStartX: 0, resizeStartWidth: 220 };
     const HEADING_EXHIBIT_KEY = '__heading__';
@@ -2339,6 +2339,7 @@
       loadElementIntoEditor(id);
       renderElements();
       renderTimeline();
+      renderTrialIssues();
       toast('Element updated');
     }
 
@@ -6839,7 +6840,7 @@ function openStructuredDocEditor(docId){
     function runOnSelected(fn){ const nid = ui.selectedNodeId; if(!nid){ alert('Select an outline row first.'); return; } fn(nid); }
     function syncSelectionHints(){ const sel = $('selHint'); const ex = $('exHint'); const n = getSelectedNode(); if(sel) sel.textContent = ui.selectedNodeId ? ('Selected row: ' + ((n && n.title) ? n.title : '(untitled)')) : 'Select a row, then use these controls'; const active = state.people.find(p=>p.id===ui.activeWitnessColumnId); if(ex) ex.textContent = active ? ('Active witness column: ' + active.name) : 'Open a row, click a witness name, then add exhibits/testimony'; }
 
-    function getImportedStateDefaults(){ return { caseName:'', tags:[], people:[], documents:[], elements:[], exhibits:[], outline:[], timelineEvents:[], subtags:[], iconLibrary:[] }; }
+  
     function resetElementUiState(){
       ui.selectedElementId = null;
       ui.elementsFilterMode = 'all';
@@ -6901,6 +6902,7 @@ function openStructuredDocEditor(docId){
       if(window.loadElementsFromSupabase) await window.loadElementsFromSupabase();
       if(window.loadTimelineEventsFromSupabase) await window.loadTimelineEventsFromSupabase();
       if(window.loadIconLibraryFromSupabase) await window.loadIconLibraryFromSupabase();
+      if(window.loadTrialIssuesFromSupabase) await window.loadTrialIssuesFromSupabase();
       renderTags();
       renderDocuments();
       renderPeople();
@@ -7265,6 +7267,7 @@ function openStructuredDocEditor(docId){
     safeSave();
     renderElements();
     renderTimeline();
+    renderTrialIssues();
     renderOutline();
   }
 
@@ -7390,8 +7393,77 @@ function openStructuredDocEditor(docId){
     return data;
   }
 
+
+  let warnedMissingTrialIssuesTable = false;
+  let trialIssuesSaveTimer = null;
+  function trialIssuesTableWarning(error){
+    if(warnedMissingTrialIssuesTable) return;
+    warnedMissingTrialIssuesTable = true;
+    const msg = error && error.message ? error.message : 'Unknown error';
+    alert('Trial Issues could not connect to Supabase. Create the trial_issues_pages table first, then reload.\n\n' + msg);
+  }
+  function normalizeTrialIssuesForSupabasePayload(input){
+    const normalized = normalizeTrialIssuesState(input);
+    return {
+      case_id: cid(),
+      left_party_name: normalized.leftPartyName || 'Matt Murski',
+      right_party_name: normalized.rightPartyName || 'Leah Murski',
+      rows_json: cloneJson(normalized.rows || [], []),
+      updated_at: new Date().toISOString()
+    };
+  }
+  async function loadTrialIssuesFromSupabase(){
+    if(!sb() || !cid()) return;
+    const { data, error } = await sb().from('trial_issues_pages').select('*').eq('case_id', cid()).maybeSingle();
+    if(error){
+      console.error('Load trial issues error:', error);
+      trialIssuesTableWarning(error);
+      return;
+    }
+    if(!data){
+      state.trialIssues = normalizeTrialIssuesState(state.trialIssues);
+      renderTrialIssues();
+      return;
+    }
+    state.trialIssues = normalizeTrialIssuesState({
+      leftPartyName: data.left_party_name || 'Matt Murski',
+      rightPartyName: data.right_party_name || 'Leah Murski',
+      rows: Array.isArray(data.rows_json) ? data.rows_json : []
+    });
+    try{ localStorage.setItem(getTrialIssuesStorageKey(), JSON.stringify(state.trialIssues)); }catch(e){ console.warn('Trial issues local sync failed', e); }
+    renderTrialIssues();
+  }
+  async function upsertTrialIssuesStateSupabase(payload){
+    if(!sb() || !cid()) return null;
+    const row = normalizeTrialIssuesForSupabasePayload(payload);
+    const { data, error } = await sb().from('trial_issues_pages').upsert(row, { onConflict:'case_id' }).select().single();
+    if(error){
+      console.error('Save trial issues error:', error);
+      trialIssuesTableWarning(error);
+      return null;
+    }
+    return data;
+  }
+  function scheduleTrialIssuesSupabaseSave(){
+    clearTimeout(trialIssuesSaveTimer);
+    trialIssuesSaveTimer = setTimeout(async ()=>{
+      await upsertTrialIssuesStateSupabase(state.trialIssues);
+    }, 250);
+  }
+  function subscribeToTrialIssues(){
+    if(!sb() || !cid()) return;
+    sb().channel('trial_issues_pages_live_' + cid()).on('postgres_changes', {
+      event: '*',
+      schema: 'public',
+      table: 'trial_issues_pages',
+      filter: 'case_id=eq.' + cid()
+    }, async ()=>{
+      await loadTrialIssuesFromSupabase();
+    }).subscribe();
+  }
+
   function getImportedStateDefaults(){
-    return { caseName:'', tags:[], people:[], documents:[], elements:[], exhibits:[], outline:[], timelineEvents:[], subtags:[], iconLibrary:[] };
+    return { caseName:'', tags:[], people:[], documents:[], elements:[], exhibits:[], outline:[], timelineEvents:[], subtags:[], iconLibrary:[], trialIssues:createTrialIssuesDefaultState() };
   }
 
   async function bulkImportElementsToSupabase(parsed){
@@ -7441,6 +7513,7 @@ function openStructuredDocEditor(docId){
     await loadElementsFromSupabase(force ? { replaceLocal:true } : undefined);
     await loadTimelineEventsFromSupabase();
     await loadIconLibraryFromSupabase();
+    await loadTrialIssuesFromSupabase();
     renderTags();
     renderDocuments();
     renderPeople();
@@ -7521,6 +7594,9 @@ function openStructuredDocEditor(docId){
       if(!ev || !ev.id) continue;
       await upsertTimelineEventRow(ev);
     }
+    if(next.trialIssues){
+      await upsertTrialIssuesStateSupabase(next.trialIssues);
+    }
   }
 
 
@@ -7528,9 +7604,15 @@ function openStructuredDocEditor(docId){
   window.bulkImportElementsToSupabase = bulkImportElementsToSupabase;
   window.loadTimelineEventsFromSupabase = loadTimelineEventsFromSupabase;
   window.loadIconLibraryFromSupabase = loadIconLibraryFromSupabase;
+  window.loadTrialIssuesFromSupabase = loadTrialIssuesFromSupabase;
   window.hydrateStateFromFullBackup = hydrateStateFromFullBackup;
   window.reloadAllSupabaseData = reloadAllSupabaseData;
   window.syncImportedStateToSupabase = syncImportedStateToSupabase;
+
+  if(cid()){
+    loadTrialIssuesFromSupabase();
+    subscribeToTrialIssues();
+  }
 
   window.upsertElementRecord = async function(record, options){
     const saved = await upsertElementRow(record);
@@ -7766,7 +7848,7 @@ function openStructuredDocEditor(docId){
   function normalizeTrialIssuesState(input){ const base = createTrialIssuesDefaultState(); const src = input && typeof input === 'object' ? input : {}; return { leftPartyName: String(src.leftPartyName || base.leftPartyName), rightPartyName: String(src.rightPartyName || base.rightPartyName), rows: Array.isArray(src.rows) ? src.rows.map(normalizeTrialIssueRow) : [] }; }
   function normalizeHtmlToPlainText(html){ const div = document.createElement('div'); div.innerHTML = String(html || ''); return (div.textContent || '').replace(/\s+/g, ' ').trim(); }
   function loadTrialIssuesLocal(){ try{ const raw = localStorage.getItem(getTrialIssuesStorageKey()); state.trialIssues = normalizeTrialIssuesState(raw ? JSON.parse(raw) : state.trialIssues); }catch(e){ console.warn('Trial issues local load failed', e); state.trialIssues = normalizeTrialIssuesState(state.trialIssues); } }
-  function saveTrialIssuesLocal(){ try{ state.trialIssues = normalizeTrialIssuesState(state.trialIssues); localStorage.setItem(getTrialIssuesStorageKey(), JSON.stringify(state.trialIssues)); }catch(e){ console.warn('Trial issues local save failed', e); } }
+  function saveTrialIssuesLocal(){ try{ state.trialIssues = normalizeTrialIssuesState(state.trialIssues); localStorage.setItem(getTrialIssuesStorageKey(), JSON.stringify(state.trialIssues)); scheduleTrialIssuesSupabaseSave(); }catch(e){ console.warn('Trial issues local save failed', e); } }
   function getTrialIssuesRows(){ state.trialIssues = normalizeTrialIssuesState(state.trialIssues); return state.trialIssues.rows; }
   function getTrialIssueRow(rowId){ return getTrialIssuesRows().find(row => row.id === rowId) || null; }
   function getTrialDisplayName(kind, id){ if(kind === 'person') return getPersonById(id)?.name || 'Missing person'; if(kind === 'element') return getElementById(id)?.name || 'Missing element'; if(kind === 'document') return getDocumentById(id)?.name || 'Missing document'; return 'Item'; }
