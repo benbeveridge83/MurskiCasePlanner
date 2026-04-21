@@ -1271,6 +1271,24 @@
     .trialIssuesHoverActions{display:flex;gap:8px;flex-wrap:wrap;}
     .trialIssuesAddRow{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
     .trialIssuesSubtle{font-size:12px;color:var(--muted);}
+    .trialIssuesEntryRow td,.trialIssuesPositionRow td{border-top:3px solid #111827 !important;border-bottom:3px solid #111827 !important;}
+    .trialIssuesEntryRow td:first-child,.trialIssuesPositionRow td:first-child{border-left:3px solid #111827 !important;}
+    .trialIssuesEntryRow td:last-child,.trialIssuesPositionRow td:last-child{border-right:3px solid #111827 !important;}
+    .trialIssuesPickerModal{position:fixed;inset:0;background:rgba(15,23,42,.38);display:none;align-items:center;justify-content:center;z-index:95;padding:20px;}
+    .trialIssuesPickerModal.open{display:flex;}
+    .trialIssuesPickerCard{width:min(1200px,calc(100vw - 36px));max-height:calc(100vh - 36px);overflow:auto;background:#fff;border:1px solid var(--border);border-radius:20px;box-shadow:var(--shadow);padding:18px;display:grid;gap:12px;}
+    .trialIssuesPickerTop{display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap;}
+    .trialIssuesPickerControls{display:grid;grid-template-columns:minmax(260px,1.2fr) auto;gap:10px;align-items:start;}
+    .trialIssuesPickerFilters{display:none;border:1px solid var(--border);border-radius:16px;padding:12px;background:#fbfdff;gap:12px;}
+    .trialIssuesPickerFilters.open{display:grid;grid-template-columns:repeat(4,minmax(180px,1fr));}
+    .trialIssuesPickerFilterBlock{display:grid;gap:6px;align-content:start;}
+    .trialIssuesPickerChecklist{max-height:220px;overflow:auto;border:1px solid var(--border);border-radius:12px;background:#fff;padding:8px;display:grid;gap:6px;}
+    .trialIssuesPickerList{display:grid;gap:10px;}
+    .trialIssuesPickerItem{display:grid;gap:8px;border:1px solid var(--border);border-radius:16px;background:#fff;padding:12px;}
+    .trialIssuesPickerItemTop{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap;}
+    .trialIssuesPickerMeta{display:flex;gap:6px;flex-wrap:wrap;align-items:center;}
+    .trialIssuesPickerSummary{font-size:12px;color:var(--muted);line-height:1.4;white-space:pre-wrap;}
+    @media (max-width: 980px){.trialIssuesPickerFilters.open{grid-template-columns:1fr;}.trialIssuesPickerControls{grid-template-columns:1fr;}}
 
     .authShell{max-width:980px;margin:18px auto 0;padding:0 16px;}
     .authGrid{display:grid;grid-template-columns:repeat(2,minmax(280px,1fr));gap:14px;}
@@ -1362,7 +1380,7 @@
     <div id="sourceDocModal" class="structuredModal"><div id="sourceDocModalCard" class="structuredModalCard sourceDocModalCard"><div style="display:flex; justify-content:space-between; gap:10px; align-items:center"><h3 id="sourceDocModalTitle" style="margin:0">Elements from Document</h3><div class="sourceDocHeaderActions"><button type="button" id="sourceDocModalMaxBtn" class="btnGhost">Maximize</button><button type="button" id="sourceDocModalClose" class="btnGhost">Close</button></div></div><div id="sourceDocPickerMode"><div class="sourceDocToolbar"><input id="sourceDocSearch" type="text" placeholder="Search documents" style="min-width:260px" /><div class="hint">Pick any uploaded document, then select text in the viewer or capture an image snippet.</div></div><div id="sourceDocPickerList" class="sourceDocPickerList"></div></div><div id="sourceDocStickyBar" class="sourceDocStickyBar"><div id="sourceDocStickyInfo" class="sourceDocStickyInfo">Highlight text in the document, then click Create element from selection or use image capture.</div><div class="sourceDocStickyActions"><button type="button" id="sourceDocBackToPicker" class="btnGhost" style="display:none">Choose another document</button><button type="button" id="sourceDocCreateElement" class="btnPrimary" disabled>Create element from selection</button><button type="button" id="sourceDocStartImageCapture" class="btnGhost" disabled>Create element from image capture</button><button type="button" id="sourceDocReturnToElement" class="btnGhost" style="display:none">Back to element</button></div></div><div id="sourceDocViewerShell" class="sourceDocViewerShell"><div id="sourceDocViewerInner" class="sourceDocViewerInner"><div class="sourceDocEmpty">Choose a document to open it here.</div></div></div><div style="display:flex; justify-content:space-between; gap:10px; align-items:center; flex-wrap:wrap"><div id="sourceDocSelectionInfo" class="hint">Highlight text in the document, then click Create element from selection or use image capture.</div></div></div></div>
     <div id="elementSourceModal" class="structuredModal"><div class="structuredModalCard sourceDocModalCard"><div style="display:flex; justify-content:space-between; gap:10px; align-items:center"><h3 id="elementSourceModalTitle" style="margin:0">Element source</h3><button type="button" id="elementSourceModalClose" class="btnGhost">Close</button></div><div id="elementSourceMeta" class="hint"></div><div id="elementSourceQuote" class="sourceQuotePreview" style="display:none"></div><div id="elementSourceViewerShell" class="sourceDocViewerShell"><div id="elementSourceViewerInner" class="sourceDocViewerInner"><div class="sourceDocEmpty">No source selected.</div></div></div></div></div>
     <div id="documentTagModal" class="structuredModal"><div class="structuredModalCard"><div style="display:flex; justify-content:space-between; gap:10px; align-items:center"><h3 id="documentTagModalTitle" style="margin:0">Add tags to document</h3><button type="button" id="documentTagModalClose" class="btnGhost">Close</button></div><div class="hint">Select as many main tags, sub-tags, and sub-sub-tags as you want.</div><div id="documentTagModalSummary" class="docTagModalSummary"></div><div id="documentTagModalTree" class="docTagModalTree"></div><div style="display:flex; justify-content:flex-end; gap:8px; flex-wrap:wrap"><button type="button" id="documentTagModalCancel" class="btnGhost">Cancel</button><button type="button" id="documentTagModalSave" class="btnPrimary">Save tags</button></div></div></div>
-    <div id="viewTrialIssues" class="card trialIssuesPage" style="display:none"><div style="display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap"><div><h2 style="margin:0 0 8px 0">Trial Issues</h2><div class="hint">Build a side-by-side trial grid showing your client’s proof against the opposing party’s proof. Relief rows span the table, issue rows sit under each relief, and entry rows hold witnesses, elements, documents, and rich text on both sides.</div></div></div><div class="trialIssuesToolbar"><div class="card" style="padding:12px;min-width:300px"><div class="label">Left party name</div><input id="trialIssuesLeftParty" type="text" placeholder="Matt Murski" /><div class="label" style="margin-top:10px">Right party name</div><input id="trialIssuesRightParty" type="text" placeholder="Leah Murski" /></div><div class="card" style="padding:12px;flex:1;min-width:320px"><div class="trialIssuesAddRow"><button id="trialIssuesAddReliefBtn" type="button" class="btnPrimary">+ Add relief</button><button id="trialIssuesAddIssueBtn" type="button" class="btnGhost">+ Add issue / element / factor</button><button id="trialIssuesAddEntryBtn" type="button" class="btnGhost">+ Add side-by-side row</button></div><div class="trialIssuesSubtle" style="margin-top:8px">Drag rows up and down to rearrange them. Entry rows can hold rich text, elements, documents, and witnesses on both sides. Blue rows are assertions. Orange rows are responses.</div></div></div><div class="trialIssuesTableWrap"><table class="trialIssuesTable"><thead><tr><th class="trialIssuesWitnessHeader">Witness</th><th id="trialIssuesLeftHeader" class="trialIssuesPartyHeader">Matt Murski</th><th id="trialIssuesRightHeader" class="trialIssuesPartyHeader">Leah Murski</th><th class="trialIssuesWitnessHeader">Witness</th></tr></thead><tbody id="trialIssuesBody"></tbody></table></div><div id="trialIssuesEmpty" class="empty" style="display:none;margin-top:12px">No trial issue rows yet. Start by adding a relief.</div></div><div id="viewSettings" class="card" style="display:none"><div style="display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap"><h2 style="margin:0">Add Tag</h2><div style="display:flex;gap:8px;flex-wrap:wrap"><a class="btnGhost docOpenLink" data-view-link="tagindex" href="?view=tagindex">Tag Index</a></div></div><div class="hint">Create tags, sub-tags, and sub-sub-tags here. Everything is now saved in Supabase under the tags table, and the library below shows the full hierarchy.</div><div class="toolbar" style="margin-bottom:12px"><span class="pill" id="tagSelHint">Select a tag, then use these controls</span><button id="tagAddRootBtn" class="btnPrimary">+ Top-level tag</button><button id="tagAddSiblingBtn" class="btnGhost">+ Sibling</button><button id="tagAddChildBtn" class="btnGhost">+ Child</button><button id="tagRenameBtn" class="btnGhost">Rename</button><button id="tagDeleteBtn" class="btnDanger">Delete</button><button id="tagCollapseAllBtn" class="btnGhost">Collapse all</button><button id="tagExpandAllBtn" class="btnGhost">Expand all</button></div><div class="grid2"><div class="card" style="box-shadow:none"><h2 style="margin-bottom:8px">Create tag</h2><div class="label">Tag name</div><input id="tagName" type="text" placeholder="e.g., Financial, Parenting time, Credibility" /><div style="margin-top:10px; display:flex; gap:10px; align-items:center; flex-wrap:wrap"><button id="addTag" class="btnPrimary">Add tag</button><span class="pill">Names must be unique</span></div><div style="margin-top:18px; border-top:1px solid var(--border); padding-top:14px"><h2 style="margin-bottom:8px">Create child tag</h2><div class="label">Main tag</div><select id="subtagParent"></select><div class="label" style="margin-top:10px">Create under this sub-tag (optional)</div><select id="subtagParentSubtag"></select><div class="hint" style="margin-top:6px">Leave this as None to create a normal sub-tag. Choose a sub-tag here to create a sub-sub-tag under it.</div><div class="label" style="margin-top:10px">Child tag name</div><input id="subtagName" type="text" placeholder="e.g., Hearing, Motion, School, Medical" /><div class="label" style="margin-top:10px">Icon image (optional)</div><select id="subtagIconSelect"></select><div style="margin-top:10px; display:flex; gap:10px; align-items:center; flex-wrap:wrap"><button id="addSubtag" class="btnPrimary">Add child tag</button></div></div><div style="margin-top:18px; border-top:1px solid var(--border); padding-top:14px"><h2 style="margin-bottom:8px">Icon library</h2><div class="label">Upload new icon</div><input id="iconUploadFile" type="file" accept="image/*" /><div class="label" style="margin-top:10px">Icon name</div><input id="iconUploadName" type="text" placeholder="e.g., Court, School, Doctor" /><div style="margin-top:10px; display:flex; gap:10px; align-items:center; flex-wrap:wrap"><button id="addIconToLibrary" class="btnPrimary">Add icon</button></div><div id="iconLibraryList" style="display:flex; gap:10px; flex-wrap:wrap; margin-top:12px"></div></div></div><div class="card" style="box-shadow:none"><h2 style="margin-bottom:8px">Tag library</h2><div class="hint" style="margin-bottom:10px">Main tags, sub-tags, and sub-sub-tags are shown below in one hierarchy.</div><div id="tagList" style="display:flex; flex-direction:column; gap:10px"></div><div id="tagEmpty" class="empty" style="display:none">No tags yet.</div><div style="margin-top:18px"><h2 style="margin-bottom:8px">Child tag library</h2><div id="subtagList" style="display:flex; flex-direction:column; gap:10px"></div><div id="subtagEmpty" class="empty" style="display:none">No child tags yet.</div></div></div></div></div>
+    <div id="viewTrialIssues" class="card trialIssuesPage" style="display:none"><div style="display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap"><div><h2 style="margin:0 0 8px 0">Trial Issues</h2><div class="hint">Build a side-by-side trial grid showing your client’s proof against the opposing party’s proof. Relief rows span the table, issue rows sit under each relief, and entry rows hold witnesses, elements, documents, and rich text on both sides.</div></div></div><div class="trialIssuesToolbar"><div class="card" style="padding:12px;min-width:300px"><div class="label">Left party name</div><input id="trialIssuesLeftParty" type="text" placeholder="Matt Murski" /><div class="label" style="margin-top:10px">Right party name</div><input id="trialIssuesRightParty" type="text" placeholder="Leah Murski" /></div><div class="card" style="padding:12px;flex:1;min-width:320px"><div class="trialIssuesAddRow"><button id="trialIssuesAddReliefBtn" type="button" class="btnPrimary">+ Add relief</button><button id="trialIssuesAddIssueBtn" type="button" class="btnGhost">+ Add issue / element / factor</button><button id="trialIssuesAddEntryBtn" type="button" class="btnGhost">+ Add side-by-side row</button></div><div class="trialIssuesSubtle" style="margin-top:8px">Drag rows up and down to rearrange them. Entry rows can hold rich text, elements, documents, and witnesses on both sides. Blue rows are assertions. Orange rows are responses.</div></div></div><div class="trialIssuesTableWrap"><table class="trialIssuesTable"><thead><tr><th class="trialIssuesWitnessHeader">Witness</th><th id="trialIssuesLeftHeader" class="trialIssuesPartyHeader">Matt Murski</th><th id="trialIssuesRightHeader" class="trialIssuesPartyHeader">Leah Murski</th><th class="trialIssuesWitnessHeader">Witness</th></tr></thead><tbody id="trialIssuesBody"></tbody></table></div><div id="trialIssuesEmpty" class="empty" style="display:none;margin-top:12px">No trial issue rows yet. Start by adding a relief.</div></div><div id="trialIssuesPickerModal" class="trialIssuesPickerModal"><div class="trialIssuesPickerCard"><div class="trialIssuesPickerTop"><div><h3 id="trialIssuesPickerTitle" style="margin:0">Choose item</h3><div id="trialIssuesPickerHint" class="hint">Search and filter, then add an item.</div></div><button type="button" id="trialIssuesPickerClose" class="btnGhost">Close</button></div><div class="trialIssuesPickerControls"><input id="trialIssuesPickerSearch" type="text" placeholder="Search by name" /><button type="button" id="trialIssuesPickerFilterToggle" class="btnGhost">Filters</button></div><div id="trialIssuesPickerFilters" class="trialIssuesPickerFilters"><div class="trialIssuesPickerFilterBlock"><div class="label">Tags</div><div id="trialIssuesPickerTagFilters" class="trialIssuesPickerChecklist"></div></div><div class="trialIssuesPickerFilterBlock"><div class="label">File type</div><div id="trialIssuesPickerFileTypeFilters" class="trialIssuesPickerChecklist"></div></div><div class="trialIssuesPickerFilterBlock"><div class="label">Source</div><div id="trialIssuesPickerSourceFilters" class="trialIssuesPickerChecklist"></div></div><div class="trialIssuesPickerFilterBlock"><div class="label">Witness</div><div id="trialIssuesPickerWitnessFilters" class="trialIssuesPickerChecklist"></div></div></div><div id="trialIssuesPickerList" class="trialIssuesPickerList"></div><div id="trialIssuesPickerEmpty" class="empty" style="display:none">No items match the current search and filters.</div></div></div><div id="viewSettings" class="card" style="display:none"><div style="display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap"><h2 style="margin:0">Add Tag</h2><div style="display:flex;gap:8px;flex-wrap:wrap"><a class="btnGhost docOpenLink" data-view-link="tagindex" href="?view=tagindex">Tag Index</a></div></div><div class="hint">Create tags, sub-tags, and sub-sub-tags here. Everything is now saved in Supabase under the tags table, and the library below shows the full hierarchy.</div><div class="toolbar" style="margin-bottom:12px"><span class="pill" id="tagSelHint">Select a tag, then use these controls</span><button id="tagAddRootBtn" class="btnPrimary">+ Top-level tag</button><button id="tagAddSiblingBtn" class="btnGhost">+ Sibling</button><button id="tagAddChildBtn" class="btnGhost">+ Child</button><button id="tagRenameBtn" class="btnGhost">Rename</button><button id="tagDeleteBtn" class="btnDanger">Delete</button><button id="tagCollapseAllBtn" class="btnGhost">Collapse all</button><button id="tagExpandAllBtn" class="btnGhost">Expand all</button></div><div class="grid2"><div class="card" style="box-shadow:none"><h2 style="margin-bottom:8px">Create tag</h2><div class="label">Tag name</div><input id="tagName" type="text" placeholder="e.g., Financial, Parenting time, Credibility" /><div style="margin-top:10px; display:flex; gap:10px; align-items:center; flex-wrap:wrap"><button id="addTag" class="btnPrimary">Add tag</button><span class="pill">Names must be unique</span></div><div style="margin-top:18px; border-top:1px solid var(--border); padding-top:14px"><h2 style="margin-bottom:8px">Create child tag</h2><div class="label">Main tag</div><select id="subtagParent"></select><div class="label" style="margin-top:10px">Create under this sub-tag (optional)</div><select id="subtagParentSubtag"></select><div class="hint" style="margin-top:6px">Leave this as None to create a normal sub-tag. Choose a sub-tag here to create a sub-sub-tag under it.</div><div class="label" style="margin-top:10px">Child tag name</div><input id="subtagName" type="text" placeholder="e.g., Hearing, Motion, School, Medical" /><div class="label" style="margin-top:10px">Icon image (optional)</div><select id="subtagIconSelect"></select><div style="margin-top:10px; display:flex; gap:10px; align-items:center; flex-wrap:wrap"><button id="addSubtag" class="btnPrimary">Add child tag</button></div></div><div style="margin-top:18px; border-top:1px solid var(--border); padding-top:14px"><h2 style="margin-bottom:8px">Icon library</h2><div class="label">Upload new icon</div><input id="iconUploadFile" type="file" accept="image/*" /><div class="label" style="margin-top:10px">Icon name</div><input id="iconUploadName" type="text" placeholder="e.g., Court, School, Doctor" /><div style="margin-top:10px; display:flex; gap:10px; align-items:center; flex-wrap:wrap"><button id="addIconToLibrary" class="btnPrimary">Add icon</button></div><div id="iconLibraryList" style="display:flex; gap:10px; flex-wrap:wrap; margin-top:12px"></div></div></div><div class="card" style="box-shadow:none"><h2 style="margin-bottom:8px">Tag library</h2><div class="hint" style="margin-bottom:10px">Main tags, sub-tags, and sub-sub-tags are shown below in one hierarchy.</div><div id="tagList" style="display:flex; flex-direction:column; gap:10px"></div><div id="tagEmpty" class="empty" style="display:none">No tags yet.</div><div style="margin-top:18px"><h2 style="margin-bottom:8px">Child tag library</h2><div id="subtagList" style="display:flex; flex-direction:column; gap:10px"></div><div id="subtagEmpty" class="empty" style="display:none">No child tags yet.</div></div></div></div></div>
   </div>
   <div id="toast" class="toast"></div>
   <script>
@@ -7955,6 +7973,124 @@ function openStructuredDocEditor(docId){
       row.addEventListener('dragleave', ()=> row.classList.remove('trialIssuesDropBefore'));
       row.addEventListener('drop', (e)=>{ e.preventDefault(); row.classList.remove('trialIssuesDropBefore'); const targetId = row.getAttribute('data-trial-row-id') || ''; if(!dragRowId || !targetId || dragRowId === targetId) return; const rows = getTrialIssuesRows(); const from = rows.findIndex(item => item.id === dragRowId); const to = rows.findIndex(item => item.id === targetId); if(from === -1 || to === -1) return; const [moved] = rows.splice(from, 1); rows.splice(to, 0, moved); saveTrialIssuesLocal(); renderTrialIssues(); });
     }); }
+  const trialIssuesPickerState = { open:false, rowId:'', side:'left', kind:'element', search:'', filtersOpen:false, selectedTags:[], selectedFileTypes:[], selectedSources:[], selectedWitnesses:[] };
+  function closeTrialIssuesPicker(){ trialIssuesPickerState.open = false; const modal = $('trialIssuesPickerModal'); if(modal) modal.classList.remove('open'); }
+  function getTrialDocumentFileTypes(doc){
+    const raw = String(doc?.mimeType || doc?.filename || doc?.originalFileName || '').toLowerCase();
+    if(raw.includes('pdf') || raw.includes('.pdf')) return ['PDF'];
+    if(raw.includes('word') || raw.includes('.doc')) return ['Word'];
+    if(raw.includes('sheet') || raw.includes('.xls') || raw.includes('csv')) return ['Spreadsheet'];
+    if(raw.includes('image') || ['.png','.jpg','.jpeg','.webp','.gif'].some(ext => raw.includes(ext))) return ['Image'];
+    if(raw) return ['Other'];
+    return ['No file'];
+  }
+  function getTrialItemFileTypes(item, kind){
+    if(kind === 'document') return getTrialDocumentFileTypes(item);
+    const names = [];
+    const docIds = [].concat(item?.documentIds || [], item?.exhibitDocIds || [], getElementSourceDocumentIds?.(item) || []).filter(Boolean);
+    docIds.forEach(docId => { const doc = getDocumentById(docId); getTrialDocumentFileTypes(doc || {}).forEach(ft => names.push(ft)); });
+    return Array.from(new Set(names.length ? names : ['No file']));
+  }
+  function getTrialItemSources(item, kind){
+    const out = [];
+    if(kind === 'document'){
+      if(item?.hasFile || item?.filePath) out.push('File upload'); else out.push('No file');
+      if(item?.description) out.push('Description');
+    } else {
+      const refs = Array.isArray(item?.sourceRefs) ? item.sourceRefs : [];
+      refs.forEach(ref => {
+        if(ref?.sourceType === 'document_link') out.push('Document');
+        else if(ref?.sourceType === 'person_link') out.push('Person');
+        else if(ref?.sourceType === 'image_capture') out.push('Image capture');
+        else if(ref?.sourceType === 'manual_text') out.push('Manual text');
+      });
+      if(item?.source) out.push(String(item.source));
+      if(!out.length) out.push('None');
+    }
+    return Array.from(new Set(out.filter(Boolean)));
+  }
+  function getTrialItemWitnesses(item, kind){
+    if(kind === 'document'){
+      const witnessIds = new Set();
+      (state.outline || []).forEach(row => { Object.entries(row?.witnessData || {}).forEach(([wid, cell]) => { if((cell?.exhibits || []).includes(item?.id)) witnessIds.add(wid); }); });
+      return Array.from(witnessIds);
+    }
+    return Array.from(new Set([].concat(item?.witnessIds || [])));
+  }
+  function buildTrialPickerItems(kind){
+    return (kind === 'document' ? (state.documents || []) : (state.elements || [])).map(item => ({
+      item,
+      id: item.id,
+      name: String(item?.name || '').trim() || (kind === 'document' ? 'Untitled document' : 'Untitled element'),
+      tags: Array.from(new Set([].concat((item?.tagLinks || []).map(link => link.tagId), item?.tags || []).filter(Boolean))),
+      fileTypes: getTrialItemFileTypes(item, kind),
+      sources: getTrialItemSources(item, kind),
+      witnesses: getTrialItemWitnesses(item, kind),
+      summary: kind === 'document' ? String(item?.description || '') : normalizeHtmlToPlainText(item?.text || '').slice(0, 240)
+    })).sort((a,b) => a.name.localeCompare(b.name));
+  }
+  function renderTrialPickerFilters(items){
+    const renderChecks = (hostId, values, selected, labeler) => {
+      const host = $(hostId); if(!host) return;
+      host.innerHTML = values.length ? values.map(v => `<label class="checkItem" style="margin:0"><input type="checkbox" data-trial-picker-filter="${hostId}" value="${escapeHtml(v)}" ${selected.includes(v) ? 'checked' : ''}/> <span>${escapeHtml(labeler(v))}</span></label>`).join('') : '<div class="hint">No options</div>';
+    };
+    const tagVals = Array.from(new Set(items.flatMap(item => item.tags))).map(id => state.tags.find(t => t.id === id)?.name ? `${id}::${state.tags.find(t => t.id === id).name}` : '').filter(Boolean).sort((a,b)=>a.split('::')[1].localeCompare(b.split('::')[1]));
+    const fileVals = Array.from(new Set(items.flatMap(item => item.fileTypes))).sort();
+    const sourceVals = Array.from(new Set(items.flatMap(item => item.sources))).sort();
+    const witnessVals = Array.from(new Set(items.flatMap(item => item.witnesses))).map(id => getPersonById(id)?.name ? `${id}::${getPersonById(id).name}` : '').filter(Boolean).sort((a,b)=>a.split('::')[1].localeCompare(b.split('::')[1]));
+    renderChecks('trialIssuesPickerTagFilters', tagVals, trialIssuesPickerState.selectedTags, v => v.split('::')[1]);
+    renderChecks('trialIssuesPickerFileTypeFilters', fileVals, trialIssuesPickerState.selectedFileTypes, v => v);
+    renderChecks('trialIssuesPickerSourceFilters', sourceVals, trialIssuesPickerState.selectedSources, v => v);
+    renderChecks('trialIssuesPickerWitnessFilters', witnessVals, trialIssuesPickerState.selectedWitnesses, v => v.split('::')[1]);
+    document.querySelectorAll('[data-trial-picker-filter]').forEach(input => {
+      input.onchange = () => {
+        const bucket = input.getAttribute('data-trial-picker-filter');
+        const key = bucket === 'trialIssuesPickerTagFilters' ? 'selectedTags' : bucket === 'trialIssuesPickerFileTypeFilters' ? 'selectedFileTypes' : bucket === 'trialIssuesPickerSourceFilters' ? 'selectedSources' : 'selectedWitnesses';
+        trialIssuesPickerState[key] = Array.from(document.querySelectorAll(`[data-trial-picker-filter="${bucket}"]:checked`)).map(el => el.value);
+        renderTrialIssuesPickerList();
+      };
+    });
+  }
+  function itemMatchesPickerFilters(entry){
+    const q = trialIssuesPickerState.search.trim().toLowerCase();
+    if(q && !(`${entry.name}
+${entry.summary}`).toLowerCase().includes(q)) return false;
+    if(trialIssuesPickerState.selectedTags.length){ const ids = trialIssuesPickerState.selectedTags.map(v => v.split('::')[0]); if(!ids.some(id => entry.tags.includes(id))) return false; }
+    if(trialIssuesPickerState.selectedFileTypes.length && !trialIssuesPickerState.selectedFileTypes.some(v => entry.fileTypes.includes(v))) return false;
+    if(trialIssuesPickerState.selectedSources.length && !trialIssuesPickerState.selectedSources.some(v => entry.sources.includes(v))) return false;
+    if(trialIssuesPickerState.selectedWitnesses.length){ const ids = trialIssuesPickerState.selectedWitnesses.map(v => v.split('::')[0]); if(!ids.some(id => entry.witnesses.includes(id))) return false; }
+    return true;
+  }
+  function renderTrialIssuesPickerList(){
+    const items = buildTrialPickerItems(trialIssuesPickerState.kind);
+    renderTrialPickerFilters(items);
+    const filtered = items.filter(itemMatchesPickerFilters);
+    const host = $('trialIssuesPickerList'); const empty = $('trialIssuesPickerEmpty'); if(!host || !empty) return;
+    empty.style.display = filtered.length ? 'none' : '';
+    host.innerHTML = filtered.map(entry => `<div class="trialIssuesPickerItem"><div class="trialIssuesPickerItemTop"><div><div style="font-weight:900">${escapeHtml(entry.name)}</div><div class="trialIssuesPickerSummary">${escapeHtml(entry.summary || 'No summary.')}</div></div><button type="button" class="btnPrimary" data-trial-picker-select="${entry.id}">Add</button></div><div class="trialIssuesPickerMeta">${entry.tags.slice(0,4).map(tagId => `<span class="pill">${escapeHtml(state.tags.find(t => t.id === tagId)?.name || 'Tag')}</span>`).join('')}${entry.fileTypes.map(ft => `<span class="pill">${escapeHtml(ft)}</span>`).join('')}${entry.witnesses.slice(0,3).map(id => `<span class="pill">${escapeHtml(getPersonById(id)?.name || 'Witness')}</span>`).join('')}</div></div>`).join('');
+    document.querySelectorAll('[data-trial-picker-select]').forEach(btn => btn.onclick = () => {
+      const row = getTrialIssueRow(trialIssuesPickerState.rowId); if(!row) return;
+      const key = (trialIssuesPickerState.side === 'right' ? 'right' : 'left') + 'Links';
+      row[key] = normalizeTrialCellLinks([...(row[key] || []), { id: uid(), type: trialIssuesPickerState.kind, refId: btn.getAttribute('data-trial-picker-select') || '' }]);
+      saveTrialIssuesLocal(); closeTrialIssuesPicker(); renderTrialIssues();
+    });
+  }
+  function openTrialIssuesPicker(rowId, side, kind){
+    trialIssuesPickerState.open = true; trialIssuesPickerState.rowId = rowId || ''; trialIssuesPickerState.side = side === 'right' ? 'right' : 'left'; trialIssuesPickerState.kind = kind === 'document' ? 'document' : 'element'; trialIssuesPickerState.search = ''; trialIssuesPickerState.selectedTags = []; trialIssuesPickerState.selectedFileTypes = []; trialIssuesPickerState.selectedSources = []; trialIssuesPickerState.selectedWitnesses = []; trialIssuesPickerState.filtersOpen = false;
+    if($('trialIssuesPickerTitle')) $('trialIssuesPickerTitle').textContent = kind === 'document' ? 'Add document' : 'Add element';
+    if($('trialIssuesPickerHint')) $('trialIssuesPickerHint').textContent = 'Search and filter, then click Add.';
+    if($('trialIssuesPickerSearch')) $('trialIssuesPickerSearch').value = '';
+    $('trialIssuesPickerFilters')?.classList.remove('open');
+    $('trialIssuesPickerModal')?.classList.add('open');
+    renderTrialIssuesPickerList();
+    setTimeout(()=> $('trialIssuesPickerSearch')?.focus(), 0);
+  }
+  function bindTrialIssuesPicker(){
+    if($('trialIssuesPickerClose')) $('trialIssuesPickerClose').onclick = closeTrialIssuesPicker;
+    if($('trialIssuesPickerModal')) $('trialIssuesPickerModal').addEventListener('click', e => { if(e.target === $('trialIssuesPickerModal')) closeTrialIssuesPicker(); });
+    if($('trialIssuesPickerSearch')) $('trialIssuesPickerSearch').oninput = () => { trialIssuesPickerState.search = $('trialIssuesPickerSearch')?.value || ''; renderTrialIssuesPickerList(); };
+    if($('trialIssuesPickerFilterToggle')) $('trialIssuesPickerFilterToggle').onclick = () => { trialIssuesPickerState.filtersOpen = !trialIssuesPickerState.filtersOpen; $('trialIssuesPickerFilters')?.classList.toggle('open', trialIssuesPickerState.filtersOpen); };
+  }
   function bindTrialIssuesPage(){
     $('trialIssuesLeftParty')?.removeEventListener('input', handleTrialPartyInput);
     $('trialIssuesRightParty')?.removeEventListener('input', handleTrialPartyInput);
@@ -7985,7 +8121,7 @@ function openStructuredDocEditor(docId){
     document.querySelectorAll('[data-trial-rich]').forEach(btn => btn.addEventListener('click', ()=>{ const root = btn.closest('.trialIssuesCellEditor'); const side = root?.getAttribute('data-trial-side') || 'left'; const editor = getTrialActiveEditor(side, root); trialIssuesExecRichCommand(editor, btn.getAttribute('data-trial-rich') || 'bold'); if(editor) editor.dispatchEvent(new Event('input', { bubbles:true })); }));
     document.querySelectorAll('[data-trial-add-witness]').forEach(btn => btn.addEventListener('click', ()=> promptForTrialWitness(btn.getAttribute('data-trial-add-witness'), btn.getAttribute('data-trial-side') || 'left')));
     document.querySelectorAll('[data-trial-remove-witness]').forEach(btn => btn.addEventListener('click', ()=>{ const row = getTrialIssueRow(btn.getAttribute('data-trial-remove-witness')); if(!row) return; const side = btn.getAttribute('data-trial-side') === 'right' ? 'right' : 'left'; const key = side + 'WitnessIds'; const notesKey = side + 'WitnessNotes'; const personId = btn.getAttribute('data-trial-person'); row[key] = (row[key] || []).filter(id => id !== personId); row[notesKey] = normalizeTrialWitnessNotesMap(row[notesKey]); delete row[notesKey][personId]; saveTrialIssuesLocal(); renderTrialIssues(); }));
-    document.querySelectorAll('[data-trial-add-link]').forEach(btn => btn.addEventListener('click', ()=> promptForTrialLink(btn.getAttribute('data-trial-add-link'), btn.getAttribute('data-trial-side') || 'left', btn.getAttribute('data-trial-kind') || 'element')));
+    document.querySelectorAll('[data-trial-add-link]').forEach(btn => btn.addEventListener('click', ()=> openTrialIssuesPicker(btn.getAttribute('data-trial-add-link'), btn.getAttribute('data-trial-side') || 'left', btn.getAttribute('data-trial-kind') || 'element')));
     document.querySelectorAll('[data-trial-remove-link]').forEach(btn => btn.addEventListener('click', ()=>{ const row = getTrialIssueRow(btn.getAttribute('data-trial-remove-link')); if(!row) return; const key = (btn.getAttribute('data-trial-side') === 'right' ? 'right' : 'left') + 'Links'; row[key] = (row[key] || []).filter(link => link.id !== btn.getAttribute('data-trial-link')); saveTrialIssuesLocal(); renderTrialIssues(); }));
     document.querySelectorAll('[data-trial-view-file]').forEach(btn => btn.addEventListener('click', ()=> openDocumentTableViewer(btn.getAttribute('data-trial-view-file'))));
     document.querySelectorAll('[data-trial-open-document]').forEach(btn => btn.addEventListener('click', ()=> openDocumentEditModal(btn.getAttribute('data-trial-open-document'))));
@@ -7999,6 +8135,7 @@ function openStructuredDocEditor(docId){
   }
   function handleTrialPartyInput(){ state.trialIssues = normalizeTrialIssuesState(state.trialIssues); state.trialIssues.leftPartyName = $('trialIssuesLeftParty')?.value || 'Matt Murski'; state.trialIssues.rightPartyName = $('trialIssuesRightParty')?.value || 'Leah Murski'; saveTrialIssuesLocal(); if($('trialIssuesLeftHeader')) $('trialIssuesLeftHeader').textContent = state.trialIssues.leftPartyName; if($('trialIssuesRightHeader')) $('trialIssuesRightHeader').textContent = state.trialIssues.rightPartyName; renderTrialIssues(); }
   loadTrialIssuesLocal();
+  bindTrialIssuesPicker();
   const addIconBtn = $('addIconToLibrary');
   if(addIconBtn){
     const replacement = addIconBtn.cloneNode(true); addIconBtn.parentNode.replaceChild(replacement, addIconBtn);
