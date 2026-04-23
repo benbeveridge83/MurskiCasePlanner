@@ -3339,9 +3339,9 @@ function normalizeState(){ state.tags = Array.isArray(state.tags) ? state.tags.f
       const table = host?.querySelector('table');
       if(!table) return;
       const allowed = mode === 'document'
-        ? ['edit','name','witness','uploadDate','exhibit','theirExhibit','date']
+        ? ['number','edit','name','witness','uploadDate','exhibit','theirExhibit','date']
         : ['edit','name','creator','dateAdded','source','witness','document','exhibit','date'];
-      const visible = new Set(['edit','name'].concat(getWorksheetVisibleColumns(mode)));
+      const visible = new Set((mode === 'document' ? ['number','edit','name'] : ['edit','name']).concat(getWorksheetVisibleColumns(mode)));
       allowed.forEach((key, idx) => {
         const show = visible.has(key);
         table.querySelectorAll(`thead th:nth-child(${idx + 1}), tbody td:nth-child(${idx + 1})`).forEach(cell => {
@@ -3353,7 +3353,7 @@ function normalizeState(){ state.tags = Array.isArray(state.tags) ? state.tags.f
     }
 
     const DEFAULT_ELEMENTS_WORKSHEET_COL_WIDTHS = { edit:120, name:320, creator:220, dateAdded:160, source:220, witness:220, document:220, exhibit:180, date:150, tagSummary:120, tagLeaf:90 };
-    const DEFAULT_DOCUMENT_WORKSHEET_COL_WIDTHS = { edit:120, name:320, witness:220, uploadDate:160, exhibit:180, theirExhibit:260, date:150, tagSummary:120, tagLeaf:90 };
+    const DEFAULT_DOCUMENT_WORKSHEET_COL_WIDTHS = { number:64, edit:120, name:320, witness:220, uploadDate:160, exhibit:180, theirExhibit:260, date:150, tagSummary:120, tagLeaf:90 };
     function getWorksheetWidthStore(mode){ return mode === 'document' ? (ui.documentWorksheetColWidths = ui.documentWorksheetColWidths || {}) : (ui.elementsWorksheetColWidths = ui.elementsWorksheetColWidths || {}); }
     function getWorksheetDefaultWidth(mode, key, fallback){
       const defaults = mode === 'document' ? DEFAULT_DOCUMENT_WORKSHEET_COL_WIDTHS : DEFAULT_ELEMENTS_WORKSHEET_COL_WIDTHS;
@@ -3382,6 +3382,14 @@ function normalizeState(){ state.tags = Array.isArray(state.tags) ? state.tags.f
     function applyWorksheetStickyOffsets(mode){
       const table = mode === 'document' ? $('documentWorksheetTableHost')?.querySelector('table') : $('elementsWorksheetTableHost')?.querySelector('table');
       if(!table) return;
+      if(mode === 'document'){
+        const numberWidth = getWorksheetColumnWidth('document', 'number', 64);
+        const editWidth = getWorksheetColumnWidth('document', 'edit', 120);
+        table.querySelectorAll('th:nth-child(1), td:nth-child(1)').forEach(cell => { cell.style.position = 'sticky'; cell.style.left = '0px'; cell.style.width = numberWidth + 'px'; cell.style.minWidth = numberWidth + 'px'; cell.style.maxWidth = numberWidth + 'px'; cell.style.zIndex = cell.tagName === 'TH' ? '32' : '31'; cell.style.background = cell.tagName === 'TH' ? '#f8fbff' : '#fff'; });
+        table.querySelectorAll('th:nth-child(2), td:nth-child(2)').forEach(cell => { cell.style.position = 'sticky'; cell.style.left = numberWidth + 'px'; cell.style.width = editWidth + 'px'; cell.style.minWidth = editWidth + 'px'; cell.style.maxWidth = editWidth + 'px'; cell.style.zIndex = cell.tagName === 'TH' ? '31' : '30'; cell.style.background = cell.tagName === 'TH' ? '#f8fbff' : '#fff'; });
+        table.querySelectorAll('th:nth-child(3), td:nth-child(3)').forEach(cell => { cell.style.position = 'sticky'; cell.style.left = (numberWidth + editWidth) + 'px'; cell.style.zIndex = cell.tagName === 'TH' ? '30' : '29'; cell.style.background = cell.tagName === 'TH' ? '#f8fbff' : '#fff'; cell.style.boxShadow = '1px 0 0 var(--border)'; });
+        return;
+      }
       const editWidth = getWorksheetColumnWidth(mode, 'edit', 120);
       table.querySelectorAll('th:nth-child(1), td:nth-child(1)').forEach(cell => { cell.style.left = '0px'; cell.style.width = editWidth + 'px'; cell.style.minWidth = editWidth + 'px'; cell.style.maxWidth = editWidth + 'px'; });
       table.querySelectorAll('th:nth-child(2), td:nth-child(2)').forEach(cell => { cell.style.left = editWidth + 'px'; });
@@ -3466,6 +3474,7 @@ function normalizeState(){ state.tags = Array.isArray(state.tags) ? state.tags.f
       const arrow = (key) => sort.key === key ? (sort.dir === 'asc' ? ' ▲' : ' ▼') : '';
       const visibleBase = new Set(getWorksheetVisibleColumns('document'));
       const baseColumnDefs = [
+        { key:'number', width:64, always:true, header:`<th rowspan="3" class="worksheetRowNumberHead elementsWorksheetHeadCell">${worksheetHeaderWithResize('Number', 'document', 'number', 64)}</th>`, cell:()=>`<td class="worksheetRowNumberCell"></td>` },
         { key:'edit', width:120, always:true, header:`<th rowspan="3" class="elementsWorksheetEditCol elementsWorksheetHeadCell">${worksheetHeaderWithResize('Edit', 'document', 'edit', 120)}</th>`, cell:(doc)=>`<td><div style="display:grid;gap:6px"><button type="button" class="mini" data-document-open-edit="${doc.id}">Edit document</button><button type="button" class="mini" data-document-view-file="${doc.id}">View document</button></div></td>` },
         { key:'name', width:320, always:true, header:`<th rowspan="3" data-document-worksheet-sort="name" style="cursor:pointer" class="elementsWorksheetHeadCell">${worksheetHeaderWithResize(`Document${arrow('name')}`, 'document', 'name', 320)}</th>`, cell:(doc)=>`<td data-document-open-edit="${doc.id}" style="cursor:pointer">${escapeHtml(getDocumentWorksheetDisplayValue(doc, 'name') || 'Untitled document')}</td>` },
         { key:'witness', width:220, header:`<th rowspan="3" data-document-worksheet-sort="witness" style="cursor:pointer" class="elementsWorksheetHeadCell">${worksheetHeaderWithResize(`Witness${arrow('witness')}`, 'document', 'witness', 220)}</th>`, cell:(doc)=>`<td>${escapeHtml(getDocumentWorksheetDisplayValue(doc, 'witness') || '—')}</td>` },
@@ -3478,6 +3487,7 @@ function normalizeState(){ state.tags = Array.isArray(state.tags) ? state.tags.f
       const baseCols = shownBaseDefs.length;
       const headerRows = getHierarchicalHeaderRowData(groups, 'worksheet');
       const columnDefs = [
+        { key:'number', width:64 },
         { key:'edit', width:120 },
         { key:'name', width:320 },
         { key:'witness', width:220 },
