@@ -1247,19 +1247,19 @@
     .bulkDocTable tbody tr.bulkDocRowDup{background:#fef2f2!important;}
 
 
-    .trialIssuesFloatingToc{position:fixed;left:0;top:0;bottom:0;width:200px;z-index:90;background:rgba(255,255,255,.96);border-right:1px solid var(--border);box-shadow:var(--shadow2);display:none;grid-template-rows:auto 1fr;transition:width .18s ease, transform .18s ease;resize:horizontal;overflow:hidden;min-width:120px;max-width:calc(100vw - 80px);}
+    .trialIssuesFloatingToc{position:fixed;left:0;top:0;bottom:0;width:260px;z-index:90;background:#fff;border-right:1px solid var(--border);box-shadow:var(--shadow2);display:none;grid-template-rows:auto 1fr;transition:width .18s ease, transform .18s ease;resize:horizontal;overflow:hidden;min-width:220px;max-width:calc(100vw - 80px);}
     .trialIssuesFloatingToc.open{display:grid;}
-    .trialIssuesFloatingToc.hoverExpanded{width:min(920px,calc(100vw - 80px)) !important;}
-    .trialIssuesTocHeader{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:10px 10px;border-bottom:1px solid var(--border);background:#f8fbff;cursor:move;user-select:none;}
-    .trialIssuesTocTitle{font-weight:900;font-size:14px;}
+    .trialIssuesFloatingToc.hoverExpanded{width:min(920px,calc(100vw - 80px)) !important;background:#fff;}
+    .trialIssuesTocHeader{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;padding:10px 10px;border-bottom:1px solid var(--border);background:#f8fbff;cursor:move;user-select:none;}
+    .trialIssuesTocTitle{font-weight:900;font-size:14px;color:#0f172a;line-height:1.25;}
     .trialIssuesTocActions{display:flex;gap:6px;align-items:center;flex-wrap:wrap;justify-content:flex-end;}
-    .trialIssuesTocList{overflow:auto;padding:10px 8px 18px 8px;display:grid;gap:4px;align-content:start;}
-    .trialIssuesTocItem{border:1px solid transparent;border-radius:10px;background:transparent;padding:7px 8px;text-align:left;box-shadow:none;font-size:13px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;width:100%;}
+    .trialIssuesTocList{overflow:auto;padding:10px 8px 18px 8px;display:grid;gap:6px;align-content:start;background:#fff;}
+    .trialIssuesTocItem{border:1px solid transparent;border-radius:10px;background:#fff;padding:7px 8px;text-align:left;box-shadow:none;font-size:13px;font-weight:800;line-height:1.25;white-space:normal;overflow:visible;text-overflow:clip;width:100%;min-height:30px;color:#0f172a;}
     .trialIssuesTocItem:hover{background:rgba(37,99,235,.06);border-color:rgba(37,99,235,.20);}
     .trialIssuesTocItem.active{background:rgba(37,99,235,.12);border-color:rgba(37,99,235,.35);color:var(--brand2);}
-    .trialIssuesTocItem.level-relief{font-size:14px;}
-    .trialIssuesTocItem.level-subrelief{margin-left:18px;width:calc(100% - 18px);font-size:13px;}
-    .trialIssuesTocItem.level-issue{margin-left:36px;width:calc(100% - 36px);font-size:12px;font-weight:700;}
+    .trialIssuesTocItem.level-relief{font-size:14px;background:#eff6ff;border-color:rgba(37,99,235,.16);}
+    .trialIssuesTocItem.level-subrelief{margin-left:18px;width:calc(100% - 18px);font-size:13px;background:#fff;}
+    .trialIssuesTocItem.level-issue{margin-left:36px;width:calc(100% - 36px);font-size:12px;font-weight:800;background:#fff;}
     .trialIssuesTocClosed{position:fixed;left:10px;top:90px;z-index:91;width:46px;height:46px;border-radius:12px;background:var(--brand);color:#fff;border:1px solid rgba(29,78,216,.45);box-shadow:var(--shadow2);display:none;align-items:center;justify-content:center;font-weight:900;cursor:pointer;}
     .trialIssuesTocClosed.show{display:flex;}
 
