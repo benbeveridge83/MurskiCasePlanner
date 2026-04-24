@@ -7785,7 +7785,7 @@ function openStructuredDocEditor(docId){
         if($('dashboardSetupNotice')){ $('dashboardSetupNotice').classList.remove('hidden'); $('dashboardSetupNotice').textContent = 'Dashboard setup is not complete yet. Confirm the new cases and case_members tables exist and that your user is linked to the case.'; }
       }
     }
-    function showDashboardOnly(){ hideAppChrome(); if($('authShell')) $('authShell').style.display = ''; if($('authGate')) $('authGate').style.display = 'none'; if($('dashboardView')) $('dashboardView').style.display = ''; if($('caseAdminPanel')) $('caseAdminPanel').classList.add('hidden'); loadDashboardData(); }
+    function showDashboardOnly(){ hideAppChrome(); if($('authShell')) $('authShell').style.display = ''; if($('authGate')) $('authGate').style.display = 'none'; if($('dashboardView')) $('dashboardView').style.display = ''; if($('caseAdminPanel')) $('caseAdminPanel').classList.add('hidden'); if(typeof updateCaseChatAccess === 'function') updateCaseChatAccess(); loadDashboardData(); }
     function openCaseFromDashboard(caseId){ if(!caseId) return; localStorage.setItem('murski_selected_case_id', caseId); const url = new URL(window.location.href); url.searchParams.set('case', caseId); url.searchParams.set('view', getInitialViewFromUrl()); window.location.href = url.pathname + '?' + url.searchParams.toString(); }
     async function routeAfterAuth(){ const user = getActiveSessionUser(); if(!user){ showLoginOnly(); return; } if(CASE_ID){ await loadCurrentCaseMembership(); showAppChrome(); return; } showDashboardOnly(); }
 
@@ -9187,7 +9187,9 @@ ${entry.summary}`).toLowerCase().includes(q)) return false;
 
   function isCaseChatUserAllowed(){
     const user = (typeof getActiveSessionUser === 'function') ? getActiveSessionUser() : null;
-    const email = String(user?.email || '').toLowerCase().trim();
+    const badgeEmail = $('authUserBadge') ? $('authUserBadge').textContent : '';
+    const dashboardEmail = $('dashboardUserLine') ? $('dashboardUserLine').textContent : '';
+    const email = String(user?.email || badgeEmail || dashboardEmail || '').toLowerCase().trim();
     const allowedEmails = ['benbeveridge83@gmail.com','ben@beveridgelawfirm.com','benbeveridge@beveridgelawfirm.com'];
     return !!email && (allowedEmails.includes(email) || email.includes('benbeveridge'));
   }
