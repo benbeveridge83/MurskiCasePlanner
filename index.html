@@ -1246,6 +1246,23 @@
     .bulkDocTable tbody tr.bulkDocRowErr{background:#fef2f2!important;}
     .bulkDocTable tbody tr.bulkDocRowDup{background:#fef2f2!important;}
 
+
+    .trialIssuesFloatingToc{position:fixed;left:0;top:0;bottom:0;width:600px;z-index:90;background:rgba(255,255,255,.96);border-right:1px solid var(--border);box-shadow:var(--shadow2);display:none;grid-template-rows:auto 1fr;transition:width .18s ease, transform .18s ease;resize:horizontal;overflow:hidden;min-width:260px;max-width:calc(100vw - 80px);}
+    .trialIssuesFloatingToc.open{display:grid;}
+    .trialIssuesFloatingToc.hoverExpand:hover{width:min(920px,calc(100vw - 80px));}
+    .trialIssuesTocHeader{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:12px 14px;border-bottom:1px solid var(--border);background:#f8fbff;cursor:move;user-select:none;}
+    .trialIssuesTocTitle{font-weight:900;font-size:14px;}
+    .trialIssuesTocActions{display:flex;gap:6px;align-items:center;}
+    .trialIssuesTocList{overflow:auto;padding:10px 8px 18px 8px;display:grid;gap:4px;align-content:start;}
+    .trialIssuesTocItem{border:1px solid transparent;border-radius:10px;background:transparent;padding:7px 8px;text-align:left;box-shadow:none;font-size:13px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;width:100%;}
+    .trialIssuesTocItem:hover{background:rgba(37,99,235,.06);border-color:rgba(37,99,235,.20);}
+    .trialIssuesTocItem.active{background:rgba(37,99,235,.12);border-color:rgba(37,99,235,.35);color:var(--brand2);}
+    .trialIssuesTocItem.level-relief{font-size:14px;}
+    .trialIssuesTocItem.level-subrelief{margin-left:18px;width:calc(100% - 18px);font-size:13px;}
+    .trialIssuesTocItem.level-issue{margin-left:36px;width:calc(100% - 36px);font-size:12px;font-weight:700;}
+    .trialIssuesTocClosed{position:fixed;left:10px;top:90px;z-index:91;width:46px;height:46px;border-radius:12px;background:var(--brand);color:#fff;border:1px solid rgba(29,78,216,.45);box-shadow:var(--shadow2);display:none;align-items:center;justify-content:center;font-weight:900;cursor:pointer;}
+    .trialIssuesTocClosed.show{display:flex;}
+
     .trialIssuesPage{padding:12px;}
     .trialIssuesToolbar{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap;margin:12px 0;}
     .trialIssuesToolbar .card{box-shadow:none;}
@@ -1946,7 +1963,7 @@ function normalizeState(){ state.tags = Array.isArray(state.tags) ? state.tags.f
         el.setAttribute('href', buildViewHref(viewName));
       });
     }
-    function setTab(which, opts={}){ const target = views[which] ? which : 'outline'; ui.currentView = target; document.body.classList.toggle('tagindex-active', target === 'tagindex'); document.body.classList.toggle('outlineindex-active', target === 'outlineindex'); document.body.classList.toggle('outline-screen-wide', target === 'outline'); document.body.classList.toggle('documenttable-screen-wide', target === 'documenttable' && !!ui.documentWorksheetOpen); document.body.classList.toggle('documentanalysis-screen-wide', target === 'documentanalysis'); for(const k of Object.keys(views)){ const on = k === target; const tabEl = $(views[k].tab); const viewEl = $(views[k].view); if(tabEl) tabEl.classList.toggle('active', on); if(viewEl) viewEl.style.display = on ? 'block' : 'none'; } $('viewOutlineIndex') && ( $('viewOutlineIndex').style.display = target === 'outlineindex' ? 'block' : 'none'); $('viewStructuredOutline') && ( $('viewStructuredOutline').style.display = target === 'structuredoutline' ? 'block' : 'none'); updateViewLinks(target); if(opts.pushState !== false){ const params = new URLSearchParams(window.location.search); const caseId = getCaseId(); if(caseId) params.set('case', caseId); else params.delete('case'); params.set('view', target); if(target === 'documenttable' && ui.documentWorksheetOpen) params.set('worksheet', '1'); else if(target === 'elements' && ui.elementsWorksheetOpen) params.set('worksheet', '1'); else params.delete('worksheet'); history.replaceState(null, '', '?' + params.toString()); } if(target==='documents') renderDocuments(); if(target==='documenttable') renderDocumentTable(); if(target==='documentanalysis') renderDocumentAnalysis(); if(target==='exhibits') renderExhibits(); if(target==='elements') renderElements(); if(target==='timeline') renderTimeline(); if(target==='trialissues') renderTrialIssues(); if(target==='trialissuesexhibits') renderTrialIssuesExhibits(); if(target==='tagindex') renderDocumentTagIndex(); if(target==='outlineindex') renderOutlineIndex(); if(target==='structuredoutline') renderStructuredOutline(); }
+    function setTab(which, opts={}){ const target = views[which] ? which : 'outline'; ui.currentView = target; document.body.classList.toggle('tagindex-active', target === 'tagindex'); document.body.classList.toggle('outlineindex-active', target === 'outlineindex'); document.body.classList.toggle('outline-screen-wide', target === 'outline'); document.body.classList.toggle('documenttable-screen-wide', target === 'documenttable' && !!ui.documentWorksheetOpen); document.body.classList.toggle('documentanalysis-screen-wide', target === 'documentanalysis'); for(const k of Object.keys(views)){ const on = k === target; const tabEl = $(views[k].tab); const viewEl = $(views[k].view); if(tabEl) tabEl.classList.toggle('active', on); if(viewEl) viewEl.style.display = on ? 'block' : 'none'; } $('viewOutlineIndex') && ( $('viewOutlineIndex').style.display = target === 'outlineindex' ? 'block' : 'none'); $('viewStructuredOutline') && ( $('viewStructuredOutline').style.display = target === 'structuredoutline' ? 'block' : 'none'); updateViewLinks(target); if(typeof updateTrialIssuesTocVisibility === 'function') updateTrialIssuesTocVisibility(); if(opts.pushState !== false){ const params = new URLSearchParams(window.location.search); const caseId = getCaseId(); if(caseId) params.set('case', caseId); else params.delete('case'); params.set('view', target); if(target === 'documenttable' && ui.documentWorksheetOpen) params.set('worksheet', '1'); else if(target === 'elements' && ui.elementsWorksheetOpen) params.set('worksheet', '1'); else params.delete('worksheet'); history.replaceState(null, '', '?' + params.toString()); } if(target==='documents') renderDocuments(); if(target==='documenttable') renderDocumentTable(); if(target==='documentanalysis') renderDocumentAnalysis(); if(target==='exhibits') renderExhibits(); if(target==='elements') renderElements(); if(target==='timeline') renderTimeline(); if(target==='trialissues') renderTrialIssues(); if(target==='trialissuesexhibits') renderTrialIssuesExhibits(); if(target==='tagindex') renderDocumentTagIndex(); if(target==='outlineindex') renderOutlineIndex(); if(target==='structuredoutline') renderStructuredOutline(); }
     $('tabOutline')?.addEventListener('click', (e)=>{ e.preventDefault(); setTab('outline'); }); $('tabDocuments')?.addEventListener('click', (e)=>{ e.preventDefault(); setTab('documents'); }); $('tabTrialIssuesExhibits')?.addEventListener('click', (e)=>{ e.preventDefault(); setTab('trialissuesexhibits'); }); $('tabDocumentAnalysis')?.addEventListener('click', (e)=>{ e.preventDefault(); setTab('documentanalysis'); }); $('tabTagIndex')?.addEventListener('click', (e)=>{ e.preventDefault(); setTab('tagindex'); }); $('tabOutlineIndex')?.addEventListener('click', (e)=>{ e.preventDefault(); setTab('outlineindex'); }); $('tabStructuredOutline')?.addEventListener('click', (e)=>{ e.preventDefault(); setTab('structuredoutline'); }); $('tabExhibits')?.addEventListener('click', (e)=>{ e.preventDefault(); setTab('exhibits'); }); $('tabPeople')?.addEventListener('click', (e)=>{ e.preventDefault(); setTab('people'); }); $('tabElements')?.addEventListener('click', (e)=>{ e.preventDefault(); ui.elementsWorksheetOpen = false; setTab('elements'); }); $('tabTimeline')?.addEventListener('click', (e)=>{ e.preventDefault(); setTab('timeline'); }); $('tabTrialIssues')?.addEventListener('click', (e)=>{ e.preventDefault(); setTab('trialissues'); }); $('tabSettings')?.addEventListener('click', (e)=>{ e.preventDefault(); setTab('settings'); }); $('timelineAddTagBtn')?.addEventListener('click', ()=> setTab('settings')); $('timelineInlineAddTagBtn')?.addEventListener('click', ()=> setTab('settings')); document.addEventListener('click', (e)=>{ if(!e.target.closest('.documentAnalysisControlsWrap')){ if(ui.documentAnalysisOpenControlsId){ ui.documentAnalysisOpenControlsId = ''; if(ui.currentView === 'documentanalysis') renderDocumentAnalysis(); } } });
     document.addEventListener('click', (e)=>{ const link = e.target.closest('[data-view-link="documenttable"]'); if(!link) return; e.preventDefault(); setTab('documenttable'); });
     function escapeHtml(str){ return (str||'').replace(/[&<>\"']/g, (c)=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c])); }
@@ -3689,7 +3706,7 @@ function normalizeState(){ state.tags = Array.isArray(state.tags) ? state.tags.f
       const meta = getDocumentExhibitMeta(doc.id);
       const tags = getDocumentTagLinks(doc);
       const trialUsage = getTrialIssuesDocumentUsage(doc.id); const statusValue = String(doc?.status || '').trim().toLowerCase(); const statusOur = statusValue === 'our exhibit' || statusValue === 'both'; const statusTheir = statusValue === 'their exhibit' || statusValue === 'both'; const trialClasses = [documentAnalysisRowIsRedForMe(doc) ? 'hasMention' : '', statusOur ? 'documentAnalysisOurExhibit' : '', statusTheir ? 'documentAnalysisTheirExhibit' : '', trialUsage.ourSupport ? 'trialIssuesOurSupport' : '', trialUsage.theirSupport ? 'trialIssuesTheirSupport' : ''].filter(Boolean).join(' '); const trialLabel = trialUsage.ourExhibit && trialUsage.theirExhibit ? 'Our and their exhibit on Trial Issues' : (trialUsage.ourExhibit ? 'Our exhibit on Trial Issues' : (trialUsage.theirExhibit ? 'Their exhibit on Trial Issues' : (trialUsage.ourSupport && trialUsage.theirSupport ? 'Both sides document/impeachment on Trial Issues' : (trialUsage.ourSupport ? 'Matt document/impeachment on Trial Issues' : (trialUsage.theirSupport ? 'Leah document/impeachment on Trial Issues' : (trialUsage.inTrialIssues ? 'In Trial Issues' : 'Not in Trial Issues')))))); const rowNumber = rowNumberIndex + 1;
-      return `<div class="documentAnalysisRow ${trialClasses}" data-document-analysis-row="${doc.id}"><div class="documentAnalysisRowTitleBar"><span class="worksheetRowNumberCell documentAnalysisRowNumber">${rowNumber}</span><div class="documentAnalysisTitleMeta"><div class="documentAnalysisTitle">${escapeHtml(doc.name || 'Untitled document')}</div><div class="documentAnalysisDocMeta"><span>${escapeHtml(formatTimelineDateDisplay(doc.date || '') || 'No date')}</span><span>•</span><span>${escapeHtml(getDocumentStatusLabel(doc.status))}</span><span>•</span><span>${(doc.filePath || doc.dataUrl || doc.hasFile) ? 'Has file' : 'No file'}</span>${meta.isExhibit ? `<span>•</span><span>${escapeHtml(meta.label || 'Exhibit')}</span>` : ''}<span>•</span><span>${escapeHtml(trialLabel)}</span></div></div></div><div class="documentAnalysisLeft">${renderDocumentAnalysisSlider(doc,'leftBenefit','left')}${renderDocumentAnalysisSlider(doc,'leftRelevance','left')}${renderDocumentAnalysisSlider(doc,'leftFamiliar','left')}${renderDocumentAnalysisSlider(doc,'leftAdmitted','left')}<div class="documentAnalysisControlsWrap ${ui.documentAnalysisOpenControlsId === doc.id ? 'menu-open' : ''}"><button type="button" class="documentAnalysisControlsBtn" data-document-analysis-controls="${doc.id}">Controls</button><div class="documentAnalysisControlsMenu"><button type="button" class="mini" data-document-analysis-edit="${doc.id}">Edit document</button><button type="button" class="mini" data-document-analysis-view="${doc.id}">View document</button><button type="button" class="mini" data-document-analysis-tags="${doc.id}">Add tags</button><button type="button" class="mini" data-document-analysis-element="${doc.id}">Add element</button></div></div></div><div class="documentAnalysisMiddle"><div class="documentAnalysisChatShell"><div class="documentAnalysisChatLog">${messages.length ? messages.map(msg => `<div class="documentAnalysisMsg ${String(msg.authorHandle || '').toLowerCase() === myHandle ? 'mine' : ''}"><div class="documentAnalysisMsgHead"><span>${escapeHtml(msg.authorLabel || msg.authorHandle || 'User')}</span><span>${escapeHtml(new Date(msg.createdAt || Date.now()).toLocaleString())}</span></div><div class="documentAnalysisMsgBody">${msg.html || ''}</div></div>`).join('') : '<div class="hint">No messages yet.</div>'}</div><div class="documentAnalysisComposer" contenteditable="true" data-document-analysis-composer="${doc.id}" data-placeholder="Type a message here. You can paste images and tag with @benbeveridge, @mattmurskit, or @kimberlythomas.">${ui.documentAnalysisChatDrafts[doc.id] || ''}</div><div class="documentAnalysisComposerActions"><div class="documentAnalysisMentionBar"><span class="hint">Mention:</span><button type="button" class="mini" data-document-analysis-mention="${doc.id}" data-mention="@benbeveridge">@benbeveridge</button><button type="button" class="mini" data-document-analysis-mention="${doc.id}" data-mention="@mattmurskit">@mattmurskit</button><button type="button" class="mini" data-document-analysis-mention="${doc.id}" data-mention="@kimberlythomas">@kimberlythomas</button></div><button type="button" class="btnPrimary" data-document-analysis-send="${doc.id}">Send</button></div></div>${renderDocumentAnalysisElements(doc)}</div><div class="documentAnalysisRight"><div class="docTagSummary">${renderTagLinkPills(tags)}</div>${renderDocumentAnalysisSlider(doc,'rightBenefit','right')}${renderDocumentAnalysisSlider(doc,'rightFamiliar','right')}</div></div>`;
+      return `<div class="documentAnalysisRow ${trialClasses}" data-document-analysis-row="${doc.id}"><div class="documentAnalysisRowTitleBar"><span class="worksheetRowNumberCell documentAnalysisRowNumber">${rowNumber}</span><div class="documentAnalysisTitleMeta"><div class="documentAnalysisTitle">${escapeHtml(doc.name || 'Untitled document')}</div><div class="documentAnalysisDocMeta"><span>${escapeHtml(formatTimelineDateDisplay(doc.date || '') || 'No date')}</span><span>•</span><span>${escapeHtml(getDocumentStatusLabel(doc.status))}</span><span>•</span><span>${(doc.filePath || doc.dataUrl || doc.hasFile) ? 'Has file' : 'No file'}</span>${meta.isExhibit ? `<span>•</span><span>${escapeHtml(meta.label || 'Exhibit')}</span>` : ''}<span>•</span><span>${escapeHtml(trialLabel)}</span></div></div></div><div class="documentAnalysisLeft">${renderDocumentAnalysisSlider(doc,'leftBenefit','left')}${renderDocumentAnalysisSlider(doc,'leftRelevance','left')}${renderDocumentAnalysisSlider(doc,'leftFamiliar','left')}${renderDocumentAnalysisSlider(doc,'leftAdmitted','left')}<div class="documentAnalysisControlsWrap ${ui.documentAnalysisOpenControlsId === doc.id ? 'menu-open' : ''}"><button type="button" class="documentAnalysisControlsBtn" data-document-analysis-controls="${doc.id}">Controls</button><div class="documentAnalysisControlsMenu"><button type="button" class="mini" data-document-analysis-edit="${doc.id}">Edit document</button><button type="button" class="mini" data-document-analysis-view="${doc.id}">View document</button><button type="button" class="mini" data-document-analysis-tags="${doc.id}">Add tags</button><button type="button" class="mini" data-document-analysis-element="${doc.id}">Add element</button></div></div></div><div class="documentAnalysisMiddle"><div class="documentAnalysisChatShell"><div class="documentAnalysisChatLog">${messages.length ? messages.map(msg => `<div class="documentAnalysisMsg ${String(msg.authorHandle || '').toLowerCase() === myHandle ? 'mine' : ''}"><div class="documentAnalysisMsgHead"><span>${escapeHtml(msg.authorLabel || msg.authorHandle || 'User')}</span></div><div class="documentAnalysisMsgBody">${msg.html || ''}</div></div>`).join('') : '<div class="hint">No messages yet.</div>'}</div><div class="documentAnalysisComposer" contenteditable="true" data-document-analysis-composer="${doc.id}" data-placeholder="Type a message here. You can paste images and tag with @benbeveridge, @mattmurskit, or @kimberlythomas.">${ui.documentAnalysisChatDrafts[doc.id] || ''}</div><div class="documentAnalysisComposerActions"><div class="documentAnalysisMentionBar"><span class="hint">Mention:</span><button type="button" class="mini" data-document-analysis-mention="${doc.id}" data-mention="@benbeveridge">@benbeveridge</button><button type="button" class="mini" data-document-analysis-mention="${doc.id}" data-mention="@mattmurskit">@mattmurskit</button><button type="button" class="mini" data-document-analysis-mention="${doc.id}" data-mention="@kimberlythomas">@kimberlythomas</button></div><button type="button" class="btnPrimary" data-document-analysis-send="${doc.id}">Send</button></div></div>${renderDocumentAnalysisElements(doc)}</div><div class="documentAnalysisRight"><div class="docTagSummary">${renderTagLinkPills(tags)}</div>${renderDocumentAnalysisSlider(doc,'rightBenefit','right')}${renderDocumentAnalysisSlider(doc,'rightFamiliar','right')}</div></div>`;
     }
     function renderDocumentAnalysis(){
       const panel = $('documentAnalysisFilterPanel');
@@ -8707,6 +8724,112 @@ function trialSideHasContent(row, side){
       const rightPositionClass = trialPositionSideHasContent(row, 'right') ? (parentRow?.rightClassification === 'response' ? 'rightResponse' : 'rightAssertion') : 'trialIssuesCellEmpty';
       return `<tr class="trialIssuesPositionRow trialIssuesSectionEnd" draggable="true" data-trial-row-id="${row.id}"><td class="trialIssuesCellWitness"></td><td class="trialIssuesCellMain leftSide ${leftPositionClass}">${leftHtml}<div class="trialIssuesBottomActions"><span class="trialIssuesRowDrag">⋮⋮</span>${renderTrialRowControl(`<button type="button" class="mini" data-trial-add-link="${row.id}" data-trial-side="left" data-trial-kind="element" data-trial-role="support">Add element</button><button type="button" class="mini" data-trial-toggle-classification="${parentRow?.id || row.id}" data-trial-side-toggle="left">${escapeHtml(getTrialClassificationToggleLabel(parentRow || row, 'left'))}</button><button type="button" class="mini" data-trial-add-link="${row.id}" data-trial-side="left" data-trial-kind="document" data-trial-role="exhibit">Add document as exhibit</button><button type="button" class="mini" data-trial-add-link="${row.id}" data-trial-side="left" data-trial-kind="document" data-trial-role="impeachment">Add document as impeachment</button><button type="button" class="mini" data-trial-add-link="${row.id}" data-trial-side="left" data-trial-kind="document" data-trial-role="support">Add document as support</button><button type="button" class="mini" data-trial-delete-row="${row.id}">Delete</button>`)}</div></td><td class="trialIssuesCellMain ${rightPositionClass}">${rightHtml}<div class="trialIssuesBottomActions" style="justify-content:flex-end">${renderTrialRowControl(`<button type="button" class="mini" data-trial-add-link="${row.id}" data-trial-side="right" data-trial-kind="element" data-trial-role="support">Add element</button><button type="button" class="mini" data-trial-toggle-classification="${parentRow?.id || row.id}" data-trial-side-toggle="right">${escapeHtml(getTrialClassificationToggleLabel(parentRow || row, 'right'))}</button><button type="button" class="mini" data-trial-add-link="${row.id}" data-trial-side="right" data-trial-kind="document" data-trial-role="exhibit">Add document as exhibit</button><button type="button" class="mini" data-trial-add-link="${row.id}" data-trial-side="right" data-trial-kind="document" data-trial-role="impeachment">Add document as impeachment</button><button type="button" class="mini" data-trial-add-link="${row.id}" data-trial-side="right" data-trial-kind="document" data-trial-role="support">Add document as support</button><button type="button" class="mini" data-trial-delete-row="${row.id}">Delete</button>`)}</div></td><td class="trialIssuesCellWitness"></td></tr>`;
   }
+
+  const trialIssuesTocUi = { open:true, x:0, y:0, width:600, dragging:false, dragX:0, dragY:0, startX:0, startY:0, scrollBound:false };
+  function ensureTrialIssuesToc(){
+    let toc = $('trialIssuesFloatingToc');
+    if(!toc){
+      toc = document.createElement('div');
+      toc.id = 'trialIssuesFloatingToc';
+      toc.className = 'trialIssuesFloatingToc open hoverExpand';
+      toc.innerHTML = `<div class="trialIssuesTocHeader" id="trialIssuesTocHeader"><div><div class="trialIssuesTocTitle">Trial Issues TOC</div><div class="hint">Click any item to jump there.</div></div><div class="trialIssuesTocActions"><button type="button" class="mini" id="trialIssuesTocClose">Close</button></div></div><div class="trialIssuesTocList" id="trialIssuesTocList"></div>`;
+      document.body.appendChild(toc);
+    }
+    let closed = $('trialIssuesTocClosed');
+    if(!closed){
+      closed = document.createElement('button');
+      closed.id = 'trialIssuesTocClosed';
+      closed.className = 'trialIssuesTocClosed';
+      closed.type = 'button';
+      closed.textContent = 'TOC';
+      document.body.appendChild(closed);
+    }
+    if($('trialIssuesTocClose') && $('trialIssuesTocClose').dataset.bound !== '1'){
+      $('trialIssuesTocClose').dataset.bound = '1';
+      $('trialIssuesTocClose').onclick = () => { trialIssuesTocUi.open = false; updateTrialIssuesTocVisibility(); };
+    }
+    if(closed.dataset.bound !== '1'){
+      closed.dataset.bound = '1';
+      closed.onclick = () => { trialIssuesTocUi.open = true; updateTrialIssuesTocVisibility(); };
+    }
+    const header = $('trialIssuesTocHeader');
+    if(header && header.dataset.bound !== '1'){
+      header.dataset.bound = '1';
+      header.addEventListener('pointerdown', ev => {
+        if(ev.target.closest('button')) return;
+        trialIssuesTocUi.dragging = true; trialIssuesTocUi.dragX = ev.clientX; trialIssuesTocUi.dragY = ev.clientY; trialIssuesTocUi.startX = trialIssuesTocUi.x || 0; trialIssuesTocUi.startY = trialIssuesTocUi.y || 0;
+        header.setPointerCapture?.(ev.pointerId);
+      });
+      header.addEventListener('pointermove', ev => {
+        if(!trialIssuesTocUi.dragging) return;
+        trialIssuesTocUi.x = Math.max(0, Math.min(window.innerWidth - 80, trialIssuesTocUi.startX + ev.clientX - trialIssuesTocUi.dragX));
+        trialIssuesTocUi.y = Math.max(0, Math.min(window.innerHeight - 80, trialIssuesTocUi.startY + ev.clientY - trialIssuesTocUi.dragY));
+        applyTrialIssuesTocPosition();
+      });
+      header.addEventListener('pointerup', ev => { trialIssuesTocUi.dragging = false; header.releasePointerCapture?.(ev.pointerId); });
+    }
+    if(!trialIssuesTocUi.scrollBound){
+      trialIssuesTocUi.scrollBound = true;
+      window.addEventListener('scroll', highlightTrialIssuesTocPosition, { passive:true });
+      window.addEventListener('resize', highlightTrialIssuesTocPosition, { passive:true });
+    }
+    return toc;
+  }
+  function applyTrialIssuesTocPosition(){
+    const toc = $('trialIssuesFloatingToc'); if(!toc) return;
+    toc.style.left = `${trialIssuesTocUi.x || 0}px`;
+    toc.style.top = `${trialIssuesTocUi.y || 0}px`;
+    toc.style.bottom = trialIssuesTocUi.y ? 'auto' : '0';
+    toc.style.height = trialIssuesTocUi.y ? `calc(100vh - ${trialIssuesTocUi.y}px)` : 'auto';
+    toc.style.width = `${trialIssuesTocUi.width || 600}px`;
+  }
+  function updateTrialIssuesTocVisibility(){
+    const toc = ensureTrialIssuesToc(); const closed = $('trialIssuesTocClosed');
+    const shouldShow = ui.currentView === 'trialissues';
+    toc.classList.toggle('open', shouldShow && trialIssuesTocUi.open);
+    closed.classList.toggle('show', shouldShow && !trialIssuesTocUi.open);
+    applyTrialIssuesTocPosition();
+  }
+  function getTrialIssuesTocRows(){
+    const rows = getTrialIssuesRows();
+    return rows.filter(row => row && (row.type === 'relief' || row.type === 'issue')).map(row => {
+      const isSubrelief = row.type === 'relief' && !!row.parentRowId;
+      return { id: row.id, type: row.type, level: isSubrelief ? 'subrelief' : row.type, label: String(row.label || (row.type === 'relief' ? 'Relief' : 'Issue')).trim() };
+    });
+  }
+  function renderTrialIssuesToc(){
+    const toc = ensureTrialIssuesToc(); const list = $('trialIssuesTocList'); if(!toc || !list) return;
+    updateTrialIssuesTocVisibility();
+    const items = getTrialIssuesTocRows();
+    list.innerHTML = items.length ? items.map(item => `<button type="button" class="trialIssuesTocItem level-${item.level}" data-trial-toc-row="${escapeHtml(item.id)}" title="${escapeHtml(item.label)}">${escapeHtml(item.label)}</button>`).join('') : '<div class="empty">No headings or issues yet.</div>';
+    list.querySelectorAll('[data-trial-toc-row]').forEach(btn => {
+      btn.onclick = () => {
+        const rowId = btn.getAttribute('data-trial-toc-row') || '';
+        const target = document.querySelector(`[data-trial-row-id="${CSS.escape(rowId)}"]`);
+        if(target) target.scrollIntoView({ behavior:'smooth', block:'center' });
+      };
+    });
+    requestAnimationFrame(highlightTrialIssuesTocPosition);
+  }
+  function highlightTrialIssuesTocPosition(){
+    if(ui.currentView !== 'trialissues') return;
+    const buttons = Array.from(document.querySelectorAll('[data-trial-toc-row]'));
+    if(!buttons.length) return;
+    const mid = window.innerHeight * 0.42;
+    let bestId = ''; let bestDist = Infinity;
+    buttons.forEach(btn => {
+      const rowId = btn.getAttribute('data-trial-toc-row') || '';
+      const tr = document.querySelector(`[data-trial-row-id="${CSS.escape(rowId)}"]`);
+      if(!tr) return;
+      const rect = tr.getBoundingClientRect();
+      const dist = rect.top <= mid && rect.bottom >= mid ? 0 : Math.min(Math.abs(rect.top - mid), Math.abs(rect.bottom - mid));
+      if(dist < bestDist){ bestDist = dist; bestId = rowId; }
+    });
+    buttons.forEach(btn => btn.classList.toggle('active', (btn.getAttribute('data-trial-toc-row') || '') === bestId));
+    const active = buttons.find(btn => btn.classList.contains('active'));
+    active?.scrollIntoView({ block:'nearest' });
+  }
+
   function renderTrialIssues(){
     state.trialIssues = normalizeTrialIssuesState(state.trialIssues);
     if($('trialIssuesLeftParty')) $('trialIssuesLeftParty').value = state.trialIssues.leftPartyName || 'Matt Murski';
@@ -8734,6 +8857,7 @@ function trialSideHasContent(row, side){
       const rightEntryClass = trialSideHasContent(row, 'right') ? (row.rightClassification === 'response' ? 'rightResponse' : 'rightAssertion') : 'trialIssuesCellEmpty';
       return `<tr class="trialIssuesEntryRow${startClass}${endClass}" draggable="true" data-trial-row-id="${row.id}"><td class="trialIssuesCellWitness">${renderTrialWitnessList(row.leftWitnessIds, row.id, 'left')}</td><td class="trialIssuesCellMain leftSide ${leftEntryClass}">${renderTrialMainCell(row, 'left')}${leftFooter}</td><td class="trialIssuesCellMain ${rightEntryClass}">${renderTrialMainCell(row, 'right')}${rightFooter}</td><td class="trialIssuesCellWitness">${renderTrialWitnessList(row.rightWitnessIds, row.id, 'right')}</td></tr>`;
     }).join('');
+    renderTrialIssuesToc();
     bindTrialIssuesPage();
   }
   window.renderTrialIssues = renderTrialIssues;
@@ -8844,12 +8968,30 @@ ${entry.summary}`).toLowerCase().includes(q)) return false;
     const filtered = items.filter(itemMatchesPickerFilters);
     const host = $('trialIssuesPickerList'); const empty = $('trialIssuesPickerEmpty'); if(!host || !empty) return;
     empty.style.display = filtered.length ? 'none' : '';
-    host.innerHTML = filtered.map(entry => `<div class="trialIssuesPickerItem"><div class="trialIssuesPickerItemTop"><div><div style="font-weight:900">${escapeHtml(entry.name)}</div><div class="trialIssuesPickerSummary">${escapeHtml(entry.summary || 'No summary.')}</div></div><button type="button" class="btnPrimary" data-trial-picker-select="${entry.id}">Add</button></div><div class="trialIssuesPickerMeta">${entry.tags.slice(0,4).map(tagId => `<span class="pill">${escapeHtml(state.tags.find(t => t.id === tagId)?.name || 'Tag')}</span>`).join('')}${entry.fileTypes.map(ft => `<span class="pill">${escapeHtml(ft)}</span>`).join('')}${entry.witnesses.slice(0,3).map(id => `<span class="pill">${escapeHtml(getPersonById(id)?.name || 'Witness')}</span>`).join('')}</div></div>`).join('');
+    const pickerRow = getTrialIssueRow(trialIssuesPickerState.rowId);
+    const pickerKey = (trialIssuesPickerState.side === 'right' ? 'right' : 'left') + 'Links';
+    host.innerHTML = filtered.map(entry => {
+      const isAdded = !!pickerRow && (pickerRow[pickerKey] || []).some(link => String(link?.type || '') === trialIssuesPickerState.kind && String(link?.refId || '') === String(entry.id) && String(link?.role || 'support') === String(trialIssuesPickerState.role || 'support'));
+      return `<div class="trialIssuesPickerItem"><div class="trialIssuesPickerItemTop"><div><div style="font-weight:900">${escapeHtml(entry.name)}</div><div class="trialIssuesPickerSummary">${escapeHtml(entry.summary || 'No summary.')}</div></div><button type="button" class="btnPrimary" data-trial-picker-select="${entry.id}" ${isAdded ? 'disabled' : ''}>${isAdded ? 'Added' : 'Add'}</button></div><div class="trialIssuesPickerMeta">${entry.tags.slice(0,4).map(tagId => `<span class="pill">${escapeHtml(state.tags.find(t => t.id === tagId)?.name || 'Tag')}</span>`).join('')}${entry.fileTypes.map(ft => `<span class="pill">${escapeHtml(ft)}</span>`).join('')}${entry.witnesses.slice(0,3).map(id => `<span class="pill">${escapeHtml(getPersonById(id)?.name || 'Witness')}</span>`).join('')}</div></div>`;
+    }).join('');
     document.querySelectorAll('[data-trial-picker-select]').forEach(btn => btn.onclick = () => {
       const row = getTrialIssueRow(trialIssuesPickerState.rowId); if(!row) return;
+      const refId = btn.getAttribute('data-trial-picker-select') || '';
       const key = (trialIssuesPickerState.side === 'right' ? 'right' : 'left') + 'Links';
-      row[key] = normalizeTrialCellLinks([...(row[key] || []), { id: uid(), type: trialIssuesPickerState.kind, refId: btn.getAttribute('data-trial-picker-select') || '', role: trialIssuesPickerState.role || 'support' }]);
-      saveTrialIssuesLocal(); closeTrialIssuesPicker(); renderTrialIssues();
+      const alreadyLinked = (row[key] || []).some(link => String(link?.type || '') === trialIssuesPickerState.kind && String(link?.refId || '') === refId && String(link?.role || 'support') === String(trialIssuesPickerState.role || 'support'));
+      if(!alreadyLinked){
+        row[key] = normalizeTrialCellLinks([...(row[key] || []), { id: uid(), type: trialIssuesPickerState.kind, refId, role: trialIssuesPickerState.role || 'support' }]);
+        saveTrialIssuesLocal();
+      }
+      if(trialIssuesPickerState.kind === 'document'){
+        btn.textContent = 'Added';
+        btn.disabled = true;
+        renderTrialIssues();
+        renderTrialIssuesPickerList();
+      } else {
+        closeTrialIssuesPicker();
+        renderTrialIssues();
+      }
     });
   }
   function openTrialIssuesPicker(rowId, side, kind, role='support'){
