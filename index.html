@@ -1785,7 +1785,34 @@
       if(updated){ doc.analysisData = normalizeDocumentAnalysisData(updated.analysis_data || updated.analysisData || doc.analysisData || null); }
       return updated;
     }
-    function getTrialIssuesDocumentUsage(docId){ const rows = (state.trialIssues && Array.isArray(state.trialIssues.rows)) ? state.trialIssues.rows : []; const usage = { inTrialIssues:false, ourExhibit:false, theirExhibit:false, ourSupport:false, theirSupport:false, theirImpeachment:false, ourImpeachment:false }; rows.forEach(row => { (row?.leftLinks || []).forEach(link => { if(link && link.type === 'document' && link.refId === docId){ usage.inTrialIssues = true; const role = link.role || 'support'; if(role === 'exhibit') usage.ourExhibit = true; if(role === 'support') usage.ourSupport = true; if(role === 'impeachment') usage.ourImpeachment = true; } }); (row?.rightLinks || []).forEach(link => { if(link && link.type === 'document' && link.refId === docId){ usage.inTrialIssues = true; const role = link.role || 'support'; if(role === 'exhibit') usage.theirExhibit = true; if(role === 'support') usage.theirSupport = true; if(role === 'impeachment') usage.theirImpeachment = true; } }); }); usage.ourSupport = !!(usage.ourSupport || usage.ourImpeachment); usage.theirSupport = !!(usage.theirSupport || usage.theirImpeachment); return usage; }
+    function getTrialIssuesDocumentUsage(docId){
+      const targetId = String(docId || '');
+      const rows = (state.trialIssues && Array.isArray(state.trialIssues.rows)) ? state.trialIssues.rows : [];
+      const usage = { inTrialIssues:false, ourExhibit:false, theirExhibit:false, ourSupport:false, theirSupport:false, theirImpeachment:false, ourImpeachment:false };
+      const linkDocId = (link)=> String(link?.refId || link?.documentId || link?.docId || link?.id || '');
+      const roleOf = (link)=> String(link?.role || link?.docRole || link?.kind || 'support').toLowerCase();
+      rows.forEach(row => {
+        (row?.leftLinks || []).forEach(link => {
+          if(link && String(link.type || 'document') === 'document' && linkDocId(link) === targetId){
+            usage.inTrialIssues = true; const role = roleOf(link);
+            if(role === 'exhibit') usage.ourExhibit = true;
+            if(role === 'support' || role === 'document' || role === 'doc') usage.ourSupport = true;
+            if(role === 'impeachment') usage.ourImpeachment = true;
+          }
+        });
+        (row?.rightLinks || []).forEach(link => {
+          if(link && String(link.type || 'document') === 'document' && linkDocId(link) === targetId){
+            usage.inTrialIssues = true; const role = roleOf(link);
+            if(role === 'exhibit') usage.theirExhibit = true;
+            if(role === 'support' || role === 'document' || role === 'doc') usage.theirSupport = true;
+            if(role === 'impeachment') usage.theirImpeachment = true;
+          }
+        });
+      });
+      usage.ourSupport = !!(usage.ourSupport || usage.ourImpeachment);
+      usage.theirSupport = !!(usage.theirSupport || usage.theirImpeachment);
+      return usage;
+    }
     function getTrialIssuesElementUsage(elementId){ const rows = (state.trialIssues && Array.isArray(state.trialIssues.rows)) ? state.trialIssues.rows : []; const usage = { inTrialIssues:false, ourSide:false, theirSide:false }; rows.forEach(row => { (row?.leftLinks || []).forEach(link => { if(link && link.type === 'element' && link.refId === elementId){ usage.inTrialIssues = true; usage.ourSide = true; } }); (row?.rightLinks || []).forEach(link => { if(link && link.type === 'element' && link.refId === elementId){ usage.inTrialIssues = true; usage.theirSide = true; } }); }); return usage; }
     function documentIsInTrialIssues(docId){ return getTrialIssuesDocumentUsage(docId).inTrialIssues; }
     function documentIsOurExhibitOnTrialIssues(docId){ return getTrialIssuesDocumentUsage(docId).ourExhibit; }
@@ -3624,6 +3651,13 @@ function normalizeState(){ state.tags = Array.isArray(state.tags) ? state.tags.f
       host.querySelectorAll('[data-document-table-elements]').forEach(btn => btn.addEventListener('click', async (ev)=>{ ev.preventDefault(); ev.stopPropagation(); await openSourceDocumentDirect(btn.getAttribute('data-document-table-elements')); }));
       host.querySelectorAll('[data-document-table-delete]').forEach(btn => btn.addEventListener('click', async (ev)=>{ ev.preventDefault(); ev.stopPropagation(); await deleteDocument(btn.getAttribute('data-document-table-delete')); }));
     }
+    function getDocumentAnalysisCollapsedTagMap(){
+      if(!ui.documentAnalysisCollapsedTagNodes || typeof ui.documentAnalysisCollapsedTagNodes !== 'object') ui.documentAnalysisCollapsedTagNodes = {};
+      const map = ui.documentAnalysisCollapsedTagNodes;
+      (state.tags || []).forEach(t => { if(t?.id && !Object.prototype.hasOwnProperty.call(map, t.id)) map[t.id] = true; });
+      (state.subtags || []).forEach(t => { if(t?.id && !Object.prototype.hasOwnProperty.call(map, t.id)) map[t.id] = true; });
+      return map;
+    }
     function renderDocumentAnalysisTypeFilter(){
       const host = $('documentAnalysisFilterType');
       if(!host) return;
@@ -3633,16 +3667,16 @@ function normalizeState(){ state.tags = Array.isArray(state.tags) ? state.tags.f
       ui.documentTableTypeIds = typeIds;
       const items = Array.from(typeSet).sort().map(label => ({ id: label, name: label }));
       renderElementSimpleFilter('documentAnalysisFilterType', items, typeIds, [], false, true, 'data-document-analysis-type');
-      host.querySelectorAll('[data-document-analysis-type]').forEach(input => { input.onchange = ()=>{ ui.documentTableTypeIds = Array.from(host.querySelectorAll('[data-document-analysis-type]:checked')).map(el => el.value); renderDocumentAnalysis(); }; });
+      host.querySelectorAll('[data-document-analysis-type]').forEach(input => { input.onchange = ()=>{ ui.documentTableTypeIds = Array.from(host.querySelectorAll('[data-document-analysis-type]:checked')).map(el => el.value); renderDocumentAnalysis({ skipFilters:true }); }; });
     }
     function renderDocumentAnalysisFilters(){
       const host = $('documentAnalysisFilterTagTree');
       if(host){
         host.innerHTML = `<details class="documentAnalysisFilterBlock"><summary>Tags / subtags</summary><div class="documentAnalysisFilterBlockBody"><div class="elementsFilterDual"><div><div class="label">Filter inclusion</div><div id="documentAnalysisFilterTagTreeInclude"></div></div><div><div class="label">Filter exclusion</div><div id="documentAnalysisFilterTagTreeExclude"></div></div></div></div></details>`;
-        renderHierarchicalTagTree('documentAnalysisFilterTagTreeInclude', ui.documentTableTagIds || [], { rootClass:'elementsFilterTagTree', collapsedMap: ui.documentTableCollapsedTagNodes, onTreeChange: renderDocumentAnalysis });
-        renderHierarchicalTagTree('documentAnalysisFilterTagTreeExclude', ui.documentTableTagExcludeIds || [], { rootClass:'elementsFilterTagTree', collapsedMap: ui.documentTableCollapsedTagNodes, onTreeChange: renderDocumentAnalysis });
-        host.querySelectorAll('#documentAnalysisFilterTagTreeInclude input[type="checkbox"]').forEach(input => input.onchange = ()=>{ ui.documentTableTagIds = collectHierarchicalTagLinks('documentAnalysisFilterTagTreeInclude'); renderDocumentAnalysis(); });
-        host.querySelectorAll('#documentAnalysisFilterTagTreeExclude input[type="checkbox"]').forEach(input => input.onchange = ()=>{ ui.documentTableTagExcludeIds = collectHierarchicalTagLinks('documentAnalysisFilterTagTreeExclude'); renderDocumentAnalysis(); });
+        renderHierarchicalTagTree('documentAnalysisFilterTagTreeInclude', ui.documentTableTagIds || [], { rootClass:'elementsFilterTagTree', collapsedMap: getDocumentAnalysisCollapsedTagMap(), onTreeChange: ()=>renderDocumentAnalysis({ skipFilters:true }) });
+        renderHierarchicalTagTree('documentAnalysisFilterTagTreeExclude', ui.documentTableTagExcludeIds || [], { rootClass:'elementsFilterTagTree', collapsedMap: getDocumentAnalysisCollapsedTagMap(), onTreeChange: ()=>renderDocumentAnalysis({ skipFilters:true }) });
+        host.querySelectorAll('#documentAnalysisFilterTagTreeInclude input[type="checkbox"]').forEach(input => input.onchange = ()=>{ ui.documentTableTagIds = collectHierarchicalTagLinks('documentAnalysisFilterTagTreeInclude'); renderDocumentAnalysis({ skipFilters:true }); });
+        host.querySelectorAll('#documentAnalysisFilterTagTreeExclude input[type="checkbox"]').forEach(input => input.onchange = ()=>{ ui.documentTableTagExcludeIds = collectHierarchicalTagLinks('documentAnalysisFilterTagTreeExclude'); renderDocumentAnalysis({ skipFilters:true }); });
       }
       const items = getDocumentTableFilterItems();
       const wrapSimpleFilter = (hostId, title, renderFn) => { const el = $(hostId); if(!el) return; renderFn(); const content = el.innerHTML; el.innerHTML = `<details class="documentAnalysisFilterBlock"><summary>${escapeHtml(title)}</summary><div class="documentAnalysisFilterBlockBody">${content}</div></details>`; };
@@ -3650,23 +3684,21 @@ function normalizeState(){ state.tags = Array.isArray(state.tags) ? state.tags.f
       wrapSimpleFilter('documentAnalysisFilterTimeline', 'Timeline', ()=> renderElementSimpleFilter('documentAnalysisFilterTimeline', items.timelineItems, ui.documentTableTimelineIds || [], ui.documentTableTimelineExcludeIds || [], !!ui.documentTableTimelineNoneSelected, ui.documentTableTimelineExcludeNoneSelected !== false, 'data-document-analysis-timeline'));
       wrapSimpleFilter('documentAnalysisFilterFile', 'File', ()=> renderElementSimpleFilter('documentAnalysisFilterFile', items.fileItems, ui.documentTableFileIds || [], ui.documentTableFileExcludeIds || [], !!ui.documentTableFileNoneSelected, ui.documentTableFileExcludeNoneSelected !== false, 'data-document-analysis-file'));
       wrapSimpleFilter('documentAnalysisFilterStatus', 'Status', ()=> renderElementSimpleFilter('documentAnalysisFilterStatus', getDocumentStatusOptions(), ui.documentTableStatusIds || [], ui.documentTableStatusExcludeIds || [], !!ui.documentTableStatusNoneSelected, ui.documentTableStatusExcludeNoneSelected !== false, 'data-document-analysis-status'));
-      const trialHost = $('documentAnalysisFilterTrialIssues');
-      if(trialHost){
-        const options = getDocumentAnalysisTrialIssueFilterItems();
-        renderElementSimpleFilter('documentAnalysisFilterTrialIssues', options, ui.documentAnalysisTrialIssuesIds || [], ui.documentAnalysisTrialIssuesExcludeIds || [], !!ui.documentAnalysisTrialIssuesNoneSelected, ui.documentAnalysisTrialIssuesExcludeNoneSelected !== false, 'data-document-analysis-trial');
-        const content = trialHost.innerHTML;
-        trialHost.innerHTML = `<details class="documentAnalysisFilterBlock"><summary>Trial Issues status</summary><div class="documentAnalysisFilterBlockBody">${content}</div></details>`;
-      }
+      renderDocumentAnalysisTrialIssueFilter();
       renderDocumentAnalysisTypeFilter();
       const typeHost = $('documentAnalysisFilterType');
       if(typeHost && !typeHost.querySelector('.documentAnalysisFilterBlock')){ const content = typeHost.innerHTML; typeHost.innerHTML = `<details class="documentAnalysisFilterBlock"><summary>Document type</summary><div class="documentAnalysisFilterBlockBody">${content}</div></details>`; }
-      document.querySelectorAll('[data-document-analysis-exhibit]').forEach(input => input.onchange = ()=>{ ui.documentTableExhibitIds = Array.from(document.querySelectorAll('[data-document-analysis-exhibit]:checked')).map(el => el.value); renderDocumentAnalysis(); });
-      document.querySelectorAll('[data-document-analysis-timeline]').forEach(input => input.onchange = ()=>{ ui.documentTableTimelineIds = Array.from(document.querySelectorAll('[data-document-analysis-timeline]:checked')).map(el => el.value); renderDocumentAnalysis(); });
-      document.querySelectorAll('[data-document-analysis-file]').forEach(input => input.onchange = ()=>{ ui.documentTableFileIds = Array.from(document.querySelectorAll('[data-document-analysis-file]:checked')).map(el => el.value); renderDocumentAnalysis(); });
-      document.querySelectorAll('[data-document-analysis-status]').forEach(input => input.onchange = ()=>{ ui.documentTableStatusIds = Array.from(document.querySelectorAll('[data-document-analysis-status]:checked')).map(el => el.value); renderDocumentAnalysis(); });
-      const collectDocumentAnalysisTrialFilters = ()=>{ ui.documentAnalysisTrialIssuesIds = Array.from(document.querySelectorAll('input[data-document-analysis-trial]:checked')).map(el => el.value).filter(Boolean); ui.documentAnalysisTrialIssuesExcludeIds = Array.from(document.querySelectorAll('input[data-elements-filter-exclude="data-document-analysis-trial"]:not(:checked)')).map(el => el.value).filter(Boolean); const incNone = document.querySelector('input[data-elements-filter-none-include="data-document-analysis-trial"]'); const excNone = document.querySelector('input[data-elements-filter-none-exclude="data-document-analysis-trial"]'); ui.documentAnalysisTrialIssuesNoneSelected = !!(incNone && incNone.checked); ui.documentAnalysisTrialIssuesExcludeNoneSelected = !(excNone && excNone.checked === false); renderDocumentAnalysis(); };
-      document.querySelectorAll('input[data-document-analysis-trial], input[data-elements-filter-exclude="data-document-analysis-trial"], input[data-elements-filter-none-include="data-document-analysis-trial"], input[data-elements-filter-none-exclude="data-document-analysis-trial"]').forEach(input => input.onchange = collectDocumentAnalysisTrialFilters);
-      document.querySelectorAll('[data-document-analysis-type]').forEach(input => { input.onchange = ()=>{ ui.documentTableTypeIds = Array.from(document.querySelectorAll('[data-document-analysis-type]:checked')).map(el => el.value); renderDocumentAnalysis(); }; });
+      const bindAnalysisSimple = (attr, includeKey, excludeKey, noneIncludeKey, noneExcludeKey) => {
+        document.querySelectorAll('input[' + attr + ']').forEach(input => input.onchange = ()=>{ ui[includeKey] = Array.from(document.querySelectorAll('input[' + attr + ']:checked')).map(el => el.value).filter(Boolean); renderDocumentAnalysis({ skipFilters:true }); });
+        document.querySelectorAll('input[data-elements-filter-exclude="' + attr + '"]').forEach(input => input.onchange = ()=>{ ui[excludeKey] = Array.from(document.querySelectorAll('input[data-elements-filter-exclude="' + attr + '"]:not(:checked)')).map(el => el.value).filter(Boolean); renderDocumentAnalysis({ skipFilters:true }); });
+        document.querySelectorAll('input[data-elements-filter-none-include="' + attr + '"]').forEach(input => input.onchange = ()=>{ ui[noneIncludeKey] = !!input.checked; renderDocumentAnalysis({ skipFilters:true }); });
+        document.querySelectorAll('input[data-elements-filter-none-exclude="' + attr + '"]').forEach(input => input.onchange = ()=>{ ui[noneExcludeKey] = !!input.checked; renderDocumentAnalysis({ skipFilters:true }); });
+      };
+      bindAnalysisSimple('data-document-analysis-exhibit', 'documentTableExhibitIds', 'documentTableExhibitExcludeIds', 'documentTableExhibitNoneSelected', 'documentTableExhibitExcludeNoneSelected');
+      bindAnalysisSimple('data-document-analysis-timeline', 'documentTableTimelineIds', 'documentTableTimelineExcludeIds', 'documentTableTimelineNoneSelected', 'documentTableTimelineExcludeNoneSelected');
+      bindAnalysisSimple('data-document-analysis-file', 'documentTableFileIds', 'documentTableFileExcludeIds', 'documentTableFileNoneSelected', 'documentTableFileExcludeNoneSelected');
+      bindAnalysisSimple('data-document-analysis-status', 'documentTableStatusIds', 'documentTableStatusExcludeIds', 'documentTableStatusNoneSelected', 'documentTableStatusExcludeNoneSelected');
+      document.querySelectorAll('[data-document-analysis-type]').forEach(input => { input.onchange = ()=>{ ui.documentTableTypeIds = Array.from(document.querySelectorAll('[data-document-analysis-type]:checked')).map(el => el.value); renderDocumentAnalysis({ skipFilters:true }); }; });
     }
     function getDocumentAnalysisTrialIssueFilterItems(){ return [
       { id:'any_trialissues', name:'Added anywhere on Trial Issues page' },
@@ -3676,8 +3708,38 @@ function normalizeState(){ state.tags = Array.isArray(state.tags) ? state.tags.f
       { id:'our_trialissues_support', name:'Matt document/impeachment on Trial Issues' },
       { id:'their_trialissues_support', name:'Leah document/impeachment on Trial Issues' }
     ]; }
-    function getDocumentAnalysisTrialIssueIds(doc){ const usage = getTrialIssuesDocumentUsage(doc.id); const ids = []; if(usage.inTrialIssues) ids.push('any_trialissues'); else ids.push('not_trialissues'); if(usage.ourExhibit) ids.push('our_trialissues_exhibit'); if(usage.theirExhibit) ids.push('their_trialissues_exhibit'); if(usage.ourSupport) ids.push('our_trialissues_support'); if(usage.theirSupport) ids.push('their_trialissues_support'); return ids; }
-    function documentMatchesTrialIssueAnalysisFilter(doc){ return elementMatchesIdFilter(getDocumentAnalysisTrialIssueIds(doc), ui.documentAnalysisTrialIssuesIds || [], ui.documentAnalysisTrialIssuesExcludeIds || [], false, ui.documentAnalysisTrialIssuesExcludeNoneSelected !== false); }
+    function getDocumentAnalysisTrialIssueIds(doc){
+      const usage = getTrialIssuesDocumentUsage(doc.id);
+      const ids = [];
+      if(usage.inTrialIssues) ids.push('any_trialissues'); else ids.push('not_trialissues');
+      if(usage.ourExhibit) ids.push('our_trialissues_exhibit');
+      if(usage.theirExhibit) ids.push('their_trialissues_exhibit');
+      if(usage.ourSupport) ids.push('our_trialissues_support');
+      if(usage.theirSupport) ids.push('their_trialissues_support');
+      return ids;
+    }
+    function documentMatchesTrialIssueAnalysisFilter(doc){
+      const ids = getDocumentAnalysisTrialIssueIds(doc);
+      const selected = Array.isArray(ui.documentAnalysisTrialIssuesIds) ? ui.documentAnalysisTrialIssuesIds.filter(Boolean) : [];
+      const excluded = Array.isArray(ui.documentAnalysisTrialIssuesExcludeIds) ? ui.documentAnalysisTrialIssuesExcludeIds.filter(Boolean) : [];
+      if(excluded.length && ids.some(id => excluded.includes(id))) return false;
+      if(selected.length && !ids.some(id => selected.includes(id))) return false;
+      return true;
+    }
+    function renderDocumentAnalysisTrialIssueFilter(){
+      const host = $('documentAnalysisFilterTrialIssues'); if(!host) return;
+      const options = getDocumentAnalysisTrialIssueFilterItems();
+      const includeSet = new Set(ui.documentAnalysisTrialIssuesIds || []);
+      const excludeSet = new Set(ui.documentAnalysisTrialIssuesExcludeIds || []);
+      host.innerHTML = '<details class="documentAnalysisFilterBlock"><summary>Trial Issues status</summary><div class="documentAnalysisFilterBlockBody"><div class="elementsFilterDual">' +
+        '<div><div class="label" style="margin-bottom:6px">Filter inclusion</div><div class="elementsFilterChecklist">' +
+        options.map(item => '<label class="checkItem" style="margin:0"><input type="checkbox" data-document-analysis-trial-include="1" value="' + escapeHtml(item.id) + '" ' + (includeSet.has(item.id) ? 'checked' : '') + ' /> <span>' + escapeHtml(item.name) + '</span></label>').join('') +
+        '</div></div><div><div class="label" style="margin-bottom:6px">Filter exclusion</div><div class="elementsFilterChecklist">' +
+        options.map(item => '<label class="checkItem" style="margin:0"><input type="checkbox" data-document-analysis-trial-exclude="1" value="' + escapeHtml(item.id) + '" ' + (excludeSet.has(item.id) ? 'checked' : '') + ' /> <span>' + escapeHtml(item.name) + '</span></label>').join('') +
+        '</div></div></div></div></details>';
+      host.querySelectorAll('[data-document-analysis-trial-include]').forEach(input => input.addEventListener('change', ()=>{ ui.documentAnalysisTrialIssuesIds = Array.from(host.querySelectorAll('[data-document-analysis-trial-include]:checked')).map(el => el.value).filter(Boolean); renderDocumentAnalysis({ skipFilters:true }); }));
+      host.querySelectorAll('[data-document-analysis-trial-exclude]').forEach(input => input.addEventListener('change', ()=>{ ui.documentAnalysisTrialIssuesExcludeIds = Array.from(host.querySelectorAll('[data-document-analysis-trial-exclude]:checked')).map(el => el.value).filter(Boolean); renderDocumentAnalysis({ skipFilters:true }); }));
+    }
     function getFilteredDocumentsForAnalysis(){
       const docs = getFilteredDocumentsForTableBase(false).filter(doc => documentMatchesTrialIssueAnalysisFilter(doc));
       const sortMode = ui.documentAnalysisSort === 'upload_desc' ? 'upload_desc' : 'alpha';
@@ -3736,7 +3798,7 @@ function normalizeState(){ state.tags = Array.isArray(state.tags) ? state.tags.f
     }
     function getDocumentAnalysisActiveComposerState(){ const active = document.activeElement; if(active && active.matches && active.matches('[data-document-analysis-composer]')){ const id = active.getAttribute('data-document-analysis-composer') || ''; ui.documentAnalysisChatDrafts[id] = active.innerHTML || ''; return { id, html: active.innerHTML || '' }; } return null; }
     function restoreDocumentAnalysisActiveComposer(activeState){ if(!activeState || !activeState.id) return; const box = document.querySelector(`[data-document-analysis-composer="${CSS.escape(activeState.id)}"]`); if(!box) return; box.focus(); try{ const range = document.createRange(); range.selectNodeContents(box); range.collapse(false); const sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(range); }catch(e){} }
-    function renderDocumentAnalysis(){
+    function renderDocumentAnalysis(options = {}){
       const activeComposerState = getDocumentAnalysisActiveComposerState();
       const panel = $('documentAnalysisFilterPanel');
       if(panel){ panel.style.display = ui.documentAnalysisFilterPanelOpen ? '' : 'none'; panel.classList.toggle('open', !!ui.documentAnalysisFilterPanelOpen); }
@@ -3744,7 +3806,7 @@ function normalizeState(){ state.tags = Array.isArray(state.tags) ? state.tags.f
       if($('documentAnalysisPrioritizeToggle')) $('documentAnalysisPrioritizeToggle').checked = !!ui.documentAnalysisPrioritizeUnanswered;
       if($('documentAnalysisSort')) $('documentAnalysisSort').value = ui.documentAnalysisSort === 'upload_desc' ? 'upload_desc' : 'alpha';
       if($('documentAnalysisHandle')) $('documentAnalysisHandle').textContent = getDocumentAnalysisUserHandle();
-      renderDocumentAnalysisFilters();
+      if(!options.skipFilters) renderDocumentAnalysisFilters();
       const host = $('documentAnalysisRows'); const empty = $('documentAnalysisEmpty');
       if(!host || !empty) return;
       const docs = getFilteredDocumentsForAnalysis();
