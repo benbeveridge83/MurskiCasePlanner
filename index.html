@@ -9761,8 +9761,9 @@ ${entry.summary}`).toLowerCase().includes(q)) return false;
     if(sendBtn) sendBtn.innerHTML = '<span class="caseChatSpinner"></span> Sending';
     try{
       const payload = {
-        caseId: getCaseId(),
-        question: text,
+  caseId: getCaseId(),
+  message: text,
+  question: text,
         view: String((ui && ui.currentView) || INITIAL_VIEW || 'outline'),
         context: getCaseChatContext()
       };
