@@ -8,6 +8,7 @@
     const SUPABASE_URL = "https://ewemahyfoegkpzgpqnsr.supabase.co"
     const SUPABASE_KEY = "sb_publishable_0ddiJfYLmhk9maLNcYJakg_aUMkvWRO"
 
+const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
     const urlParams = new URLSearchParams(window.location.search)
     const URL_CASE_ID = urlParams.get("case") || ""
     const STORED_CASE_ID = (() => {
@@ -17,12 +18,9 @@
         return ""
       }
     })()
-    const CASE_ID = STORED_CASE_ID || URL_CASE_ID || ""
-    if (CASE_ID && URL_CASE_ID !== CASE_ID) {
-      const correctedUrl = new URL(window.location.href)
-      correctedUrl.searchParams.set("case", CASE_ID)
-      window.history.replaceState(null, "", correctedUrl.toString())
-    }
+    // Do not auto-open the last stored case on startup.
+    // The dashboard should stay lightweight unless a case is explicitly in the URL.
+    const CASE_ID = URL_CASE_ID || ""
     if (CASE_ID) {
       try {
         localStorage.setItem("murski_selected_case_id", CASE_ID)
@@ -33,7 +31,29 @@
     const INITIAL_VIEW = (urlParams.get("view") || "outline").toLowerCase()
     window.INITIAL_VIEW = INITIAL_VIEW
 
-    const supabase = createClient(SUPABASE_URL, SUPABASE_KEY)
+    supabase.auth.onAuthStateChange(async (event, session) => {
+  if (event === 'PASSWORD_RECOVERY') {
+    console.log("Password recovery detected");
+
+    const newPassword = prompt("Enter your new password:");
+
+    if (!newPassword) {
+      alert("Password reset cancelled.");
+      return;
+    }
+
+    const { error } = await supabase.auth.updateUser({
+      password: newPassword
+    });
+
+    if (error) {
+      alert("Error resetting password: " + error.message);
+    } else {
+      alert("Password updated! You can now log in.");
+      window.location.href = window.location.origin + window.location.pathname;
+    }
+  }
+});
     const DOCUMENT_BUCKET = "case-documents"
 
     window.supabase = supabase
@@ -1498,41 +1518,10 @@
     .tagTreeRow.drop-into{box-shadow:0 0 0 3px rgba(37,99,235,.20);border-color:rgba(37,99,235,.45);background:#f8fbff;}
     .tagTreeRow.drop-before{box-shadow:inset 0 3px 0 var(--brand);}
     .tagTreeRow.drop-after{box-shadow:inset 0 -3px 0 var(--brand);}
-    /* ==== ASK AI CHAT FIX ==== */
-
-#askAIModal .message {
-  padding: 10px;
-  margin: 8px 0;
-  border-radius: 8px;
-  font-size: 14px;
-}
-
-#askAIModal .user-message {
-  background: #e6f0ff;
-  color: #000;
-  text-align: right;
-}
-
-#askAIModal .ai-message {
-  background: #f4f4f4;
-  color: #000;
-  text-align: left;
-}
-
-#askAIInput {
-  background: #fff;
-  color: #000;
-  border: 1px solid #ccc;
-}
-
-#askAIChat {
-  max-height: 400px;
-  overflow-y: auto;
-}
   </style>
 </head>
 <body>
-  <div class="topbar"><div class="topbar-inner"><div class="brand"><div class="dot"></div><div><div id="appBrandTitle" style="font-size:18px; font-weight:900">Beveridge Law Firm – Case Planner</div><div id="appBrandSubtitle" class="pill" style="display:none"></div></div></div><div class="grow"></div><div id="authTopbar" class="authTopbar hidden"><span id="authUserBadge" class="pill"></span><button id="caseChatTopBtn" class="btnPrimary" type="button">Ask AI</button><button id="dashboardBtn" class="btnGhost" type="button">Dashboard</button><button id="signOutBtn" class="btnGhost" type="button">Sign out</button></div><div id="caseNameDisplay" class="caseName" style="font-weight:900;font-size:16px;padding:10px 12px;border:1px solid var(--border);border-radius:14px;background:#fff;min-height:42px">Case</div><input id="caseName" class="caseName" type="hidden" /><div id="adminTopbarTools" class="row"><button id="exportBtn" class="btnPrimary">Export JSON</button><button id="importBtn">Import JSON</button><button id="bulkImportElementsBtn">Bulk import elements to Supabase</button><button id="resetBtn" class="btnDanger">Reset (local)</button></div><input id="importFile" type="file" accept="application/json" style="display:none" /><input id="bulkImportElementsFile" type="file" accept="application/json" style="display:none" /></div></div>
+  <div class="topbar"><div class="topbar-inner"><div class="brand"><div class="dot"></div><div><div id="appBrandTitle" style="font-size:18px; font-weight:900">Beveridge Law Firm – Case Planner</div><div id="appBrandSubtitle" class="pill" style="display:none"></div></div></div><div class="grow"></div><div id="authTopbar" class="authTopbar hidden"><span id="authUserBadge" class="pill"></span><button id="caseChatTopBtn" class="btnPrimary" type="button" style="display:none">Ask AI</button><button id="dashboardBtn" class="btnGhost" type="button">Dashboard</button><button id="signOutBtn" class="btnGhost" type="button">Sign out</button></div><div id="caseNameDisplay" class="caseName" style="font-weight:900;font-size:16px;padding:10px 12px;border:1px solid var(--border);border-radius:14px;background:#fff;min-height:42px">Case</div><input id="caseName" class="caseName" type="hidden" /><div id="adminTopbarTools" class="row"><button id="exportBtn" class="btnPrimary">Export JSON</button><button id="importBtn">Import JSON</button><button id="bulkImportElementsBtn">Bulk import elements to Supabase</button><button id="resetBtn" class="btnDanger">Reset (local)</button></div><input id="importFile" type="file" accept="application/json" style="display:none" /><input id="bulkImportElementsFile" type="file" accept="application/json" style="display:none" /></div></div>
   <div id="authShell" class="authShell" style="display:none">
     <div id="authGate" class="card" style="display:none">
       <h2>Login</h2>
@@ -1560,7 +1549,7 @@
       </div>
       <div id="dashboardSetupNotice" class="setupBox hidden" style="margin-top:12px"></div>
       <div class="dashboardGrid" style="margin-top:14px">
-        <div class="card" style="box-shadow:none">
+        <div class="card" id="dashboardCreateCaseCard" style="box-shadow:none;display:none">
           <h2 style="margin-bottom:8px">Create case</h2>
           <div class="label">Case name</div><input id="dashboardCaseName" type="text" placeholder="e.g., Murski, Smith, Johnson" />
           <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px"><button id="dashboardCreateCaseBtn" class="btnPrimary" type="button">Create case</button></div>
@@ -1992,6 +1981,7 @@ function normalizeState(){ state.tags = Array.isArray(state.tags) ? state.tags.f
       const caseLabel = authUi.currentCaseName || state.caseName || 'Case';
       if($('caseNameDisplay')) $('caseNameDisplay').textContent = caseLabel;
       if(typeof applyPageAccessVisibility === 'function') applyPageAccessVisibility();
+      applyAdminOnlyControlVisibility();
     }
     async function loadCurrentCaseMembership(){
       const user = getActiveSessionUser();
@@ -8069,6 +8059,25 @@ function openStructuredDocEditor(docId){
     $('structuredDocModal')?.addEventListener('click', (ev)=>{ if(ev.target && ev.target.id === 'structuredDocModal') closeStructuredDocEditor(); });
 
     const authUi = { session:null, cases:[], selectedCase:'', members:[], currentCaseRole:'user', currentCaseName:'', currentCaseMember:null };
+    function userHasAnyAdminCase(){
+      return Array.isArray(authUi.cases) && authUi.cases.some(row => String(row?.role || '').toLowerCase() === 'admin');
+    }
+    function canCurrentUserUseAdminOnlyTools(){
+      return CASE_ID ? String(authUi.currentCaseRole || '').toLowerCase() === 'admin' : userHasAnyAdminCase();
+    }
+    function applyAdminOnlyControlVisibility(){
+      const allowAdminTools = canCurrentUserUseAdminOnlyTools();
+      const createBtn = $('dashboardCreateCaseBtn');
+      const createCard = $('dashboardCreateCaseCard') || (createBtn ? createBtn.closest('.card') : null);
+      if(createCard) createCard.style.display = userHasAnyAdminCase() ? '' : 'none';
+      if(createBtn) createBtn.disabled = !userHasAnyAdminCase();
+      const topChatBtn = $('caseChatTopBtn');
+      const chatLauncher = $('caseChatLauncher');
+      const chatPanel = $('caseChatPanel');
+      if(topChatBtn) topChatBtn.style.display = allowAdminTools ? 'inline-flex' : 'none';
+      if(chatLauncher) chatLauncher.style.display = allowAdminTools ? 'inline-flex' : 'none';
+      if(!allowAdminTools && chatPanel) chatPanel.classList.remove('open');
+    }
     function getActiveSessionUser(){ return authUi.session && authUi.session.user ? authUi.session.user : null; }
     function hideAppChrome(){ if($('mainTabs')) $('mainTabs').style.display = 'none'; if($('appContainer')) $('appContainer').style.display = 'none'; }
     function showAppChrome(){ if($('mainTabs')) $('mainTabs').style.display = ''; if($('appContainer')) $('appContainer').style.display = ''; if($('authShell')) $('authShell').style.display = 'none'; if($('authGate')) $('authGate').style.display = 'none'; if($('dashboardView')) $('dashboardView').style.display = 'none'; if($('authTopbar')) $('authTopbar').classList.remove('hidden'); const user=getActiveSessionUser(); if($('authUserBadge')) $('authUserBadge').textContent = user?.email || 'Signed in'; applyCaseRoleVisibility(); if(typeof updateCaseChatAccess === 'function') updateCaseChatAccess(); }
@@ -8122,6 +8131,7 @@ function openStructuredDocEditor(docId){
       });
       list.querySelectorAll('[data-open-case]').forEach(btn => btn.addEventListener('click', ()=> openCaseFromDashboard(btn.getAttribute('data-open-case'))));
       list.querySelectorAll('[data-manage-case]').forEach(btn => btn.addEventListener('click', async ()=>{ authUi.selectedCase = btn.getAttribute('data-manage-case') || ''; const row = (authUi.cases || []).find(item => item.case_id === authUi.selectedCase); if($('caseAdminPanel')) $('caseAdminPanel').classList.remove('hidden'); if($('caseAdminTitle')) $('caseAdminTitle').textContent = row ? `${row.case_name} • admin` : 'Case access'; await loadCaseMembers(authUi.selectedCase); }));
+      applyAdminOnlyControlVisibility();
     }
     async function loadDashboardData(){
       const user = getActiveSessionUser();
@@ -8151,7 +8161,34 @@ function openStructuredDocEditor(docId){
         if($('dashboardSetupNotice')){ $('dashboardSetupNotice').classList.remove('hidden'); $('dashboardSetupNotice').textContent = 'Dashboard setup is not complete yet. Confirm the new cases and case_members tables exist and that your user is linked to the case.'; }
       }
     }
-    function showDashboardOnly(){ hideAppChrome(); if($('authShell')) $('authShell').style.display = ''; if($('authGate')) $('authGate').style.display = 'none'; if($('dashboardView')) $('dashboardView').style.display = ''; if($('caseAdminPanel')) $('caseAdminPanel').classList.add('hidden'); if(typeof updateCaseChatAccess === 'function') updateCaseChatAccess(); loadDashboardData(); }
+    let dashboardLoadInFlight = null;
+    let dashboardLoadQueued = false;
+    function showDashboardOnly(){
+      hideAppChrome();
+      if($('authShell')) $('authShell').style.display = '';
+      if($('authGate')) $('authGate').style.display = 'none';
+      if($('dashboardView')) $('dashboardView').style.display = '';
+      if($('caseAdminPanel')) $('caseAdminPanel').classList.add('hidden');
+      applyAdminOnlyControlVisibility();
+      if(typeof updateCaseChatAccess === 'function') updateCaseChatAccess();
+      queueDashboardDataLoad();
+    }
+    function queueDashboardDataLoad(){
+      if(dashboardLoadInFlight){ dashboardLoadQueued = true; return dashboardLoadInFlight; }
+      dashboardLoadInFlight = Promise.resolve(loadDashboardData()).finally(()=>{
+        dashboardLoadInFlight = null;
+        if(dashboardLoadQueued){ dashboardLoadQueued = false; setTimeout(queueDashboardDataLoad, 0); }
+      });
+      return dashboardLoadInFlight;
+    }
+    function openDashboardFromApp(){
+      try{ localStorage.removeItem('murski_selected_case_id'); }catch(e){}
+      const url = new URL(window.location.href);
+      url.searchParams.delete('case');
+      url.searchParams.delete('view');
+      url.searchParams.delete('worksheet');
+      window.location.href = url.pathname + (url.searchParams.toString() ? '?' + url.searchParams.toString() : '');
+    }
     function openCaseFromDashboard(caseId){ if(!caseId) return; localStorage.setItem('murski_selected_case_id', caseId); const url = new URL(window.location.href); url.searchParams.set('case', caseId); url.searchParams.set('view', getInitialViewFromUrl()); window.location.href = url.pathname + '?' + url.searchParams.toString(); }
     async function routeAfterAuth(){ const user = getActiveSessionUser(); if(!user){ showLoginOnly(); return; } if(CASE_ID){ await loadCurrentCaseMembership(); showAppChrome(); return; } showDashboardOnly(); }
 
@@ -8175,18 +8212,18 @@ function openStructuredDocEditor(docId){
       syncTagAssignmentsFromSupabase();
       renderTags();
       setDraftDocumentTagLinks(ui.newDocumentTagLinks || []);
-      $('dashboardBtn')?.addEventListener('click', ()=> showDashboardOnly());
+      $('dashboardBtn')?.addEventListener('click', ()=> openDashboardFromApp());
       $('signOutBtn')?.addEventListener('click', async ()=>{ await window.supabase.auth.signOut(); localStorage.removeItem('murski_selected_case_id'); const url = new URL(window.location.href); url.searchParams.delete('case'); window.location.href = url.pathname; });
-      $('dashboardRefreshBtn')?.addEventListener('click', ()=> loadDashboardData());
+      $('dashboardRefreshBtn')?.addEventListener('click', ()=> queueDashboardDataLoad());
       $('authSignInBtn')?.addEventListener('click', async ()=>{ try{ const email = $('authEmail').value.trim(); const password = $('authPassword').value; const { error } = await window.supabase.auth.signInWithPassword({ email, password }); if(error) throw error; toast('Signed in'); }catch(e){ alert(e.message || e); } });
-      $('authSignUpBtn')?.addEventListener('click', async ()=>{ try{ const email = $('authSignupEmail').value.trim(); const password = $('authSignupPassword').value; const { error } = await window.supabase.auth.signUp({ email, password }); if(error) throw error; alert('Login created. The user can sign in after email confirmation if your Supabase project requires it.'); }catch(e){ alert(e.message || e); } });
-      $('authResetPwBtn')?.addEventListener('click', async ()=>{ try{ const email = ($('authEmail').value || $('authSignupEmail').value || '').trim(); if(!email) throw new Error('Enter the email first.'); const { error } = await window.supabase.auth.resetPasswordForEmail(email, { redirectTo: window.location.href.split('?')[0] }); if(error) throw error; alert('Password reset email sent.'); }catch(e){ alert(e.message || e); } });
-      $('dashboardCreateCaseBtn')?.addEventListener('click', async ()=>{ try{ const user = getActiveSessionUser(); if(!user) throw new Error('Sign in first.'); const name = $('dashboardCaseName').value.trim(); if(!name) throw new Error('Enter a case name.'); const { data: caseRow, error } = await window.supabase.from('cases').insert({ name, created_by: user.id }).select().single(); if(error) throw error; const memberRes = await window.supabase.from('case_members').insert({ case_id: caseRow.id, user_id: user.id, role: 'admin' }); if(memberRes.error) throw memberRes.error; $('dashboardCaseName').value = ''; await loadDashboardData(); toast('Case created'); }catch(e){ alert(e.message || e); } });
+      $('authSignUpBtn')?.addEventListener('click', async ()=>{ try{ const email = $('authSignupEmail').value.trim(); const password = $('authSignupPassword').value; const { error } = await window.supabase.auth.signUp({ email, password, options: { emailRedirectTo: window.location.origin + window.location.pathname } }); if(error) throw error; alert('Login created. The user can sign in after email confirmation if your Supabase project requires it.'); }catch(e){ alert(e.message || e); } });
+      $('authResetPwBtn')?.addEventListener('click', async ()=>{ try{ const email = ($('authEmail').value || $('authSignupEmail').value || '').trim(); if(!email) throw new Error('Enter the email first.'); const { error } = await window.supabase.auth.resetPasswordForEmail(email, { redirectTo: window.location.origin + window.location.pathname + '?recovery=1' }); if(error) throw error; alert('Password reset email sent.'); }catch(e){ alert(e.message || e); } });
+      $('dashboardCreateCaseBtn')?.addEventListener('click', async ()=>{ try{ if(!userHasAnyAdminCase()) throw new Error('Only admins can create new cases.'); const user = getActiveSessionUser(); if(!user) throw new Error('Sign in first.'); const name = $('dashboardCaseName').value.trim(); if(!name) throw new Error('Enter a case name.'); const { data: caseRow, error } = await window.supabase.from('cases').insert({ name, created_by: user.id }).select().single(); if(error) throw error; const memberRes = await window.supabase.from('case_members').insert({ case_id: caseRow.id, user_id: user.id, role: 'admin' }); if(memberRes.error) throw memberRes.error; $('dashboardCaseName').value = ''; await loadDashboardData(); toast('Case created'); }catch(e){ alert(e.message || e); } });
       $('addMemberBtn')?.addEventListener('click', async ()=>{ try{ if(!authUi.selectedCase) throw new Error('Choose a case first.'); const email = $('memberEmail').value.trim().toLowerCase(); const role = $('memberRole').value || 'user'; if(!email) throw new Error('Enter the user email.'); const { data: profile, error: profileError } = await window.supabase.from('profiles').select('*').ilike('email', email).maybeSingle(); if(profileError) throw profileError; if(!profile || !profile.id) throw new Error('That email does not have a login/profile yet. Have them sign up first from the login box.'); const { error } = await window.supabase.from('case_members').upsert({ case_id: authUi.selectedCase, user_id: profile.id, role }, { onConflict:'case_id,user_id' }); if(error) throw error; $('memberEmail').value = ''; await loadCaseMembers(authUi.selectedCase); toast('User added to case'); }catch(e){ alert(e.message || e); } });
       const sessionRes = await window.supabase.auth.getSession();
       authUi.session = sessionRes?.data?.session || null;
       routeAfterAuth();
-      window.supabase.auth.onAuthStateChange((_event, session)=>{ authUi.session = session || null; routeAfterAuth(); });
+      window.supabase.auth.onAuthStateChange((_event, session)=>{ authUi.session = session || null; setTimeout(()=>{ routeAfterAuth(); }, 0); });
     }
 
     bootAuthStartup().catch((err)=>{
@@ -9552,12 +9589,8 @@ ${entry.summary}`).toLowerCase().includes(q)) return false;
   }
 
   function isCaseChatUserAllowed(){
-    const user = (typeof getActiveSessionUser === 'function') ? getActiveSessionUser() : null;
-    const badgeEmail = $('authUserBadge') ? $('authUserBadge').textContent : '';
-    const dashboardEmail = $('dashboardUserLine') ? $('dashboardUserLine').textContent : '';
-    const email = String(user?.email || badgeEmail || dashboardEmail || '').toLowerCase().trim();
-    const allowedEmails = ['benbeveridge83@gmail.com','ben@beveridgelawfirm.com','benbeveridge@beveridgelawfirm.com'];
-    return !!email && (allowedEmails.includes(email) || email.includes('benbeveridge'));
+    if(typeof canCurrentUserUseAdminOnlyTools === 'function') return canCurrentUserUseAdminOnlyTools();
+    return false;
   }
   function updateCaseChatAccess(){
     const allowed = isCaseChatUserAllowed();
@@ -9585,6 +9618,7 @@ ${entry.summary}`).toLowerCase().includes(q)) return false;
   }
 
   function setCaseChatOpen(open){
+    if(open && typeof isCaseChatUserAllowed === 'function' && !isCaseChatUserAllowed()) open = false;
     caseChatConfig.isOpen = !!open;
     persistCaseChatConfig();
     const panel = $('caseChatPanel');
