@@ -3997,15 +3997,54 @@ function normalizeState(){ state.tags = Array.isArray(state.tags) ? state.tags.f
     }
     async function finalizeExhibitFormation(){
       const rows = getExhibitFormationRows(); if(!rows.length){ alert('No documents selected.'); return; }
-      const endpointBase = String(getCaseChatEndpoint?.() || '').replace(/\/case-chat\/?$/, ''); const endpoint = endpointBase ? endpointBase + '/generate-exhibit-packet' : '';
-      const payload = { caseId: getCaseId(), outputFolder: $('exhibitFormationFolder')?.value?.trim() || '', batesPrefix: $('exhibitFormationBatesPrefix')?.value?.trim() || 'CP', batesStart: Math.max(1, parseInt($('exhibitFormationBatesStart')?.value || '1', 10) || 1), documents: rows.map(r => ({ id:r.doc.id, originalName:r.doc.name || '', outputName:r.outputName, exhibitLabel:r.exhibit, filePath:r.doc.filePath || r.doc.file_path || r.doc.storage_path || '', batesStart:r.batesStart, batesEnd:r.batesEnd, estimatedPages:r.pages })) };
+      const endpointBase = String(getCaseChatEndpoint?.() || 'https://ewemahyfoegkpzgpqnsr.supabase.co/functions/v1/case-chat').replace(/\/case-chat\/?$/, '');
+      const endpoint = endpointBase ? endpointBase + '/generate-exhibit-packet' : 'https://ewemahyfoegkpzgpqnsr.supabase.co/functions/v1/generate-exhibit-packet';
+      const startingBates = Math.max(1, parseInt($('exhibitFormationBatesStart')?.value || '1', 10) || 1);
+      const payload = {
+        caseId: getCaseId(),
+        outputFolder: $('exhibitFormationFolder')?.value?.trim() || 'Exhibit Packet',
+        batesPrefix: $('exhibitFormationBatesPrefix')?.value?.trim() || 'CP',
+        startingBates,
+        batesStart: startingBates,
+        documents: rows.map(r => {
+          const filePath = r.doc.file_path || r.doc.filePath || r.doc.storage_path || '';
+          return {
+            id: r.doc.id,
+            name: r.doc.name || '',
+            originalName: r.doc.name || '',
+            renamedName: r.outputName,
+            outputName: r.outputName,
+            exhibitNumber: r.exhibit,
+            exhibitLabel: r.exhibit,
+            file_path: filePath,
+            filePath,
+            batesStart: r.batesStart,
+            batesEnd: r.batesEnd,
+            estimatedPages: r.pages
+          };
+        })
+      };
       const resultBox = $('exhibitFormationResult'); if($('exhibitFormationFinalize')) $('exhibitFormationFinalize').disabled = true;
       try{
-        if(!endpoint) throw new Error('No Edge Function endpoint is saved in Ask AI settings.');
-        const res = await fetch(endpoint, { method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify(payload) }); const data = await res.json().catch(()=>({})); if(!res.ok) throw new Error(data?.error || data?.message || 'Packet function returned ' + res.status);
-        if(resultBox){ const links = [data.packetUrl ? '<a class="docOpenLink" href="' + escapeHtml(data.packetUrl) + '" target="_blank" rel="noopener">Open combined exhibit packet</a>' : '', data.exhibitListUrl ? '<a class="docOpenLink" href="' + escapeHtml(data.exhibitListUrl) + '" target="_blank" rel="noopener">Open exhibit list</a>' : ''].filter(Boolean).join(''); resultBox.innerHTML = '<b>Exhibit packet finalized.</b><div class="hint">The packet request was sent and completed.</div>' + (links || '<div class="hint">No download links were returned by the backend.</div>'); }
+        if(!endpoint) throw new Error('No Edge Function endpoint is available.');
+        const res = await fetch(endpoint, { method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify(payload) });
+        const data = await res.json().catch(()=>({}));
+        if(!res.ok || data?.success === false) throw new Error(data?.error || data?.message || 'Packet function returned ' + res.status);
+        const storageBase = 'https://ewemahyfoegkpzgpqnsr.supabase.co/storage/v1/object/public/case-documents/';
+        const packetPath = data.packetPath || data.combinedPath || data.path || '';
+        const listPath = data.exhibitListPath || data.listPath || '';
+        const packetUrl = data.packetUrl || data.combinedUrl || (packetPath ? storageBase + encodeURI(packetPath).replace(/#/g, '%23') : '');
+        const exhibitListUrl = data.exhibitListUrl || (listPath ? storageBase + encodeURI(listPath).replace(/#/g, '%23') : '');
+        if(resultBox){
+          const links = [
+            packetUrl ? '<a class="docOpenLink" href="' + escapeHtml(packetUrl) + '" target="_blank" rel="noopener">Open combined exhibit packet</a>' : '',
+            exhibitListUrl ? '<a class="docOpenLink" href="' + escapeHtml(exhibitListUrl) + '" target="_blank" rel="noopener">Open exhibit list</a>' : ''
+          ].filter(Boolean).join(' ');
+          const list = Array.isArray(data.exhibitList) && data.exhibitList.length ? '<div class="hint">' + escapeHtml(data.exhibitList.length + ' exhibit list item(s) returned by the backend.') + '</div>' : '';
+          resultBox.innerHTML = '<b>Exhibit packet finalized.</b><div class="hint">The combined PDF and exhibit list were created in Supabase Storage.</div>' + (links || '<div class="hint">No download links were returned by the backend.</div>') + list;
+        }
       }catch(err){
-        if(resultBox){ resultBox.innerHTML = '<b>Frontend workflow is ready.</b><div class="hint">The selected documents, order, names, Bates numbers, output folder, and exhibit list were prepared, but the PDF backend still needs to exist as a Supabase Edge Function named <b>generate-exhibit-packet</b>.</div><div class="hint">Backend error: ' + escapeHtml(err?.message || String(err)) + '</div><button type="button" id="exhibitFormationDownloadListAfterError" class="btnGhost">Download exhibit list CSV anyway</button>'; setTimeout(()=>$('exhibitFormationDownloadListAfterError')?.addEventListener('click', downloadExhibitFormationCsv),0); }
+        if(resultBox){ resultBox.innerHTML = '<b>Exhibit packet could not be finalized.</b><div class="hint">The selected documents, order, names, Bates numbers, output folder, and exhibit list were prepared, but the backend returned an error.</div><div class="hint">Backend error: ' + escapeHtml(err?.message || String(err)) + '</div><button type="button" id="exhibitFormationDownloadListAfterError" class="btnGhost">Download exhibit list CSV anyway</button>'; setTimeout(()=>$('exhibitFormationDownloadListAfterError')?.addEventListener('click', downloadExhibitFormationCsv),0); }
       }finally{ if($('exhibitFormationFinalize')) $('exhibitFormationFinalize').disabled = false; $('exhibitFormationReviewStep')?.classList.remove('open'); $('exhibitFormationResultStep')?.classList.add('open'); }
     }
     function initExhibitFormationUi(){
