@@ -1908,9 +1908,28 @@ function normalizeState(){ state.tags = Array.isArray(state.tags) ? state.tags.f
       const allowed = new Set(getAllCasePageKeys());
       return Array.from(new Set(arr.filter(key => allowed.has(key))));
     }
+    function getCasePageAccessStorageKey(caseId = ''){ return `murski_case_page_access_${caseId || getCaseId() || 'global'}_v1`; }
+    function loadCasePageAccessMap(caseId = ''){
+      try{ return JSON.parse(localStorage.getItem(getCasePageAccessStorageKey(caseId)) || '{}') || {}; }catch(e){ return {}; }
+    }
+    function saveCasePageAccessMap(caseId = '', map = {}){
+      try{ localStorage.setItem(getCasePageAccessStorageKey(caseId), JSON.stringify(map || {})); }catch(e){}
+    }
+    function getStoredCasePageAccess(userId, caseId = ''){
+      const map = loadCasePageAccessMap(caseId);
+      return map && userId ? map[userId] : null;
+    }
+    function setStoredCasePageAccess(userId, pageAccess, caseId = ''){
+      if(!userId) return;
+      const map = loadCasePageAccessMap(caseId);
+      map[userId] = normalizeCasePageAccess(pageAccess);
+      saveCasePageAccessMap(caseId, map);
+    }
     function getCurrentPageAccessKeys(){
       if(authUi.currentCaseRole === 'admin') return getAllCasePageKeys();
-      return normalizeCasePageAccess(authUi.currentCaseMember?.page_access || authUi.currentCaseMember?.pageAccess || null);
+      const user = getActiveSessionUser ? getActiveSessionUser() : null;
+      const stored = user?.id ? getStoredCasePageAccess(user.id, CASE_ID) : null;
+      return normalizeCasePageAccess(authUi.currentCaseMember?.page_access || authUi.currentCaseMember?.pageAccess || stored || null);
     }
     function canCurrentUserAccessView(view){
       if(authUi.currentCaseRole === 'admin') return true;
@@ -1955,10 +1974,8 @@ function normalizeState(){ state.tags = Array.isArray(state.tags) ? state.tags.f
         if(memberRes.error) throw memberRes.error;
         authUi.currentCaseMember = memberRes.data || null;
         authUi.currentCaseRole = memberRes.data?.role || 'user';
-        try{
-          const accessRes = await window.supabase.from('case_members').select('page_access').eq('case_id', CASE_ID).eq('user_id', user.id).maybeSingle();
-          if(!accessRes.error && accessRes.data && authUi.currentCaseMember) authUi.currentCaseMember.page_access = accessRes.data.page_access;
-        }catch(e){}
+        const storedAccess = getStoredCasePageAccess(user.id, CASE_ID);
+        if(storedAccess && authUi.currentCaseMember) authUi.currentCaseMember.page_access = storedAccess;
         const caseRes = await window.supabase.from('cases').select('name').eq('id', CASE_ID).maybeSingle();
         if(!caseRes.error && caseRes.data) authUi.currentCaseName = caseRes.data.name || '';
       }catch(e){ console.warn('Could not load case membership', e); }
@@ -8030,13 +8047,10 @@ function openStructuredDocEditor(docId){
       if(!caseId) return [];
       const { data: memberRows, error } = await window.supabase.from('case_members').select('user_id, role').eq('case_id', caseId);
       if(error) throw error;
-      try{
-        const accessRes = await window.supabase.from('case_members').select('user_id, page_access').eq('case_id', caseId);
-        if(!accessRes.error && Array.isArray(accessRes.data)){
-          const accessByUser = new Map(accessRes.data.map(row => [row.user_id, row.page_access]));
-          (memberRows || []).forEach(row => { if(accessByUser.has(row.user_id)) row.page_access = accessByUser.get(row.user_id); });
-        }
-      }catch(e){}
+      const localAccessMap = loadCasePageAccessMap(caseId);
+      (memberRows || []).forEach(row => {
+        if(localAccessMap && Object.prototype.hasOwnProperty.call(localAccessMap, row.user_id)) row.page_access = localAccessMap[row.user_id];
+      });
       const userIds = Array.from(new Set((memberRows || []).map(row => row.user_id).filter(Boolean)));
       let profiles = [];
       if(userIds.length){
@@ -8058,7 +8072,7 @@ function openStructuredDocEditor(docId){
           return `<div class="memberRow"><div><b>${escapeHtml(label || 'User')}</b><div class="authMuted">${escapeHtml(profile.email || row.user_id || '')}</div></div><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><span class="pill">${escapeHtml(row.role || 'user')}</span>${accessControl}${canRemove ? `<button type="button" class="btnGhost" data-remove-member="${row.user_id}">Remove</button>` : ''}</div></div>`;
         }).join('') : '<div class="empty">No users on this case yet.</div>';
         list.querySelectorAll('[data-remove-member]').forEach(btn => btn.addEventListener('click', async ()=>{ try{ const userId = btn.getAttribute('data-remove-member'); if(!userId || !authUi.selectedCase) return; const { error: delError } = await window.supabase.from('case_members').delete().eq('case_id', authUi.selectedCase).eq('user_id', userId); if(delError) throw delError; await loadCaseMembers(authUi.selectedCase); toast('User removed from case'); }catch(e){ alert(e.message || e); } }));
-        list.querySelectorAll('[data-member-page-access]').forEach(sel => sel.addEventListener('change', async ()=>{ try{ const userId = sel.getAttribute('data-member-page-access'); const pageAccess = Array.from(sel.selectedOptions).map(opt => opt.value); if(!userId || !authUi.selectedCase) return; const { error: updateError } = await window.supabase.from('case_members').update({ page_access: pageAccess }).eq('case_id', authUi.selectedCase).eq('user_id', userId); if(updateError) throw updateError; toast('Page access updated'); }catch(e){ alert((e && e.message ? e.message : e) + '\n\nIf this says page_access does not exist, add a JSONB column named page_access to the case_members table.'); } }));
+        list.querySelectorAll('[data-member-page-access]').forEach(sel => sel.addEventListener('change', async ()=>{ try{ const userId = sel.getAttribute('data-member-page-access'); const pageAccess = Array.from(sel.selectedOptions).map(opt => opt.value); if(!userId || !authUi.selectedCase) return; setStoredCasePageAccess(userId, pageAccess, authUi.selectedCase); const member = authUi.members.find(row => row.user_id === userId); if(member) member.page_access = pageAccess; toast('Page access updated'); }catch(e){ alert(e && e.message ? e.message : e); } }));
       }
       return authUi.members;
     }
