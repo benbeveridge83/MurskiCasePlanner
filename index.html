@@ -4003,7 +4003,7 @@ function normalizeState(){ state.tags = Array.isArray(state.tags) ? state.tags.f
         .replace(/\/generate-exhibit-packet\/?$/, '')
         .replace(/\/exhibitfunction\/?$/, '')
         .replace(/\/$/, '');
-      const endpoint = endpointRoot + '/exhibitfunction';
+const endpoint = endpointRoot + '/generate-exhibit-packet';
       const startingBates = Math.max(1, parseInt($('exhibitFormationBatesStart')?.value || '1', 10) || 1);
       const payload = {
         caseId: getCaseId(),
