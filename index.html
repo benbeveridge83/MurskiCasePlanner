@@ -3935,8 +3935,38 @@ function normalizeState(){ state.tags = Array.isArray(state.tags) ? state.tags.f
       return ids.map(id => getDocumentById(id)).filter(Boolean);
     }
     function estimateExhibitFormationPageCount(doc){
-      const count = Number(doc.pageCount || doc.page_count || doc.pages || 0);
+      ui.exhibitFormationPageCounts = ui.exhibitFormationPageCounts || {};
+      const cached = Number(ui.exhibitFormationPageCounts[doc?.id] || 0);
+      if(Number.isFinite(cached) && cached > 0) return Math.floor(cached);
+      const count = Number(doc?.pageCount || doc?.page_count || doc?.pages || 0);
       return Number.isFinite(count) && count > 0 ? Math.floor(count) : 1;
+    }
+    async function calculateExhibitFormationPageCounts(){
+      ui.exhibitFormationPageCounts = ui.exhibitFormationPageCounts || {};
+      const docs = getExhibitFormationDocs();
+      let changed = false;
+      for(const doc of docs){
+        if(!doc || ui.exhibitFormationPageCounts[doc.id]) continue;
+        const filePath = doc.file_path || doc.filePath || doc.storage_path || '';
+        if(!filePath || !/\.pdf(\?|#|$)/i.test(filePath)) continue;
+        try{
+          const url = (window.getDocumentPublicUrl ? window.getDocumentPublicUrl(filePath) : '');
+          if(!url || !window.pdfjsLib?.getDocument) continue;
+          const loadingTask = window.pdfjsLib.getDocument({ url });
+          const pdf = await loadingTask.promise;
+          const pageCount = Number(pdf?.numPages || 0);
+          if(Number.isFinite(pageCount) && pageCount > 0){
+            ui.exhibitFormationPageCounts[doc.id] = Math.floor(pageCount);
+            doc.pageCount = Math.floor(pageCount);
+            doc.page_count = Math.floor(pageCount);
+            changed = true;
+            renderExhibitFormationReview();
+          }
+        }catch(err){
+          console.warn('Could not calculate PDF page count for exhibit formation:', doc?.name || doc?.id, err);
+        }
+      }
+      if(changed) renderExhibitFormationReview();
     }
     function getExhibitFormationOutputName(doc, index){
       const input = document.querySelector('[data-exhibit-formation-name="' + CSS.escape(doc.id) + '"]');
@@ -3965,7 +3995,7 @@ function normalizeState(){ state.tags = Array.isArray(state.tags) ? state.tags.f
       const ids = (ui.exhibitFormationSelectedIds || []).filter(Boolean);
       if(!ids.length){ alert('Select at least one document first.'); return; }
       ui.exhibitFormationReviewIds = ids.slice(); ui.exhibitFormationSelecting = false; renderDocumentAnalysis();
-      $('exhibitFormationModal')?.classList.add('open'); $('exhibitFormationReviewStep')?.classList.add('open'); $('exhibitFormationResultStep')?.classList.remove('open'); renderExhibitFormationReview();
+      $('exhibitFormationModal')?.classList.add('open'); $('exhibitFormationReviewStep')?.classList.add('open'); $('exhibitFormationResultStep')?.classList.remove('open'); renderExhibitFormationReview(); calculateExhibitFormationPageCounts();
     }
     function renderExhibitFormationReview(){
       const body = $('exhibitFormationReviewBody'); if(!body) return;
@@ -3991,8 +4021,8 @@ function normalizeState(){ state.tags = Array.isArray(state.tags) ? state.tags.f
     function downloadExhibitFormationCsv(){
       const rows = getExhibitFormationRows();
       const csvRows = [['Exhibit','Document','Final file name','Bates Start','Bates End','Estimated Pages']].concat(rows.map(r => [r.exhibit, r.doc.name || '', r.outputName, r.batesStart, r.batesEnd, String(r.pages)]));
-      const csv = csvRows.map(row => row.map(v => '"' + String(v ?? '').replace(/"/g,'""') + '"').join(',')).join('\\n');
-      const blob = new Blob([csv], { type:'text/csv;charset=utf-8' }); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'exhibit-list.csv'; document.body.appendChild(a); a.click(); setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); }, 500);
+      const csv = csvRows.map(row => row.map(v => '"' + String(v ?? '').replace(/"/g,'""') + '"').join(',')).join('\r\n');
+      const blob = new Blob(['\ufeff' + csv], { type:'text/csv;charset=utf-8' }); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'exhibit-list.csv'; document.body.appendChild(a); a.click(); setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); }, 500);
     }
     async function finalizeExhibitFormation(){
       const rows = getExhibitFormationRows(); if(!rows.length){ alert('No documents selected.'); return; }
@@ -4025,7 +4055,17 @@ function normalizeState(){ state.tags = Array.isArray(state.tags) ? state.tags.f
       const resultBox = $('exhibitFormationResult'); if($('exhibitFormationFinalize')) $('exhibitFormationFinalize').disabled = true;
       try{
         if(!endpoint) throw new Error('No Edge Function endpoint is available.');
-        const functionHeaders = { 'Content-Type':'application/json', 'apikey':'sb_publishable_0ddiJfYLmhk9maLNcYJakg_aUMkvWRO' }; try { const sessionResult = await window.supabase?.auth?.getSession?.(); const accessToken = sessionResult?.data?.session?.access_token || ''; if (accessToken) functionHeaders.Authorization = 'Bearer ' + accessToken; } catch (authErr) { console.warn('Could not read Supabase auth session for exhibit packet function:', authErr); } if (!functionHeaders.Authorization) throw new Error('Missing authorization header. Sign out, sign back in, then try Finalize Exhibit Packet again.'); const res = await fetch(endpoint, { method:'POST', headers: functionHeaders, body: JSON.stringify(payload) });
+        const functionKey = 'sb_publishable_0ddiJfYLmhk9maLNcYJakg_aUMkvWRO';
+        const functionHeaders = { 'Content-Type':'application/json', 'apikey': functionKey };
+        try {
+          const sessionResult = await window.supabase?.auth?.getSession?.();
+          const accessToken = sessionResult?.data?.session?.access_token || '';
+          functionHeaders.Authorization = 'Bearer ' + (accessToken || functionKey);
+        } catch (authErr) {
+          console.warn('Could not read Supabase auth session for exhibit packet function; using publishable key fallback:', authErr);
+          functionHeaders.Authorization = 'Bearer ' + functionKey;
+        }
+        const res = await fetch(endpoint, { method:'POST', headers: functionHeaders, body: JSON.stringify(payload) });
         const data = await res.json().catch(()=>({}));
         if(!res.ok || data?.success === false) throw new Error(data?.error || data?.message || 'Packet function returned ' + res.status);
         const storageBase = 'https://ewemahyfoegkpzgpqnsr.supabase.co/storage/v1/object/public/case-documents/';
