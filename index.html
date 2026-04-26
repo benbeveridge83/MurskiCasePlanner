@@ -8434,7 +8434,21 @@ function openStructuredDocEditor(docId){
       window.location.href = url.pathname + (url.searchParams.toString() ? '?' + url.searchParams.toString() : '');
     }
     function openCaseFromDashboard(caseId){ if(!caseId) return; localStorage.setItem('murski_selected_case_id', caseId); const url = new URL(window.location.href); url.searchParams.set('case', caseId); url.searchParams.set('view', getInitialViewFromUrl()); window.location.href = url.pathname + '?' + url.searchParams.toString(); }
-    async function routeAfterAuth(){ const user = getActiveSessionUser(); if(!user){ showLoginOnly(); return; } if(CASE_ID){ await loadCurrentCaseMembership(); showAppChrome(); return; } showDashboardOnly(); }
+    async function routeAfterAuth(){
+      const user = getActiveSessionUser();
+      if(!user){ showLoginOnly(); return; }
+      if(CASE_ID){
+        await loadCurrentCaseMembership();
+        showAppChrome();
+        try{
+          if(typeof reloadCriticalSupabaseData === "function") await reloadCriticalSupabaseData();
+          if(ui.currentView === "documentanalysis" && typeof renderDocumentAnalysis === "function") renderDocumentAnalysis();
+          if(ui.currentView === "trialissues" && typeof renderTrialIssues === "function") renderTrialIssues();
+        }catch(e){ console.warn("Post-auth case data reload failed:", e); }
+        return;
+      }
+      showDashboardOnly();
+    }
 
     async function waitForSupabaseReady(){
       for(let i = 0; i < 200; i += 1){
