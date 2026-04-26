@@ -7,7 +7,7 @@
 
     const SUPABASE_URL = "https://ewemahyfoegkpzgpqnsr.supabase.co"
     const SUPABASE_KEY = "sb_publishable_0ddiJfYLmhk9maLNcYJakg_aUMkvWRO"
-
+const SUPABASE_URL = "https://YOUR-PROJECT-REF.supabase.co";
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
     const urlParams = new URLSearchParams(window.location.search)
     const URL_CASE_ID = urlParams.get("case") || ""
@@ -3998,7 +3998,7 @@ function normalizeState(){ state.tags = Array.isArray(state.tags) ? state.tags.f
     async function finalizeExhibitFormation(){
       const rows = getExhibitFormationRows(); if(!rows.length){ alert('No documents selected.'); return; }
       const endpointBase = String(getCaseChatEndpoint?.() || 'https://ewemahyfoegkpzgpqnsr.supabase.co/functions/v1/case-chat').replace(/\/case-chat\/?$/, '');
-      const endpoint = endpointBase ? endpointBase + '/generate-exhibit-packet' : 'https://ewemahyfoegkpzgpqnsr.supabase.co/functions/v1/generate-exhibit-packet';
+      const endpoint = endpointBase ? endpointBase + '/generate-exhibit-packet' : 'https://ewemahyfoegkpzgpqnsr.supabase.co/functions/v1/exhibitfunction';
       const startingBates = Math.max(1, parseInt($('exhibitFormationBatesStart')?.value || '1', 10) || 1);
       const payload = {
         caseId: getCaseId(),
@@ -9901,7 +9901,7 @@ ${entry.summary}`).toLowerCase().includes(q)) return false;
     if(!text || caseChatBusy) return;
     pushCaseChatMessage('user', text);
     setCaseChatComposerText('');
-    const endpoint = getCaseChatEndpoint();
+const endpoint = `${SUPABASE_URL}/functions/v1/finalize-exhibit-packet`;
     if(!endpoint){
       pushCaseChatMessage('system', 'The floating chat box is installed, but it is not connected yet. Save your server endpoint in Settings, then send again.');
       return;
