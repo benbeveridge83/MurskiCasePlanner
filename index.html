@@ -905,6 +905,7 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
   <script src="https://unpkg.com/tus-js-client@4/dist/tus.min.js"></script>
   <script src="https://unpkg.com/mammoth@1.8.0/mammoth.browser.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <meta charset="utf-8" />
@@ -4171,6 +4172,120 @@ function normalizeState(){ state.tags = Array.isArray(state.tags) ? state.tags.f
       const csv = csvRows.map(row => row.map(v => '"' + String(v ?? '').replace(/"/g,'""') + '"').join(',')).join('\r\n');
       const blob = new Blob(['\ufeff' + csv], { type:'text/csv;charset=utf-8' }); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'exhibit-list.csv'; document.body.appendChild(a); a.click(); setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); }, 500);
     }
+    function downloadBlobFile(blob, filename){
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = filename || 'download';
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+    }
+    function safePdfFileName(name){
+      const base = String(name || 'exhibit').replace(/[\\/:*?"<>|]+/g, '_').replace(/\s+/g, ' ').trim() || 'exhibit';
+      return base.toLowerCase().endsWith('.pdf') ? base : base + '.pdf';
+    }
+    function getExhibitDocumentUrl(doc){
+      const filePath = doc?.file_path || doc?.filePath || doc?.storage_path || '';
+      if(filePath && window.getDocumentPublicUrl) return window.getDocumentPublicUrl(filePath);
+      return doc?.fileUrl || doc?.url || doc?.dataUrl || '';
+    }
+    function looksLikePdfDocument(doc){
+      const mime = String(doc?.mimeType || doc?.mime_type || doc?.type || '').toLowerCase();
+      const name = String(getDocumentFileName(doc) || doc?.name || '').toLowerCase();
+      const path = String(doc?.file_path || doc?.filePath || doc?.storage_path || '').toLowerCase();
+      return mime.includes('pdf') || name.endsWith('.pdf') || path.includes('.pdf');
+    }
+    function drawWrappedPdfText(page, text, x, y, maxWidth, size, font, lineGap){
+      const words = String(text || '').split(/\s+/).filter(Boolean);
+      let line = '';
+      let cursorY = y;
+      const gap = lineGap || Math.round(size * 1.35);
+      const draw = value => { page.drawText(value, { x, y: cursorY, size, font }); cursorY -= gap; };
+      for(const word of words){
+        const test = line ? line + ' ' + word : word;
+        if(font.widthOfTextAtSize(test, size) > maxWidth && line){ draw(line); line = word; }
+        else line = test;
+      }
+      if(line) draw(line);
+      return cursorY;
+    }
+    async function addExhibitPlaceholderPage(pdfDoc, row, reason){
+      const page = pdfDoc.addPage([612, 792]);
+      const font = await pdfDoc.embedFont(PDFLib.StandardFonts.Helvetica);
+      const bold = await pdfDoc.embedFont(PDFLib.StandardFonts.HelveticaBold);
+      const title = row.exhibit || 'Exhibit';
+      const fileName = getDocumentFileName(row.doc) || row.doc?.name || 'file';
+      page.drawText(title, { x: 72, y: 690, size: 30, font: bold });
+      page.drawText('Non-printable exhibit placeholder', { x: 72, y: 650, size: 16, font: bold });
+      drawWrappedPdfText(page, 'File: ' + fileName, 72, 610, 468, 14, font, 20);
+      drawWrappedPdfText(page, 'Document name: ' + (row.doc?.name || fileName), 72, 560, 468, 14, font, 20);
+      if(reason) drawWrappedPdfText(page, 'Note: ' + reason, 72, 500, 468, 12, font, 18);
+      page.drawText('This exhibit is audio, video, not a PDF, or could not be parsed as a printable PDF. The original file should be maintained separately.', { x: 72, y: 120, size: 10, font });
+      return 1;
+    }
+    async function buildOneClientExhibitPdf(row){
+      if(!window.PDFLib) throw new Error('PDF library did not load yet. Refresh and try again.');
+      const PDFDocument = PDFLib.PDFDocument;
+      const outPdf = await PDFDocument.create();
+      let copied = 0;
+      if(!isNonPrintableExhibitDocument(row.doc) && looksLikePdfDocument(row.doc)){
+        try{
+          const url = getExhibitDocumentUrl(row.doc);
+          if(!url) throw new Error('No PDF URL found');
+          const res = await fetch(url);
+          if(!res.ok) throw new Error('Could not fetch PDF: ' + res.status);
+          const bytes = await res.arrayBuffer();
+          const sourcePdf = await PDFDocument.load(bytes, { ignoreEncryption: true });
+          const pages = await outPdf.copyPages(sourcePdf, sourcePdf.getPageIndices());
+          pages.forEach(page => outPdf.addPage(page));
+          copied = pages.length;
+        }catch(err){
+          console.warn('Client exhibit PDF fallback used placeholder for', row.doc?.name || row.exhibit, err);
+          copied = await addExhibitPlaceholderPage(outPdf, row, err?.message || String(err));
+        }
+      }else{
+        copied = await addExhibitPlaceholderPage(outPdf, row, isNonPrintableExhibitDocument(row.doc) ? 'Audio/video/non-printable exhibit.' : 'This file is not a PDF.');
+      }
+      return { bytes: await outPdf.save(), pages: Math.max(1, copied || 1) };
+    }
+    async function buildClientSideExhibitPacket(rows){
+      if(!window.PDFLib) throw new Error('PDF library did not load yet. Refresh and try again.');
+      const combinedPdf = await PDFLib.PDFDocument.create();
+      const separate = [];
+      const list = [];
+      let combinedPage = 1;
+      for(const row of rows){
+        const one = await buildOneClientExhibitPdf(row);
+        const singlePdf = await PDFLib.PDFDocument.load(one.bytes, { ignoreEncryption: true });
+        const pages = await combinedPdf.copyPages(singlePdf, singlePdf.getPageIndices());
+        pages.forEach(page => combinedPdf.addPage(page));
+        const actualPages = Math.max(1, pages.length || one.pages || row.pages || 1);
+        separate.push({ row, bytes: one.bytes, pages: actualPages });
+        list.push({ exhibit: row.exhibit, document: row.doc?.name || '', finalFileName: row.outputName, combinedPdfStartPage: combinedPage, combinedPdfEndPage: combinedPage + actualPages - 1, batesStart: row.batesStart, batesEnd: row.batesEnd, pages: actualPages });
+        combinedPage += actualPages;
+      }
+      return { combinedBytes: await combinedPdf.save(), separate, list };
+    }
+    async function runClientSideExhibitFallback(rows, originalError){
+      const built = await buildClientSideExhibitPacket(rows);
+      const prefix = String($('exhibitFormationBatesPrefix')?.value || 'CP').trim() || 'CP';
+      downloadBlobFile(new Blob([built.combinedBytes], { type:'application/pdf' }), safePdfFileName(prefix + ' Combined Exhibit Packet'));
+      let zipMessage = '';
+      if($('exhibitFormationSeparatePdfs')?.checked && window.JSZip){
+        const zip = new JSZip();
+        built.separate.forEach(item => zip.file(safePdfFileName(item.row.outputName || item.row.exhibit), item.bytes));
+        const zipBlob = await zip.generateAsync({ type:'blob' });
+        downloadBlobFile(zipBlob, (prefix || 'CP') + '-separate-exhibits.zip');
+        zipMessage = '<div class="hint">Separate exhibit PDFs were downloaded in a ZIP file.</div>';
+      }
+      window.lastExhibitFormationList = built.list;
+      const resultBox = $('exhibitFormationResult');
+      if(resultBox){
+        const listPreview = '<div style="overflow:auto;margin-top:8px"><table class="exhibitFormationTable"><thead><tr><th>Exhibit</th><th>Document</th><th>Combined start page</th><th>Combined end page</th><th>Bates start</th><th>Bates end</th><th>Pages</th></tr></thead><tbody>' + built.list.map(r => '<tr><td>' + escapeHtml(r.exhibit) + '</td><td>' + escapeHtml(r.document) + '</td><td>' + escapeHtml(r.combinedPdfStartPage) + '</td><td>' + escapeHtml(r.combinedPdfEndPage) + '</td><td>' + escapeHtml(r.batesStart) + '</td><td>' + escapeHtml(r.batesEnd) + '</td><td>' + escapeHtml(r.pages) + '</td></tr>').join('') + '</tbody></table></div>';
+        resultBox.innerHTML = '<b>Exhibit packet created in browser.</b><div class="hint">The backend failed, so the browser created and downloaded the combined PDF. Audio/video/non-printable files and PDFs that could not be parsed were replaced with one-page placeholders showing the exhibit number and file name.</div><div class="hint">Backend error was: ' + escapeHtml(originalError?.message || String(originalError || 'unknown error')) + '</div>' + zipMessage + '<button type="button" id="downloadFinalExhibitListCsv" class="btnGhost">Download final exhibit list CSV with start pages</button>' + listPreview;
+        setTimeout(() => $('downloadFinalExhibitListCsv')?.addEventListener('click', () => downloadExhibitFormationCsv(built.list)), 0);
+      }
+    }
     async function generateSeparateExhibitPackets(endpoint, functionHeaders, basePayload, rows, storageBase){
       const files = [];
       for(const row of rows){
@@ -4261,7 +4376,11 @@ function normalizeState(){ state.tags = Array.isArray(state.tags) ? state.tags.f
           setTimeout(() => $('downloadFinalExhibitListCsv')?.addEventListener('click', () => downloadExhibitFormationCsv(finalList)), 0);
         }
       }catch(err){
-        if(resultBox){ resultBox.innerHTML = '<b>Exhibit packet could not be finalized.</b><div class="hint">The selected documents, order, names, Bates numbers, output folder, and exhibit list were prepared, but the backend returned an error.</div><div class="hint">Backend error: ' + escapeHtml(err?.message || String(err)) + '</div><button type="button" id="exhibitFormationDownloadListAfterError" class="btnGhost">Download exhibit list CSV anyway</button>'; setTimeout(()=>$('exhibitFormationDownloadListAfterError')?.addEventListener('click', downloadExhibitFormationCsv),0); }
+        try{
+          await runClientSideExhibitFallback(rows, err);
+        }catch(fallbackErr){
+          if(resultBox){ resultBox.innerHTML = '<b>Exhibit packet could not be finalized.</b><div class="hint">The selected documents, order, names, Bates numbers, output folder, and exhibit list were prepared, but the backend returned an error and the browser fallback also failed.</div><div class="hint">Backend error: ' + escapeHtml(err?.message || String(err)) + '</div><div class="hint">Browser fallback error: ' + escapeHtml(fallbackErr?.message || String(fallbackErr)) + '</div><button type="button" id="exhibitFormationDownloadListAfterError" class="btnGhost">Download exhibit list CSV anyway</button>'; setTimeout(()=>$('exhibitFormationDownloadListAfterError')?.addEventListener('click', downloadExhibitFormationCsv),0); }
+        }
       }finally{ if($('exhibitFormationFinalize')) $('exhibitFormationFinalize').disabled = false; $('exhibitFormationReviewStep')?.classList.remove('open'); $('exhibitFormationResultStep')?.classList.add('open'); }
     }
     function initExhibitFormationUi(){
