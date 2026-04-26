@@ -54,6 +54,20 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
   }
 });
     const DOCUMENT_BUCKET = "case-documents"
+    // Performance helpers: coalesce duplicate reloads and reduce noisy logging.
+    window.MURSKI_DEBUG_LOGS = window.MURSKI_DEBUG_LOGS || false;
+    window.__murskiReloadTimers = window.__murskiReloadTimers || {};
+    window.__murskiReloadLocks = window.__murskiReloadLocks || {};
+    window.murskiDebugLog = function(...args){ if (window.MURSKI_DEBUG_LOGS) console.log(...args); };
+    window.murskiDebouncedLoad = function(key, callback, delay = 250) {
+      clearTimeout(window.__murskiReloadTimers[key]);
+      window.__murskiReloadTimers[key] = setTimeout(callback, delay);
+    };
+    window.murskiSingleFlight = function(key, callback) {
+      if (window.__murskiReloadLocks[key]) return window.__murskiReloadLocks[key];
+      window.__murskiReloadLocks[key] = Promise.resolve().then(callback).finally(() => { window.__murskiReloadLocks[key] = null; });
+      return window.__murskiReloadLocks[key];
+    };
 
     window.supabase = supabase
     window.CASE_ID = CASE_ID
@@ -158,8 +172,8 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
             schema: "public",
             table: "documents"
           },
-          async () => {
-            await loadDocuments()
+          () => {
+            window.murskiDebouncedLoad("documents_realtime", () => loadDocuments(), 300)
           }
         )
         .subscribe()
@@ -176,7 +190,7 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
         return
       }
       window.loadedTags = data
-      console.log("Loaded tags:", data)
+      window.murskiDebugLog("Loaded tags:", data)
       if (window.syncTagsFromSupabase) window.syncTagsFromSupabase()
       if (window.renderTags) window.renderTags()
     }
@@ -352,19 +366,19 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
     }
 
     function subscribeToTags() {
-      supabase.channel("tags_live_" + CASE_ID).on("postgres_changes", { event: "*", schema: "public", table: "tags" }, async () => { await loadTags() }).subscribe()
+      supabase.channel("tags_live_" + CASE_ID).on("postgres_changes", { event: "*", schema: "public", table: "tags" }, () => { window.murskiDebouncedLoad("tags_realtime", () => loadTags(), 300) }).subscribe()
     }
 
     function subscribeToRowTags() {
-      supabase.channel("row_tags_live_" + CASE_ID).on("postgres_changes", { event: "*", schema: "public", table: "row_tags" }, async () => { await loadRowTags() }).subscribe()
+      supabase.channel("row_tags_live_" + CASE_ID).on("postgres_changes", { event: "*", schema: "public", table: "row_tags" }, () => { window.murskiDebouncedLoad("row_tags_realtime", () => loadRowTags(), 300) }).subscribe()
     }
 
     function subscribeToDocumentTags() {
-      supabase.channel("document_tags_live_" + CASE_ID).on("postgres_changes", { event: "*", schema: "public", table: "document_tags" }, async () => { await loadDocumentTags() }).subscribe()
+      supabase.channel("document_tags_live_" + CASE_ID).on("postgres_changes", { event: "*", schema: "public", table: "document_tags" }, () => { window.murskiDebouncedLoad("document_tags_realtime", () => loadDocumentTags(), 300) }).subscribe()
     }
 
     function subscribeToPersonTags() {
-      supabase.channel("person_tags_live_" + CASE_ID).on("postgres_changes", { event: "*", schema: "public", table: "person_tags" }, async () => { await loadPersonTags() }).subscribe()
+      supabase.channel("person_tags_live_" + CASE_ID).on("postgres_changes", { event: "*", schema: "public", table: "person_tags" }, () => { window.murskiDebouncedLoad("person_tags_realtime", () => loadPersonTags(), 300) }).subscribe()
     }
 
     window.loadTags = loadTags
@@ -394,7 +408,7 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
       }
 
       window.loadedPeople = data
-      console.log("Loaded people:", data)
+      window.murskiDebugLog("Loaded people:", data)
 
       if (window.syncPeopleFromSupabase) {
         window.syncPeopleFromSupabase()
@@ -455,8 +469,8 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
             schema: "public",
             table: "people"
           },
-          async () => {
-            await loadPeople()
+          () => {
+            window.murskiDebouncedLoad("people_realtime", () => loadPeople(), 300)
           }
         )
         .subscribe()
@@ -492,6 +506,28 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
     window.deleteDocumentRow = deleteDocumentRow
     window.normalizeDocumentTagLinks = normalizeDocumentTagLinks
     window.saveDocumentTagLinks = saveDocumentTagLinks
+
+    const __rawLoadDocuments = loadDocuments;
+    const __rawLoadPeople = loadPeople;
+    const __rawLoadWitnessCells = loadWitnessCells;
+    const __rawLoadTags = loadTags;
+    const __rawLoadRowTags = loadRowTags;
+    const __rawLoadDocumentTags = loadDocumentTags;
+    const __rawLoadPersonTags = loadPersonTags;
+    loadDocuments = (...args) => window.murskiSingleFlight("load_documents", () => __rawLoadDocuments(...args));
+    loadPeople = (...args) => window.murskiSingleFlight("load_people", () => __rawLoadPeople(...args));
+    loadWitnessCells = (...args) => window.murskiSingleFlight("load_witness_cells", () => __rawLoadWitnessCells(...args));
+    loadTags = (...args) => window.murskiSingleFlight("load_tags", () => __rawLoadTags(...args));
+    loadRowTags = (...args) => window.murskiSingleFlight("load_row_tags", () => __rawLoadRowTags(...args));
+    loadDocumentTags = (...args) => window.murskiSingleFlight("load_document_tags", () => __rawLoadDocumentTags(...args));
+    loadPersonTags = (...args) => window.murskiSingleFlight("load_person_tags", () => __rawLoadPersonTags(...args));
+    window.loadDocuments = loadDocuments;
+    window.loadPeople = loadPeople;
+    window.loadWitnessCells = loadWitnessCells;
+    window.loadTags = loadTags;
+    window.loadRowTags = loadRowTags;
+    window.loadDocumentTags = loadDocumentTags;
+    window.loadPersonTags = loadPersonTags;
 
     if (CASE_ID) {
       await loadOutlineRows()
@@ -545,9 +581,9 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
             schema: "public",
             table: "witness_cells"
           },
-          async () => {
-            console.log("Witness realtime event received")
-            await loadWitnessCells()
+          () => {
+            window.murskiDebugLog("Witness realtime event received")
+            window.murskiDebouncedLoad("witness_cells_realtime", () => loadWitnessCells(), 300)
           }
         )
         .subscribe()
@@ -565,7 +601,7 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
       }
 
       window.loadedWitnessCells = data
-      console.log("Loaded witness cells:", data)
+      window.murskiDebugLog("Loaded witness cells:", data)
 
       if (window.syncWitnessCellsFromSupabase) {
         window.syncWitnessCellsFromSupabase()
@@ -659,7 +695,7 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
       }
 
       window.loadedDocuments = data
-      console.log("Loaded documents:", data)
+      window.murskiDebugLog("Loaded documents:", data)
 
       if (window.syncDocumentsFromSupabase) {
         window.syncDocumentsFromSupabase()
@@ -8128,6 +8164,7 @@ function openStructuredDocEditor(docId){
       if($('caseName')) $('caseName').value = state.caseName || '';
     }
     async function reloadCriticalSupabaseData(){
+      return window.murskiSingleFlight("reload_critical_supabase_data", async () => {
       if(window.loadOutlineRows) await window.loadOutlineRows(true);
       if(window.loadPeople) await window.loadPeople();
       if(window.loadWitnessCells) await window.loadWitnessCells();
@@ -8147,6 +8184,7 @@ function openStructuredDocEditor(docId){
       renderExhibits();
       renderElements();
       renderTimeline();
+      });
     }
     async function syncCriticalImportedStateToSupabase(imported){
       const sb = window.supabase;
@@ -8492,7 +8530,7 @@ function openStructuredDocEditor(docId){
       const sessionRes = await window.supabase.auth.getSession();
       authUi.session = sessionRes?.data?.session || null;
       routeAfterAuth();
-      window.supabase.auth.onAuthStateChange((_event, session)=>{ authUi.session = session || null; setTimeout(()=>{ routeAfterAuth(); }, 0); });
+      window.supabase.auth.onAuthStateChange((_event, session)=>{ authUi.session = session || null; window.murskiDebouncedLoad("auth_route", ()=>{ routeAfterAuth(); }, 150); });
     }
 
     bootAuthStartup().catch((err)=>{
@@ -8583,7 +8621,7 @@ function openStructuredDocEditor(docId){
     remoteElements.forEach(el => finalizeElementSystemMeta(el));
     state.elements = remoteElements.concat(localOnly.filter(el => !remoteElements.some(remote => remote.id === el.id)));
     state.elements.forEach(syncElementDerivedSourceFields);
-    console.log('Loaded elements from Supabase:', remoteElements.length, 'remote,', localOnly.length, 'local-only retained');
+    window.murskiDebugLog('Loaded elements from Supabase:', remoteElements.length, 'remote,', localOnly.length, 'local-only retained');
     if(opts.replaceLocal && typeof resetElementUiState === 'function') resetElementUiState();
     safeSave();
     renderElements();
@@ -8777,8 +8815,8 @@ function openStructuredDocEditor(docId){
       schema: 'public',
       table: 'trial_issues_pages',
       filter: 'case_id=eq.' + cid()
-    }, async ()=>{
-      await loadTrialIssuesFromSupabase();
+    }, ()=>{
+      window.murskiDebouncedLoad("trial_issues_realtime", () => loadTrialIssuesFromSupabase(), 300);
     }).subscribe();
   }
 
@@ -8822,6 +8860,7 @@ function openStructuredDocEditor(docId){
   }
 
   async function reloadAllSupabaseData(force){
+    return window.murskiSingleFlight("reload_all_supabase_data", async () => {
     if(window.loadOutlineRows) await window.loadOutlineRows(true);
     if(window.loadDocuments) await window.loadDocuments();
     if(window.loadPeople) await window.loadPeople();
@@ -8841,6 +8880,7 @@ function openStructuredDocEditor(docId){
     renderExhibits();
     renderElements();
     renderTimeline();
+    });
   }
 
   async function hydrateStateFromFullBackup(force){
@@ -8919,6 +8959,15 @@ function openStructuredDocEditor(docId){
     }
   }
 
+
+  const __rawLoadElementsFromSupabase = loadElementsFromSupabase;
+  const __rawLoadTimelineEventsFromSupabase = loadTimelineEventsFromSupabase;
+  const __rawLoadIconLibraryFromSupabase = loadIconLibraryFromSupabase;
+  const __rawLoadTrialIssuesFromSupabase = loadTrialIssuesFromSupabase;
+  loadElementsFromSupabase = (...args) => window.murskiSingleFlight("load_elements", () => __rawLoadElementsFromSupabase(...args));
+  loadTimelineEventsFromSupabase = (...args) => window.murskiSingleFlight("load_timeline_events", () => __rawLoadTimelineEventsFromSupabase(...args));
+  loadIconLibraryFromSupabase = (...args) => window.murskiSingleFlight("load_icon_library", () => __rawLoadIconLibraryFromSupabase(...args));
+  loadTrialIssuesFromSupabase = (...args) => window.murskiSingleFlight("load_trial_issues", () => __rawLoadTrialIssuesFromSupabase(...args));
 
   window.loadElementsFromSupabase = loadElementsFromSupabase;
   window.bulkImportElementsToSupabase = bulkImportElementsToSupabase;
