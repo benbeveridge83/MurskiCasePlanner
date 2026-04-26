@@ -1650,7 +1650,7 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
     <div id="documentTagModal" class="structuredModal"><div class="structuredModalCard"><div style="display:flex; justify-content:space-between; gap:10px; align-items:center"><h3 id="documentTagModalTitle" style="margin:0">Add tags to document</h3><button type="button" id="documentTagModalClose" class="btnGhost">Close</button></div><div class="hint">Select as many main tags, sub-tags, and sub-sub-tags as you want.</div><div id="documentTagModalSummary" class="docTagModalSummary"></div><div id="documentTagModalTree" class="docTagModalTree"></div><div style="display:flex; justify-content:flex-end; gap:8px; flex-wrap:wrap"><button type="button" id="documentTagModalCancel" class="btnGhost">Cancel</button><button type="button" id="documentTagModalSave" class="btnPrimary">Save tags</button></div></div></div>
     
     <div id="exhibitFormationModal" class="structuredModal"><div class="structuredModalCard exhibitFormationModalCard"><div style="display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap"><div><h3 style="margin:0">Exhibit Formation</h3><div id="exhibitFormationModalHint" class="hint">Review, reorder, rename, choose output folder, then finalize.</div></div><button type="button" id="exhibitFormationClose" class="btnGhost">Close</button></div><div id="exhibitFormationReviewStep" class="exhibitFormationStep open"><div class="exhibitFormationOutputGrid"><div><div class="label">Output folder</div><input id="exhibitFormationFolder" type="text" placeholder="e.g., Exhibit Packets/Murski Trial Exhibits" /></div><div><div class="label">Bates prefix</div><input id="exhibitFormationBatesPrefix" type="text" value="CP" /></div><div><div class="label">Starting Bates number</div><input id="exhibitFormationBatesStart" type="number" min="1" value="1" /></div><div><div class="label">Output options</div><label class="checkItem" style="margin:0"><input id="exhibitFormationSeparatePdfs" type="checkbox" checked /> <span>Create separate exhibit PDFs also</span></label><label class="checkItem" style="margin-top:6px"><input id="exhibitFormationBookmarks" type="checkbox" checked /> <span>Add PDF bookmarks at each exhibit if backend supports it</span></label></div></div><div class="hint">Rename files before finalization. Drag rows to reorder. Exhibit names default to CP-1, CP-2, CP-3... The combined page start/end columns tell you where each exhibit begins inside the final packet.</div><div style="overflow:auto"><table class="exhibitFormationTable"><thead><tr><th style="width:52px">Move</th><th style="width:90px">Exhibit</th><th>Original file name</th><th>Final file name</th><th style="width:120px">Combined page start</th><th style="width:120px">Combined page end</th><th style="width:120px">Bates start</th><th style="width:120px">Bates end</th></tr></thead><tbody id="exhibitFormationReviewBody"></tbody></table></div><div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap"><button type="button" id="exhibitFormationBackToSelect" class="btnGhost">Back to selection</button><div style="display:flex;gap:8px;flex-wrap:wrap"><button type="button" id="exhibitFormationDownloadList" class="btnGhost">Download exhibit list CSV</button><button type="button" id="exhibitFormationFinalize" class="btnPrimary">Finalize exhibit packet</button></div></div></div><div id="exhibitFormationResultStep" class="exhibitFormationStep"><div id="exhibitFormationResult" class="exhibitFormationResult"></div><div style="display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap"><button type="button" id="exhibitFormationDone" class="btnPrimary">Done</button></div></div></div></div>
-<div id="viewTrialIssues" class="card trialIssuesPage" style="display:none"><div style="display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap"><div><h2 style="margin:0 0 8px 0">Trial Issues</h2><div class="hint">Build a side-by-side trial grid showing your client’s proof against the opposing party’s proof. Relief rows span the table, issue rows sit under each relief, and entry rows hold witnesses, elements, documents, and rich text on both sides.</div></div></div><div class="trialIssuesToolbar"><div class="card" style="padding:12px;min-width:300px"><div class="label">Left party name</div><input id="trialIssuesLeftParty" type="text" placeholder="Matt Murski" /><div class="label" style="margin-top:10px">Right party name</div><input id="trialIssuesRightParty" type="text" placeholder="Leah Murski" /></div><div class="card" style="padding:12px;flex:1;min-width:320px"><div class="trialIssuesGlobalActions"><button id="trialIssuesCollapseAllBtn" type="button" class="btnGhost">Collapse all</button><button id="trialIssuesExpandAllBtn" type="button" class="btnGhost">Expand all</button><span class="trialIssuesWitnessFilterWrap" id="trialIssuesWitnessFilterWrap"><button id="trialIssuesWitnessFilterToggle" type="button" class="btnGhost">Witness text filters</button><span class="trialIssuesWitnessFilterPanel" id="trialIssuesWitnessFilterPanel"></span></span></div><div class="trialIssuesAddRow"><button id="trialIssuesAddReliefBtn" type="button" class="btnPrimary">+ Add relief</button><button id="trialIssuesAddIssueBtn" type="button" class="btnGhost">+ Add issue / element / factor</button><button id="trialIssuesAddEntryBtn" type="button" class="btnGhost">+ Add side-by-side row</button></div><div class="trialIssuesSubtle" style="margin-top:8px">Drag rows up and down to rearrange them. Entry rows can hold rich text, elements, documents, and witnesses on both sides. Blue rows are assertions. Orange rows are responses.</div></div></div><div class="trialIssuesTableWrap"><table class="trialIssuesTable"><thead><tr><th class="trialIssuesWitnessHeader">Witness</th><th id="trialIssuesLeftHeader" class="trialIssuesPartyHeader">Matt Murski</th><th id="trialIssuesRightHeader" class="trialIssuesPartyHeader">Leah Murski</th><th class="trialIssuesWitnessHeader">Witness</th></tr></thead><tbody id="trialIssuesBody"></tbody></table></div><div id="trialIssuesEmpty" class="empty" style="display:none;margin-top:12px">No trial issue rows yet. Start by adding a relief.</div></div><div id="viewTrialIssuesExhibits" class="card trialIssuesExhibitsPage" style="display:none"><div style="display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap"><div><h2 style="margin:0 0 8px 0">Trial Issues Exhibits</h2><div class="hint">Our exhibits that have been added on the left side of the Trial Issues page, numbered CP-1 forward.</div></div><div style="display:flex;gap:8px;flex-wrap:wrap"><a class="btnGhost docOpenLink" data-view-link="trialissues" href="?view=trialissues">Back to Trial Issues</a></div></div><div id="trialIssuesExhibitsEmpty" class="empty" style="display:none">No our-exhibit documents have been added to the Trial Issues page yet.</div><div style="overflow:auto"><table id="trialIssuesExhibitsTable" class="trialIssuesExhibitsTable" style="display:none"><thead><tr><th style="width:140px">Exhibit</th><th>Document</th></tr></thead><tbody id="trialIssuesExhibitsBody"></tbody></table></div></div><div id="trialIssuesPickerModal" class="trialIssuesPickerModal"><div class="trialIssuesPickerCard"><div class="trialIssuesPickerTop"><div><h3 id="trialIssuesPickerTitle" style="margin:0">Choose item</h3><div id="trialIssuesPickerHint" class="hint">Search and filter, then add an item.</div></div><button type="button" id="trialIssuesPickerClose" class="btnGhost">Close</button></div><div class="trialIssuesPickerControls"><input id="trialIssuesPickerSearch" type="text" placeholder="Search by name" /><button type="button" id="trialIssuesPickerFilterToggle" class="btnGhost">Filters</button></div><div id="trialIssuesPickerFilters" class="trialIssuesPickerFilters"><div class="trialIssuesPickerFilterBlock"><div class="label">Tags</div><div id="trialIssuesPickerTagFilters" class="trialIssuesPickerChecklist"></div></div><div class="trialIssuesPickerFilterBlock"><div class="label">File type</div><div id="trialIssuesPickerFileTypeFilters" class="trialIssuesPickerChecklist"></div></div><div class="trialIssuesPickerFilterBlock"><div class="label">Source</div><div id="trialIssuesPickerSourceFilters" class="trialIssuesPickerChecklist"></div></div><div class="trialIssuesPickerFilterBlock"><div class="label">Witness</div><div id="trialIssuesPickerWitnessFilters" class="trialIssuesPickerChecklist"></div></div></div><div id="trialIssuesPickerList" class="trialIssuesPickerList"></div><div id="trialIssuesPickerEmpty" class="empty" style="display:none">No items match the current search and filters.</div></div></div><div id="viewReports" class="card reportsPage" style="display:none"><div style="display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap"><div><h2 style="margin:0 0 8px 0">Reports</h2><div class="hint">Generate trial issue exhibit reports from the Trial Issues page.</div></div><div class="reportsPrintBar"><button type="button" id="reportsPrintBtn" class="btnGhost">Print / save PDF</button></div></div><div class="reportsLinkGrid"><button type="button" class="reportsLinkCard" data-report-type="left-list"><b>Trial Issue Exhibits</b><span class="hint">Matt-side exhibits only, numbered CP-1 forward.</span></button><button type="button" class="reportsLinkCard" data-report-type="left-outline"><b>Trial Issue Exhibits with outline</b><span class="hint">Matt-side trial issue outline with exhibits shown under each heading, subheading, and issue.</span></button><button type="button" class="reportsLinkCard" data-report-type="right-list"><b>Leah's Trial Issue Exhibits</b><span class="hint">Leah-side exhibits only.</span></button><button type="button" class="reportsLinkCard" data-report-type="right-outline"><b>Leah's Trial Issue Exhibits with outline</b><span class="hint">Leah-side trial issue outline with exhibits shown under each heading, subheading, and issue.</span></button><button type="button" class="reportsLinkCard" data-report-type="side-by-side-outline"><b>Side by Side Outlines</b><span class="hint">Matt and Leah trial issue outlines side by side, with each side's exhibits under each heading and issue.</span></button></div><div id="reportsOutput" class="reportsOutput"><div class="empty">Choose a report above.</div></div></div><div id="viewSettings" class="card" style="display:none"><div style="display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap"><h2 style="margin:0">Add Tag</h2><div style="display:flex;gap:8px;flex-wrap:wrap"><a class="btnGhost docOpenLink" data-view-link="tagindex" href="?view=tagindex">Tag Index</a></div></div><div class="hint">Create tags, sub-tags, and sub-sub-tags here. Everything is now saved in Supabase under the tags table, and the library below shows the full hierarchy.</div><div class="toolbar" style="margin-bottom:12px"><span class="pill" id="tagSelHint">Select a tag, then use these controls</span><button id="tagAddRootBtn" class="btnPrimary">+ Top-level tag</button><button id="tagAddSiblingBtn" class="btnGhost">+ Sibling</button><button id="tagAddChildBtn" class="btnGhost">+ Child</button><button id="tagRenameBtn" class="btnGhost">Rename</button><button id="tagDeleteBtn" class="btnDanger">Delete</button><button id="tagCollapseAllBtn" class="btnGhost">Collapse all</button><button id="tagExpandAllBtn" class="btnGhost">Expand all</button></div><div class="grid2"><div class="card" style="box-shadow:none"><h2 style="margin-bottom:8px">Create tag</h2><div class="label">Tag name</div><input id="tagName" type="text" placeholder="e.g., Financial, Parenting time, Credibility" /><div style="margin-top:10px; display:flex; gap:10px; align-items:center; flex-wrap:wrap"><button id="addTag" class="btnPrimary">Add tag</button><span class="pill">Names must be unique</span></div><div style="margin-top:18px; border-top:1px solid var(--border); padding-top:14px"><h2 style="margin-bottom:8px">Create child tag</h2><div class="label">Main tag</div><select id="subtagParent"></select><div class="label" style="margin-top:10px">Create under this sub-tag (optional)</div><select id="subtagParentSubtag"></select><div class="hint" style="margin-top:6px">Leave this as None to create a normal sub-tag. Choose a sub-tag here to create a sub-sub-tag under it.</div><div class="label" style="margin-top:10px">Child tag name</div><input id="subtagName" type="text" placeholder="e.g., Hearing, Motion, School, Medical" /><div class="label" style="margin-top:10px">Icon image (optional)</div><select id="subtagIconSelect"></select><div style="margin-top:10px; display:flex; gap:10px; align-items:center; flex-wrap:wrap"><button id="addSubtag" class="btnPrimary">Add child tag</button></div></div><div style="margin-top:18px; border-top:1px solid var(--border); padding-top:14px"><h2 style="margin-bottom:8px">Icon library</h2><div class="label">Upload new icon</div><input id="iconUploadFile" type="file" accept="image/*" /><div class="label" style="margin-top:10px">Icon name</div><input id="iconUploadName" type="text" placeholder="e.g., Court, School, Doctor" /><div style="margin-top:10px; display:flex; gap:10px; align-items:center; flex-wrap:wrap"><button id="addIconToLibrary" class="btnPrimary">Add icon</button></div><div id="iconLibraryList" style="display:flex; gap:10px; flex-wrap:wrap; margin-top:12px"></div></div></div><div class="card" style="box-shadow:none"><h2 style="margin-bottom:8px">Tag library</h2><div class="hint" style="margin-bottom:10px">Main tags, sub-tags, and sub-sub-tags are shown below in one hierarchy.</div><div id="tagList" style="display:flex; flex-direction:column; gap:10px"></div><div id="tagEmpty" class="empty" style="display:none">No tags yet.</div><div style="margin-top:18px"><h2 style="margin-bottom:8px">Child tag library</h2><div id="subtagList" style="display:flex; flex-direction:column; gap:10px"></div><div id="subtagEmpty" class="empty" style="display:none">No child tags yet.</div></div></div></div></div>
+<div id="viewTrialIssues" class="card trialIssuesPage" style="display:none"><div style="display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap"><div><h2 style="margin:0 0 8px 0">Trial Issues</h2><div class="hint">Build a side-by-side trial grid showing your client’s proof against the opposing party’s proof. Relief rows span the table, issue rows sit under each relief, and entry rows hold witnesses, elements, documents, and rich text on both sides.</div></div></div><div class="trialIssuesToolbar"><div class="card" style="padding:12px;min-width:300px"><div class="label">Left party name</div><input id="trialIssuesLeftParty" type="text" placeholder="Matt Murski" /><div class="label" style="margin-top:10px">Right party name</div><input id="trialIssuesRightParty" type="text" placeholder="Leah Murski" /></div><div class="card" style="padding:12px;flex:1;min-width:320px"><div class="trialIssuesGlobalActions"><button id="trialIssuesCollapseAllBtn" type="button" class="btnGhost">Collapse all</button><button id="trialIssuesExpandAllBtn" type="button" class="btnGhost">Expand all</button><span class="trialIssuesWitnessFilterWrap" id="trialIssuesWitnessFilterWrap"><button id="trialIssuesWitnessFilterToggle" type="button" class="btnGhost">Witness text filters</button><span class="trialIssuesWitnessFilterPanel" id="trialIssuesWitnessFilterPanel"></span></span></div><div class="trialIssuesAddRow"><button id="trialIssuesAddReliefBtn" type="button" class="btnPrimary">+ Add relief</button><button id="trialIssuesAddIssueBtn" type="button" class="btnGhost">+ Add issue / element / factor</button><button id="trialIssuesAddEntryBtn" type="button" class="btnGhost">+ Add side-by-side row</button></div><div class="trialIssuesSubtle" style="margin-top:8px">Drag rows up and down to rearrange them. Entry rows can hold rich text, elements, documents, and witnesses on both sides. Blue rows are assertions. Orange rows are responses.</div></div></div><div class="trialIssuesTableWrap"><table class="trialIssuesTable"><thead><tr><th class="trialIssuesWitnessHeader">Witness</th><th id="trialIssuesLeftHeader" class="trialIssuesPartyHeader">Matt Murski</th><th id="trialIssuesRightHeader" class="trialIssuesPartyHeader">Leah Murski</th><th class="trialIssuesWitnessHeader">Witness</th></tr></thead><tbody id="trialIssuesBody"></tbody></table></div><div id="trialIssuesEmpty" class="empty" style="display:none;margin-top:12px">No trial issue rows yet. Start by adding a relief.</div></div><div id="viewTrialIssuesExhibits" class="card trialIssuesExhibitsPage" style="display:none"><div style="display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap"><div><h2 style="margin:0 0 8px 0">Trial Issues Exhibits</h2><div class="hint">Our exhibits that have been added on the left side of the Trial Issues page, numbered CP-1 forward.</div></div><div style="display:flex;gap:8px;flex-wrap:wrap"><a class="btnGhost docOpenLink" data-view-link="trialissues" href="?view=trialissues">Back to Trial Issues</a></div></div><div id="trialIssuesExhibitsEmpty" class="empty" style="display:none">No our-exhibit documents have been added to the Trial Issues page yet.</div><div style="overflow:auto"><table id="trialIssuesExhibitsTable" class="trialIssuesExhibitsTable" style="display:none"><thead><tr><th style="width:140px">Exhibit</th><th>Document</th></tr></thead><tbody id="trialIssuesExhibitsBody"></tbody></table></div></div><div id="trialIssuesPickerModal" class="trialIssuesPickerModal"><div class="trialIssuesPickerCard"><div class="trialIssuesPickerTop"><div><h3 id="trialIssuesPickerTitle" style="margin:0">Choose item</h3><div id="trialIssuesPickerHint" class="hint">Search and filter, then add an item.</div></div><button type="button" id="trialIssuesPickerClose" class="btnGhost">Close</button></div><div class="trialIssuesPickerControls"><input id="trialIssuesPickerSearch" type="text" placeholder="Search by name" /><button type="button" id="trialIssuesPickerFilterToggle" class="btnGhost">Filters</button></div><div id="trialIssuesPickerFilters" class="trialIssuesPickerFilters"><div class="trialIssuesPickerFilterBlock"><div class="label">Tags</div><div id="trialIssuesPickerTagFilters" class="trialIssuesPickerChecklist"></div></div><div class="trialIssuesPickerFilterBlock"><div class="label">File type</div><div id="trialIssuesPickerFileTypeFilters" class="trialIssuesPickerChecklist"></div></div><div class="trialIssuesPickerFilterBlock"><div class="label">Source</div><div id="trialIssuesPickerSourceFilters" class="trialIssuesPickerChecklist"></div></div><div class="trialIssuesPickerFilterBlock"><div class="label">Witness</div><div id="trialIssuesPickerWitnessFilters" class="trialIssuesPickerChecklist"></div></div></div><div id="trialIssuesPickerList" class="trialIssuesPickerList"></div><div id="trialIssuesPickerEmpty" class="empty" style="display:none">No items match the current search and filters.</div></div></div><div id="viewReports" class="card reportsPage" style="display:none"><div style="display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap"><div><h2 style="margin:0 0 8px 0">Reports</h2><div class="hint">Generate trial issue exhibit reports from the Trial Issues page.</div></div><div class="reportsPrintBar"><button type="button" id="reportsCreateExhibitsBtn" class="btnPrimary">Create exhibits</button><button type="button" id="reportsPrintBtn" class="btnGhost">Print / save PDF</button></div></div><div class="reportsLinkGrid"><button type="button" class="reportsLinkCard" data-report-type="left-list"><b>Trial Issue Exhibits</b><span class="hint">Matt-side exhibits only, numbered CP-1 forward.</span></button><button type="button" class="reportsLinkCard" data-report-type="left-outline"><b>Trial Issue Exhibits with outline</b><span class="hint">Matt-side trial issue outline with exhibits shown under each heading, subheading, and issue.</span></button><button type="button" class="reportsLinkCard" data-report-type="right-list"><b>Leah's Trial Issue Exhibits</b><span class="hint">Leah-side exhibits only.</span></button><button type="button" class="reportsLinkCard" data-report-type="right-outline"><b>Leah's Trial Issue Exhibits with outline</b><span class="hint">Leah-side trial issue outline with exhibits shown under each heading, subheading, and issue.</span></button><button type="button" class="reportsLinkCard" data-report-type="side-by-side-outline"><b>Side by Side Outlines</b><span class="hint">Matt and Leah trial issue outlines side by side, with each side's exhibits under each heading and issue.</span></button></div><div id="reportsOutput" class="reportsOutput"><div class="empty">Choose a report above.</div></div></div><div id="viewSettings" class="card" style="display:none"><div style="display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap"><h2 style="margin:0">Add Tag</h2><div style="display:flex;gap:8px;flex-wrap:wrap"><a class="btnGhost docOpenLink" data-view-link="tagindex" href="?view=tagindex">Tag Index</a></div></div><div class="hint">Create tags, sub-tags, and sub-sub-tags here. Everything is now saved in Supabase under the tags table, and the library below shows the full hierarchy.</div><div class="toolbar" style="margin-bottom:12px"><span class="pill" id="tagSelHint">Select a tag, then use these controls</span><button id="tagAddRootBtn" class="btnPrimary">+ Top-level tag</button><button id="tagAddSiblingBtn" class="btnGhost">+ Sibling</button><button id="tagAddChildBtn" class="btnGhost">+ Child</button><button id="tagRenameBtn" class="btnGhost">Rename</button><button id="tagDeleteBtn" class="btnDanger">Delete</button><button id="tagCollapseAllBtn" class="btnGhost">Collapse all</button><button id="tagExpandAllBtn" class="btnGhost">Expand all</button></div><div class="grid2"><div class="card" style="box-shadow:none"><h2 style="margin-bottom:8px">Create tag</h2><div class="label">Tag name</div><input id="tagName" type="text" placeholder="e.g., Financial, Parenting time, Credibility" /><div style="margin-top:10px; display:flex; gap:10px; align-items:center; flex-wrap:wrap"><button id="addTag" class="btnPrimary">Add tag</button><span class="pill">Names must be unique</span></div><div style="margin-top:18px; border-top:1px solid var(--border); padding-top:14px"><h2 style="margin-bottom:8px">Create child tag</h2><div class="label">Main tag</div><select id="subtagParent"></select><div class="label" style="margin-top:10px">Create under this sub-tag (optional)</div><select id="subtagParentSubtag"></select><div class="hint" style="margin-top:6px">Leave this as None to create a normal sub-tag. Choose a sub-tag here to create a sub-sub-tag under it.</div><div class="label" style="margin-top:10px">Child tag name</div><input id="subtagName" type="text" placeholder="e.g., Hearing, Motion, School, Medical" /><div class="label" style="margin-top:10px">Icon image (optional)</div><select id="subtagIconSelect"></select><div style="margin-top:10px; display:flex; gap:10px; align-items:center; flex-wrap:wrap"><button id="addSubtag" class="btnPrimary">Add child tag</button></div></div><div style="margin-top:18px; border-top:1px solid var(--border); padding-top:14px"><h2 style="margin-bottom:8px">Icon library</h2><div class="label">Upload new icon</div><input id="iconUploadFile" type="file" accept="image/*" /><div class="label" style="margin-top:10px">Icon name</div><input id="iconUploadName" type="text" placeholder="e.g., Court, School, Doctor" /><div style="margin-top:10px; display:flex; gap:10px; align-items:center; flex-wrap:wrap"><button id="addIconToLibrary" class="btnPrimary">Add icon</button></div><div id="iconLibraryList" style="display:flex; gap:10px; flex-wrap:wrap; margin-top:12px"></div></div></div><div class="card" style="box-shadow:none"><h2 style="margin-bottom:8px">Tag library</h2><div class="hint" style="margin-bottom:10px">Main tags, sub-tags, and sub-sub-tags are shown below in one hierarchy.</div><div id="tagList" style="display:flex; flex-direction:column; gap:10px"></div><div id="tagEmpty" class="empty" style="display:none">No tags yet.</div><div style="margin-top:18px"><h2 style="margin-bottom:8px">Child tag library</h2><div id="subtagList" style="display:flex; flex-direction:column; gap:10px"></div><div id="subtagEmpty" class="empty" style="display:none">No child tags yet.</div></div></div></div></div>
   </div>
   <div id="toast" class="toast"></div>
 
@@ -1909,7 +1909,27 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
     function documentIsInTrialIssues(docId){ return getTrialIssuesDocumentUsage(docId).inTrialIssues; }
     function documentIsOurExhibitOnTrialIssues(docId){ return getTrialIssuesDocumentUsage(docId).ourExhibit; }
     function documentIsTheirExhibitOnTrialIssues(docId){ return getTrialIssuesDocumentUsage(docId).theirExhibit; }
-    function getTrialIssuesOurExhibitDocuments(){ const seen = new Set(); const out = []; const rows = (state.trialIssues && Array.isArray(state.trialIssues.rows)) ? state.trialIssues.rows : []; rows.forEach(row => { (row?.leftLinks || []).forEach(link => { if(!link || link.type !== 'document' || link.refId === '' || (link.role || 'support') !== 'exhibit' || seen.has(link.refId)) return; seen.add(link.refId); const doc = getDocumentById(link.refId); out.push({ docId: link.refId, docName: doc?.name || '(missing document)' }); }); }); return out; }
+    function getTrialIssuesOurExhibitDocuments(){
+      const out = [];
+      const indexByDocId = new Map();
+      const rows = (state.trialIssues && Array.isArray(state.trialIssues.rows)) ? state.trialIssues.rows : [];
+      rows.forEach((row, rowIndex) => {
+        (row?.leftLinks || []).forEach((link, linkIndex) => {
+          const docId = String(link?.refId || link?.documentId || link?.docId || link?.id || '');
+          const role = String(link?.role || 'support').toLowerCase();
+          if(!link || String(link.type || 'document') !== 'document' || !docId || role !== 'exhibit') return;
+          if(indexByDocId.has(docId)){
+            out.splice(indexByDocId.get(docId), 1);
+            indexByDocId.clear();
+            out.forEach((item, idx) => indexByDocId.set(item.docId, idx));
+          }
+          const doc = getDocumentById(docId);
+          out.push({ docId, docName: doc?.name || '(missing document)', rowIndex, linkIndex });
+          indexByDocId.set(docId, out.length - 1);
+        });
+      });
+      return out;
+    }
     function getTrialIssuesOurSupportDocuments(){ const seen = new Set(); const out = []; const rows = (state.trialIssues && Array.isArray(state.trialIssues.rows)) ? state.trialIssues.rows : []; rows.forEach(row => { (row?.leftLinks || []).forEach(link => { const role = link?.role || 'support'; if(!link || link.type !== 'document' || link.refId === '' || (role !== 'support' && role !== 'impeachment') || seen.has(link.refId)) return; seen.add(link.refId); const doc = getDocumentById(link.refId); out.push({ docId: link.refId, docName: doc?.name || '(missing document)', role }); }); }); return out; }
     function getDocumentAnalysisMentionTokens(html){ const text = String(html || '').replace(/<[^>]+>/g,' '); const matches = text.match(/@[a-z0-9_]+/gi) || []; return Array.from(new Set(matches.map(m => m.toLowerCase()))); }
     function rowHasUnansweredMentionForMe(doc){ const mine = getDocumentAnalysisUserHandle().toLowerCase(); const msgs = getDocumentAnalysisData(doc).chatMessages || []; let waiting = false; msgs.forEach(msg => { const mentions = getDocumentAnalysisMentionTokens(msg.html || ''); if(mentions.includes(mine) && String(msg.authorHandle || '').toLowerCase() !== mine) waiting = true; if(String(msg.authorHandle || '').toLowerCase() === mine) waiting = false; }); return waiting; }
@@ -3970,7 +3990,61 @@ function normalizeState(){ state.tags = Array.isArray(state.tags) ? state.tags.f
       const ids = Array.isArray(ui.exhibitFormationReviewIds) && ui.exhibitFormationReviewIds.length ? ui.exhibitFormationReviewIds : (ui.exhibitFormationSelectedIds || []);
       return ids.map(id => getDocumentById(id)).filter(Boolean);
     }
+    function getDocumentFileName(doc){
+      const path = String(doc?.file_path || doc?.filePath || doc?.storage_path || doc?.originalFileName || doc?.filename || doc?.name || '');
+      try{ return decodeURIComponent(path.split('/').pop() || doc?.name || 'file'); }catch(e){ return path.split('/').pop() || doc?.name || 'file'; }
+    }
+    function getDocumentFileExtension(doc){
+      const name = getDocumentFileName(doc).toLowerCase();
+      const match = name.match(/\.([a-z0-9]+)(?:$|[?#])/i);
+      return match ? match[1] : '';
+    }
+    function isNonPrintableExhibitDocument(doc){
+      const mime = String(doc?.mimeType || doc?.mime_type || doc?.type || '').toLowerCase();
+      const ext = getDocumentFileExtension(doc);
+      if(mime.startsWith('video/') || mime.startsWith('audio/')) return true;
+      return ['mp4','mov','m4v','avi','wmv','mkv','webm','mp3','wav','m4a','aac','flac','ogg','wma'].includes(ext);
+    }
+    function buildExhibitFormationDocumentPayload(row){
+      const filePath = row.doc.file_path || row.doc.filePath || row.doc.storage_path || '';
+      const fileUrl = filePath && window.getDocumentPublicUrl ? window.getDocumentPublicUrl(filePath) : '';
+      const nonPrintable = isNonPrintableExhibitDocument(row.doc);
+      const fileName = getDocumentFileName(row.doc);
+      return {
+        id: row.doc.id,
+        name: row.doc.name || '',
+        originalName: row.doc.name || '',
+        renamedName: row.outputName,
+        outputName: row.outputName,
+        exhibitNumber: row.exhibit,
+        exhibitLabel: row.exhibit,
+        file_path: filePath,
+        filePath,
+        fileUrl,
+        combinedPdfStartPage: row.combinedStartPage,
+        combinedPdfEndPage: row.combinedEndPage,
+        startPage: row.combinedStartPage,
+        endPage: row.combinedEndPage,
+        batesStart: row.batesStart,
+        batesEnd: row.batesEnd,
+        estimatedPages: row.pages,
+        pages: row.pages,
+        nonPrintable,
+        placeholderPage: nonPrintable,
+        placeholderOnly: nonPrintable,
+        placeholderTitle: row.exhibit,
+        placeholderText: nonPrintable ? (row.exhibit + '\n' + (row.doc.name || fileName || 'Audio/video file')) : '',
+        placeholderFileName: fileName,
+        originalFileType: getDocumentFileExtension(row.doc),
+        originalMimeType: row.doc.mimeType || row.doc.mime_type || ''
+      };
+    }
+    function parseBatesNumber(label){
+      const digits = String(label || '').match(/(\d+)(?!.*\d)/);
+      return digits ? Math.max(1, parseInt(digits[1], 10) || 1) : 1;
+    }
     function estimateExhibitFormationPageCount(doc){
+      if(isNonPrintableExhibitDocument(doc)) return 1;
       ui.exhibitFormationPageCounts = ui.exhibitFormationPageCounts || {};
       const cached = Number(ui.exhibitFormationPageCounts[doc?.id] || 0);
       if(Number.isFinite(cached) && cached > 0) return Math.floor(cached);
@@ -4032,10 +4106,10 @@ function normalizeState(){ state.tags = Array.isArray(state.tags) ? state.tags.f
       const selectedCount = (ui.exhibitFormationSelectedIds || []).length;
       return '<div class="exhibitFormationBanner"><div><b>Exhibit Formation mode</b><div class="hint">Showing ' + docs.length + ' filtered document row' + (docs.length === 1 ? '' : 's') + '. Select the documents you want to stamp, combine, Bates stamp, and list.</div></div><div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><span class="pill">' + selectedCount + ' selected</span><button type="button" class="btnGhost" data-exhibit-formation-select-visible="1">Select visible</button><button type="button" class="btnGhost" data-exhibit-formation-clear="1">Clear</button><button type="button" class="btnPrimary" data-exhibit-formation-next="1">Next</button><button type="button" class="btnGhost" data-exhibit-formation-cancel="1">Cancel</button></div></div>';
     }
-    async function openExhibitFormationReview(){
-      const ids = (ui.exhibitFormationSelectedIds || []).filter(Boolean);
+    async function openExhibitFormationReview(idsOverride = null, source = 'documentanalysis'){
+      const ids = (Array.isArray(idsOverride) && idsOverride.length ? idsOverride : (ui.exhibitFormationSelectedIds || [])).filter(Boolean);
       if(!ids.length){ alert('Select at least one document first.'); return; }
-      ui.exhibitFormationReviewIds = ids.slice(); ui.exhibitFormationSelecting = false; renderDocumentAnalysis();
+      ui.exhibitFormationReviewIds = ids.slice(); ui.exhibitFormationSelectedIds = ids.slice(); ui.exhibitFormationSelecting = false; ui.exhibitFormationSource = source || 'documentanalysis'; if(ui.currentView === 'documentanalysis') renderDocumentAnalysis();
       $('exhibitFormationModal')?.classList.add('open');
       $('exhibitFormationReviewStep')?.classList.add('open');
       $('exhibitFormationResultStep')?.classList.remove('open');
@@ -4044,10 +4118,16 @@ function normalizeState(){ state.tags = Array.isArray(state.tags) ? state.tags.f
       await calculateExhibitFormationPageCounts();
       renderExhibitFormationReview();
     }
+    async function openTrialIssuesExhibitFormation(){
+      const rows = getTrialIssuesOurExhibitDocuments();
+      const ids = rows.map(row => row.docId).filter(Boolean);
+      if(!ids.length){ alert("No Trial Issues exhibits found. Add documents as exhibits on Matt's side of the Trial Issues page first."); return; }
+      await openExhibitFormationReview(ids, 'reports');
+    }
     function renderExhibitFormationReview(){
       const body = $('exhibitFormationReviewBody'); if(!body) return;
       const rows = getExhibitFormationRows();
-      body.innerHTML = rows.map(row => '<tr class="exhibitFormationReviewRow" draggable="true" data-exhibit-formation-review-row="' + escapeHtml(row.doc.id) + '"><td><span class="exhibitFormationDrag">☰</span></td><td><b>' + escapeHtml(row.exhibit) + '</b></td><td>' + escapeHtml(row.doc.name || 'Untitled document') + '</td><td><input data-exhibit-formation-name="' + escapeHtml(row.doc.id) + '" type="text" value="' + escapeHtml(row.outputName) + '" /></td><td>' + escapeHtml(row.combinedStartPage) + '</td><td>' + escapeHtml(row.combinedEndPage) + '</td><td>' + escapeHtml(row.batesStart) + '</td><td>' + escapeHtml(row.batesEnd) + '</td></tr>').join('');
+      body.innerHTML = rows.map(row => { const nonPrintableNote = isNonPrintableExhibitDocument(row.doc) ? '<div class="hint">Audio/video/non-printable: packet will include a one-page placeholder with the exhibit number and file name.</div>' : ''; return '<tr class="exhibitFormationReviewRow" draggable="true" data-exhibit-formation-review-row="' + escapeHtml(row.doc.id) + '"><td><span class="exhibitFormationDrag">☰</span></td><td><b>' + escapeHtml(row.exhibit) + '</b></td><td>' + escapeHtml(row.doc.name || 'Untitled document') + nonPrintableNote + '</td><td><input data-exhibit-formation-name="' + escapeHtml(row.doc.id) + '" type="text" value="' + escapeHtml(row.outputName) + '" /></td><td>' + escapeHtml(row.combinedStartPage) + '</td><td>' + escapeHtml(row.combinedEndPage) + '</td><td>' + escapeHtml(row.batesStart) + '</td><td>' + escapeHtml(row.batesEnd) + '</td></tr>'; }).join('');
       bindExhibitFormationReviewEvents();
     }
     function bindExhibitFormationReviewEvents(){
@@ -4091,6 +4171,36 @@ function normalizeState(){ state.tags = Array.isArray(state.tags) ? state.tags.f
       const csv = csvRows.map(row => row.map(v => '"' + String(v ?? '').replace(/"/g,'""') + '"').join(',')).join('\r\n');
       const blob = new Blob(['\ufeff' + csv], { type:'text/csv;charset=utf-8' }); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'exhibit-list.csv'; document.body.appendChild(a); a.click(); setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); }, 500);
     }
+    async function generateSeparateExhibitPackets(endpoint, functionHeaders, basePayload, rows, storageBase){
+      const files = [];
+      for(const row of rows){
+        try{
+          const singlePayload = {
+            ...basePayload,
+            outputFolder: (basePayload.outputFolder || 'Exhibit Packet') + '/Separate Exhibits',
+            createSeparateExhibits: false,
+            splitExhibits: false,
+            includeBookmarks: false,
+            packetFileName: row.outputName + '.pdf',
+            combinedFileName: row.outputName + '.pdf',
+            startingBates: parseBatesNumber(row.batesStart),
+            batesStart: parseBatesNumber(row.batesStart),
+            documents: [buildExhibitFormationDocumentPayload({...row, combinedStartPage:1, combinedEndPage:row.pages})]
+          };
+          const res = await fetch(endpoint, { method:'POST', headers: functionHeaders, body: JSON.stringify(singlePayload) });
+          const raw = await res.text();
+          let data = {};
+          try{ data = raw ? JSON.parse(raw) : {}; }catch(parseErr){ data = { message: raw }; }
+          if(!res.ok || data?.success === false) throw new Error(data?.error || data?.message || ('Packet function returned ' + res.status));
+          const path = data.packetPath || data.combinedPath || data.path || '';
+          const url = data.packetUrl || data.combinedUrl || (path ? storageBase + encodeURI(path).replace(/#/g, '%23') : '');
+          if(url || path) files.push({ exhibit: row.exhibit, exhibitNumber: row.exhibit, path, url, name: row.outputName });
+        }catch(err){
+          console.warn('Could not create separate exhibit PDF for', row?.exhibit || row?.doc?.name || '', err);
+        }
+      }
+      return files;
+    }
     async function finalizeExhibitFormation(){
       const rows = getExhibitFormationRows(); if(!rows.length){ alert('No documents selected.'); return; }
       const endpoint = 'https://ewemahyfoegkpzgpqnsr.supabase.co/functions/v1/generate-exhibit-packet';
@@ -4104,30 +4214,7 @@ function normalizeState(){ state.tags = Array.isArray(state.tags) ? state.tags.f
         includeBookmarks: !!$('exhibitFormationBookmarks')?.checked,
         createSeparateExhibits: !!$('exhibitFormationSeparatePdfs')?.checked,
         splitExhibits: !!$('exhibitFormationSeparatePdfs')?.checked,
-        documents: rows.map(r => {
-          const filePath = r.doc.file_path || r.doc.filePath || r.doc.storage_path || '';
-          const fileUrl = filePath && window.getDocumentPublicUrl ? window.getDocumentPublicUrl(filePath) : '';
-          return {
-            id: r.doc.id,
-            name: r.doc.name || '',
-            originalName: r.doc.name || '',
-            renamedName: r.outputName,
-            outputName: r.outputName,
-            exhibitNumber: r.exhibit,
-            exhibitLabel: r.exhibit,
-            file_path: filePath,
-            filePath,
-            fileUrl,
-            combinedPdfStartPage: r.combinedStartPage,
-            combinedPdfEndPage: r.combinedEndPage,
-            startPage: r.combinedStartPage,
-            endPage: r.combinedEndPage,
-            batesStart: r.batesStart,
-            batesEnd: r.batesEnd,
-            estimatedPages: r.pages,
-            pages: r.pages
-          };
-        })
+        documents: rows.map(r => buildExhibitFormationDocumentPayload(r))
       };
       const resultBox = $('exhibitFormationResult'); if($('exhibitFormationFinalize')) $('exhibitFormationFinalize').disabled = true;
       try{
@@ -4155,7 +4242,10 @@ function normalizeState(){ state.tags = Array.isArray(state.tags) ? state.tags.f
         if(resultBox){
           const finalList = normalizeExhibitListRows(data.exhibitList || []);
           window.lastExhibitFormationList = finalList;
-          const separateFiles = Array.isArray(data.exhibitFiles) ? data.exhibitFiles : (Array.isArray(data.separateExhibits) ? data.separateExhibits : []);
+          let separateFiles = Array.isArray(data.exhibitFiles) ? data.exhibitFiles : (Array.isArray(data.separateExhibits) ? data.separateExhibits : []);
+          if($('exhibitFormationSeparatePdfs')?.checked && !separateFiles.length){
+            separateFiles = await generateSeparateExhibitPackets(endpoint, functionHeaders, payload, rows, storageBase);
+          }
           const separateLinks = separateFiles.length ? '<div class="hint"><b>Separate exhibit PDFs:</b></div><div style="display:grid;gap:6px">' + separateFiles.map((file, i) => {
             const filePath = file.url ? '' : (file.path || file.filePath || file.storagePath || '');
             const fileUrl = file.url || (filePath ? storageBase + encodeURI(filePath).replace(/#/g, '%23') : '');
@@ -4175,7 +4265,7 @@ function normalizeState(){ state.tags = Array.isArray(state.tags) ? state.tags.f
       }finally{ if($('exhibitFormationFinalize')) $('exhibitFormationFinalize').disabled = false; $('exhibitFormationReviewStep')?.classList.remove('open'); $('exhibitFormationResultStep')?.classList.add('open'); }
     }
     function initExhibitFormationUi(){
-      $('exhibitFormationStartBtn')?.addEventListener('click', startExhibitFormationSelection); $('exhibitFormationClose')?.addEventListener('click', ()=> $('exhibitFormationModal')?.classList.remove('open')); $('exhibitFormationDone')?.addEventListener('click', ()=> $('exhibitFormationModal')?.classList.remove('open')); $('exhibitFormationBackToSelect')?.addEventListener('click', ()=>{ $('exhibitFormationModal')?.classList.remove('open'); ui.exhibitFormationSelecting = true; renderDocumentAnalysis(); }); $('exhibitFormationDownloadList')?.addEventListener('click', downloadExhibitFormationCsv); $('exhibitFormationFinalize')?.addEventListener('click', finalizeExhibitFormation); $('exhibitFormationBatesPrefix')?.addEventListener('input', renderExhibitFormationReview); $('exhibitFormationBatesStart')?.addEventListener('input', renderExhibitFormationReview);
+      $('exhibitFormationStartBtn')?.addEventListener('click', startExhibitFormationSelection); $('reportsCreateExhibitsBtn')?.addEventListener('click', openTrialIssuesExhibitFormation); $('exhibitFormationClose')?.addEventListener('click', ()=> $('exhibitFormationModal')?.classList.remove('open')); $('exhibitFormationDone')?.addEventListener('click', ()=> $('exhibitFormationModal')?.classList.remove('open')); $('exhibitFormationBackToSelect')?.addEventListener('click', ()=>{ $('exhibitFormationModal')?.classList.remove('open'); if(ui.exhibitFormationSource === 'reports'){ setTab('reports'); return; } ui.exhibitFormationSelecting = true; renderDocumentAnalysis(); }); $('exhibitFormationDownloadList')?.addEventListener('click', downloadExhibitFormationCsv); $('exhibitFormationFinalize')?.addEventListener('click', finalizeExhibitFormation); $('exhibitFormationBatesPrefix')?.addEventListener('input', renderExhibitFormationReview); $('exhibitFormationBatesStart')?.addEventListener('input', renderExhibitFormationReview);
     }
     function getDocumentAnalysisActiveComposerState(){ const active = document.activeElement; if(active && active.matches && active.matches('[data-document-analysis-composer]')){ const id = active.getAttribute('data-document-analysis-composer') || ''; ui.documentAnalysisChatDrafts[id] = active.innerHTML || ''; return { id, html: active.innerHTML || '' }; } return null; }
     function restoreDocumentAnalysisActiveComposer(activeState){ if(!activeState || !activeState.id) return; const box = document.querySelector(`[data-document-analysis-composer="${CSS.escape(activeState.id)}"]`); if(!box) return; box.focus(); try{ const range = document.createRange(); range.selectNodeContents(box); range.collapse(false); const sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(range); }catch(e){} }
