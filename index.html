@@ -7,8 +7,7 @@
 
     const SUPABASE_URL = "https://ewemahyfoegkpzgpqnsr.supabase.co"
     const SUPABASE_KEY = "sb_publishable_0ddiJfYLmhk9maLNcYJakg_aUMkvWRO"
-const SUPABASE_URL = "https://YOUR-PROJECT-REF.supabase.co";
-const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+    const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
     const urlParams = new URLSearchParams(window.location.search)
     const URL_CASE_ID = urlParams.get("case") || ""
     const STORED_CASE_ID = (() => {
@@ -3997,8 +3996,14 @@ function normalizeState(){ state.tags = Array.isArray(state.tags) ? state.tags.f
     }
     async function finalizeExhibitFormation(){
       const rows = getExhibitFormationRows(); if(!rows.length){ alert('No documents selected.'); return; }
-      const endpointBase = String(getCaseChatEndpoint?.() || 'https://ewemahyfoegkpzgpqnsr.supabase.co/functions/v1/case-chat').replace(/\/case-chat\/?$/, '');
-      const endpoint = endpointBase ? endpointBase + '/generate-exhibit-packet' : 'https://ewemahyfoegkpzgpqnsr.supabase.co/functions/v1/exhibitfunction';
+      const configuredEndpoint = (typeof window.getCaseChatEndpoint === 'function' ? window.getCaseChatEndpoint() : '') || (typeof getCaseChatEndpoint === 'function' ? getCaseChatEndpoint() : '');
+      const endpointRoot = String(configuredEndpoint || 'https://ewemahyfoegkpzgpqnsr.supabase.co/functions/v1')
+        .trim()
+        .replace(/\/case-chat\/?$/, '')
+        .replace(/\/generate-exhibit-packet\/?$/, '')
+        .replace(/\/exhibitfunction\/?$/, '')
+        .replace(/\/$/, '');
+      const endpoint = endpointRoot + '/exhibitfunction';
       const startingBates = Math.max(1, parseInt($('exhibitFormationBatesStart')?.value || '1', 10) || 1);
       const payload = {
         caseId: getCaseId(),
@@ -9748,6 +9753,7 @@ ${entry.summary}`).toLowerCase().includes(q)) return false;
   function getCaseChatEndpoint(){
     return String(caseChatConfig.endpoint || '').trim();
   }
+  window.getCaseChatEndpoint = getCaseChatEndpoint;
 
   function isCaseChatConnected(){
     return !!getCaseChatEndpoint();
