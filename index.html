@@ -7,7 +7,7 @@
 
     const SUPABASE_URL = "https://ewemahyfoegkpzgpqnsr.supabase.co"
     const SUPABASE_KEY = "sb_publishable_0ddiJfYLmhk9maLNcYJakg_aUMkvWRO"
-    const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
     const urlParams = new URLSearchParams(window.location.search)
     const URL_CASE_ID = urlParams.get("case") || ""
     const STORED_CASE_ID = (() => {
@@ -3996,14 +3996,7 @@ function normalizeState(){ state.tags = Array.isArray(state.tags) ? state.tags.f
     }
     async function finalizeExhibitFormation(){
       const rows = getExhibitFormationRows(); if(!rows.length){ alert('No documents selected.'); return; }
-      const configuredEndpoint = (typeof window.getCaseChatEndpoint === 'function' ? window.getCaseChatEndpoint() : '') || (typeof getCaseChatEndpoint === 'function' ? getCaseChatEndpoint() : '');
-      const endpointRoot = String(configuredEndpoint || 'https://ewemahyfoegkpzgpqnsr.supabase.co/functions/v1')
-        .trim()
-        .replace(/\/case-chat\/?$/, '')
-        .replace(/\/generate-exhibit-packet\/?$/, '')
-        .replace(/\/exhibitfunction\/?$/, '')
-        .replace(/\/$/, '');
-const endpoint = endpointRoot + '/generate-exhibit-packet';
+      const endpoint = 'https://ewemahyfoegkpzgpqnsr.supabase.co/functions/v1/generate-exhibit-packet';
       const startingBates = Math.max(1, parseInt($('exhibitFormationBatesStart')?.value || '1', 10) || 1);
       const payload = {
         caseId: getCaseId(),
@@ -4032,7 +4025,7 @@ const endpoint = endpointRoot + '/generate-exhibit-packet';
       const resultBox = $('exhibitFormationResult'); if($('exhibitFormationFinalize')) $('exhibitFormationFinalize').disabled = true;
       try{
         if(!endpoint) throw new Error('No Edge Function endpoint is available.');
-        const res = await fetch(endpoint, { method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify(payload) });
+        const functionHeaders = { 'Content-Type':'application/json', 'apikey':'sb_publishable_0ddiJfYLmhk9maLNcYJakg_aUMkvWRO' }; try { const sessionResult = await window.supabase?.auth?.getSession?.(); const accessToken = sessionResult?.data?.session?.access_token || ''; if (accessToken) functionHeaders.Authorization = 'Bearer ' + accessToken; } catch (authErr) { console.warn('Could not read Supabase auth session for exhibit packet function:', authErr); } if (!functionHeaders.Authorization) throw new Error('Missing authorization header. Sign out, sign back in, then try Finalize Exhibit Packet again.'); const res = await fetch(endpoint, { method:'POST', headers: functionHeaders, body: JSON.stringify(payload) });
         const data = await res.json().catch(()=>({}));
         if(!res.ok || data?.success === false) throw new Error(data?.error || data?.message || 'Packet function returned ' + res.status);
         const storageBase = 'https://ewemahyfoegkpzgpqnsr.supabase.co/storage/v1/object/public/case-documents/';
@@ -9753,7 +9746,6 @@ ${entry.summary}`).toLowerCase().includes(q)) return false;
   function getCaseChatEndpoint(){
     return String(caseChatConfig.endpoint || '').trim();
   }
-  window.getCaseChatEndpoint = getCaseChatEndpoint;
 
   function isCaseChatConnected(){
     return !!getCaseChatEndpoint();
