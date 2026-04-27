@@ -14,7 +14,8 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_KEY, {
     // The browser Navigator Lock warning was coming from the auth refresh/session lock and
     // could stall the Document Analysis page when many rows were on screen.
     autoRefreshToken: false,
-    detectSessionInUrl: false,
+    // Needed for password recovery callback URLs; lock override below prevents auth-lock freezing.
+    detectSessionInUrl: true,
     storageKey: "murski-auth-token",
     lock: async (_name, _acquireTimeout, fn) => await fn()
   },
@@ -46,9 +47,9 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_KEY, {
 
     // Password recovery is handled after startup. Keep auth callbacks synchronous so they
     // never hold or orphan the Supabase auth lock on large pages.
-    let __pendingPasswordRecovery = false;
+    window.__pendingPasswordRecovery = false;
     supabase.auth.onAuthStateChange((event) => {
-      if (event === 'PASSWORD_RECOVERY') __pendingPasswordRecovery = true;
+      if (event === 'PASSWORD_RECOVERY') window.__pendingPasswordRecovery = true;
     });
     const DOCUMENT_BUCKET = "case-documents"
     window.addEventListener('unhandledrejection', (event) => {
@@ -8901,7 +8902,7 @@ function openStructuredDocEditor(docId){
       $('dashboardBtn')?.addEventListener('click', ()=> openDashboardFromApp());
       $('signOutBtn')?.addEventListener('click', async ()=>{ await window.supabase.auth.signOut(); localStorage.removeItem('murski_selected_case_id'); const url = new URL(window.location.href); url.searchParams.delete('case'); window.location.href = url.pathname; });
       $('dashboardRefreshBtn')?.addEventListener('click', ()=> queueDashboardDataLoad());
-      $('authSignInBtn')?.addEventListener('click', async ()=>{ try{ const email = $('authEmail').value.trim(); const password = $('authPassword').value; const { error } = await window.supabase.auth.signInWithPassword({ email, password }); if(error) throw error; toast('Signed in'); }catch(e){ alert(e.message || e); } });
+      $("authSignInBtn")?.addEventListener("click", async ()=>{ try{ const email = $("authEmail").value.trim(); const password = $("authPassword").value; if(!email || !password) throw new Error("Enter your email and password."); const { data, error } = await window.supabase.auth.signInWithPassword({ email, password }); if(error) throw error; authUi.session = data?.session || null; routeAfterAuth(); toast("Signed in"); }catch(e){ alert((e && e.message) ? e.message : String(e || "Login failed.")); } });
       $('authSignUpBtn')?.addEventListener('click', async ()=>{ try{ const email = $('authSignupEmail').value.trim(); const password = $('authSignupPassword').value; const { error } = await window.supabase.auth.signUp({ email, password, options: { emailRedirectTo: window.location.origin + window.location.pathname } }); if(error) throw error; alert('Login created. The user can sign in after email confirmation if your Supabase project requires it.'); }catch(e){ alert(e.message || e); } });
       $('authResetPwBtn')?.addEventListener('click', async ()=>{ try{ const email = ($('authEmail').value || $('authSignupEmail').value || '').trim(); if(!email) throw new Error('Enter the email first.'); const { error } = await window.supabase.auth.resetPasswordForEmail(email, { redirectTo: window.location.origin + window.location.pathname + '?recovery=1' }); if(error) throw error; alert('Password reset email sent.'); }catch(e){ alert(e.message || e); } });
       $('dashboardCreateCaseBtn')?.addEventListener('click', async ()=>{ try{ if(!currentDashboardUserCanCreateCases()) throw new Error('Only admins can create new cases.'); const user = getActiveSessionUser(); if(!user) throw new Error('Sign in first.'); const name = $('dashboardCaseName').value.trim(); if(!name) throw new Error('Enter a case name.'); const { data: caseRow, error } = await window.supabase.from('cases').insert({ name, created_by: user.id }).select().single(); if(error) throw error; const memberRes = await window.supabase.from('case_members').insert({ case_id: caseRow.id, user_id: user.id, role: 'admin' }); if(memberRes.error) throw memberRes.error; $('dashboardCaseName').value = ''; await loadDashboardData(); toast('Case created'); }catch(e){ alert(e.message || e); } });
@@ -8916,11 +8917,12 @@ function openStructuredDocEditor(docId){
       authUi.session = sessionRes?.data?.session || null;
       routeAfterAuth();
       window.supabase.auth.onAuthStateChange((_event, session)=>{
+        try{
         const oldUser = authUi.session?.user?.id || '';
         const newUser = session?.user?.id || '';
         authUi.session = session || null;
-        if(__pendingPasswordRecovery && _event === 'PASSWORD_RECOVERY'){
-          __pendingPasswordRecovery = false;
+        if(window.__pendingPasswordRecovery && _event === 'PASSWORD_RECOVERY'){
+          window.__pendingPasswordRecovery = false;
           setTimeout(async () => {
             const newPassword = prompt('Enter your new password:');
             if(!newPassword){ alert('Password reset cancelled.'); return; }
@@ -8932,6 +8934,9 @@ function openStructuredDocEditor(docId){
         }
         if(oldUser === newUser && (_event === 'TOKEN_REFRESHED' || _event === 'INITIAL_SESSION')) return;
         window.murskiDebouncedLoad("auth_route", ()=>{ routeAfterAuth(); }, 500);
+        }catch(e){
+          console.warn('Auth state handler error:', e);
+        }
       });
     }
 
