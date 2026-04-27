@@ -4335,13 +4335,13 @@ function normalizeState(){ state.tags = Array.isArray(state.tags) ? state.tags.f
         const exWidth = bold.widthOfTextAtSize(exhibitLabel, exhibitSize);
         const batesWidth = font.widthOfTextAtSize(batesLabel, batesSize);
         if(rotation === 90 || rotation === 270){
-          page.drawText(exhibitLabel, { x: width - margin, y: height - margin - exWidth, size: exhibitSize, font: bold, rotate: PDFLib.degrees(90) });
+          if(index === 0) page.drawText(exhibitLabel, { x: width - margin, y: height - margin - exWidth, size: exhibitSize, font: bold, rotate: PDFLib.degrees(90) });
           page.drawText(batesLabel, { x: width - margin, y: margin, size: batesSize, font, rotate: PDFLib.degrees(90) });
         }else if(rotation === 180){
-          page.drawText(exhibitLabel, { x: margin + exWidth, y: margin, size: exhibitSize, font: bold, rotate: PDFLib.degrees(180) });
+          if(index === 0) page.drawText(exhibitLabel, { x: margin + exWidth, y: margin, size: exhibitSize, font: bold, rotate: PDFLib.degrees(180) });
           page.drawText(batesLabel, { x: margin + batesWidth, y: height - margin, size: batesSize, font, rotate: PDFLib.degrees(180) });
         }else{
-          page.drawText(exhibitLabel, { x: Math.max(margin, width - margin - exWidth), y: height - margin - exhibitSize, size: exhibitSize, font: bold });
+          if(index === 0) page.drawText(exhibitLabel, { x: Math.max(margin, width - margin - exWidth), y: height - margin - exhibitSize, size: exhibitSize, font: bold });
           page.drawText(batesLabel, { x: Math.max(margin, width - margin - batesWidth), y: margin, size: batesSize, font });
         }
       });
@@ -4426,7 +4426,7 @@ function normalizeState(){ state.tags = Array.isArray(state.tags) ? state.tags.f
       const resultBox = $('exhibitFormationResult');
       if(resultBox){
         const listPreview = '<div style="overflow:auto;margin-top:8px"><table class="exhibitFormationTable"><thead><tr><th>Exhibit</th><th>Document</th><th>Combined start page</th><th>Combined end page</th><th>Bates start</th><th>Bates end</th><th>Pages</th></tr></thead><tbody>' + built.list.map(r => '<tr><td>' + escapeHtml(r.exhibit) + '</td><td>' + escapeHtml(r.document) + '</td><td>' + escapeHtml(r.combinedPdfStartPage) + '</td><td>' + escapeHtml(r.combinedPdfEndPage) + '</td><td>' + escapeHtml(r.batesStart) + '</td><td>' + escapeHtml(r.batesEnd) + '</td><td>' + escapeHtml(r.pages) + '</td></tr>').join('') + '</tbody></table></div>';
-        resultBox.innerHTML = '<b>Exhibit packet created in browser.</b><div class="hint">The backend failed, so the browser created and downloaded the combined PDF. Audio/video/non-printable files and PDFs that could not be parsed were replaced with one-page placeholders showing the exhibit number and file name.</div><div class="hint">Backend error was: ' + escapeHtml(originalError?.message || String(originalError || 'unknown error')) + '</div>' + zipMessage + '<button type="button" id="downloadFinalExhibitListCsv" class="btnGhost">Download final exhibit list CSV with start pages</button>' + listPreview;
+        resultBox.innerHTML = '<b>Exhibit packet created in browser.</b><div class="hint">The backend failed, so the browser created and downloaded the combined PDF. Bates stamps are on every page, but exhibit stamps are only on the first page of each exhibit. Audio/video/non-printable files and PDFs that could not be parsed were replaced with one-page placeholders showing the exhibit number and file name.</div><div class="hint">Backend error was: ' + escapeHtml(originalError?.message || String(originalError || 'unknown error')) + '</div>' + zipMessage + '<button type="button" id="downloadFinalExhibitListCsv" class="btnGhost">Download final exhibit list CSV with start pages</button>' + listPreview;
         setTimeout(() => $('downloadFinalExhibitListCsv')?.addEventListener('click', () => downloadExhibitFormationCsv(built.list)), 0);
       }
     }
@@ -4478,13 +4478,13 @@ function normalizeState(){ state.tags = Array.isArray(state.tags) ? state.tags.f
         stampExhibitNumber: true,
         stampBates: true,
         batesOnEveryPage: true,
-        exhibitStampOnEveryPage: true,
+        exhibitStampOnEveryPage: false,
         documents: rows.map(r => buildExhibitFormationDocumentPayload(r))
       };
       const resultBox = $('exhibitFormationResult'); if($('exhibitFormationFinalize')) $('exhibitFormationFinalize').disabled = true;
       try{
         if(preferClient){
-          await runClientSideExhibitFallback(rows, new Error('Browser stamping was used so every PDF page gets an exhibit stamp and Bates stamp.'));
+          await runClientSideExhibitFallback(rows, new Error('Browser stamping was used so Bates stamps are on every page and exhibit stamps are only on the first page of each exhibit.'));
           return;
         }
         if(!endpoint) throw new Error('No Edge Function endpoint is available.');
