@@ -4549,18 +4549,32 @@ function normalizeState(){ state.tags = Array.isArray(state.tags) ? state.tags.f
       modal.querySelector('#documentAnalysisDownloadClose')?.addEventListener('click', ()=> modal.classList.remove('open'));
       return modal;
     }
+    function getDocumentSourceFileName(doc){
+      const direct = getDocumentFileName(doc) || doc?.originalFileName || doc?.filename || doc?.file_name || '';
+      if(direct) return String(direct);
+      const path = doc?.filePath || doc?.file_path || '';
+      return path ? String(path).split('/').pop() : '';
+    }
+    function getFileExtensionFromName(name){
+      const clean = String(name || '').split('?')[0].split('#')[0];
+      const lastPart = clean.split('/').pop() || '';
+      const dot = lastPart.lastIndexOf('.');
+      if(dot <= 0 || dot === lastPart.length - 1) return '';
+      const ext = lastPart.slice(dot);
+      return ext.length <= 12 ? ext : '';
+    }
+    function getDocumentDownloadFileName(doc, preferredName){
+      const sourceName = getDocumentSourceFileName(doc);
+      const ext = getFileExtensionFromName(sourceName);
+      let safe = sanitizeDownloadFileName(preferredName || doc?.name || sourceName || 'document');
+      if(ext && !safe.toLowerCase().endsWith(ext.toLowerCase())) safe += ext;
+      return safe || ('document' + (ext || '.bin'));
+    }
     function getDocumentAnalysisDownloadFileName(doc){
-      const existing = getDocumentFileName(doc) || doc.originalFileName || doc.filename || '';
-      const base = existing || ((doc.name || 'document') + '.bin');
-      return sanitizeDownloadFileName(base);
+      return getDocumentDownloadFileName(doc);
     }
     function applyDocumentAnalysisDownloadExtension(name, doc){
-      let safe = sanitizeDownloadFileName(name || 'document');
-      const existing = getDocumentAnalysisDownloadFileName(doc);
-      const dot = existing.lastIndexOf('.');
-      const ext = dot > -1 ? existing.slice(dot) : '';
-      if(ext && !safe.toLowerCase().endsWith(ext.toLowerCase())) safe += ext;
-      return safe;
+      return getDocumentDownloadFileName(doc, name || doc?.name || 'document');
     }
     function openDocumentAnalysisDownloadFiles(){
       const modal = ensureDocumentAnalysisDownloadModal();
@@ -4578,7 +4592,7 @@ function normalizeState(){ state.tags = Array.isArray(state.tags) ? state.tags.f
           if(!doc || !row.querySelector('[data-da-download-check]')?.checked) return null;
           const order = Number(row.querySelector('[data-da-download-order]')?.value || 999999);
           const fileName = applyDocumentAnalysisDownloadExtension(row.querySelector('[data-da-download-name]')?.value || '', doc);
-          return { order, doc: { ...doc, originalFileName: fileName, filename: fileName } };
+          return { order, doc: { ...doc, _downloadFileName: fileName } };
         }).filter(Boolean).sort((a,b)=> a.order - b.order).map(x => x.doc);
         if(!chosen.length){ alert('Select at least one document.'); return; }
         if(status) status.textContent = 'Creating ZIP...';
@@ -7741,7 +7755,7 @@ function openStructuredDocEditor(docId){
       if(!d) return;
       const blob = await getDocumentBlob(d);
       if(blob){
-        triggerBlobDownload(blob, d.originalFileName || d.filename || (d.name + '.bin'));
+        triggerBlobDownload(blob, getDocumentDownloadFileName(d));
         return;
       }
       alert('No file is stored for this document yet. Re-upload the file in this version if this is an older local-only document.');
@@ -7756,6 +7770,19 @@ function openStructuredDocEditor(docId){
     window.sanitizeFileName = sanitizeDownloadFileName;
     window.sanitizeDownloadFileName = sanitizeDownloadFileName;
 
+    function makeUniqueZipFileName(zip, fileName){
+      const safeName = sanitizeDownloadFileName(fileName || 'document');
+      if(!zip.file(safeName)) return safeName;
+      const ext = getFileExtensionFromName(safeName);
+      const base = ext ? safeName.slice(0, -ext.length) : safeName;
+      let n = 2;
+      let next = '';
+      do {
+        next = base + '_' + n + ext;
+        n += 1;
+      } while(zip.file(next));
+      return next;
+    }
     async function downloadDocumentsAsZip(docs){
       const chosenDocs = (docs || []).filter(Boolean);
       if(!chosenDocs.length){
@@ -7771,7 +7798,8 @@ function openStructuredDocEditor(docId){
       for(const doc of chosenDocs){
         const blob = await getDocumentBlob(doc);
         if(!blob) continue;
-        const fileName = sanitizeDownloadFileName(doc.originalFileName || doc.filename || (doc.name + '.bin'));
+        let fileName = getDocumentDownloadFileName(doc, doc._downloadFileName || doc.originalFileName || doc.filename || doc.name);
+        fileName = makeUniqueZipFileName(zip, fileName);
         zip.file(fileName, blob);
         addedCount += 1;
       }
@@ -7810,7 +7838,7 @@ function openStructuredDocEditor(docId){
       for(const doc of chosenDocs){
         const blob = await getDocumentBlob(doc);
         if(!blob) continue;
-        const fileName = sanitizeDownloadFileName(doc.originalFileName || doc.filename || (doc.name + '.bin'));
+        const fileName = getDocumentDownloadFileName(doc, doc._downloadFileName || doc.originalFileName || doc.filename || doc.name);
         try{
           const fileHandle = await dirHandle.getFileHandle(fileName, { create: true });
           const writable = await fileHandle.createWritable();
