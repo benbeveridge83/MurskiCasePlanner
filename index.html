@@ -32,9 +32,10 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_KEY, {
         return ""
       }
     })()
-    // Do not auto-open the last stored case on startup.
-    // The dashboard should stay lightweight unless a case is explicitly in the URL.
-    const CASE_ID = URL_CASE_ID || ""
+    // Do not auto-open the last stored case on a bare startup.
+    // If a specific page link is used without a case param, keep the user in the last selected case.
+    const REQUESTED_VIEW = (urlParams.get("view") || "").toLowerCase()
+    const CASE_ID = URL_CASE_ID || (REQUESTED_VIEW ? STORED_CASE_ID : "")
     if (CASE_ID) {
       try {
         localStorage.setItem("murski_selected_case_id", CASE_ID)
@@ -1693,8 +1694,7 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_KEY, {
       </div>
     </div>
   </div>
-  <div class="tabs" id="mainTabs" style="display:none"><a id="tabMattDirect" class="tab" data-view-link="mattdirect" href="?view=mattdirect">Matt Direct</a>
-<a id="tabLeahExhibits" class="tab" data-view-link="leahexhibits" href="?view=leahexhibits">Leah Exhibits</a><a id="tabOutline" class="tab active" data-view-link="outline" href="?view=outline">Case Outline</a><a id="tabDocuments" class="tab" data-view-link="documents" href="?view=documents">Documents</a><a id="tabPeople" class="tab" data-view-link="people" href="?view=people">People</a><a id="tabElements" class="tab" data-view-link="elements" href="?view=elements">Elements</a><a id="tabTimeline" class="tab" data-view-link="timeline" href="?view=timeline">Timeline</a><a id="tabTrialIssues" class="tab" data-view-link="trialissues" href="?view=trialissues">Trial Issues</a><a id="tabReports" class="tab" data-view-link="reports" href="?view=reports">Reports</a><a id="tabCross" class="tab" data-view-link="cross" href="?view=cross">Cross</a><a id="tabDirect" class="tab" data-view-link="direct" href="?view=direct">Direct</a><a id="tabTrialIssuesExhibits" class="tab" data-view-link="trialissuesexhibits" href="?view=trialissuesexhibits" style="display:none">Trial Issues Exhibits</a><a id="tabDocumentAnalysis" class="tab" data-view-link="documentanalysis" href="?view=documentanalysis">Document Analysis</a><a id="tabSettings" class="tab" data-view-link="settings" href="?view=settings">Add Tag</a></div>
+  <div class="tabs" id="mainTabs" style="display:none"><a id="tabOutline" class="tab active" data-view-link="outline" href="?view=outline">Case Outline</a><a id="tabDocuments" class="tab" data-view-link="documents" href="?view=documents">Documents</a><a id="tabPeople" class="tab" data-view-link="people" href="?view=people">People</a><a id="tabElements" class="tab" data-view-link="elements" href="?view=elements">Elements</a><a id="tabTimeline" class="tab" data-view-link="timeline" href="?view=timeline">Timeline</a><a id="tabTrialIssues" class="tab" data-view-link="trialissues" href="?view=trialissues">Trial Issues</a><a id="tabReports" class="tab" data-view-link="reports" href="?view=reports">Reports</a><a id="tabCross" class="tab" data-view-link="cross" href="?view=cross">Cross</a><a id="tabDirect" class="tab" data-view-link="direct" href="?view=direct">Direct</a><a id="tabTrialIssuesExhibits" class="tab" data-view-link="trialissuesexhibits" href="?view=trialissuesexhibits" style="display:none">Trial Issues Exhibits</a><a id="tabDocumentAnalysis" class="tab" data-view-link="documentanalysis" href="?view=documentanalysis">Document Analysis</a><a id="tabSettings" class="tab" data-view-link="settings" href="?view=settings">Add Tag</a></div>
   <div class="container" id="appContainer" style="display:none">
     <div id="viewOutline" class="card"><div style="display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap"><h2 style="margin:0">Case Outline</h2><div style="display:flex;gap:8px;flex-wrap:wrap"><a class="btnGhost docOpenLink" data-view-link="outlineindex" href="?view=outlineindex">Outline Index</a><a class="btnGhost docOpenLink" data-view-link="structuredoutline" href="?view=structuredoutline">Structured Outline</a></div></div><div class="hint">Build a structured outline and then tie it to witnesses, exhibits, and testimony. Add witnesses to a row to create witness columns. In each witness column cell, select exhibits (from Documents) and add testimony.</div>
       <div class="toolbar" style="align-items:flex-start"><div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center"><button id="addTop" class="btnPrimary">+ Add top-level heading</button><button id="collapseAll" class="btnGhost">Collapse all</button><button id="expandAll" class="btnGhost">Expand all</button><button id="structureViewToggle" class="btnGhost">Structure view</button><button id="outlineCompactToggle" class="btnGhost">Name-only view</button><div id="outlineTagFilterHost"></div><div id="outlineWitnessFilterHost"></div></div><div style="height:1px; flex-basis:100%"></div><div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center"><span class="pill" id="selHint">Select a row, then use these controls</span><button id="actSibling" class="btnGhost">+ Sibling</button><button id="actChild" class="btnGhost">+ Child</button><button id="actIndent" class="btnGhost">↳ Indent</button><button id="actOutdent" class="btnGhost">↰ Outdent</button><button id="actUp" class="btnGhost">↑</button><button id="actDown" class="btnGhost">↓</button><button id="actDelete" class="btnDanger">Delete</button><span style="width:12px"></span><button id="actAddExhibit" class="btnPrimary">+ Add exhibit</button><span class="pill" id="exHint">Click a witness cell, select a document, then Add exhibit</span></div></div>
@@ -1783,7 +1783,7 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_KEY, {
     const INITIAL_VIEW = String(window.INITIAL_VIEW || (new URLSearchParams(window.location.search).get('view') || 'outline')).toLowerCase();
     const INITIAL_WORKSHEET_OPEN = (()=>{ try{ return new URLSearchParams(window.location.search).get('worksheet') === '1'; }catch(e){ return false; } })();
     const INITIAL_DOCUMENT_WORKSHEET_OPEN = (()=>{ try{ const p = new URLSearchParams(window.location.search); return (p.get('view') || '').toLowerCase() === 'documenttable' && p.get('worksheet') === '1'; }catch(e){ return false; } })();
-    const getCaseId = () => String(window.CASE_ID || CASE_ID || new URLSearchParams(window.location.search).get('case') || '');
+    const getCaseId = () => String(window.CASE_ID || CASE_ID || new URLSearchParams(window.location.search).get('case') || localStorage.getItem('murski_selected_case_id') || '');
     const UI_STORAGE_KEY = 'murski_ui_prefs_v1';
     const LEGACY_STORAGE_KEY = 'murski_case_planner_v1';
     let state = { caseName: '', tags: [], people: [], documents: [], elements: [], outline: [], timelineEvents: [], subtags: [], iconLibrary: [], trialIssues: { leftPartyName:'Matt Murski', rightPartyName:'Leah Murski', rows: [] } };
@@ -2259,8 +2259,7 @@ function normalizeState(){ state.tags = Array.isArray(state.tags) ? state.tags.f
     function syncWitnessCellsFromSupabase(){ if (!Array.isArray(window.loadedWitnessCells)) return; const cellsByRow = new Map(); for (const cell of window.loadedWitnessCells) { if (!cell || !cell.row_id || !cell.person_id) continue; if (!cellsByRow.has(cell.row_id)) cellsByRow.set(cell.row_id, []); cellsByRow.get(cell.row_id).push(cell); } state.outline = (state.outline || []).map((node) => { const rowCells = cellsByRow.get(node.id) || []; const nextWitnessData = {}; const nextWitnessIds = []; for (const cell of rowCells) { nextWitnessIds.push(cell.person_id); const cellKey = testimonyCellKey(cell.row_id, cell.person_id); const localCell = node.witnessData && node.witnessData[cell.person_id] ? node.witnessData[cell.person_id] : null; const testimonyHtml = activeTestimonyEditKey === cellKey && localCell ? (localCell.testimonyHtml || '') : (cell.testimony_html || ''); nextWitnessData[cell.person_id] = { exhibits: Array.isArray(cell.exhibits) ? cell.exhibits : [], testimonyHtml, testimony: testimonyHtml.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim() }; } const localHeadingCell = node.witnessData && node.witnessData[HEADING_EXHIBIT_KEY] ? node.witnessData[HEADING_EXHIBIT_KEY] : null; if(localHeadingCell){ nextWitnessData[HEADING_EXHIBIT_KEY] = { exhibits: Array.isArray(localHeadingCell.exhibits) ? Array.from(new Set(localHeadingCell.exhibits)) : [], testimonyHtml: '', testimony: '' }; } return { ...node, witnessIds: Array.from(new Set(nextWitnessIds)), witnessData: nextWitnessData }; }); safeSave(); }
     window.syncWitnessCellsFromSupabase = syncWitnessCellsFromSupabase;
     window.addEventListener('storage', async (event) => { if (event.key !== window.LOCAL_SYNC_KEY || !event.newValue) return; let payload = null; try { payload = JSON.parse(event.newValue); } catch (e) { console.warn('Bad sync payload:', e); } console.log('Local sync event received:', payload); if (!payload || !payload.type) return; if (payload.type === 'witness_cells_changed') { await window.loadWitnessCells(); return; } if (payload.type === 'rows_changed') { await window.loadOutlineRows(); await window.loadWitnessCells(); return; } if (payload.type === 'people_changed') { await window.loadPeople(); await window.loadWitnessCells(); return; } if (payload.type === 'documents_changed') { await window.loadDocuments(); await window.loadWitnessCells(); return; } if (payload.type === 'tags_changed') { await window.loadTags(); return; } if (payload.type === 'row_tags_changed') { await window.loadRowTags(); return; } if (payload.type === 'document_tags_changed') { await window.loadDocumentTags(); return; } if (payload.type === 'person_tags_changed') { await window.loadPersonTags(); return; } });
-    const views = { outline: { tab: 'tabOutline', view:'viewOutline' }, documents: { tab: 'tabDocuments', view:'viewDocuments' }, documenttable: { tab: 'tabDocumentTable', view:'viewDocumentTable' }, documentanalysis: { tab: 'tabDocumentAnalysis', view:'viewDocumentAnalysis' }, tagindex: { tab: 'tabTagIndex', view:'viewTagIndex' }, outlineindex: { tab: 'tabOutlineIndex', view:'viewOutlineIndex' }, structuredoutline: { tab: 'tabStructuredOutline', view:'viewStructuredOutline' }, exhibits: { tab: 'tabExhibits', view:'viewExhibits' }, people: { tab: 'tabPeople', view:'viewPeople' }, elements: { tab: 'tabElements', view:'viewElements' }, timeline: { tab: 'tabTimeline', view:'viewTimeline' }, trialissues: { tab: 'tabTrialIssues', view:'viewTrialIssues' }, reports: { tab: 'tabReports', view:'viewReports' }, cross: { tab: 'tabCross', view:'viewCross' }, direct: { tab: 'tabDirect', view:'viewDirect' }, mattdirect: { tab: 'tabMattDirect', view:'viewMattDirect' },
-leahexhibits: { tab: 'tabLeahExhibits', view:'viewLeahExhibits' },trialissuesexhibits: { tab: 'tabTrialIssuesExhibits', view:'viewTrialIssuesExhibits' }, settings: { tab: 'tabSettings', view:'viewSettings' } };
+    const views = { outline: { tab: 'tabOutline', view:'viewOutline' }, documents: { tab: 'tabDocuments', view:'viewDocuments' }, documenttable: { tab: 'tabDocumentTable', view:'viewDocumentTable' }, documentanalysis: { tab: 'tabDocumentAnalysis', view:'viewDocumentAnalysis' }, tagindex: { tab: 'tabTagIndex', view:'viewTagIndex' }, outlineindex: { tab: 'tabOutlineIndex', view:'viewOutlineIndex' }, structuredoutline: { tab: 'tabStructuredOutline', view:'viewStructuredOutline' }, exhibits: { tab: 'tabExhibits', view:'viewExhibits' }, people: { tab: 'tabPeople', view:'viewPeople' }, elements: { tab: 'tabElements', view:'viewElements' }, timeline: { tab: 'tabTimeline', view:'viewTimeline' }, trialissues: { tab: 'tabTrialIssues', view:'viewTrialIssues' }, reports: { tab: 'tabReports', view:'viewReports' }, cross: { tab: 'tabCross', view:'viewCross' }, direct: { tab: 'tabDirect', view:'viewDirect' }, trialissuesexhibits: { tab: 'tabTrialIssuesExhibits', view:'viewTrialIssuesExhibits' }, settings: { tab: 'tabSettings', view:'viewSettings' } };
     function getInitialViewFromUrl(){
       try {
         const params = new URLSearchParams(window.location.search || '');
@@ -11052,8 +11051,11 @@ const endpoint = `${SUPABASE_URL}/functions/v1/finalize-exhibit-packet`;
     const items = getCrossItems();
     const idx = items.findIndex(item => item.id === id);
     if(idx < 0) return;
+    const skipRender = !!patch.__skipRender;
+    delete patch.__skipRender;
     items[idx] = normalizeCrossItem({ ...items[idx], ...patch }, idx);
-    setCrossItems(items);
+    if(skipRender) saveCrossItems(items);
+    else setCrossItems(items);
   }
   function addCrossItem(type='question', afterId=''){
     const items = getCrossItems();
@@ -11103,61 +11105,102 @@ const endpoint = `${SUPABASE_URL}/functions/v1/finalize-exhibit-packet`;
     if(typeof openSourceDocModal === 'function') openSourceDocModal();
     else toast('Elements from Document is not available yet.');
   }
-  function renderCross(){
-    const host = $('crossQuestionList'); if(!host) return;
-    const items = getCrossItems().map(normalizeCrossItem).sort((a,b)=>a.sortOrder-b.sortOrder);
+  function getExamConfig(scope){
+    return scope === 'direct'
+      ? { scope:'direct', hostId:'directQuestionList', emptyId:'directEmpty', textAttr:'data-direct-text', answerAttr:'data-direct-answer', commentsAttr:'data-direct-comments', primaryAttr:'data-direct-primary', idAttr:'data-direct-id', getItems:getDirectItems, getItem:getDirectItemById, update:updateDirectItem, add:addDirectItem, del:deleteDirectItem, move:moveDirectItem, attachDoc:attachDirectDoc, attachElement:attachDirectElement, openQuestion:openDirectQuestion, addFromDoc:openDirectElementsFromDocument, commentLabel:'Comments / prep details' }
+      : { scope:'cross', hostId:'crossQuestionList', emptyId:'crossEmpty', textAttr:'data-cross-text', answerAttr:'data-cross-answer', commentsAttr:'data-cross-comments', primaryAttr:'data-cross-primary', idAttr:'data-cross-id', getItems:getCrossItems, getItem:getCrossItemById, update:updateCrossItem, add:addCrossItem, del:deleteCrossItem, move:moveCrossItem, attachDoc:attachCrossDoc, attachElement:attachCrossElement, openQuestion:openCrossQuestion, addFromDoc:openCrossElementsFromDocument, commentLabel:'Comments / impeachment details' };
+  }
+  function buildExamChips(scope, item, compact=false){
+    const prefix = scope === 'direct' ? 'direct' : 'cross';
+    const attachments = getCrossAllAttachments(item);
+    if(!attachments.length) return '<span class="crossNoMaterials">No materials</span>';
+    return attachments.map(a => '<span class="crossChip ' + (a.kind === 'doc' ? 'doc' : 'el') + '" title="' + escapeHtml(getCrossAttachmentLabel(a.kind, a.id)) + '"><span class="crossChipLabel">' + escapeHtml(a.kind === 'doc' ? 'Doc' : 'El') + ': ' + escapeHtml(getCrossAttachmentLabel(a.kind, a.id)) + '</span>' + (compact ? '' : '<button type="button" class="crossOpenAttachmentBtn" title="Open" data-' + prefix + '-open-attachment="' + a.kind + ':' + escapeHtml(a.id) + '">open</button><button type="button" title="Remove" data-' + prefix + '-remove-attachment="' + a.kind + ':' + escapeHtml(a.id) + '">x</button>') + '</span>').join('');
+  }
+  function buildExamControlsPanel(scope, item){
+    const prefix = scope === 'direct' ? 'direct' : 'cross';
+    const cfg = getExamConfig(scope);
+    const attachments = getCrossAllAttachments(item);
+    const primaryKey = getCrossPrimaryKey(item);
+    const primaryOptions = attachments.map(a => '<option value="' + getCrossAttachmentKey(a.kind,a.id) + '" ' + (primaryKey === getCrossAttachmentKey(a.kind,a.id) ? 'selected' : '') + '>' + escapeHtml(a.kind === 'doc' ? 'Document: ' : 'Element: ') + escapeHtml(getCrossAttachmentLabel(a.kind,a.id)) + '</option>').join('');
+    return '<div class="crossControlsPanel"><div><div class="label">Primary material opened from controls</div><select class="crossPrimarySelect" data-' + prefix + '-primary="' + item.id + '"><option value="">No primary selected</option>' + primaryOptions + '</select></div><div><div class="label">Attached materials</div><div class="crossChipRow" style="flex-wrap:wrap;justify-content:flex-start">' + buildExamChips(scope, item, false) + '</div></div><div><div class="label">Open primary</div><button type="button" class="mini btnPrimary" data-' + prefix + '-open-primary="' + item.id + '">Open primary + comments</button></div><div><div class="label">Add document</div><button type="button" class="mini btnPrimary" data-' + prefix + '-open-doc-picker="' + item.id + '">Search / add document...</button></div><div><div class="label">Add element</div><div class="crossAttachmentActions"><button type="button" class="mini btnPrimary" data-' + prefix + '-open-element-picker="' + item.id + '">Search / add element...</button><button type="button" class="mini" data-' + prefix + '-add-from-doc="' + item.id + '">Add elements from Document</button></div></div><div class="crossControlFull"><div class="label">' + cfg.commentLabel + '</div><div class="crossCommentBox" contenteditable="true" data-' + prefix + '-comments="' + item.id + '" data-placeholder="Extra details, page notes, fallback questions...">' + (item.comments || '') + '</div></div><div class="crossControlFull crossRowActions"><button type="button" class="mini" data-' + prefix + '-add-question="' + item.id + '">+ Question below</button><button type="button" class="mini" data-' + prefix + '-add-heading="' + item.id + '">+ Heading below</button><button type="button" class="mini" data-' + prefix + '-delete="' + item.id + '">Delete</button></div></div>';
+  }
+  function ensureExamControlsPanel(scope, itemId){
+    const cfg = getExamConfig(scope);
+    const host = $(cfg.hostId); if(!host) return;
+    const row = Array.from(host.querySelectorAll('.crossRow')).find(r => r.getAttribute(cfg.idAttr) === itemId);
+    const slot = row?.querySelector('.crossRightNumber');
+    const item = cfg.getItem(itemId);
+    if(!row || !slot || !item || item.type === 'heading') return;
+    host.querySelectorAll('.crossRow.controlsOpen').forEach(r => { if(r !== row) r.classList.remove('controlsOpen'); });
+    let panel = slot.querySelector('.crossControlsPanel');
+    if(panel) panel.remove();
+    slot.insertAdjacentHTML('beforeend', buildExamControlsPanel(scope, item));
+    row.classList.toggle('controlsOpen');
+  }
+  function renderExamBuilder(scope){
+    const cfg = getExamConfig(scope);
+    const host = $(cfg.hostId); if(!host) return;
+    const items = cfg.getItems().map(normalizeCrossItem).sort((a,b)=>a.sortOrder-b.sortOrder);
     host.innerHTML = '';
-    $('crossEmpty').style.display = items.length ? 'none' : '';
+    const empty = $(cfg.emptyId); if(empty) empty.style.display = items.length ? 'none' : '';
     let questionNumber = 0;
-    items.forEach((item, index)=>{
+    const frag = document.createDocumentFragment();
+    items.forEach((item)=>{
       const row = document.createElement('div');
       row.className = 'crossRow' + (item.type === 'heading' ? ' crossHeadingRow' : '');
-      row.setAttribute('draggable','true'); row.setAttribute('data-cross-id', item.id);
+      row.setAttribute('draggable','true');
+      row.setAttribute(cfg.idAttr, item.id);
       if(item.type === 'heading'){
-        row.innerHTML = '<div class="crossDragHandle" title="Drag">☰</div><div><input class="crossHeadingInput" data-cross-text="' + item.id + '" value="' + escapeHtml(item.text || '') + '" /></div><div class="crossRowActions" style="padding:2px 6px"><button type="button" class="mini" data-cross-add-question="' + item.id + '">+ Question below</button><button type="button" class="mini" data-cross-delete="' + item.id + '">Delete</button></div>';
+        row.innerHTML = '<div class="crossDragHandle" title="Drag">☰</div><div><input class="crossHeadingInput" ' + cfg.textAttr + '="' + item.id + '" value="' + escapeHtml(item.text || '') + '" /></div><div class="crossRowActions" style="padding:2px 6px"><button type="button" class="mini" data-' + scope + '-add-question="' + item.id + '">+ Question below</button><button type="button" class="mini" data-' + scope + '-delete="' + item.id + '">Delete</button></div>';
       } else {
         questionNumber += 1;
-        const attachments = getCrossAllAttachments(item);
-        const primaryKey = getCrossPrimaryKey(item);
-        const chips = attachments.map(a => '<span class="crossChip ' + (a.kind === 'doc' ? 'doc' : 'el') + '" title="' + escapeHtml(getCrossAttachmentLabel(a.kind, a.id)) + '"><span class="crossChipLabel">' + escapeHtml(a.kind === 'doc' ? 'Doc' : 'El') + ': ' + escapeHtml(getCrossAttachmentLabel(a.kind, a.id)) + '</span><button type="button" class="crossOpenAttachmentBtn" title="Open" data-cross-open-attachment="' + a.kind + ':' + escapeHtml(a.id) + '">↗</button><button type="button" title="Remove" data-cross-remove-attachment="' + a.kind + ':' + escapeHtml(a.id) + '">×</button></span>').join('') || '<span class="crossNoMaterials">No materials</span>';
-        const primaryOptions = attachments.map(a => '<option value="' + getCrossAttachmentKey(a.kind,a.id) + '" ' + (primaryKey === getCrossAttachmentKey(a.kind,a.id) ? 'selected' : '') + '>' + escapeHtml(a.kind === 'doc' ? 'Document: ' : 'Element: ') + escapeHtml(getCrossAttachmentLabel(a.kind,a.id)) + '</option>').join('');
-        row.innerHTML = '<div class="crossQuestionMain"><span class="crossDragHandle" title="Drag question">☰</span><span class="crossQuestionNumberInline">' + questionNumber + '.</span><div class="crossQuestionText" contenteditable="true" data-cross-text="' + item.id + '" data-cross-open-question="' + item.id + '" data-placeholder="Question text">' + escapeHtml(item.text || '') + '</div></div><div class="crossAnswerCell"><div class="crossAnswerText" contenteditable="true" data-cross-answer="' + item.id + '" data-placeholder="Answer...">' + escapeHtml(item.answer || '') + '</div></div><div class="crossMaterialColumn"><div class="crossChipRow">' + chips + '</div></div><div class="crossDividerLine"></div><div class="crossRightNumber"><button type="button" class="crossNumberBtn" data-cross-toggle-controls="' + item.id + '" title="Show controls for question ' + questionNumber + '">' + questionNumber + '</button><div class="crossControlsPanel"><div><div class="label">Primary material opened when question is clicked</div><select class="crossPrimarySelect" data-cross-primary="' + item.id + '"><option value="">No primary selected</option>' + primaryOptions + '</select></div><div><div class="label">Attached materials</div><div class="crossChipRow" style="flex-wrap:wrap;justify-content:flex-start">' + chips + '</div></div><div><div class="label">Add document</div><div class="crossAttachmentActions"><button type="button" class="mini btnPrimary" data-cross-open-doc-picker="' + item.id + '">Search / add document...</button></div></div><div><div class="label">Add element</div><div class="crossAttachmentActions"><button type="button" class="mini btnPrimary" data-cross-open-element-picker="' + item.id + '">Search / add element...</button><button type="button" class="mini" data-cross-add-from-doc="' + item.id + '">Add elements from Document</button></div></div><div class="crossControlFull"><div class="label">Comments / impeachment details</div><div class="crossCommentBox" contenteditable="true" data-cross-comments="' + item.id + '" data-placeholder="Extra details, impeachment instructions, page notes, fallback questions...">' + (item.comments || '') + '</div></div><div class="crossControlFull crossRowActions"><button type="button" class="mini" data-cross-add-question="' + item.id + '">+ Question below</button><button type="button" class="mini" data-cross-add-heading="' + item.id + '">+ Heading below</button><button type="button" class="mini" data-cross-delete="' + item.id + '">Delete</button></div></div></div>';
+        row.innerHTML = '<div class="crossQuestionMain"><span class="crossDragHandle" title="Drag question">☰</span><span class="crossQuestionNumberInline">' + questionNumber + '.</span><div class="crossQuestionText" contenteditable="true" ' + cfg.textAttr + '="' + item.id + '" data-placeholder="Question text">' + escapeHtml(item.text || '') + '</div></div><div class="crossAnswerCell"><div class="crossAnswerText" contenteditable="true" ' + cfg.answerAttr + '="' + item.id + '" data-placeholder="Answer...">' + escapeHtml(item.answer || '') + '</div></div><div class="crossMaterialColumn"><div class="crossChipRow">' + buildExamChips(scope, item, true) + '</div></div><div class="crossDividerLine"></div><div class="crossRightNumber"><button type="button" class="crossNumberBtn" data-' + scope + '-toggle-controls="' + item.id + '" title="Show controls for question ' + questionNumber + '">' + questionNumber + '</button></div>';
       }
-      host.appendChild(row);
+      frag.appendChild(row);
     });
-    host.querySelectorAll('[data-cross-text]').forEach(el => {
-      const save = ()=> updateCrossItem(el.getAttribute('data-cross-text'), { text: el.tagName === 'INPUT' ? el.value : el.innerText.trim() });
-      el.addEventListener('blur', save);
-      el.addEventListener('click', (ev)=>{ if(el.classList.contains('crossQuestionText')) ev.stopPropagation(); });
-      el.addEventListener('dblclick', (ev)=>{ if(el.classList.contains('crossQuestionText')) ev.stopPropagation(); });
-      if(el.tagName === 'INPUT') el.addEventListener('change', save);
-    });
-    host.querySelectorAll('[data-cross-answer]').forEach(el => { const save = () => updateCrossItem(el.getAttribute('data-cross-answer'), { answer: el.innerText.trim() }); el.addEventListener('blur', save); el.addEventListener('click', ev => ev.stopPropagation()); el.addEventListener('dblclick', ev => ev.stopPropagation()); });
-    host.querySelectorAll('[data-cross-comments]').forEach(el => el.addEventListener('blur', ()=> updateCrossItem(el.getAttribute('data-cross-comments'), { comments: el.innerHTML })));
-    host.querySelectorAll('[data-cross-primary]').forEach(sel => sel.addEventListener('change', ()=> updateCrossItem(sel.getAttribute('data-cross-primary'), { primary: sel.value })));
-    host.querySelectorAll('[data-cross-doc-search]').forEach(inp => inp.addEventListener('input', ()=> refreshCrossPicker('cross', inp.getAttribute('data-cross-doc-search'), 'doc')));
-    host.querySelectorAll('[data-cross-element-search]').forEach(inp => inp.addEventListener('input', ()=> refreshCrossPicker('cross', inp.getAttribute('data-cross-element-search'), 'element')));
-    host.querySelectorAll('[data-cross-toggle-controls]').forEach(btn => btn.addEventListener('click', (ev)=>{ ev.preventDefault(); ev.stopPropagation(); const row = btn.closest('.crossRow'); if(row) row.classList.toggle('controlsOpen'); }));
-    host.querySelectorAll('.crossQuestionText[data-cross-open-question]').forEach(el => el.addEventListener('click', (ev)=>{ const sel = window.getSelection && window.getSelection(); if(sel && String(sel.toString() || '').trim()) return; openCrossQuestion(el.getAttribute('data-cross-open-question')); }));
-    host.querySelectorAll('[data-cross-add-question]').forEach(btn => btn.addEventListener('click', ()=> addCrossItem('question', btn.getAttribute('data-cross-add-question'))));
-    host.querySelectorAll('[data-cross-add-heading]').forEach(btn => btn.addEventListener('click', ()=> addCrossItem('heading', btn.getAttribute('data-cross-add-heading'))));
-    host.querySelectorAll('[data-cross-delete]').forEach(btn => btn.addEventListener('click', ()=> deleteCrossItem(btn.getAttribute('data-cross-delete'))));
-    host.querySelectorAll('[data-cross-add-doc]').forEach(btn => btn.addEventListener('click', ()=> attachCrossDoc(btn.getAttribute('data-cross-add-doc'), host.querySelector('[data-cross-doc-picker="' + btn.getAttribute('data-cross-add-doc') + '"]')?.value || '')));
-    host.querySelectorAll('[data-cross-add-element]').forEach(btn => btn.addEventListener('click', ()=> attachCrossElement(btn.getAttribute('data-cross-add-element'), host.querySelector('[data-cross-element-picker="' + btn.getAttribute('data-cross-add-element') + '"]')?.value || '')));
-    host.querySelectorAll('[data-cross-add-from-doc]').forEach(btn => btn.addEventListener('click', ()=> openCrossElementsFromDocument(btn.getAttribute('data-cross-add-from-doc'))));
-    host.querySelectorAll('[data-cross-open-doc-picker]').forEach(btn => btn.addEventListener('click', ()=> openCrossAttachPicker('cross', btn.getAttribute('data-cross-open-doc-picker'), 'document')));
-    host.querySelectorAll('[data-cross-open-element-picker]').forEach(btn => btn.addEventListener('click', ()=> openCrossAttachPicker('cross', btn.getAttribute('data-cross-open-element-picker'), 'element')));
-    host.querySelectorAll('[data-cross-open-attachment]').forEach(btn => btn.addEventListener('click', (e)=>{ e.preventDefault(); e.stopPropagation(); const p = parseCrossAttachmentKey(btn.getAttribute('data-cross-open-attachment')); openCrossAttachment(p.kind, p.id); }));
-    host.querySelectorAll('[data-cross-remove-attachment]').forEach(btn => btn.addEventListener('click', (e)=>{ e.preventDefault(); e.stopPropagation(); const itemId = btn.closest('[data-cross-id]')?.getAttribute('data-cross-id'); const item = getCrossItemById(itemId); if(!item) return; const p = parseCrossAttachmentKey(btn.getAttribute('data-cross-remove-attachment')); const patch = {}; if(p.kind === 'doc') patch.docs = (item.docs || []).filter(id => id !== p.id); else patch.elements = (item.elements || []).filter(id => id !== p.id); if(item.primary === getCrossAttachmentKey(p.kind,p.id)) patch.primary = ''; updateCrossItem(itemId, patch); }));
-    let dragId = '';
-    host.querySelectorAll('.crossRow').forEach(row => {
-      row.addEventListener('dragstart', ev => { if(!ev.target.closest('.crossDragHandle')){ ev.preventDefault(); return; } dragId = row.getAttribute('data-cross-id') || ''; row.classList.add('dragging'); ev.dataTransfer.effectAllowed = 'move'; });
-      row.addEventListener('dragend', () => { dragId = ''; row.classList.remove('dragging'); host.querySelectorAll('.crossRow').forEach(r=>r.classList.remove('drop-before','drop-after')); });
-      row.addEventListener('dragover', ev => { if(!dragId) return; ev.preventDefault(); const rect = row.getBoundingClientRect(); const before = ev.clientY < rect.top + rect.height / 2; row.classList.toggle('drop-before', before); row.classList.toggle('drop-after', !before); });
-      row.addEventListener('dragleave', () => row.classList.remove('drop-before','drop-after'));
-      row.addEventListener('drop', ev => { ev.preventDefault(); const targetId = row.getAttribute('data-cross-id') || ''; const rect = row.getBoundingClientRect(); moveCrossItem(dragId, targetId, ev.clientY < rect.top + rect.height / 2); });
-    });
+    host.appendChild(frag);
+    attachExamDelegatedHandlers(scope);
   }
+  function attachExamDelegatedHandlers(scope){
+    const cfg = getExamConfig(scope);
+    const host = $(cfg.hostId); if(!host || host.__examDelegated) return;
+    host.__examDelegated = true;
+    let dragId = '';
+    host.addEventListener('focusout', (ev)=>{
+      const textEl = ev.target.closest('[' + cfg.textAttr + ']');
+      const answerEl = ev.target.closest('[' + cfg.answerAttr + ']');
+      const commentsEl = ev.target.closest('[' + cfg.commentsAttr + ']');
+      if(textEl) cfg.update(textEl.getAttribute(cfg.textAttr), { text: textEl.tagName === 'INPUT' ? textEl.value : textEl.innerText.trim(), __skipRender:true });
+      else if(answerEl) cfg.update(answerEl.getAttribute(cfg.answerAttr), { answer: answerEl.innerText.trim(), __skipRender:true });
+      else if(commentsEl) cfg.update(commentsEl.getAttribute(cfg.commentsAttr), { comments: commentsEl.innerHTML, __skipRender:true });
+    });
+    host.addEventListener('change', (ev)=>{
+      const textEl = ev.target.closest('[' + cfg.textAttr + ']');
+      const primaryEl = ev.target.closest('[' + cfg.primaryAttr + ']');
+      if(textEl && textEl.tagName === 'INPUT') cfg.update(textEl.getAttribute(cfg.textAttr), { text: textEl.value, __skipRender:true });
+      else if(primaryEl) cfg.update(primaryEl.getAttribute(cfg.primaryAttr), { primary: primaryEl.value });
+    });
+    host.addEventListener('click', (ev)=>{
+      if(ev.target.closest('.crossQuestionText,.crossAnswerText,.crossCommentBox,.crossHeadingInput')) return;
+      const prefix = scope;
+      const controls = ev.target.closest('[data-' + prefix + '-toggle-controls]'); if(controls){ ev.preventDefault(); ev.stopPropagation(); ensureExamControlsPanel(scope, controls.getAttribute('data-' + prefix + '-toggle-controls')); return; }
+      const openPrimary = ev.target.closest('[data-' + prefix + '-open-primary]'); if(openPrimary){ cfg.openQuestion(openPrimary.getAttribute('data-' + prefix + '-open-primary')); return; }
+      const addQ = ev.target.closest('[data-' + prefix + '-add-question]'); if(addQ){ cfg.add('question', addQ.getAttribute('data-' + prefix + '-add-question')); return; }
+      const addH = ev.target.closest('[data-' + prefix + '-add-heading]'); if(addH){ cfg.add('heading', addH.getAttribute('data-' + prefix + '-add-heading')); return; }
+      const del = ev.target.closest('[data-' + prefix + '-delete]'); if(del){ cfg.del(del.getAttribute('data-' + prefix + '-delete')); return; }
+      const addFromDoc = ev.target.closest('[data-' + prefix + '-add-from-doc]'); if(addFromDoc){ cfg.addFromDoc(addFromDoc.getAttribute('data-' + prefix + '-add-from-doc')); return; }
+      const docPicker = ev.target.closest('[data-' + prefix + '-open-doc-picker]'); if(docPicker){ openCrossAttachPicker(scope, docPicker.getAttribute('data-' + prefix + '-open-doc-picker'), 'document'); return; }
+      const elPicker = ev.target.closest('[data-' + prefix + '-open-element-picker]'); if(elPicker){ openCrossAttachPicker(scope, elPicker.getAttribute('data-' + prefix + '-open-element-picker'), 'element'); return; }
+      const open = ev.target.closest('[data-' + prefix + '-open-attachment]'); if(open){ ev.preventDefault(); ev.stopPropagation(); const p = parseCrossAttachmentKey(open.getAttribute('data-' + prefix + '-open-attachment')); openCrossAttachment(p.kind, p.id); return; }
+      const remove = ev.target.closest('[data-' + prefix + '-remove-attachment]'); if(remove){ ev.preventDefault(); ev.stopPropagation(); const itemId = remove.closest('[' + cfg.idAttr + ']')?.getAttribute(cfg.idAttr); const item = cfg.getItem(itemId); if(!item) return; const p = parseCrossAttachmentKey(remove.getAttribute('data-' + prefix + '-remove-attachment')); const patch = {}; if(p.kind === 'doc') patch.docs = (item.docs || []).filter(id => id !== p.id); else patch.elements = (item.elements || []).filter(id => id !== p.id); if(item.primary === getCrossAttachmentKey(p.kind,p.id)) patch.primary = ''; cfg.update(itemId, patch); }
+    });
+    host.addEventListener('dragstart', (ev)=>{ const row = ev.target.closest('.crossRow'); if(!row || !ev.target.closest('.crossDragHandle')){ ev.preventDefault(); return; } dragId = row.getAttribute(cfg.idAttr) || ''; row.classList.add('dragging'); ev.dataTransfer.effectAllowed = 'move'; });
+    host.addEventListener('dragend', ()=>{ dragId = ''; host.querySelectorAll('.crossRow').forEach(r=>r.classList.remove('dragging','drop-before','drop-after')); });
+    host.addEventListener('dragover', (ev)=>{ if(!dragId) return; const row = ev.target.closest('.crossRow'); if(!row) return; ev.preventDefault(); const rect = row.getBoundingClientRect(); const before = ev.clientY < rect.top + rect.height / 2; row.classList.toggle('drop-before', before); row.classList.toggle('drop-after', !before); });
+    host.addEventListener('dragleave', (ev)=>{ const row = ev.target.closest('.crossRow'); if(row) row.classList.remove('drop-before','drop-after'); });
+    host.addEventListener('drop', (ev)=>{ const row = ev.target.closest('.crossRow'); if(!row || !dragId) return; ev.preventDefault(); const targetId = row.getAttribute(cfg.idAttr) || ''; const rect = row.getBoundingClientRect(); cfg.move(dragId, targetId, ev.clientY < rect.top + rect.height / 2); });
+  }
+  function renderCross(){ renderExamBuilder('cross'); }
   $('crossAddQuestionBtn')?.addEventListener('click', ()=> addCrossItem('question'));
   $('crossAddHeadingBtn')?.addEventListener('click', ()=> addCrossItem('heading'));
   $('crossResetPdfBtn')?.addEventListener('click', ()=>{ if(confirm('Reload the Leah cross-examination PDF questions? This replaces the current Cross page list.')) setCrossItems(DEFAULT_CROSS_ITEMS.map(normalizeCrossItem)); });
@@ -11175,7 +11218,7 @@ const endpoint = `${SUPABASE_URL}/functions/v1/finalize-exhibit-packet`;
   function saveDirectItems(items){ try{ localStorage.setItem(getDirectStorageKey(), JSON.stringify((items || []).map(normalizeDirectItem))); }catch(e){ console.warn('Could not save direct items', e); } }
   function setDirectItems(items){ saveDirectItems(items); renderDirect(); }
   function getDirectItemById(id){ return getDirectItems().find(item => item.id === id); }
-  function updateDirectItem(id, patch){ const items = getDirectItems(); const idx = items.findIndex(item => item.id === id); if(idx < 0) return; items[idx] = normalizeDirectItem({ ...items[idx], ...patch }, idx); setDirectItems(items); }
+  function updateDirectItem(id, patch){ const items = getDirectItems(); const idx = items.findIndex(item => item.id === id); if(idx < 0) return; const skipRender = !!patch.__skipRender; delete patch.__skipRender; items[idx] = normalizeDirectItem({ ...items[idx], ...patch }, idx); if(skipRender) saveDirectItems(items); else setDirectItems(items); }
   function addDirectItem(type='question', afterId=''){ const items = getDirectItems(); const newItem = normalizeDirectItem({ type, text: type === 'heading' ? 'New heading' : 'New question' }, items.length); const idx = afterId ? items.findIndex(item => item.id === afterId) : -1; if(idx >= 0) items.splice(idx + 1, 0, newItem); else items.push(newItem); setDirectItems(items.map((item,i)=>({ ...item, sortOrder:i }))); setTimeout(()=>{ const el = document.querySelector(`[data-direct-text="${newItem.id}"]`); if(el){ el.focus(); if(el.select) el.select(); } }, 50); }
   function deleteDirectItem(id){ if(!confirm('Remove this direct row?')) return; setDirectItems(getDirectItems().filter(item => item.id !== id).map((item,i)=>({ ...item, sortOrder:i }))); }
   function moveDirectItem(sourceId, targetId, before=true){ const items = getDirectItems(); const from = items.findIndex(item => item.id === sourceId); const to = items.findIndex(item => item.id === targetId); if(from < 0 || to < 0 || from === to) return; const [item] = items.splice(from,1); let insertAt = items.findIndex(x => x.id === targetId); if(insertAt < 0) insertAt = items.length; if(!before) insertAt += 1; items.splice(insertAt,0,item); setDirectItems(items.map((it,i)=>({ ...it, sortOrder:i }))); }
@@ -11184,42 +11227,7 @@ const endpoint = `${SUPABASE_URL}/functions/v1/finalize-exhibit-packet`;
   window.attachElementToDirectQuestion = function(elementId){ const qid = window.__directAttachTargetQuestionId || ''; if(qid && elementId) attachDirectElement(qid, elementId); window.__directAttachTargetQuestionId = ''; };
   function openDirectElementsFromDocument(questionId){ window.__directAttachTargetQuestionId = questionId; if(typeof openSourceDocModal === 'function') openSourceDocModal(); else toast('Elements from Document is not available yet.'); }
   async function openDirectQuestion(id){ const item = getDirectItemById(id); if(!item || item.type !== 'question') return; const key = getCrossPrimaryKey(item); if(key){ const parsed = parseCrossAttachmentKey(key); await openCrossAttachment(parsed.kind, parsed.id); } openCrossCommentsWindow(item); }
-  function renderDirect(){
-    const host = $('directQuestionList'); if(!host) return;
-    const items = getDirectItems().map(normalizeDirectItem).sort((a,b)=>a.sortOrder-b.sortOrder);
-    host.innerHTML = ''; if($('directEmpty')) $('directEmpty').style.display = items.length ? 'none' : '';
-    let questionNumber = 0;
-    items.forEach(item => {
-      const row = document.createElement('div'); row.className = 'crossRow' + (item.type === 'heading' ? ' crossHeadingRow' : ''); row.setAttribute('draggable','true'); row.setAttribute('data-direct-id', item.id);
-      if(item.type === 'heading'){
-        row.innerHTML = '<div class="crossDragHandle" title="Drag">☰</div><div><input class="crossHeadingInput" data-direct-text="' + item.id + '" value="' + escapeHtml(item.text || '') + '" /></div><div class="crossRowActions" style="padding:2px 6px"><button type="button" class="mini" data-direct-add-question="' + item.id + '">+ Question below</button><button type="button" class="mini" data-direct-delete="' + item.id + '">Delete</button></div>';
-      } else {
-        questionNumber += 1; const attachments = getCrossAllAttachments(item); const primaryKey = getCrossPrimaryKey(item);
-        const chips = attachments.map(a => '<span class="crossChip ' + (a.kind === 'doc' ? 'doc' : 'el') + '" title="' + escapeHtml(getCrossAttachmentLabel(a.kind, a.id)) + '"><span class="crossChipLabel">' + escapeHtml(a.kind === 'doc' ? 'Doc' : 'El') + ': ' + escapeHtml(getCrossAttachmentLabel(a.kind, a.id)) + '</span><button type="button" class="crossOpenAttachmentBtn" title="Open" data-direct-open-attachment="' + a.kind + ':' + escapeHtml(a.id) + '">↗</button><button type="button" title="Remove" data-direct-remove-attachment="' + a.kind + ':' + escapeHtml(a.id) + '">×</button></span>').join('') || '<span class="crossNoMaterials">No materials</span>';
-        const primaryOptions = attachments.map(a => '<option value="' + getCrossAttachmentKey(a.kind,a.id) + '" ' + (primaryKey === getCrossAttachmentKey(a.kind,a.id) ? 'selected' : '') + '>' + escapeHtml(a.kind === 'doc' ? 'Document: ' : 'Element: ') + escapeHtml(getCrossAttachmentLabel(a.kind,a.id)) + '</option>').join('');
-        row.innerHTML = '<div class="crossQuestionMain"><span class="crossDragHandle" title="Drag question">☰</span><span class="crossQuestionNumberInline">' + questionNumber + '.</span><div class="crossQuestionText" contenteditable="true" data-direct-text="' + item.id + '" data-direct-open-question="' + item.id + '" data-placeholder="Question text">' + escapeHtml(item.text || '') + '</div></div><div class="crossAnswerCell"><div class="crossAnswerText" contenteditable="true" data-direct-answer="' + item.id + '" data-placeholder="Answer...">' + escapeHtml(item.answer || '') + '</div></div><div class="crossMaterialColumn"><div class="crossChipRow">' + chips + '</div></div><div class="crossDividerLine"></div><div class="crossRightNumber"><button type="button" class="crossNumberBtn" data-direct-toggle-controls="' + item.id + '" title="Show controls for question ' + questionNumber + '">' + questionNumber + '</button><div class="crossControlsPanel"><div><div class="label">Primary material opened when question is clicked</div><select class="crossPrimarySelect" data-direct-primary="' + item.id + '"><option value="">No primary selected</option>' + primaryOptions + '</select></div><div><div class="label">Attached materials</div><div class="crossChipRow" style="flex-wrap:wrap;justify-content:flex-start">' + chips + '</div></div><div><div class="label">Add document</div><div class="crossAttachmentActions"><button type="button" class="mini btnPrimary" data-direct-open-doc-picker="' + item.id + '">Search / add document...</button></div></div><div><div class="label">Add element</div><div class="crossAttachmentActions"><button type="button" class="mini btnPrimary" data-direct-open-element-picker="' + item.id + '">Search / add element...</button><button type="button" class="mini" data-direct-add-from-doc="' + item.id + '">Add elements from Document</button></div></div><div class="crossControlFull"><div class="label">Comments / prep details</div><div class="crossCommentBox" contenteditable="true" data-direct-comments="' + item.id + '" data-placeholder="Extra details, prep notes, fallback questions...">' + (item.comments || '') + '</div></div><div class="crossControlFull crossRowActions"><button type="button" class="mini" data-direct-add-question="' + item.id + '">+ Question below</button><button type="button" class="mini" data-direct-add-heading="' + item.id + '">+ Heading below</button><button type="button" class="mini" data-direct-delete="' + item.id + '">Delete</button></div></div></div>';
-      } host.appendChild(row);
-    });
-    host.querySelectorAll('[data-direct-text]').forEach(el => { const save = () => updateDirectItem(el.getAttribute('data-direct-text'), { text: el.tagName === 'INPUT' ? el.value : el.innerText.trim() }); el.addEventListener('blur', save); el.addEventListener('click', ev => { if(el.classList.contains('crossQuestionText')) ev.stopPropagation(); }); if(el.tagName === 'INPUT') el.addEventListener('change', save); });
-    host.querySelectorAll('[data-direct-answer]').forEach(el => { const save = () => updateDirectItem(el.getAttribute('data-direct-answer'), { answer: el.innerText.trim() }); el.addEventListener('blur', save); el.addEventListener('click', ev => ev.stopPropagation()); el.addEventListener('dblclick', ev => ev.stopPropagation()); });
-    host.querySelectorAll('[data-direct-comments]').forEach(el => el.addEventListener('blur', ()=> updateDirectItem(el.getAttribute('data-direct-comments'), { comments: el.innerHTML })));
-    host.querySelectorAll('[data-direct-primary]').forEach(sel => sel.addEventListener('change', ()=> updateDirectItem(sel.getAttribute('data-direct-primary'), { primary: sel.value })));
-    host.querySelectorAll('[data-direct-doc-search]').forEach(inp => inp.addEventListener('input', ()=> refreshCrossPicker('direct', inp.getAttribute('data-direct-doc-search'), 'doc')));
-    host.querySelectorAll('[data-direct-element-search]').forEach(inp => inp.addEventListener('input', ()=> refreshCrossPicker('direct', inp.getAttribute('data-direct-element-search'), 'element')));
-    host.querySelectorAll('[data-direct-toggle-controls]').forEach(btn => btn.addEventListener('click', ev => { ev.preventDefault(); ev.stopPropagation(); const row = btn.closest('.crossRow'); if(row) row.classList.toggle('controlsOpen'); }));
-    host.querySelectorAll('.crossQuestionText[data-direct-open-question]').forEach(el => el.addEventListener('click', ev => { const sel = window.getSelection && window.getSelection(); if(sel && String(sel.toString() || '').trim()) return; openDirectQuestion(el.getAttribute('data-direct-open-question')); }));
-    host.querySelectorAll('[data-direct-add-question]').forEach(btn => btn.addEventListener('click', ()=> addDirectItem('question', btn.getAttribute('data-direct-add-question'))));
-    host.querySelectorAll('[data-direct-add-heading]').forEach(btn => btn.addEventListener('click', ()=> addDirectItem('heading', btn.getAttribute('data-direct-add-heading'))));
-    host.querySelectorAll('[data-direct-delete]').forEach(btn => btn.addEventListener('click', ()=> deleteDirectItem(btn.getAttribute('data-direct-delete'))));
-    host.querySelectorAll('[data-direct-add-doc]').forEach(btn => btn.addEventListener('click', ()=> attachDirectDoc(btn.getAttribute('data-direct-add-doc'), host.querySelector('[data-direct-doc-picker="' + btn.getAttribute('data-direct-add-doc') + '"]')?.value || '')));
-    host.querySelectorAll('[data-direct-add-element]').forEach(btn => btn.addEventListener('click', ()=> attachDirectElement(btn.getAttribute('data-direct-add-element'), host.querySelector('[data-direct-element-picker="' + btn.getAttribute('data-direct-add-element') + '"]')?.value || '')));
-    host.querySelectorAll('[data-direct-add-from-doc]').forEach(btn => btn.addEventListener('click', ()=> openDirectElementsFromDocument(btn.getAttribute('data-direct-add-from-doc'))));
-    host.querySelectorAll('[data-direct-open-doc-picker]').forEach(btn => btn.addEventListener('click', ()=> openCrossAttachPicker('direct', btn.getAttribute('data-direct-open-doc-picker'), 'document')));
-    host.querySelectorAll('[data-direct-open-element-picker]').forEach(btn => btn.addEventListener('click', ()=> openCrossAttachPicker('direct', btn.getAttribute('data-direct-open-element-picker'), 'element')));
-    host.querySelectorAll('[data-direct-open-attachment]').forEach(btn => btn.addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); const p = parseCrossAttachmentKey(btn.getAttribute('data-direct-open-attachment')); openCrossAttachment(p.kind, p.id); }));
-    host.querySelectorAll('[data-direct-remove-attachment]').forEach(btn => btn.addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); const itemId = btn.closest('[data-direct-id]')?.getAttribute('data-direct-id'); const item = getDirectItemById(itemId); if(!item) return; const p = parseCrossAttachmentKey(btn.getAttribute('data-direct-remove-attachment')); const patch = {}; if(p.kind === 'doc') patch.docs = (item.docs || []).filter(id => id !== p.id); else patch.elements = (item.elements || []).filter(id => id !== p.id); if(item.primary === getCrossAttachmentKey(p.kind,p.id)) patch.primary = ''; updateDirectItem(itemId, patch); }));
-    let dragId = ''; host.querySelectorAll('.crossRow').forEach(row => { row.addEventListener('dragstart', ev => { if(!ev.target.closest('.crossDragHandle')){ ev.preventDefault(); return; } dragId = row.getAttribute('data-direct-id') || ''; row.classList.add('dragging'); ev.dataTransfer.effectAllowed = 'move'; }); row.addEventListener('dragend', () => { dragId = ''; row.classList.remove('dragging'); host.querySelectorAll('.crossRow').forEach(r=>r.classList.remove('drop-before','drop-after')); }); row.addEventListener('dragover', ev => { if(!dragId) return; ev.preventDefault(); const rect = row.getBoundingClientRect(); const before = ev.clientY < rect.top + rect.height / 2; row.classList.toggle('drop-before', before); row.classList.toggle('drop-after', !before); }); row.addEventListener('dragleave', () => row.classList.remove('drop-before','drop-after')); row.addEventListener('drop', ev => { ev.preventDefault(); const targetId = row.getAttribute('data-direct-id') || ''; const rect = row.getBoundingClientRect(); moveDirectItem(dragId, targetId, ev.clientY < rect.top + rect.height / 2); }); });
-  }
+  function renderDirect(){ renderExamBuilder('direct'); }
   $('directAddQuestionBtn')?.addEventListener('click', ()=> addDirectItem('question'));
   $('directAddHeadingBtn')?.addEventListener('click', ()=> addDirectItem('heading'));
   $('directResetTrialIssuesBtn')?.addEventListener('click', ()=>{ if(confirm('Load headings/subheadings/issues from the Trial Issues page? This replaces the current Direct page list.')) setDirectItems(buildDefaultDirectItems().map(normalizeDirectItem)); });
