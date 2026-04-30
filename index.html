@@ -10559,10 +10559,13 @@ ${entry.summary}`).toLowerCase().includes(q)) return false;
   async function waitForSupabaseBootstrapReady(timeoutMs){
     const start = Date.now();
     while(Date.now() - start < timeoutMs){
-      if(window.supabase && (window.CASE_ID || getCaseId())) return true;
+      // Startup should only wait for the Supabase client itself. A bare dashboard/login
+      // URL intentionally has no case id, so requiring CASE_ID here falsely triggers
+      // the startup warning and can leave the login/dashboard route looking broken.
+      if(window.supabase) return true;
       await new Promise(resolve => setTimeout(resolve, 50));
     }
-    return !!(window.supabase && (window.CASE_ID || getCaseId()));
+    return !!window.supabase;
   }
 
 
@@ -11358,17 +11361,27 @@ const endpoint = `${SUPABASE_URL}/functions/v1/finalize-exhibit-packet`;
   initializeCaseChatUi();
 
   setTimeout(async ()=>{
-    const ready = await waitForSupabaseBootstrapReady(5000);
+    const ready = await waitForSupabaseBootstrapReady(15000);
     if(!ready){
-      console.warn('Supabase bootstrap not ready at startup; skipping initial remote reload.');
-      const currentView = (ui && ui.currentView) ? ui.currentView : getInitialViewFromUrl();
-      setTab(currentView || 'outline', { pushState:false });
+      console.warn('Supabase client not ready at startup; auth boot will continue when available.');
       return;
     }
-    await loadIconLibraryFromSupabase();
-    await loadElementsFromSupabase({ replaceLocal:true });
-    await loadTimelineEventsFromSupabase();
-    if(window.reloadAllSupabaseData) await window.reloadAllSupabaseData(true);
+
+    // No case id means this is the login/dashboard startup page. Do not attempt a
+    // case-data reload or force a tab; bootAuthStartup() controls the login/dashboard
+    // route. This prevents the false "Supabase bootstrap not ready" startup warning.
+    if(!getCaseId()){
+      return;
+    }
+
+    try{
+      await loadIconLibraryFromSupabase();
+      await loadElementsFromSupabase({ replaceLocal:true });
+      await loadTimelineEventsFromSupabase();
+      if(window.reloadAllSupabaseData) await window.reloadAllSupabaseData(true);
+    }catch(e){
+      console.warn('Initial case-data reload skipped or failed:', e);
+    }
     const currentView = (ui && ui.currentView) ? ui.currentView : getInitialViewFromUrl();
     setTab(currentView || 'outline', { pushState:false });
   }, 0);
